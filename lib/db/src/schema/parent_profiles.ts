@@ -5,6 +5,7 @@ import { z } from "zod/v4";
 export const parentProfilesTable = pgTable("parent_profiles", {
   id: serial("id").primaryKey(),
   userId: text("user_id").notNull().unique(),
+  name: text("name"),
   role: text("role").notNull().default("mother"),
   gender: text("gender"),
   mobileNumber: text("mobile_number"),

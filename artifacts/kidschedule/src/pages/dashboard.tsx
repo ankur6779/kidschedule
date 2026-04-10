@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
+import { useEffect, useState } from "react";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -14,7 +15,18 @@ function getGreeting(): string {
 
 export default function Dashboard() {
   const { user } = useUser();
-  const firstName = user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "";
+  const [profileName, setProfileName] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/parent-profile")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.name) setProfileName(data.name);
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayName = profileName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "";
 
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
@@ -32,7 +44,7 @@ export default function Dashboard() {
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <header>
         <h1 className="font-quicksand text-3xl font-bold text-foreground">
-          {getGreeting()}{firstName ? `, ${firstName}` : ""}! 👋
+          {getGreeting()}{displayName ? `, ${displayName}` : ""}! 👋
         </h1>
         <p className="text-muted-foreground mt-1">Here's a look at how things are going today.</p>
       </header>

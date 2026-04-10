@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCircle, Save, Plus, Trash2, Clock, Utensils } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle, Save, Plus, Trash2, Clock, Utensils, Camera, Loader2 } from "lucide-react";
 
 interface FreeSlot {
   start: string;
@@ -14,6 +16,7 @@ interface FreeSlot {
 }
 
 interface ParentProfile {
+  name: string;
   role: string;
   gender: string;
   mobileNumber: string;
@@ -27,9 +30,13 @@ interface ParentProfile {
 
 export default function ParentProfilePage() {
   const { toast } = useToast();
+  const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPic, setUploadingPic] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ParentProfile>({
+    name: "",
     role: "mother",
     gender: "",
     mobileNumber: "",
@@ -50,6 +57,7 @@ export default function ParentProfilePage() {
       .then((data) => {
         if (data) {
           setProfile({
+            name: data.name ?? "",
             role: data.role ?? "mother",
             gender: data.gender ?? "",
             mobileNumber: data.mobileNumber ?? "",
@@ -81,10 +89,26 @@ export default function ParentProfilePage() {
     });
   };
 
+  const handleProfilePicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingPic(true);
+    try {
+      await user.setProfileImage({ file });
+      toast({ title: "Profile picture updated!" });
+    } catch {
+      toast({ title: "Failed to update picture", variant: "destructive" });
+    } finally {
+      setUploadingPic(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
       const body: any = {
+        name: profile.name || undefined,
         role: profile.role,
         workType: profile.workType,
         foodType: profile.foodType,
@@ -133,39 +157,89 @@ export default function ParentProfilePage() {
       <Card className="rounded-2xl shadow-sm border-border/50">
         <CardHeader>
           <CardTitle className="font-quicksand text-lg">Personal Info</CardTitle>
-          <CardDescription>Basic details about your role in the family</CardDescription>
+          <CardDescription>Basic details about you and your role in the family</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Role</Label>
-            <Select value={profile.role} onValueChange={(v) => setProfile((p) => ({ ...p, role: v }))}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mother">Mother</SelectItem>
-                <SelectItem value="father">Father</SelectItem>
-              </SelectContent>
-            </Select>
+        <CardContent className="flex flex-col gap-5">
+          {/* Profile Picture */}
+          <div className="flex items-center gap-5">
+            <div className="relative shrink-0">
+              <Avatar className="h-20 w-20 ring-2 ring-primary/20">
+                <AvatarImage src={user?.imageUrl} />
+                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                  {profile.name ? profile.name[0]?.toUpperCase() : (user?.firstName?.[0] ?? "U")}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPic}
+                className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 shadow-md hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                {uploadingPic ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Camera className="h-3.5 w-3.5" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePicUpload}
+              />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">{profile.name || user?.firstName || "Your Name"}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Click the camera icon to change your profile picture
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Gender</Label>
-            <Select value={profile.gender || "prefer_not"} onValueChange={(v) => setProfile((p) => ({ ...p, gender: v === "prefer_not" ? "" : v }))}>
-              <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="prefer_not">Prefer not to say</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <Label>Your Name</Label>
+              <Input
+                placeholder="e.g. Ayesha, Sarah, Ahmed..."
+                value={profile.name}
+                onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                This name will appear in your dashboard greeting.
+              </p>
+            </div>
 
-          <div className="flex flex-col gap-1.5 sm:col-span-2">
-            <Label>Mobile Number</Label>
-            <Input
-              placeholder="+92 300 1234567"
-              value={profile.mobileNumber}
-              onChange={(e) => setProfile((p) => ({ ...p, mobileNumber: e.target.value }))}
-            />
+            <div className="flex flex-col gap-1.5">
+              <Label>Role</Label>
+              <Select value={profile.role} onValueChange={(v) => setProfile((p) => ({ ...p, role: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mother">Mother</SelectItem>
+                  <SelectItem value="father">Father</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Gender</Label>
+              <Select value={profile.gender || "prefer_not"} onValueChange={(v) => setProfile((p) => ({ ...p, gender: v === "prefer_not" ? "" : v }))}>
+                <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="prefer_not">Prefer not to say</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
+              <Label>Mobile Number</Label>
+              <Input
+                placeholder="+92 300 1234567"
+                value={profile.mobileNumber}
+                onChange={(e) => setProfile((p) => ({ ...p, mobileNumber: e.target.value }))}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

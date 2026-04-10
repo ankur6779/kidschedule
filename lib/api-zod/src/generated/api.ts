@@ -290,6 +290,7 @@ export const FreeSlotSchema = zod.object({
 export const GetParentProfileResponse = zod.object({
   id: zod.number(),
   userId: zod.string(),
+  name: zod.string().nullish(),
   role: zod.string(),
   gender: zod.string().nullish(),
   mobileNumber: zod.string().nullish(),
@@ -304,6 +305,7 @@ export const GetParentProfileResponse = zod.object({
 });
 
 export const UpsertParentProfileBody = zod.object({
+  name: zod.string().optional(),
   role: zod.string(),
   gender: zod.string().optional(),
   mobileNumber: zod.string().optional(),
