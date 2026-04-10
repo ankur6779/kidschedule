@@ -1,18 +1,14 @@
 import { Link } from "wouter";
-import { Star, Calendar, Activity, Users, ArrowRight } from "lucide-react";
+import { Calendar, Activity, Users, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoImg from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Nav */}
-      <header className="flex items-center justify-between px-6 py-4 border-b bg-background/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Star className="h-5 w-5" />
-          </div>
-          <span className="font-quicksand text-xl font-bold text-foreground">KidSchedule</span>
-        </div>
+      <header className="flex items-center justify-between px-6 py-3 border-b bg-background/80 backdrop-blur-md sticky top-0 z-10">
+        <img src={logoImg} alt="AmyNest" className="h-12 w-auto" />
         <div className="flex items-center gap-2">
           <Link href="/sign-in">
             <Button variant="ghost" data-testid="link-sign-in">Sign in</Button>
@@ -25,12 +21,9 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 flex-1">
-        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
-          <Star className="h-3.5 w-3.5" />
-          AI-powered daily routines for kids
-        </div>
-        <h1 className="font-quicksand text-4xl md:text-6xl font-bold text-foreground max-w-3xl leading-tight mb-6">
-          Give your kids the gift of a great day, every day
+        <img src={logoImg} alt="AmyNest" className="h-28 w-auto mb-8" />
+        <h1 className="font-quicksand text-4xl md:text-6xl font-bold text-foreground max-w-3xl leading-tight mb-4">
+          Where Smart Parenting Begins
         </h1>
         <p className="text-muted-foreground text-lg md:text-xl max-w-xl mb-10 leading-relaxed">
           Generate personalized daily schedules in seconds. Track behavior, build healthy habits, and stay organized as a family.
@@ -85,7 +78,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="px-6 py-6 border-t text-center text-sm text-muted-foreground">
-        KidSchedule — helping families build better days
+        AmyNest — Where Smart Parenting Begins
       </footer>
     </div>
   );
