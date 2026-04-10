@@ -6,4 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./behaviorLog";
+export * from "./behaviorStat";
+export * from "./child";
+export * from "./createBehaviorLogBody";
+export * from "./createChildBody";
+export * from "./createRoutineBody";
+export * from "./dashboardSummary";
+export * from "./generatedRoutine";
+export * from "./generateRoutineBody";
 export * from "./healthStatus";
+export * from "./listBehaviorsParams";
+export * from "./listRoutinesParams";
+export * from "./routine";
+export * from "./routineItem";
+export * from "./updateChildBody";

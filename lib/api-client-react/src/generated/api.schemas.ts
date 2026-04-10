@@ -8,3 +8,110 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface Child {
+  id: number;
+  name: string;
+  age: number;
+  schoolStartTime: string;
+  schoolEndTime: string;
+  goals: string;
+  createdAt: string;
+}
+
+export interface CreateChildBody {
+  name: string;
+  age: number;
+  schoolStartTime: string;
+  schoolEndTime: string;
+  goals: string;
+}
+
+export interface UpdateChildBody {
+  name?: string;
+  age?: number;
+  schoolStartTime?: string;
+  schoolEndTime?: string;
+  goals?: string;
+}
+
+export interface RoutineItem {
+  time: string;
+  activity: string;
+  duration: number;
+  category: string;
+  notes?: string;
+}
+
+export interface Routine {
+  id: number;
+  childId: number;
+  childName: string;
+  date: string;
+  title: string;
+  items: RoutineItem[];
+  createdAt: string;
+}
+
+export interface CreateRoutineBody {
+  childId: number;
+  date: string;
+  title: string;
+  items: RoutineItem[];
+}
+
+export interface GenerateRoutineBody {
+  childId: number;
+  date: string;
+}
+
+export interface GeneratedRoutine {
+  title: string;
+  items: RoutineItem[];
+}
+
+export interface BehaviorLog {
+  id: number;
+  childId: number;
+  childName: string;
+  date: string;
+  behavior: string;
+  type: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateBehaviorLogBody {
+  childId: number;
+  date: string;
+  behavior: string;
+  type: string;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface DashboardSummary {
+  totalChildren: number;
+  totalRoutines: number;
+  positiveBehaviorsToday: number;
+  negativeBehaviorsToday: number;
+  routinesGeneratedThisWeek: number;
+}
+
+export interface BehaviorStat {
+  childId: number;
+  childName: string;
+  positive: number;
+  negative: number;
+  neutral: number;
+}
+
+export type ListRoutinesParams = {
+  childId?: number;
+};
+
+export type ListBehaviorsParams = {
+  childId?: number;
+  date?: string;
+};

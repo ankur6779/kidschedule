@@ -10,13 +10,22 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: children
+    description: Child profile operations
+  - name: routines
+    description: Daily routine operations
+  - name: behaviors
+    description: Behavior tracking operations
+  - name: dashboard
+    description: Dashboard and summary operations
+  - name: ai
+    description: AI routine generation
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +33,290 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /children:
+    get:
+      operationId: listChildren
+      tags: [children]
+      summary: List all children profiles
+      responses:
+        "200":
+          description: List of children
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Child"
+    post:
+      operationId: createChild
+      tags: [children]
+      summary: Create a child profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChildBody"
+      responses:
+        "201":
+          description: Created child
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+
+  /children/{id}:
+    get:
+      operationId: getChild
+      tags: [children]
+      summary: Get a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Child profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateChild
+      tags: [children]
+      summary: Update a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChildBody"
+      responses:
+        "200":
+          description: Updated child
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteChild
+      tags: [children]
+      summary: Delete a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /routines:
+    get:
+      operationId: listRoutines
+      tags: [routines]
+      summary: List routines
+      parameters:
+        - name: childId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of routines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Routine"
+    post:
+      operationId: createRoutine
+      tags: [routines]
+      summary: Create a routine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoutineBody"
+      responses:
+        "201":
+          description: Created routine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+
+  /routines/{id}:
+    get:
+      operationId: getRoutine
+      tags: [routines]
+      summary: Get a routine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Routine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteRoutine
+      tags: [routines]
+      summary: Delete a routine
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /routines/generate:
+    post:
+      operationId: generateRoutine
+      tags: [ai]
+      summary: Generate a daily routine with AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateRoutineBody"
+      responses:
+        "200":
+          description: Generated routine with schedule items
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedRoutine"
+
+  /behaviors:
+    get:
+      operationId: listBehaviors
+      tags: [behaviors]
+      summary: List behavior logs
+      parameters:
+        - name: childId
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of behavior logs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BehaviorLog"
+    post:
+      operationId: createBehaviorLog
+      tags: [behaviors]
+      summary: Log a behavior
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBehaviorLogBody"
+      responses:
+        "201":
+          description: Created behavior log
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BehaviorLog"
+
+  /behaviors/{id}:
+    delete:
+      operationId: deleteBehaviorLog
+      tags: [behaviors]
+      summary: Delete a behavior log
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-routines:
+    get:
+      operationId: getRecentRoutines
+      tags: [dashboard]
+      summary: Get recently generated routines
+      responses:
+        "200":
+          description: Recent routines
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Routine"
+
+  /dashboard/behavior-stats:
+    get:
+      operationId: getBehaviorStats
+      tags: [dashboard]
+      summary: Get behavior stats per child
+      responses:
+        "200":
+          description: Behavior stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BehaviorStat"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +327,239 @@ components:
       required:
         - status
 
+    Child:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        age:
+          type: integer
+        schoolStartTime:
+          type: string
+        schoolEndTime:
+          type: string
+        goals:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - age
+        - schoolStartTime
+        - schoolEndTime
+        - goals
+        - createdAt
+
+    CreateChildBody:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        schoolStartTime:
+          type: string
+        schoolEndTime:
+          type: string
+        goals:
+          type: string
+      required:
+        - name
+        - age
+        - schoolStartTime
+        - schoolEndTime
+        - goals
+
+    UpdateChildBody:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        schoolStartTime:
+          type: string
+        schoolEndTime:
+          type: string
+        goals:
+          type: string
+
+    RoutineItem:
+      type: object
+      properties:
+        time:
+          type: string
+        activity:
+          type: string
+        duration:
+          type: integer
+        category:
+          type: string
+        notes:
+          type: string
+      required:
+        - time
+        - activity
+        - duration
+        - category
+
+    Routine:
+      type: object
+      properties:
+        id:
+          type: integer
+        childId:
+          type: integer
+        childName:
+          type: string
+        date:
+          type: string
+        title:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoutineItem"
+        createdAt:
+          type: string
+      required:
+        - id
+        - childId
+        - childName
+        - date
+        - title
+        - items
+        - createdAt
+
+    CreateRoutineBody:
+      type: object
+      properties:
+        childId:
+          type: integer
+        date:
+          type: string
+        title:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoutineItem"
+      required:
+        - childId
+        - date
+        - title
+        - items
+
+    GenerateRoutineBody:
+      type: object
+      properties:
+        childId:
+          type: integer
+        date:
+          type: string
+      required:
+        - childId
+        - date
+
+    GeneratedRoutine:
+      type: object
+      properties:
+        title:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoutineItem"
+      required:
+        - title
+        - items
+
+    BehaviorLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        childId:
+          type: integer
+        childName:
+          type: string
+        date:
+          type: string
+        behavior:
+          type: string
+        type:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+      required:
+        - id
+        - childId
+        - childName
+        - date
+        - behavior
+        - type
+        - createdAt
+
+    CreateBehaviorLogBody:
+      type: object
+      properties:
+        childId:
+          type: integer
+        date:
+          type: string
+        behavior:
+          type: string
+        type:
+          type: string
+        notes:
+          type: ["string", "null"]
+      required:
+        - childId
+        - date
+        - behavior
+        - type
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalChildren:
+          type: integer
+        totalRoutines:
+          type: integer
+        positiveBehaviorsToday:
+          type: integer
+        negativeBehaviorsToday:
+          type: integer
+        routinesGeneratedThisWeek:
+          type: integer
+      required:
+        - totalChildren
+        - totalRoutines
+        - positiveBehaviorsToday
+        - negativeBehaviorsToday
+        - routinesGeneratedThisWeek
+
+    BehaviorStat:
+      type: object
+      properties:
+        childId:
+          type: integer
+        childName:
+          type: string
+        positive:
+          type: integer
+        negative:
+          type: integer
+        neutral:
+          type: integer
+      required:
+        - childId
+        - childName
+        - positive
+        - negative
+        - neutral

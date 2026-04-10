@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "KidSchedule - AI Routine Planner"
+version = "1.0.0"
+id = "artifacts/kidschedule"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20703
+
+[services.development]
+run = "pnpm --filter @workspace/kidschedule run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/kidschedule", "run", "build" ]
+publicDir = "artifacts/kidschedule/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20703"
+BASE_PATH = "/"
