@@ -5,7 +5,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Loader2, Sparkles, Check, SkipForward, Clock, Bell, BellOff } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Loader2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import {
@@ -19,6 +19,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 
@@ -91,6 +97,8 @@ export default function RoutineDetail() {
 
   const [localItems, setLocalItems] = useState<RoutineItem[] | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [babysitterInfo, setBabysitterInfo] = useState<{ name: string; mobileNumber?: string | null } | null>(null);
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const { data: routine, isLoading } = useGetRoutine(routineId, {
@@ -101,7 +109,45 @@ export default function RoutineDetail() {
     if (routine?.items && !localItems) {
       setLocalItems(routine.items as RoutineItem[]);
     }
+    // Fetch babysitter assigned to this child
+    if (routine?.childId) {
+      fetch(`/api/children/${routine.childId}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((child) => {
+          if (child?.babysitterId) {
+            fetch("/api/babysitters")
+              .then((r) => r.json())
+              .then((sitters: { id: number; name: string; mobileNumber?: string | null }[]) => {
+                const sitter = sitters.find((s) => s.id === child.babysitterId);
+                if (sitter) setBabysitterInfo(sitter);
+              });
+          }
+        })
+        .catch(() => {});
+    }
   }, [routine]);
+
+  const buildShareMessage = () => {
+    if (!routine) return "";
+    const lines = [
+      `📅 ${routine.title}`,
+      `👧 Child: ${routine.childName}`,
+      `📆 Date: ${new Date(routine.date).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}`,
+      "",
+      "📋 ROUTINE:",
+      ...items.map((item) => `• ${item.time} — ${item.activity} (${item.duration} min)${item.notes ? `\n  💡 ${item.notes}` : ""}`),
+      "",
+      "— Sent via AmyNest",
+    ];
+    return lines.join("\n");
+  };
+
+  const copyShareMessage = () => {
+    const msg = buildShareMessage();
+    navigator.clipboard.writeText(msg).then(() => {
+      toast({ title: "Copied!", description: "Routine copied. Paste it into WhatsApp or SMS." });
+    });
+  };
 
   const deleteMutation = useDeleteRoutine();
 
@@ -265,6 +311,16 @@ export default function RoutineDetail() {
               )}
             </Button>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShareOpen(true)}
+              className="rounded-full gap-2"
+            >
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive">
@@ -412,6 +468,57 @@ export default function RoutineDetail() {
           <Link href="/behavior">Log Today's Behavior</Link>
         </Button>
       </div>
+
+      {/* Share Dialog */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent className="rounded-2xl max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-quicksand flex items-center gap-2">
+              <Share2 className="h-5 w-5 text-primary" />
+              Share Routine
+            </DialogTitle>
+          </DialogHeader>
+
+          {babysitterInfo && (
+            <div className="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-xl p-3">
+              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <span className="font-bold text-primary">{babysitterInfo.name[0]?.toUpperCase()}</span>
+              </div>
+              <div>
+                <p className="font-semibold text-sm">{babysitterInfo.name}</p>
+                {babysitterInfo.mobileNumber && (
+                  <p className="text-xs text-muted-foreground">{babysitterInfo.mobileNumber}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-muted/50 rounded-xl p-3 text-sm font-mono whitespace-pre-wrap text-foreground/80 max-h-64 overflow-y-auto">
+            {buildShareMessage()}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Button onClick={copyShareMessage} className="rounded-xl w-full">
+              <Copy className="h-4 w-4 mr-2" />
+              Copy Routine Text
+            </Button>
+            {babysitterInfo?.mobileNumber && (
+              <a
+                href={`https://wa.me/${babysitterInfo.mobileNumber.replace(/\D/g, "")}?text=${encodeURIComponent(buildShareMessage())}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" className="rounded-xl w-full">
+                  💬 Open in WhatsApp
+                </Button>
+              </a>
+            )}
+            <p className="text-xs text-center text-muted-foreground">
+              Copy the text above and paste it into WhatsApp, SMS, or any messaging app.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

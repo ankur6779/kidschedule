@@ -28,6 +28,7 @@ export const ListChildrenResponseItem = zod.object({
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
   goals: zod.string(),
+  babysitterId: zod.number().nullish(),
   createdAt: zod.string(),
 });
 export const ListChildrenResponse = zod.array(ListChildrenResponseItem);
@@ -45,6 +46,7 @@ export const CreateChildBody = zod.object({
   travelMode: zod.string(),
   travelModeOther: zod.string().optional(),
   goals: zod.string(),
+  babysitterId: zod.number().optional(),
 });
 
 /**
@@ -65,6 +67,7 @@ export const GetChildResponse = zod.object({
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
   goals: zod.string(),
+  babysitterId: zod.number().nullish(),
   createdAt: zod.string(),
 });
 
@@ -85,6 +88,7 @@ export const UpdateChildBody = zod.object({
   travelMode: zod.string().optional(),
   travelModeOther: zod.string().optional(),
   goals: zod.string().optional(),
+  babysitterId: zod.number().nullish(),
 });
 
 export const UpdateChildResponse = zod.object({
@@ -98,6 +102,7 @@ export const UpdateChildResponse = zod.object({
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
   goals: zod.string(),
+  babysitterId: zod.number().nullish(),
   createdAt: zod.string(),
 });
 
@@ -272,3 +277,58 @@ export const GetBehaviorStatsResponseItem = zod.object({
   neutral: zod.number(),
 });
 export const GetBehaviorStatsResponse = zod.array(GetBehaviorStatsResponseItem);
+
+/**
+ * @summary Parent profile
+ */
+export const FreeSlotSchema = zod.object({
+  start: zod.string(),
+  end: zod.string(),
+});
+
+export const GetParentProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  role: zod.string(),
+  gender: zod.string().nullish(),
+  mobileNumber: zod.string().nullish(),
+  workType: zod.string(),
+  workStartTime: zod.string().nullish(),
+  workEndTime: zod.string().nullish(),
+  freeSlots: zod.array(FreeSlotSchema).default([]),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+export const UpsertParentProfileBody = zod.object({
+  role: zod.string(),
+  gender: zod.string().optional(),
+  mobileNumber: zod.string().optional(),
+  workType: zod.string(),
+  workStartTime: zod.string().optional(),
+  workEndTime: zod.string().optional(),
+  freeSlots: zod.array(FreeSlotSchema).optional(),
+});
+
+/**
+ * @summary Babysitters
+ */
+export const BabysitterSchema = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string(),
+  mobileNumber: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListBabysittersResponse = zod.array(BabysitterSchema);
+
+export const CreateBabysitterBody = zod.object({
+  name: zod.string(),
+  mobileNumber: zod.string().optional(),
+  notes: zod.string().optional(),
+});
+
+export const DeleteBabysitterParams = zod.object({
+  id: zod.coerce.number(),
+});

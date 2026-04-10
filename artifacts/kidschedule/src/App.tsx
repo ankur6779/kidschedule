@@ -15,6 +15,8 @@ import RoutinesList from "@/pages/routines/index";
 import RoutineGenerate from "@/pages/routines/generate";
 import RoutineDetail from "@/pages/routines/detail";
 import BehaviorTracker from "@/pages/behavior/index";
+import ParentProfile from "@/pages/parent-profile";
+import BabysittersPage from "@/pages/babysitters/index";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -142,6 +144,12 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/behavior">
               {() => <ProtectedRoute component={BehaviorTracker} />}
+            </Route>
+            <Route path="/parent-profile">
+              {() => <ProtectedRoute component={ParentProfile} />}
+            </Route>
+            <Route path="/babysitters">
+              {() => <ProtectedRoute component={BabysittersPage} />}
             </Route>
             <Route component={NotFound} />
           </Switch>

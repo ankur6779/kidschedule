@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Loader2, Baby } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -26,6 +26,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+interface Babysitter {
+  id: number;
+  name: string;
+  mobileNumber?: string | null;
+}
+
 const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
 const childSchema = z.object({
@@ -38,6 +44,7 @@ const childSchema = z.object({
   travelMode: z.enum(["van", "car", "walk", "other"]),
   travelModeOther: z.string().optional(),
   goals: z.string().min(1, "Goals are required to generate good routines"),
+  babysitterId: z.coerce.number().optional(),
 });
 
 type ChildFormValues = z.infer<typeof childSchema>;
@@ -49,6 +56,7 @@ export default function ChildForm() {
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [babysitters, setBabysitters] = useState<Babysitter[]>([]);
 
   const isEditing = !!params.id && params.id !== "new";
   const childId = isEditing ? parseInt(params.id as string) : 0;
@@ -75,10 +83,18 @@ export default function ChildForm() {
       travelMode: "car",
       travelModeOther: "",
       goals: "",
+      babysitterId: undefined,
     },
   });
 
   const travelMode = form.watch("travelMode");
+
+  useEffect(() => {
+    fetch("/api/babysitters")
+      .then((r) => r.ok ? r.json() : [])
+      .then((data: Babysitter[]) => setBabysitters(data))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (child && isEditing) {
@@ -92,6 +108,7 @@ export default function ChildForm() {
         travelMode: (child.travelMode as "van" | "car" | "walk" | "other") ?? "car",
         travelModeOther: child.travelModeOther ?? "",
         goals: child.goals,
+        babysitterId: child.babysitterId ?? undefined,
       });
     }
   }, [child, form, isEditing]);
@@ -100,6 +117,7 @@ export default function ChildForm() {
     const payload = {
       ...data,
       travelModeOther: data.travelMode === "other" ? data.travelModeOther : undefined,
+      babysitterId: data.babysitterId || undefined,
     };
 
     if (isEditing) {
@@ -279,6 +297,43 @@ export default function ChildForm() {
                 </div>
               </div>
 
+              {/* Babysitter Assignment */}
+              {babysitters.length > 0 && (
+                <div>
+                  <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">
+                    <Baby className="h-3.5 w-3.5 inline mr-1" />
+                    Babysitter
+                  </p>
+                  <FormField control={form.control} name="babysitterId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">Assign a Babysitter (optional)</FormLabel>
+                      <FormDescription>
+                        The AI will tailor the routine for when a babysitter is on duty.
+                      </FormDescription>
+                      <Select
+                        onValueChange={(v) => field.onChange(v === "none" ? undefined : parseInt(v))}
+                        value={field.value ? String(field.value) : "none"}
+                      >
+                        <FormControl>
+                          <SelectTrigger className={inputClass}>
+                            <SelectValue placeholder="No babysitter assigned" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">No babysitter</SelectItem>
+                          {babysitters.map((s) => (
+                            <SelectItem key={s.id} value={String(s.id)}>
+                              {s.name}{s.mobileNumber ? ` — ${s.mobileNumber}` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+              )}
+
               {/* Goals */}
               <FormField control={form.control} name="goals" render={({ field }) => (
                 <FormItem>
@@ -331,6 +386,13 @@ export default function ChildForm() {
           </Form>
         </CardContent>
       </Card>
+
+      {babysitters.length === 0 && (
+        <p className="text-xs text-center text-muted-foreground">
+          Want to assign a babysitter?{" "}
+          <Link href="/babysitters" className="text-primary underline">Add a babysitter first</Link>.
+        </p>
+      )}
     </div>
   );
 }

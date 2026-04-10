@@ -22,11 +22,15 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 ## Features
 
 - **Auth** — Clerk login with email + Google OAuth; landing page for signed-out users, protected routes for signed-in users
-- **Dashboard** — summary stats, recent routines, behavior highlights by child
-- **Children** — add/edit/delete child profiles with age, school times, and goals
-- **Routine Generator** — AI generates a full structured daily schedule based on child profile
+- **Dashboard** — time-based personalized greeting, summary stats, recent routines, behavior highlights by child
+- **Children** — add/edit/delete child profiles with age, school times, travel mode, wake/sleep times, goals, and babysitter assignment
+- **Parent Profile** — parents set their role (Mother/Father), work type (WFH/WFO/Homemaker), work hours, and free availability slots
+- **Babysitter Management** — add/remove babysitters with name, mobile number, and notes; assign to children
+- **AI Routine Generator** — generates full daily schedule using child profile + parent work availability + babysitter assignment + behavior history
+- **Routine Detail** — task status tracking (Complete/Delay/Skip) with auto-shift on delay, progress bar, browser notifications, and Share button
+- **Share Routine** — copy routine as a formatted message or open directly in WhatsApp to send to babysitter
 - **Behavior Tracker** — log positive/negative/neutral behaviors per child per day
-- **Mobile-friendly** — responsive layout with bottom nav on mobile, sidebar on desktop
+- **Mobile-friendly** — responsive layout with bottom nav (4 core items) on mobile, full sidebar on desktop
 
 ## Key Commands
 

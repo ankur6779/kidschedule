@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
-import { db, routinesTable, childrenTable, behaviorsTable } from "@workspace/db";
+import { db, routinesTable, childrenTable, behaviorsTable, parentProfilesTable, babysittersTable } from "@workspace/db";
 import {
   CreateRoutineBody,
   GetRoutineParams,
@@ -33,17 +33,15 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
     return;
   }
 
+  const userId = (req as any).auth?.userId;
+
   const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
   }
 
-  // Fetch recent behavior logs (last 7 days) for adaptive AI context
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
-
+  // Fetch recent behavior logs for adaptive AI context
   const recentBehaviors = await db
     .select()
     .from(behaviorsTable)
@@ -56,6 +54,47 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
         .map((b) => `[${b.date}] ${b.type.toUpperCase()}: ${b.behavior}${b.notes ? ` (${b.notes})` : ""}`)
         .join("\n")
     : "No recent behavior logs.";
+
+  // Fetch parent profile for availability context
+  let parentContext = "No parent schedule provided.";
+  if (userId) {
+    const [parentProfile] = await db
+      .select()
+      .from(parentProfilesTable)
+      .where(eq(parentProfilesTable.userId, userId));
+
+    if (parentProfile) {
+      const roleLabel = parentProfile.role === "mother" ? "Mother" : "Father";
+      const workTypeLabel =
+        parentProfile.workType === "work_from_home" ? "Works from home" :
+        parentProfile.workType === "work_from_office" ? "Works from office" :
+        "Housewife/Homemaker (at home all day)";
+
+      const workHours =
+        parentProfile.workType !== "homemaker" && parentProfile.workStartTime && parentProfile.workEndTime
+          ? `Work hours: ${parentProfile.workStartTime} – ${parentProfile.workEndTime}`
+          : "";
+
+      const freeSlots = ((parentProfile.freeSlots as any[]) || [])
+        .map((s: any) => `${s.start}–${s.end}`)
+        .join(", ");
+
+      parentContext = `${roleLabel}: ${workTypeLabel}. ${workHours}${freeSlots ? `. Free/available slots: ${freeSlots}` : ""}`;
+    }
+  }
+
+  // Fetch babysitter if assigned to this child
+  let babysitterContext = "";
+  if (child.babysitterId) {
+    const [sitter] = await db
+      .select()
+      .from(babysittersTable)
+      .where(eq(babysittersTable.id, child.babysitterId));
+
+    if (sitter) {
+      babysitterContext = `A babysitter named ${sitter.name} is assigned to ${child.name} today.${sitter.notes ? ` Notes: ${sitter.notes}` : ""}`;
+    }
+  }
 
   const travelModeLabel =
     child.travelMode === "other" && child.travelModeOther
@@ -73,6 +112,10 @@ CHILD DETAILS:
 - Daily goals: ${child.goals}
 - Date: ${parsed.data.date}
 
+PARENT AVAILABILITY:
+${parentContext}
+${babysitterContext ? `\nBABYSITTER: ${babysitterContext}` : ""}
+
 RECENT BEHAVIOR HISTORY (use to adapt the routine):
 ${behaviorContext}
 
@@ -81,6 +124,8 @@ INSTRUCTIONS:
 - Include ALL of these blocks: morning hygiene/prep, breakfast, school travel, school time, return travel, snack, homework/study, physical play/exercise, screen time (age-appropriate), dinner, wind-down, bedtime
 - Add 5-10 minute buffer gaps between major transitions
 - Make durations realistic for a ${child.age}-year-old
+- If parent works from office, assign independent/babysitter tasks during their work hours. If they work from home, they can supervise more closely
+- If a babysitter is assigned, add a "babysitter" note to tasks during the hours when the parent is working
 - Adjust difficulty/length based on behavior history — if child has been skipping meals, add reminders; if struggling at bedtime, add earlier wind-down
 - Each item MUST have a specific start time based on the previous item's end time
 - Travel time: account for ${travelModeLabel} travel (typically 10-20 min for van/car/walk)
@@ -91,8 +136,8 @@ Return a JSON object with:
   - time: start time like "7:00 AM"
   - activity: clear activity name
   - duration: duration in minutes (integer)
-  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down"
-  - notes: a short practical tip or encouragement (1 sentence, can be empty string)
+  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter"
+  - notes: a short practical tip or encouragement (1 sentence, can be empty string). If babysitter should handle this task, start with "Babysitter:"
   - status: always "pending"
 
 Return ONLY valid JSON, no markdown, no explanation.`;

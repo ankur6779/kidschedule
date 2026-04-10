@@ -13,6 +13,7 @@ export const childrenTable = pgTable("children", {
   travelMode: text("travel_mode").notNull().default("car"),
   travelModeOther: text("travel_mode_other"),
   goals: text("goals").notNull(),
+  babysitterId: integer("babysitter_id"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

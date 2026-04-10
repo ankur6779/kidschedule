@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -11,7 +11,11 @@ const NAV_ITEMS = [
   { href: "/children", label: "Children", icon: Users },
   { href: "/routines", label: "Routines", icon: Calendar },
   { href: "/behavior", label: "Behavior", icon: Star },
+  { href: "/babysitters", label: "Babysitters", icon: Baby },
+  { href: "/parent-profile", label: "My Profile", icon: UserCircle },
 ];
+
+const BOTTOM_NAV_ITEMS = NAV_ITEMS.slice(0, 4);
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -139,7 +143,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 z-40 flex h-16 w-full items-center justify-around border-t bg-background/80 backdrop-blur-md md:hidden pb-safe">
-        {NAV_ITEMS.map((item) => {
+        {BOTTOM_NAV_ITEMS.map((item) => {
           const isActive = location === item.href || location.startsWith(item.href);
           return (
             <Link

@@ -1,0 +1,75 @@
+Upgrade my existing web app "AmyNest" into a smart family-based AI parenting system with parent, child, and babysitter coordination.
+
+Add the following features:
+
+1. User Signup System:
+- Create a signup form that collects:
+  - Name
+  - Gender
+  - Age
+  - Mobile number
+  - Email
+  - Role (Mother / Father)
+  - Work type:
+    - Work from home
+    - Work from office
+    - Housewife / Homemaker
+
+2. Parent Routine Input:
+- Allow parents to input their daily routine separately:
+  - Work hours
+  - Free time
+  - Availability slots
+- Support multiple parents (mother and father)
+
+3. Child Routine Input:
+- Separate input form for child details and preferences
+- Generate routine based on:
+  - Child needs
+  - Parent availability
+
+4. Smart AI Coordination (Core Feature):
+- AI should generate a child routine that adapts based on:
+  - Parent availability
+  - If parents are busy, assign tasks accordingly
+- Ensure no conflict between parent schedule and child care
+
+5. Babysitter Mode:
+- If child is not with parents during the day:
+  - Create a separate routine for babysitter
+  - Include tasks like meals, study, play, sleep
+- Add babysitter contact (mobile number)
+
+6. Notifications & Messaging:
+- Send routine to babysitter via SMS or WhatsApp (simulate if API not available)
+- Send reminders for each task
+- Allow babysitter to mark tasks as:
+  - Completed
+  - Delayed
+  - Skipped
+
+7. Real-Time Feedback System:
+- When babysitter marks a task complete:
+  - Send notification/update to parent
+- Keep simple logging system
+
+8. Adaptive AI Logic:
+- If tasks are delayed:
+  - Automatically adjust upcoming schedule
+  - Maintain balance of the day
+- Use previous logs to improve next routine
+
+9. UI Improvements:
+- Multi-step forms (Signup → Parent → Child → Routine)
+- Clean dashboard view
+- Separate sections:
+  - Parent routine
+  - Child routine
+  - Babysitter tasks
+
+10. Keep everything simple and beginner-friendly:
+- Use basic storage (in-memory or simple DB)
+- Do not overcomplicate
+- Ensure app still runs smoothly on Replit
+
+Return full updated working code with these features integrated.
