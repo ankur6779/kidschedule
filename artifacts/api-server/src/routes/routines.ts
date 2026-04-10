@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, desc } from "drizzle-orm";
+import { getAuth } from "@clerk/express";
 import { db, routinesTable, childrenTable, behaviorsTable, parentProfilesTable, babysittersTable } from "@workspace/db";
 import {
   CreateRoutineBody,
@@ -33,7 +34,7 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
     return;
   }
 
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
 
   const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
   if (!child) {

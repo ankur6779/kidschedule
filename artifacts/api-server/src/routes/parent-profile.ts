@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, parentProfilesTable } from "@workspace/db";
+import { getAuth } from "@clerk/express";
 import {
   GetParentProfileResponse,
   UpsertParentProfileBody,
@@ -9,7 +10,7 @@ import {
 const router: IRouter = Router();
 
 router.get("/parent-profile", async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -36,7 +37,7 @@ router.get("/parent-profile", async (req, res): Promise<void> => {
 });
 
 router.put("/parent-profile", async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;

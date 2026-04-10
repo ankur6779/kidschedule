@@ -5,6 +5,7 @@ import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -15,10 +16,11 @@ function getGreeting(): string {
 
 export default function Dashboard() {
   const { user } = useUser();
+  const authFetch = useAuthFetch();
   const [profileName, setProfileName] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/parent-profile")
+    authFetch("/api/parent-profile")
       .then((r) => r.ok ? r.json() : null)
       .then((data) => {
         if (data?.name) setProfileName(data.name);

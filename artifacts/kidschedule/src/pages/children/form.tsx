@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Save, Trash2, Loader2, Baby } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,7 @@ export default function ChildForm() {
   const params = useParams<{ id: string }>();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const authFetch = useAuthFetch();
   const [babysitters, setBabysitters] = useState<Babysitter[]>([]);
 
   const isEditing = !!params.id && params.id !== "new";
@@ -90,7 +92,7 @@ export default function ChildForm() {
   const travelMode = form.watch("travelMode");
 
   useEffect(() => {
-    fetch("/api/babysitters")
+    authFetch("/api/babysitters")
       .then((r) => r.ok ? r.json() : [])
       .then((data: Babysitter[]) => setBabysitters(data))
       .catch(() => {});

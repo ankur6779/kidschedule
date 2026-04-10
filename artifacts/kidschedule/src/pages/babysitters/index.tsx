@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ interface Babysitter {
 
 export default function BabysittersPage() {
   const { toast } = useToast();
+  const authFetch = useAuthFetch();
   const [sitters, setSitters] = useState<Babysitter[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -32,7 +34,7 @@ export default function BabysittersPage() {
   const [form, setForm] = useState({ name: "", mobileNumber: "", notes: "" });
 
   const fetchSitters = () => {
-    fetch("/api/babysitters")
+    authFetch("/api/babysitters")
       .then((r) => r.json())
       .then(setSitters)
       .catch(() => {})
@@ -52,7 +54,7 @@ export default function BabysittersPage() {
       if (form.mobileNumber.trim()) body.mobileNumber = form.mobileNumber.trim();
       if (form.notes.trim()) body.notes = form.notes.trim();
 
-      const res = await fetch("/api/babysitters", {
+      const res = await authFetch("/api/babysitters", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -72,7 +74,7 @@ export default function BabysittersPage() {
 
   const handleDelete = async (id: number, name: string) => {
     try {
-      const res = await fetch(`/api/babysitters/${id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/babysitters/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed");
       setSitters((prev) => prev.filter((s) => s.id !== id));
       toast({ title: "Removed", description: `${name} has been removed.` });

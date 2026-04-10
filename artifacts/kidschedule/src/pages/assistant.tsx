@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Send, Loader2, User, Sparkles, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 
 interface Message {
   role: "user" | "assistant";
@@ -22,6 +23,7 @@ const SUGGESTED_QUESTIONS = [
 
 export default function AssistantPage() {
   const { toast } = useToast();
+  const authFetch = useAuthFetch();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,7 @@ export default function AssistantPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/ai/assistant", {
+      const res = await authFetch("/api/ai/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: text }),

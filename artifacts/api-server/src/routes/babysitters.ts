@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, and } from "drizzle-orm";
 import { db, babysittersTable } from "@workspace/db";
+import { getAuth } from "@clerk/express";
 import {
   ListBabysittersResponse,
   BabysitterSchema,
@@ -11,7 +12,7 @@ import {
 const router: IRouter = Router();
 
 router.get("/babysitters", async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -31,7 +32,7 @@ router.get("/babysitters", async (req, res): Promise<void> => {
 });
 
 router.post("/babysitters", async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;
@@ -54,7 +55,7 @@ router.post("/babysitters", async (req, res): Promise<void> => {
 });
 
 router.delete("/babysitters/:id", async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId;
+  const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
     return;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useUser } from "@clerk/react";
+import { useUser, useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,7 @@ interface ParentProfile {
 export default function ParentProfilePage() {
   const { toast } = useToast();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
@@ -49,28 +50,32 @@ export default function ParentProfilePage() {
   });
 
   useEffect(() => {
-    fetch("/api/parent-profile")
-      .then((r) => {
-        if (r.ok) return r.json();
-        return null;
+    getToken().then((token) => {
+      fetch("/api/parent-profile", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      .then((data) => {
-        if (data) {
-          setProfile({
-            name: data.name ?? "",
-            role: data.role ?? "mother",
-            gender: data.gender ?? "",
-            mobileNumber: data.mobileNumber ?? "",
-            workType: data.workType ?? "work_from_home",
-            workStartTime: data.workStartTime ?? "",
-            workEndTime: data.workEndTime ?? "",
-            freeSlots: data.freeSlots ?? [],
-            foodType: data.foodType ?? "non_veg",
-            allergies: data.allergies ?? "",
-          });
-        }
-      })
-      .finally(() => setLoading(false));
+        .then((r) => {
+          if (r.ok) return r.json();
+          return null;
+        })
+        .then((data) => {
+          if (data) {
+            setProfile({
+              name: data.name ?? "",
+              role: data.role ?? "mother",
+              gender: data.gender ?? "",
+              mobileNumber: data.mobileNumber ?? "",
+              workType: data.workType ?? "work_from_home",
+              workStartTime: data.workStartTime ?? "",
+              workEndTime: data.workEndTime ?? "",
+              freeSlots: data.freeSlots ?? [],
+              foodType: data.foodType ?? "non_veg",
+              allergies: data.allergies ?? "",
+            });
+          }
+        })
+        .finally(() => setLoading(false));
+    });
   }, []);
 
   const addFreeSlot = () => {
@@ -107,6 +112,7 @@ export default function ParentProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const token = await getToken();
       const body: any = {
         name: profile.name || undefined,
         role: profile.role,
@@ -122,7 +128,10 @@ export default function ParentProfilePage() {
 
       const res = await fetch("/api/parent-profile", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed to save");

@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -95,6 +96,7 @@ export default function RoutineDetail() {
   const routineId = parseInt(params.id || "0");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const authFetch = useAuthFetch();
 
   const [localItems, setLocalItems] = useState<RoutineItem[] | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
@@ -116,11 +118,11 @@ export default function RoutineDetail() {
     }
     // Fetch babysitter assigned to this child
     if (routine?.childId) {
-      fetch(`/api/children/${routine.childId}`)
+      authFetch(`/api/children/${routine.childId}`)
         .then((r) => r.ok ? r.json() : null)
-        .then((child) => {
+        .then((child: any) => {
           if (child?.babysitterId) {
-            fetch("/api/babysitters")
+            authFetch("/api/babysitters")
               .then((r) => r.json())
               .then((sitters: { id: number; name: string; mobileNumber?: string | null }[]) => {
                 const sitter = sitters.find((s) => s.id === child.babysitterId);
@@ -160,7 +162,7 @@ export default function RoutineDetail() {
     setRecipeOpen(true);
     setRecipeLoading(true);
     try {
-      const res = await fetch(getApiUrl("/api/ai/recipe"), {
+      const res = await authFetch(getApiUrl("/api/ai/recipe"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mealName, childAge: routine?.childName ? undefined : undefined }),
@@ -181,7 +183,7 @@ export default function RoutineDetail() {
   // Save items to backend
   const saveItemsMutation = useMutation({
     mutationFn: async (items: RoutineItem[]) => {
-      const res = await fetch(getApiUrl(`/api/routines/${routineId}/items`), {
+      const res = await authFetch(getApiUrl(`/api/routines/${routineId}/items`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),
