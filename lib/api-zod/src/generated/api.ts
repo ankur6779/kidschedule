@@ -399,3 +399,15 @@ export const CreateBabysitterBody = zod.object({
 export const DeleteBabysitterParams = zod.object({
   id: zod.coerce.number(),
 });
+
+/**
+ * @summary AI weekly insights
+ */
+export const GenerateInsightsResponse = zod.object({
+  insights: zod.array(zod.object({
+    type: zod.string(),
+    message: zod.string(),
+    icon: zod.string(),
+  })),
+  summary: zod.string(),
+});

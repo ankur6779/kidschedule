@@ -19,6 +19,7 @@ import BehaviorTracker from "@/pages/behavior/index";
 import ParentProfile from "@/pages/parent-profile";
 import BabysittersPage from "@/pages/babysitters/index";
 import AssistantPage from "@/pages/assistant";
+import ProgressPage from "@/pages/progress";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -170,6 +171,9 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/assistant">
               {() => <ProtectedRoute component={AssistantPage} />}
+            </Route>
+            <Route path="/progress">
+              {() => <ProtectedRoute component={ProgressPage} />}
             </Route>
             <Route component={NotFound} />
           </Switch>

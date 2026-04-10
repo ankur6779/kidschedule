@@ -13,6 +13,7 @@ import {
   GetRoutineResponse,
   GenerateRoutineBody,
   GenerateRoutineResponse,
+  GenerateInsightsResponse,
 } from "@workspace/api-zod";
 import { openai } from "@workspace/integrations-openai-ai-server";
 
@@ -335,6 +336,93 @@ router.delete("/routines/:id", async (req, res): Promise<void> => {
     return;
   }
   res.sendStatus(204);
+});
+
+// AI weekly insights
+router.post("/insights", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const children = await db.select().from(childrenTable);
+  const allRoutines = await db
+    .select()
+    .from(routinesTable)
+    .orderBy(desc(routinesTable.createdAt))
+    .limit(60);
+
+  const childMap = new Map(children.map((c) => [c.id, c.name]));
+
+  const routineStats = allRoutines.map((r) => {
+    const items = r.items as RoutineItem[];
+    const total = items.length;
+    const completed = items.filter((i) => i.status === "completed").length;
+    const skipped = items.filter((i) => i.status === "skipped").length;
+    const delayed = items.filter((i) => i.status === "delayed").length;
+    const pending = items.filter((i) => !i.status || i.status === "pending").length;
+    const categories = [...new Set(items.map((i) => i.category))].join(", ");
+    return {
+      childName: childMap.get(r.childId) ?? "Unknown",
+      date: r.date,
+      total,
+      completed,
+      skipped,
+      delayed,
+      pending,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+      categories,
+    };
+  });
+
+  if (routineStats.length === 0) {
+    res.json(GenerateInsightsResponse.parse({
+      insights: [{ type: "suggestion", message: "Start by generating your first routine to get weekly insights!", icon: "✨" }],
+      summary: "No routine data yet. Generate some routines to see insights here.",
+    }));
+    return;
+  }
+
+  const statsText = routineStats
+    .map((s) => `[${s.date}] ${s.childName}: ${s.completionRate}% done (${s.completed}/${s.total} tasks, ${s.skipped} skipped, ${s.delayed} delayed). Categories: ${s.categories}`)
+    .join("\n");
+
+  const prompt = `You are a smart parenting coach analyzing a family's weekly routine data.
+
+ROUTINE DATA (last ${routineStats.length} routines):
+${statsText}
+
+Analyze this data and generate 4-6 concise, actionable insights. Each insight should be:
+- Specific and based on the actual data
+- Warm, encouraging, and parent-friendly
+- Actionable (what to do differently)
+
+Return JSON with:
+- summary: A 1-2 sentence overall week summary (warm, encouraging tone)
+- insights: Array of objects, each with:
+  - type: "positive" (good trend), "warning" (area to improve), or "suggestion" (actionable tip)
+  - message: The insight text (1 concise sentence)
+  - icon: A relevant emoji
+
+Examples of good insights:
+- "Leo completed morning routines 90% of the time this week — great consistency!" (positive)
+- "Screen time activities are frequently delayed — try moving them earlier in the day." (suggestion)
+- "Bedtime routine has been skipped 3 times — a consistent wind-down sequence can help." (warning)
+
+Return ONLY valid JSON, no markdown, no explanation.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 1024,
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  });
+
+  const content = completion.choices[0]?.message?.content ?? "{}";
+  const generated = JSON.parse(content);
+
+  res.json(GenerateInsightsResponse.parse(generated));
 });
 
 export default router;

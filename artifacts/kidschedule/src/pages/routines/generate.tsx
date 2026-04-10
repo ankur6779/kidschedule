@@ -255,6 +255,33 @@ export default function RoutineGenerate() {
       .catch(() => {});
   }, []);
 
+  // Auto-detect weekends for single mode
+  useEffect(() => {
+    const d = new Date(date + "T00:00:00");
+    const day = d.getDay(); // 0=Sun, 6=Sat
+    if (day === 0 || day === 6) {
+      setHasSchool(false);
+    }
+  }, [date]);
+
+  // Auto-detect weekends for family mode and pre-set hasSchool=false
+  useEffect(() => {
+    const d = new Date(familyDate + "T00:00:00");
+    const day = d.getDay();
+    const isWeekend = day === 0 || day === 6;
+    if (isWeekend && children && children.length > 0) {
+      setFamilyChildSettings((prev) => {
+        const next = { ...prev };
+        children.forEach((c) => {
+          if (next[c.id]) {
+            next[c.id] = { ...next[c.id], hasSchool: false };
+          }
+        });
+        return next;
+      });
+    }
+  }, [familyDate, children]);
+
   // Initialize family child settings when children load
   useEffect(() => {
     if (children && children.length > 0) {
@@ -571,6 +598,13 @@ export default function RoutineGenerate() {
                       <School className="h-5 w-5 text-primary" />
                       Is there school on this day?
                     </Label>
+                    {(() => {
+                      const d = new Date(date + "T00:00:00");
+                      const day = d.getDay();
+                      return (day === 0 || day === 6) ? (
+                        <span className="text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">🏖️ Weekend auto-detected</span>
+                      ) : null;
+                    })()}
                   </div>
                   <ToggleGroup
                     value={hasSchool}

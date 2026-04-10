@@ -34,7 +34,13 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Share Routine** — copy routine as a formatted message or open directly in WhatsApp to send to babysitter
 - **Behavior Tracker** — log positive/negative/neutral behaviors per child per day
 - **AI Parenting Assistant** — full chat interface at `/assistant` with suggested questions; get warm, practical parenting advice on sleep, food, behavior, anxiety, screen time, etc.
-- **Mobile-friendly** — responsive layout with bottom nav (Dashboard, Routines, Assistant, Behavior) on mobile, full sidebar on desktop
+- **Mobile-friendly** — responsive layout with bottom nav (Dashboard, Routines, Progress, Assistant) on mobile, full sidebar on desktop
+- **Weekly Calendar View** — Routines page has Calendar tab (default) with Mon–Sun week grid, navigation arrows, color-coded day indicators (green = has routine, primary = today, muted = weekend), and click-to-navigate
+- **Progress & Insights Dashboard** — `/progress` page with 🔥 streak tracker (consecutive days with routines), overall completion donut chart, 7-day bar chart, per-child breakdown with progress bars
+- **AI Insights** — POST `/api/insights` generates AI parenting insights based on routine completion/skip/delay patterns; displayed on the Progress page
+- **Weekend Auto-Detection** — generate page detects Sat/Sun from selected date, auto-sets hasSchool=false and shows "🏖️ Weekend auto-detected" badge
+- **Today's Schedule Card** — Dashboard shows current + upcoming activities from today's routine, highlighting the "NOW" slot in real time
+- **Streak Teaser on Dashboard** — Compact 🔥 streak card on dashboard links to /progress page
 
 ## Key Commands
 
@@ -57,6 +63,7 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - `GET/POST /api/routines` — list and create routines
 - `GET/DELETE /api/routines/:id` — view and delete routine
 - `POST /api/routines/generate` — AI-generate a routine for a child
+- `POST /api/insights` — AI-generate weekly parenting insights from routine stats
 - `GET/POST /api/behaviors` — list and log behavior entries
 - `DELETE /api/behaviors/:id` — remove a behavior log
 - `GET /api/dashboard/summary` — stats for dashboard

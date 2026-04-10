@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/children", label: "Children", icon: Users },
   { href: "/routines", label: "Routines", icon: Calendar },
+  { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/behavior", label: "Behavior", icon: Star },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/babysitters", label: "Babysitters", icon: Baby },
@@ -19,8 +20,8 @@ const NAV_ITEMS = [
 const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/routines", label: "Routines", icon: Calendar },
+  { href: "/progress", label: "Progress", icon: TrendingUp },
   { href: "/assistant", label: "Assistant", icon: Bot },
-  { href: "/behavior", label: "Behavior", icon: Star },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
