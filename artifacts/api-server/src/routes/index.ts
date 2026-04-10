@@ -4,10 +4,12 @@ import childrenRouter from "./children";
 import routinesRouter from "./routines";
 import behaviorsRouter from "./behaviors";
 import dashboardRouter from "./dashboard";
+import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(requireAuth);
 router.use(childrenRouter);
 router.use(routinesRouter);
 router.use(behaviorsRouter);

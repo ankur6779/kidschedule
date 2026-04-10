@@ -1,10 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useClerk, useUser } from "@clerk/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/children", label: "Children", icon: Users },
   { href: "/routines", label: "Routines", icon: Calendar },
   { href: "/behavior", label: "Behavior", icon: Star },
@@ -12,6 +14,16 @@ const NAV_ITEMS = [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { signOut } = useClerk();
+  const { user } = useUser();
+
+  const initials = user
+    ? (user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0] ?? "U")
+    : "U";
+
+  const handleSignOut = () => {
+    signOut({ redirectUrl: "/" });
+  };
 
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
@@ -31,13 +43,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-[80vw] sm:w-[350px]">
-            <nav className="flex flex-col gap-4 mt-8">
+            <div className="flex items-center gap-3 mt-4 mb-6 pb-4 border-b">
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={user?.imageUrl} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                  {initials.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold truncate">
+                  {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.emailAddresses?.[0]?.emailAddress}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</span>
+              </div>
+            </div>
+            <nav className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                    location === item.href || (item.href !== "/" && location.startsWith(item.href))
+                    location === item.href || location.startsWith(item.href)
                       ? "bg-primary text-primary-foreground font-medium"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
@@ -47,6 +73,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
             </nav>
+            <button
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 mt-4 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <LogOut className="h-5 w-5" />
+              Sign out
+            </button>
           </SheetContent>
         </Sheet>
       </header>
@@ -60,13 +93,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
             <span className="font-quicksand text-xl font-bold text-foreground">KidSchedule</span>
           </div>
-          <nav className="flex flex-1 flex-col gap-2 p-4">
+          <nav className="flex flex-1 flex-col gap-1 p-4">
             {NAV_ITEMS.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  location === item.href || (item.href !== "/" && location.startsWith(item.href))
+                  location === item.href || location.startsWith(item.href)
                     ? "bg-primary text-primary-foreground font-medium shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
@@ -76,6 +109,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
           </nav>
+          {/* Desktop user / sign-out */}
+          <div className="border-t p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.imageUrl} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                  {initials.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold truncate">
+                  {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : "My Account"}
+                </span>
+                <span className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</span>
+              </div>
+            </div>
+            <button
+              onClick={handleSignOut}
+              data-testid="button-sign-out"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -87,7 +145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 z-40 flex h-16 w-full items-center justify-around border-t bg-background/80 backdrop-blur-md md:hidden pb-safe">
         {NAV_ITEMS.map((item) => {
-          const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+          const isActive = location === item.href || location.startsWith(item.href);
           return (
             <Link
               key={item.href}

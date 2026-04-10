@@ -13,6 +13,7 @@ KidSchedule — an AI-powered daily routine planner for parents. Parents can cre
 - **Frontend**: React + Vite + Tailwind + shadcn/ui (artifacts/kidschedule)
 - **API framework**: Express 5 (artifacts/api-server)
 - **Database**: PostgreSQL + Drizzle ORM (lib/db)
+- **Auth**: Clerk (`@clerk/react` frontend, `@clerk/express` backend) — proxy at `/api/__clerk`
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec in lib/api-spec)
 - **AI**: OpenAI via Replit AI Integrations (gpt-5.2 for routine generation)
@@ -20,6 +21,7 @@ KidSchedule — an AI-powered daily routine planner for parents. Parents can cre
 
 ## Features
 
+- **Auth** — Clerk login with email + Google OAuth; landing page for signed-out users, protected routes for signed-in users
 - **Dashboard** — summary stats, recent routines, behavior highlights by child
 - **Children** — add/edit/delete child profiles with age, school times, and goals
 - **Routine Generator** — AI generates a full structured daily schedule based on child profile
