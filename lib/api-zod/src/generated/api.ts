@@ -195,6 +195,9 @@ export const GenerateRoutineBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
   fridgeItems: zod.string().optional(),
+  hasSchool: zod.boolean().optional(),
+  isWorkingDay: zod.boolean().optional(),
+  specialPlans: zod.string().optional(),
 });
 
 export const GenerateRoutineResponse = zod.object({

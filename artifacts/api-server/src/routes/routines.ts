@@ -116,6 +116,24 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
   }
 
   const fridgeItems = parsed.data.fridgeItems?.trim();
+  const { hasSchool, isWorkingDay, specialPlans } = parsed.data;
+
+  // Determine school status label for prompt
+  const schoolStatus = hasSchool === false
+    ? "NO SCHOOL TODAY — do NOT include any school, homework, or school-travel blocks."
+    : "SCHOOL DAY — include school preparation, travel to school, school time, and return travel.";
+
+  // Determine parent availability for prompt
+  const availabilityStatus = isWorkingDay === false
+    ? "PARENT HOLIDAY — the parent is FREE and available all day. Add plenty of joint parent-child activities."
+    : isWorkingDay === true
+    ? "PARENT WORKING DAY — the parent is busy during their work hours. Assign independent or babysitter-friendly tasks during work hours."
+    : "";
+
+  // Special plans context
+  const specialPlansContext = specialPlans?.trim()
+    ? `SPECIAL PLANS TODAY: "${specialPlans.trim()}" — adjust the ENTIRE routine to revolve around this. Place it at a realistic time and rearrange other blocks accordingly.`
+    : "";
 
   const prompt = `You are a smart parenting schedule assistant. Create a realistic, balanced full-day routine for a ${child.age}-year-old child named ${child.name}.
 
@@ -128,9 +146,13 @@ CHILD DETAILS:
 - Daily goals: ${child.goals}
 - Date: ${parsed.data.date}
 
+SCHOOL STATUS: ${schoolStatus}
+
 PARENT AVAILABILITY:
 ${parentContext}
+${availabilityStatus ? availabilityStatus : ""}
 ${babysitterContext ? `\nBABYSITTER: ${babysitterContext}` : ""}
+${specialPlansContext ? `\n${specialPlansContext}` : ""}
 
 FOOD PREFERENCES:
 ${foodContext || "No food preferences set."}
@@ -141,26 +163,32 @@ ${behaviorContext}
 
 INSTRUCTIONS:
 - Start the day from the wake-up time (${child.wakeUpTime}) and end at sleep time (${child.sleepTime})
-- Include ALL of these blocks: morning hygiene/prep, breakfast, school travel, school time, return travel, snack, homework/study, physical play/exercise, screen time (age-appropriate), dinner, wind-down, bedtime
+${hasSchool === false
+  ? `- NO SCHOOL TODAY: Replace school time with: outdoor play/sports (30–60 min), a creative hobby or learning activity (30 min), and relaxed family time. DO NOT add school, homework, or school-travel blocks.`
+  : `- Include ALL school-day blocks: morning hygiene/prep, breakfast, school travel, school time, return travel, snack, homework/study`}
+- Always include: physical play/exercise, screen time (age-appropriate), dinner, wind-down, bedtime
+- FAMILY BONDING (REQUIRED): Add exactly 2–3 bonding activities between parent and child. Choose from: Story Time, Cooking Together, Outdoor Walk, Board Game / Card Game, Art & Craft Together, Movie/Show Time Together. Use category "bonding". Add them at natural breaks in the day — not at school/work hours if parent is busy.
+${isWorkingDay === false ? "- Parent is on holiday: add MORE joint parent-child activities throughout the day." : ""}
+${isWorkingDay === true ? "- Parent is working: during work hours, assign independent or babysitter tasks. After work hours, add parent-child activities." : ""}
+${specialPlans ? "- SPECIAL PLANS take priority: schedule the special activity first, then arrange the rest of the day around it." : ""}
 - For each MEAL item (breakfast, lunch, snack, dinner): suggest 2-3 specific healthy kid-friendly options in the notes field, formatted as "Options: [option 1] | [option 2] | [option 3]"
 - If fridge items are provided, ONLY suggest meals that can be made with those ingredients
 - Respect food preferences (veg/non-veg) and avoid any allergens
 - Add 5-10 minute buffer gaps between major transitions
 - Make durations realistic for a ${child.age}-year-old
-- If parent works from office, assign independent/babysitter tasks during their work hours
 - If a babysitter is assigned, add "Babysitter:" prefix to notes for tasks during parent's working hours
 - Adjust based on behavior history — if child skips meals, add reminder notes; if bedtime is hard, add earlier wind-down
 - Each item MUST have a specific start time based on the previous item's end time
 - Travel time: account for ${travelModeLabel} travel (typically 10-20 min for van/car/walk)
 
 Return a JSON object with:
-- title: a warm, friendly title for this routine (e.g. "Leo's Monday Power Day")
+- title: a warm, friendly title for this routine (e.g. "Leo's Fun Family Sunday" or "Leo's School Power Day")
 - items: an array of schedule items, each with:
   - time: start time like "7:00 AM"
   - activity: clear activity name
   - duration: duration in minutes (integer)
-  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter"
-  - notes: for meals, format as "Options: [meal 1] | [meal 2] | [meal 3]". For other items, a short tip. Can be empty string.
+  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter", "bonding"
+  - notes: for meals, format as "Options: [meal 1] | [meal 2] | [meal 3]". For bonding activities, add a fun tip for the parent. For other items, a short tip. Can be empty string.
   - status: always "pending"
 
 Return ONLY valid JSON, no markdown, no explanation.`;

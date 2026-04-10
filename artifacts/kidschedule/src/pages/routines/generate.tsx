@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey, useGenerateRoutine, useCreateRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -6,8 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { format } from "date-fns";
 
 const TRAVEL_MODE_LABELS: Record<string, string> = {
@@ -17,13 +19,46 @@ const TRAVEL_MODE_LABELS: Record<string, string> = {
   other: "✏️ Custom",
 };
 
+function ToggleGroup({
+  value,
+  onChange,
+  options,
+}: {
+  value: boolean | null;
+  onChange: (v: boolean) => void;
+  options: [string, boolean, string][];
+}) {
+  return (
+    <div className="flex gap-3">
+      {options.map(([label, val, emoji]) => (
+        <button
+          key={String(val)}
+          onClick={() => onChange(val)}
+          className={`flex-1 py-3 px-4 rounded-2xl font-bold border-2 transition-all text-sm flex items-center justify-center gap-2 ${
+            value === val
+              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+              : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-muted"
+          }`}
+        >
+          {emoji} {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function RoutineGenerate() {
   const [_, setLocation] = useLocation();
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [hasSchool, setHasSchool] = useState<boolean | null>(null);
+  const [isWorkingDay, setIsWorkingDay] = useState<boolean | null>(null);
+  const [specialPlans, setSpecialPlans] = useState("");
   const [fridgeItems, setFridgeItems] = useState("");
+  const [parentWorkType, setParentWorkType] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const authFetch = useAuthFetch();
 
   const { data: children, isLoading: loadingChildren } = useListChildren({
     query: { queryKey: getListChildrenQueryKey() }
@@ -32,7 +67,18 @@ export default function RoutineGenerate() {
   const generateMutation = useGenerateRoutine();
   const createMutation = useCreateRoutine();
 
-  const isFormValid = selectedChild && date;
+  useEffect(() => {
+    authFetch("/api/parent-profile")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: any) => {
+        if (data?.workType) setParentWorkType(data.workType);
+      })
+      .catch(() => {});
+  }, []);
+
+  const showWorkingDayQuestion = parentWorkType === "work_from_office" || parentWorkType === "work_from_home";
+
+  const isFormValid = selectedChild && date && hasSchool !== null;
   const isGenerating = generateMutation.isPending || createMutation.isPending;
 
   const selectedChildData = children?.find((c) => c.id === selectedChild);
@@ -41,13 +87,22 @@ export default function RoutineGenerate() {
     if (!isFormValid) return;
 
     generateMutation.mutate(
-      { data: { childId: selectedChild, date, fridgeItems: fridgeItems || undefined } },
+      {
+        data: {
+          childId: selectedChild!,
+          date,
+          hasSchool: hasSchool ?? undefined,
+          isWorkingDay: showWorkingDayQuestion && isWorkingDay !== null ? isWorkingDay : undefined,
+          specialPlans: specialPlans.trim() || undefined,
+          fridgeItems: fridgeItems.trim() || undefined,
+        }
+      },
       {
         onSuccess: (generatedData) => {
           createMutation.mutate(
             {
               data: {
-                childId: selectedChild,
+                childId: selectedChild!,
                 date,
                 title: generatedData.title,
                 items: generatedData.items,
@@ -68,6 +123,8 @@ export default function RoutineGenerate() {
     );
   };
 
+  const stepCount = showWorkingDayQuestion ? 5 : 4;
+
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
       <header className="flex items-center gap-4">
@@ -76,7 +133,7 @@ export default function RoutineGenerate() {
         </Button>
         <div>
           <h1 className="font-quicksand text-3xl font-bold text-foreground">Generate Routine</h1>
-          <p className="text-muted-foreground mt-1">AI builds a personalized full-day plan using your child's profile.</p>
+          <p className="text-muted-foreground mt-1">AI builds a smart daily plan around your schedule.</p>
         </div>
       </header>
 
@@ -91,7 +148,9 @@ export default function RoutineGenerate() {
             </div>
             <div>
               <h3 className="font-quicksand text-2xl font-bold mb-2">Crafting the perfect day...</h3>
-              <p className="text-muted-foreground">Analyzing sleep times, travel mode, goals, and behavior history to build a smart schedule.</p>
+              <p className="text-muted-foreground">
+                Analyzing school schedule, parent availability, special plans, and behavior history to build a smart routine with family bonding time.
+              </p>
             </div>
             <div className="w-full max-w-xs bg-muted rounded-full h-2 mt-4 overflow-hidden">
               <div className="bg-primary h-full rounded-full w-1/2 animate-[pulse_2s_ease-in-out_infinite]" />
@@ -135,7 +194,6 @@ export default function RoutineGenerate() {
                 )}
               </div>
 
-              {/* Child profile summary */}
               {selectedChildData && (
                 <div className="bg-muted/50 rounded-2xl p-4 space-y-2 border border-border/50">
                   <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Profile Summary</p>
@@ -176,7 +234,6 @@ export default function RoutineGenerate() {
                 <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>
                 <Label className="text-lg font-bold">Which day?</Label>
               </div>
-
               <div className="flex items-center bg-card border-2 border-border rounded-2xl px-4 py-3 focus-within:border-primary transition-all max-w-sm">
                 <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
                 <input
@@ -188,10 +245,91 @@ export default function RoutineGenerate() {
               </div>
             </div>
 
-            {/* Step 3 — Fridge Items */}
+            {/* Step 3 — School today? */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">3</div>
+                <Label className="text-lg font-bold flex items-center gap-2">
+                  <School className="h-5 w-5 text-primary" />
+                  Is there school on this day?
+                </Label>
+              </div>
+              <ToggleGroup
+                value={hasSchool}
+                onChange={setHasSchool}
+                options={[
+                  ["Yes, school day", true, "🏫"],
+                  ["No, day off", false, "🏖️"],
+                ]}
+              />
+              {hasSchool === false && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
+                  The AI will skip school blocks and add outdoor play, hobby activities, and family time instead.
+                </div>
+              )}
+            </div>
+
+            {/* Step 4 — Parent working day? (only for WFH/office parents) */}
+            {showWorkingDayQuestion && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">4</div>
+                  <Label className="text-lg font-bold flex items-center gap-2">
+                    <Briefcase className="h-5 w-5 text-primary" />
+                    Is this a working day for you?
+                  </Label>
+                </div>
+                <ToggleGroup
+                  value={isWorkingDay}
+                  onChange={setIsWorkingDay}
+                  options={[
+                    ["Working day", true, "💼"],
+                    ["Holiday / Day off", false, "🎉"],
+                  ]}
+                />
+                {isWorkingDay === false && (
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-3 text-sm text-green-800">
+                    The AI will plan more joint parent-child activities since you're free all day!
+                  </div>
+                )}
+                {isWorkingDay === true && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-sm text-blue-800">
+                    The AI will assign independent tasks during your work hours and parent-child activities after work.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 5 (or 4) — Special plans */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
+                  {showWorkingDayQuestion ? "5" : "4"}
+                </div>
+                <Label className="text-lg font-bold flex items-center gap-2">
+                  <Star className="h-5 w-5 text-primary" />
+                  Any special plans today? <span className="text-sm font-normal text-muted-foreground">(optional)</span>
+                </Label>
+              </div>
+              <div className="relative">
+                <Input
+                  placeholder="e.g. birthday party at 4pm, doctor's appointment at 11am, outing to the park..."
+                  value={specialPlans}
+                  onChange={(e) => setSpecialPlans(e.target.value)}
+                  className="rounded-2xl h-12 pl-4"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                The AI will adjust the entire routine around your special plans.
+              </p>
+            </div>
+
+            {/* Step 6 (or 5) — Fridge Items */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
+                  {showWorkingDayQuestion ? "6" : "5"}
+                </div>
                 <Label className="text-lg font-bold">What's in your fridge? <span className="text-sm font-normal text-muted-foreground">(optional)</span></Label>
               </div>
               <div className="space-y-2">
@@ -215,13 +353,14 @@ export default function RoutineGenerate() {
             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/70 space-y-1">
               <p className="font-bold text-foreground text-sm mb-2">✨ What the AI considers:</p>
               <ul className="space-y-1 list-none">
+                <li>🏫 School status — includes or skips school blocks</li>
+                <li>👨‍👩‍👧 Parent availability — joint vs. independent activities</li>
+                <li>🌟 Special plans — adjusts the whole day around them</li>
+                <li>❤️ Family bonding — always adds 2–3 quality moments</li>
                 <li>⏰ Wake-up & bedtime for accurate time slots</li>
-                <li>🏫 School start & end times with travel buffers</li>
                 <li>🚌 Travel mode for realistic commute durations</li>
-                <li>🎯 Daily goals (study, sports, activities)</li>
                 <li>📊 Recent behavior history to adapt the plan</li>
-                <li>🍽️ Your food preferences, diet type & allergies</li>
-                <li>❄️ Fridge ingredients for custom meal suggestions</li>
+                <li>🍽️ Food preferences, diet type & fridge ingredients</li>
               </ul>
             </div>
 
@@ -235,6 +374,11 @@ export default function RoutineGenerate() {
                 <Sparkles className="h-5 w-5 mr-2" />
                 Generate Smart Routine
               </Button>
+              {!isFormValid && (
+                <p className="text-center text-xs text-muted-foreground mt-2">
+                  Please select a child and answer the school question to continue.
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

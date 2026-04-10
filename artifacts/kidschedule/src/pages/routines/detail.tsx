@@ -51,6 +51,7 @@ const CATEGORY_STYLES: Record<string, string> = {
   hygiene:    "bg-pink-100 text-pink-800 border-pink-200",
   sleep:      "bg-slate-100 text-slate-600 border-slate-200",
   "wind-down":"bg-violet-100 text-violet-700 border-violet-200",
+  bonding:    "bg-rose-100 text-rose-800 border-rose-200",
 };
 
 const STATUS_STYLES: Record<ItemStatus, string> = {
@@ -428,7 +429,13 @@ export default function RoutineDetail() {
                 </div>
 
                 {/* Activity Card */}
-                <Card className={`flex-1 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${statusStyle || "border-border"}`}>
+                <Card className={`flex-1 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
+                  {item.category === "bonding" && (
+                    <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
+                      <span className="text-rose-500 text-xs">❤️</span>
+                      <span className="text-rose-600 text-xs font-bold">Family Bonding Time</span>
+                    </div>
+                  )}
                   <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
