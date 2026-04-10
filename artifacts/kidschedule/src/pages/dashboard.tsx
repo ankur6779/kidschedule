@@ -3,8 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Link } from "wouter";
 import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUser } from "@clerk/react";
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "Good Morning";
+  if (hour >= 12 && hour < 17) return "Good Afternoon";
+  return "Good Evening";
+}
 
 export default function Dashboard() {
+  const { user } = useUser();
+  const firstName = user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "";
+
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
     query: { queryKey: getGetDashboardSummaryQueryKey() }
   });
@@ -20,7 +31,9 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       <header>
-        <h1 className="font-quicksand text-3xl font-bold text-foreground">Good Morning!</h1>
+        <h1 className="font-quicksand text-3xl font-bold text-foreground">
+          {getGreeting()}{firstName ? `, ${firstName}` : ""}! 👋
+        </h1>
         <p className="text-muted-foreground mt-1">Here's a look at how things are going today.</p>
       </header>
 
