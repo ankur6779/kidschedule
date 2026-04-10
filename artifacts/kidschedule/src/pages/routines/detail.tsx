@@ -5,7 +5,8 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Loader2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import {
@@ -99,6 +100,10 @@ export default function RoutineDetail() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [babysitterInfo, setBabysitterInfo] = useState<{ name: string; mobileNumber?: string | null } | null>(null);
+  const [recipeOpen, setRecipeOpen] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
+  const [recipeData, setRecipeData] = useState<any>(null);
+  const [recipeLoading, setRecipeLoading] = useState(false);
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const { data: routine, isLoading } = useGetRoutine(routineId, {
@@ -147,6 +152,28 @@ export default function RoutineDetail() {
     navigator.clipboard.writeText(msg).then(() => {
       toast({ title: "Copied!", description: "Routine copied. Paste it into WhatsApp or SMS." });
     });
+  };
+
+  const fetchRecipe = async (mealName: string) => {
+    setSelectedMeal(mealName);
+    setRecipeData(null);
+    setRecipeOpen(true);
+    setRecipeLoading(true);
+    try {
+      const res = await fetch(getApiUrl("/api/ai/recipe"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mealName, childAge: routine?.childName ? undefined : undefined }),
+      });
+      if (!res.ok) throw new Error("Failed to fetch recipe");
+      const data = await res.json();
+      setRecipeData(data);
+    } catch {
+      toast({ title: "Could not load recipe", variant: "destructive" });
+      setRecipeOpen(false);
+    } finally {
+      setRecipeLoading(false);
+    }
   };
 
   const deleteMutation = useDeleteRoutine();
@@ -407,9 +434,29 @@ export default function RoutineDetail() {
                           <h3 className={`font-bold text-base text-foreground leading-tight ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
                             {item.activity}
                           </h3>
-                          {item.notes && (
+                          {item.notes && item.notes.startsWith("Options:") ? (
+                            <div className="mt-1.5 space-y-1.5">
+                              <p className="text-xs text-muted-foreground font-medium">🍽️ Today's options:</p>
+                              <div className="flex flex-wrap gap-1.5">
+                                {item.notes.replace("Options:", "").split("|").map((opt, oi) => {
+                                  const meal = opt.trim();
+                                  return (
+                                    <button
+                                      key={oi}
+                                      onClick={() => fetchRecipe(meal)}
+                                      className="flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors"
+                                    >
+                                      <ChefHat className="h-3 w-3" />
+                                      {meal}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                              <p className="text-xs text-muted-foreground">Tap a meal to view its recipe</p>
+                            </div>
+                          ) : item.notes ? (
                             <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{item.notes}</p>
-                          )}
+                          ) : null}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {status === "completed" && <Badge className="bg-green-100 text-green-700 border-green-200 rounded-full text-xs font-bold">✓ Done</Badge>}
@@ -468,6 +515,90 @@ export default function RoutineDetail() {
           <Link href="/behavior">Log Today's Behavior</Link>
         </Button>
       </div>
+
+      {/* Recipe Dialog */}
+      <Dialog open={recipeOpen} onOpenChange={setRecipeOpen}>
+        <DialogContent className="rounded-2xl max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-quicksand flex items-center gap-2">
+              <ChefHat className="h-5 w-5 text-orange-500" />
+              {recipeLoading ? "Loading Recipe..." : (recipeData?.name ?? selectedMeal)}
+            </DialogTitle>
+          </DialogHeader>
+
+          {recipeLoading && (
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
+              <div className="bg-orange-50 text-orange-500 w-16 h-16 rounded-full flex items-center justify-center">
+                <ChefHat className="h-8 w-8 animate-bounce" />
+              </div>
+              <p className="text-muted-foreground text-sm">Generating recipe...</p>
+            </div>
+          )}
+
+          {recipeData && !recipeLoading && (
+            <div className="space-y-5">
+              {/* Quick stats */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col items-center bg-orange-50 rounded-xl p-2.5 text-center">
+                  <Timer className="h-4 w-4 text-orange-500 mb-1" />
+                  <p className="text-xs font-bold text-foreground">{recipeData.prepTime}</p>
+                  <p className="text-xs text-muted-foreground">Prep</p>
+                </div>
+                <div className="flex flex-col items-center bg-red-50 rounded-xl p-2.5 text-center">
+                  <Timer className="h-4 w-4 text-red-500 mb-1" />
+                  <p className="text-xs font-bold text-foreground">{recipeData.cookTime}</p>
+                  <p className="text-xs text-muted-foreground">Cook</p>
+                </div>
+                <div className="flex flex-col items-center bg-green-50 rounded-xl p-2.5 text-center">
+                  <Users className="h-4 w-4 text-green-600 mb-1" />
+                  <p className="text-xs font-bold text-foreground">{recipeData.servings}</p>
+                  <p className="text-xs text-muted-foreground">Serves</p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Ingredients */}
+              <div>
+                <h4 className="font-bold text-sm mb-2 text-foreground">Ingredients</h4>
+                <ul className="space-y-1.5">
+                  {recipeData.ingredients?.map((ing: string, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                      <span className="text-orange-400 font-bold mt-0.5">•</span>
+                      {ing}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <Separator />
+
+              {/* Steps */}
+              <div>
+                <h4 className="font-bold text-sm mb-3 text-foreground">Instructions</h4>
+                <ol className="space-y-3">
+                  {recipeData.steps?.map((s: { step: number; instruction: string }) => (
+                    <li key={s.step} className="flex gap-3">
+                      <span className="bg-orange-100 text-orange-700 font-bold text-xs rounded-full h-5 w-5 flex items-center justify-center shrink-0 mt-0.5">{s.step}</span>
+                      <p className="text-sm text-foreground/80 leading-relaxed">{s.instruction}</p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              {recipeData.tips && (
+                <>
+                  <Separator />
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <p className="text-xs font-bold text-amber-800 mb-1">💡 Parent Tip</p>
+                    <p className="text-xs text-amber-700 leading-relaxed">{recipeData.tips}</p>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Share Dialog */}
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>

@@ -101,6 +101,21 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
       ? child.travelModeOther
       : child.travelMode;
 
+  // Fetch parent food preferences
+  let foodContext = "";
+  if (userId) {
+    const [parentProfile] = await db
+      .select()
+      .from(parentProfilesTable)
+      .where(eq(parentProfilesTable.userId, userId));
+    if (parentProfile) {
+      const dietLabel = parentProfile.foodType === "veg" ? "Vegetarian only" : "Non-vegetarian (or vegetarian)";
+      foodContext = `Diet: ${dietLabel}.${parentProfile.allergies ? ` Allergies/avoid: ${parentProfile.allergies}.` : ""}`;
+    }
+  }
+
+  const fridgeItems = parsed.data.fridgeItems?.trim();
+
   const prompt = `You are a smart parenting schedule assistant. Create a realistic, balanced full-day routine for a ${child.age}-year-old child named ${child.name}.
 
 CHILD DETAILS:
@@ -116,17 +131,24 @@ PARENT AVAILABILITY:
 ${parentContext}
 ${babysitterContext ? `\nBABYSITTER: ${babysitterContext}` : ""}
 
+FOOD PREFERENCES:
+${foodContext || "No food preferences set."}
+${fridgeItems ? `Available fridge ingredients today: ${fridgeItems}` : ""}
+
 RECENT BEHAVIOR HISTORY (use to adapt the routine):
 ${behaviorContext}
 
 INSTRUCTIONS:
 - Start the day from the wake-up time (${child.wakeUpTime}) and end at sleep time (${child.sleepTime})
 - Include ALL of these blocks: morning hygiene/prep, breakfast, school travel, school time, return travel, snack, homework/study, physical play/exercise, screen time (age-appropriate), dinner, wind-down, bedtime
+- For each MEAL item (breakfast, lunch, snack, dinner): suggest 2-3 specific healthy kid-friendly options in the notes field, formatted as "Options: [option 1] | [option 2] | [option 3]"
+- If fridge items are provided, ONLY suggest meals that can be made with those ingredients
+- Respect food preferences (veg/non-veg) and avoid any allergens
 - Add 5-10 minute buffer gaps between major transitions
 - Make durations realistic for a ${child.age}-year-old
-- If parent works from office, assign independent/babysitter tasks during their work hours. If they work from home, they can supervise more closely
-- If a babysitter is assigned, add a "babysitter" note to tasks during the hours when the parent is working
-- Adjust difficulty/length based on behavior history — if child has been skipping meals, add reminders; if struggling at bedtime, add earlier wind-down
+- If parent works from office, assign independent/babysitter tasks during their work hours
+- If a babysitter is assigned, add "Babysitter:" prefix to notes for tasks during parent's working hours
+- Adjust based on behavior history — if child skips meals, add reminder notes; if bedtime is hard, add earlier wind-down
 - Each item MUST have a specific start time based on the previous item's end time
 - Travel time: account for ${travelModeLabel} travel (typically 10-20 min for van/car/walk)
 
@@ -137,7 +159,7 @@ Return a JSON object with:
   - activity: clear activity name
   - duration: duration in minutes (integer)
   - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter"
-  - notes: a short practical tip or encouragement (1 sentence, can be empty string). If babysitter should handle this task, start with "Babysitter:"
+  - notes: for meals, format as "Options: [meal 1] | [meal 2] | [meal 3]". For other items, a short tip. Can be empty string.
   - status: always "pending"
 
 Return ONLY valid JSON, no markdown, no explanation.`;

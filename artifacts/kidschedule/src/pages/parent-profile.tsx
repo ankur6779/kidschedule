@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCircle, Save, Plus, Trash2, Clock } from "lucide-react";
+import { UserCircle, Save, Plus, Trash2, Clock, Utensils } from "lucide-react";
 
 interface FreeSlot {
   start: string;
@@ -20,6 +21,8 @@ interface ParentProfile {
   workStartTime: string;
   workEndTime: string;
   freeSlots: FreeSlot[];
+  foodType: string;
+  allergies: string;
 }
 
 export default function ParentProfilePage() {
@@ -34,6 +37,8 @@ export default function ParentProfilePage() {
     workStartTime: "",
     workEndTime: "",
     freeSlots: [],
+    foodType: "non_veg",
+    allergies: "",
   });
 
   useEffect(() => {
@@ -52,6 +57,8 @@ export default function ParentProfilePage() {
             workStartTime: data.workStartTime ?? "",
             workEndTime: data.workEndTime ?? "",
             freeSlots: data.freeSlots ?? [],
+            foodType: data.foodType ?? "non_veg",
+            allergies: data.allergies ?? "",
           });
         }
       })
@@ -80,12 +87,14 @@ export default function ParentProfilePage() {
       const body: any = {
         role: profile.role,
         workType: profile.workType,
+        foodType: profile.foodType,
       };
       if (profile.gender) body.gender = profile.gender;
       if (profile.mobileNumber) body.mobileNumber = profile.mobileNumber;
       if (profile.workStartTime) body.workStartTime = profile.workStartTime;
       if (profile.workEndTime) body.workEndTime = profile.workEndTime;
       if (profile.freeSlots.length > 0) body.freeSlots = profile.freeSlots;
+      if (profile.allergies) body.allergies = profile.allergies;
 
       const res = await fetch("/api/parent-profile", {
         method: "PUT",
@@ -248,6 +257,48 @@ export default function ParentProfilePage() {
               </Button>
             </div>
           ))}
+        </CardContent>
+      </Card>
+
+      <Card className="rounded-2xl shadow-sm border-border/50">
+        <CardHeader>
+          <CardTitle className="font-quicksand text-lg flex items-center gap-2">
+            <Utensils className="h-5 w-5 text-primary" />
+            Food Preferences
+          </CardTitle>
+          <CardDescription>
+            Used by the AI to suggest appropriate meals in routines
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label>Diet Type</Label>
+            <Select
+              value={profile.foodType}
+              onValueChange={(v) => setProfile((p) => ({ ...p, foodType: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select diet type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="non_veg">Non-Vegetarian (includes meat, eggs, fish)</SelectItem>
+                <SelectItem value="veg">Vegetarian (no meat or fish)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Allergies / Foods to Avoid</Label>
+            <Textarea
+              placeholder="e.g. peanuts, shellfish, dairy, gluten..."
+              value={profile.allergies}
+              onChange={(e) => setProfile((p) => ({ ...p, allergies: e.target.value }))}
+              className="resize-none"
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground">
+              List any food allergies or ingredients to avoid in AI-generated meal suggestions.
+            </p>
+          </div>
         </CardContent>
       </Card>
 

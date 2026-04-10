@@ -194,6 +194,7 @@ export const UpdateRoutineItemsBody = zod.object({
 export const GenerateRoutineBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
+  fridgeItems: zod.string().optional(),
 });
 
 export const GenerateRoutineResponse = zod.object({
@@ -296,6 +297,8 @@ export const GetParentProfileResponse = zod.object({
   workStartTime: zod.string().nullish(),
   workEndTime: zod.string().nullish(),
   freeSlots: zod.array(FreeSlotSchema).default([]),
+  foodType: zod.string().default("non_veg"),
+  allergies: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -308,6 +311,55 @@ export const UpsertParentProfileBody = zod.object({
   workStartTime: zod.string().optional(),
   workEndTime: zod.string().optional(),
   freeSlots: zod.array(FreeSlotSchema).optional(),
+  foodType: zod.string().optional(),
+  allergies: zod.string().optional(),
+});
+
+/**
+ * @summary AI recipe endpoint
+ */
+export const GetRecipeBody = zod.object({
+  mealName: zod.string(),
+  childAge: zod.number().optional(),
+  foodType: zod.string().optional(),
+  allergies: zod.string().optional(),
+});
+
+export const RecipeStep = zod.object({
+  step: zod.number(),
+  instruction: zod.string(),
+});
+
+export const GetRecipeResponse = zod.object({
+  name: zod.string(),
+  prepTime: zod.string(),
+  cookTime: zod.string(),
+  servings: zod.string(),
+  ingredients: zod.array(zod.string()),
+  steps: zod.array(RecipeStep),
+  tips: zod.string().optional(),
+});
+
+/**
+ * @summary AI parenting assistant
+ */
+export const AskAssistantBody = zod.object({
+  question: zod.string(),
+  childName: zod.string().optional(),
+  childAge: zod.number().optional(),
+});
+
+export const AskAssistantResponse = zod.object({
+  answer: zod.string(),
+});
+
+/**
+ * @summary Generate routine with fridge items
+ */
+export const GenerateRoutineBodyExtended = zod.object({
+  childId: zod.number(),
+  date: zod.string(),
+  fridgeItems: zod.string().optional(),
 });
 
 /**

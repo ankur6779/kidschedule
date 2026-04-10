@@ -5,8 +5,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Calendar, User, Loader2, Clock, GraduationCap, Car } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -21,6 +21,7 @@ export default function RoutineGenerate() {
   const [_, setLocation] = useLocation();
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [fridgeItems, setFridgeItems] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,7 +41,7 @@ export default function RoutineGenerate() {
     if (!isFormValid) return;
 
     generateMutation.mutate(
-      { data: { childId: selectedChild, date } },
+      { data: { childId: selectedChild, date, fridgeItems: fridgeItems || undefined } },
       {
         onSuccess: (generatedData) => {
           createMutation.mutate(
@@ -187,6 +188,29 @@ export default function RoutineGenerate() {
               </div>
             </div>
 
+            {/* Step 3 — Fridge Items */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">3</div>
+                <Label className="text-lg font-bold">What's in your fridge? <span className="text-sm font-normal text-muted-foreground">(optional)</span></Label>
+              </div>
+              <div className="space-y-2">
+                <div className="relative">
+                  <Refrigerator className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Textarea
+                    placeholder="e.g. eggs, spinach, chicken, rice, tomatoes, milk, apples..."
+                    value={fridgeItems}
+                    onChange={(e) => setFridgeItems(e.target.value)}
+                    className="pl-9 resize-none rounded-2xl min-h-[80px]"
+                    rows={2}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  The AI will suggest meals using only what you have. Leave blank for general meal suggestions.
+                </p>
+              </div>
+            </div>
+
             {/* What the AI uses */}
             <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/70 space-y-1">
               <p className="font-bold text-foreground text-sm mb-2">✨ What the AI considers:</p>
@@ -196,6 +220,8 @@ export default function RoutineGenerate() {
                 <li>🚌 Travel mode for realistic commute durations</li>
                 <li>🎯 Daily goals (study, sports, activities)</li>
                 <li>📊 Recent behavior history to adapt the plan</li>
+                <li>🍽️ Your food preferences, diet type & allergies</li>
+                <li>❄️ Fridge ingredients for custom meal suggestions</li>
               </ul>
             </div>
 

@@ -12,6 +12,8 @@ export const parentProfilesTable = pgTable("parent_profiles", {
   workStartTime: text("work_start_time"),
   workEndTime: text("work_end_time"),
   freeSlots: jsonb("free_slots").default([]),
+  foodType: text("food_type").notNull().default("non_veg"),
+  allergies: text("allergies"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

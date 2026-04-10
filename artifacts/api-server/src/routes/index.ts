@@ -6,6 +6,7 @@ import behaviorsRouter from "./behaviors";
 import dashboardRouter from "./dashboard";
 import parentProfileRouter from "./parent-profile";
 import babysittersRouter from "./babysitters";
+import aiRouter from "./ai";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -18,5 +19,6 @@ router.use(behaviorsRouter);
 router.use(dashboardRouter);
 router.use(parentProfileRouter);
 router.use(babysittersRouter);
+router.use(aiRouter);
 
 export default router;
