@@ -40,13 +40,21 @@ export default function ChildrenList() {
                   <div className="p-5 flex-1 flex items-center justify-between">
                     <div>
                       <h3 className="font-quicksand text-xl font-bold text-foreground group-hover:text-primary transition-colors">{child.name}</h3>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 mt-2 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1 bg-muted px-2 py-0.5 rounded-md">
                           <span className="font-medium text-foreground">{child.age}</span> yrs
                         </span>
+                        {(child as any).childClass && (
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-md text-xs font-medium">
+                            {(child as any).childClass}
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
                           <Clock className="h-3.5 w-3.5" />
                           {child.schoolStartTime} - {child.schoolEndTime}
+                        </span>
+                        <span className="text-xs">
+                          {(child as any).foodType === "non_veg" ? "🍗 Non-veg" : "🥦 Veg"}
                         </span>
                       </div>
                     </div>

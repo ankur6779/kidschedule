@@ -38,12 +38,14 @@ const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 const childSchema = z.object({
   name: z.string().min(1, "Name is required"),
   age: z.coerce.number().min(1, "Age must be at least 1").max(18, "Age must be 18 or under"),
+  childClass: z.string().optional(),
   wakeUpTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   sleepTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   schoolStartTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   schoolEndTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   travelMode: z.enum(["van", "car", "walk", "other"]),
   travelModeOther: z.string().optional(),
+  foodType: z.enum(["veg", "non_veg"]),
   goals: z.string().min(1, "Goals are required to generate good routines"),
   babysitterId: z.coerce.number().optional(),
 });
@@ -78,12 +80,14 @@ export default function ChildForm() {
     defaultValues: {
       name: "",
       age: 7,
+      childClass: "",
       wakeUpTime: "07:00",
       sleepTime: "21:00",
       schoolStartTime: "08:00",
       schoolEndTime: "15:00",
       travelMode: "car",
       travelModeOther: "",
+      foodType: "veg",
       goals: "",
       babysitterId: undefined,
     },
@@ -103,12 +107,14 @@ export default function ChildForm() {
       form.reset({
         name: child.name,
         age: child.age,
+        childClass: child.childClass ?? "",
         wakeUpTime: child.wakeUpTime ?? "07:00",
         sleepTime: child.sleepTime ?? "21:00",
         schoolStartTime: child.schoolStartTime,
         schoolEndTime: child.schoolEndTime,
         travelMode: (child.travelMode as "van" | "car" | "walk" | "other") ?? "car",
         travelModeOther: child.travelModeOther ?? "",
+        foodType: (child.foodType as "veg" | "non_veg") ?? "veg",
         goals: child.goals,
         babysitterId: child.babysitterId ?? undefined,
       });
@@ -118,6 +124,7 @@ export default function ChildForm() {
   const onSubmit = (data: ChildFormValues) => {
     const payload = {
       ...data,
+      childClass: data.childClass?.trim() || undefined,
       travelModeOther: data.travelMode === "other" ? data.travelModeOther : undefined,
       babysitterId: data.babysitterId || undefined,
     };
@@ -189,8 +196,8 @@ export default function ChildForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-              {/* Name + Age */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Name + Age + Class */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold">Child's Name</FormLabel>
@@ -206,6 +213,49 @@ export default function ChildForm() {
                     <FormControl>
                       <Input type="number" min={1} max={18} className={inputClass} {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="childClass" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">Class / Grade <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Grade 5, Class 3" className={inputClass} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+
+              {/* Food Preference */}
+              <div>
+                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Food Preference</p>
+                <FormField control={form.control} name="foodType" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">🍽️ Diet Type</FormLabel>
+                    <FormDescription>
+                      Used for smart tiffin and meal suggestions tailored to your child.
+                    </FormDescription>
+                    <div className="flex gap-3 mt-1">
+                      {[
+                        { value: "veg", label: "🥦 Vegetarian", desc: "No meat/fish/eggs" },
+                        { value: "non_veg", label: "🍗 Non-Vegetarian", desc: "Includes eggs, meat, fish" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => field.onChange(opt.value)}
+                          className={`flex-1 py-3 px-4 rounded-2xl font-bold border-2 transition-all text-sm text-left ${
+                            field.value === opt.value
+                              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                              : "bg-muted/50 text-foreground border-transparent hover:border-primary/40"
+                          }`}
+                        >
+                          <div>{opt.label}</div>
+                          <div className={`text-xs font-normal mt-0.5 ${field.value === opt.value ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{opt.desc}</div>
+                        </button>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )} />

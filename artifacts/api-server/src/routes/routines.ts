@@ -102,6 +102,11 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
       ? child.travelModeOther
       : child.travelMode;
 
+  // Per-child food preference
+  const childFoodType = (child as any).foodType ?? "veg";
+  const childFoodLabel = childFoodType === "veg" ? "VEGETARIAN ONLY (no meat, no eggs, no fish)" : "Non-vegetarian allowed (can include eggs, chicken, fish)";
+  const childClassLabel = (child as any).childClass ? `Class/Grade: ${(child as any).childClass}` : "";
+
   // Fetch parent food preferences
   let foodContext = "";
   if (userId) {
@@ -143,10 +148,13 @@ CHILD DETAILS:
 - School starts: ${child.schoolStartTime}
 - School ends: ${child.schoolEndTime}
 - Travel mode to/from school: ${travelModeLabel}
+${childClassLabel ? `- ${childClassLabel}` : ""}
 - Daily goals: ${child.goals}
 - Date: ${parsed.data.date}
 
 SCHOOL STATUS: ${schoolStatus}
+
+CHILD'S FOOD PREFERENCE: ${childFoodLabel}
 
 PARENT AVAILABILITY:
 ${parentContext}
@@ -154,8 +162,8 @@ ${availabilityStatus ? availabilityStatus : ""}
 ${babysitterContext ? `\nBABYSITTER: ${babysitterContext}` : ""}
 ${specialPlansContext ? `\n${specialPlansContext}` : ""}
 
-FOOD PREFERENCES:
-${foodContext || "No food preferences set."}
+FAMILY FOOD PREFERENCES:
+${foodContext || "No family food preferences set."}
 ${fridgeItems ? `Available fridge ingredients today: ${fridgeItems}` : ""}
 
 RECENT BEHAVIOR HISTORY (use to adapt the routine):
@@ -164,8 +172,9 @@ ${behaviorContext}
 INSTRUCTIONS:
 - Start the day from the wake-up time (${child.wakeUpTime}) and end at sleep time (${child.sleepTime})
 ${hasSchool === false
-  ? `- NO SCHOOL TODAY: Replace school time with: outdoor play/sports (30–60 min), a creative hobby or learning activity (30 min), and relaxed family time. DO NOT add school, homework, or school-travel blocks.`
-  : `- Include ALL school-day blocks: morning hygiene/prep, breakfast, school travel, school time, return travel, snack, homework/study`}
+  ? `- NO SCHOOL TODAY: Replace school time with: outdoor play/sports (30–60 min), a creative hobby or learning activity (30 min), and relaxed family time. DO NOT add school, homework, or school-travel blocks. Do NOT add a tiffin block.`
+  : `- Include ALL school-day blocks: morning hygiene/prep, breakfast, TIFFIN PREPARATION (see below), school travel, school time, return travel, snack, homework/study`}
+${hasSchool !== false ? `- TIFFIN / LUNCHBOX PREPARATION (REQUIRED for school days): Add a dedicated "Tiffin Box Preparation" activity in the morning, around 15-20 minutes before school travel. Use category "tiffin". Notes MUST be formatted as "Options: [option 1] | [option 2] | [option 3]" with 3 specific, healthy, kid-friendly tiffin ideas. Strictly follow the child's food preference: ${childFoodLabel}. Examples if veg: Paneer paratha + curd, Veg sandwich, Upma, Poha, Idli + sambar, Cheese toast, Pulao + raita. Examples if non-veg: Egg roll, Egg sandwich, Chicken frankie, Egg fried rice wrap. Use fridge items if provided.` : ""}
 - Always include: physical play/exercise, screen time (age-appropriate), dinner, wind-down, bedtime
 - FAMILY BONDING (REQUIRED): Add exactly 2–3 bonding activities between parent and child. Choose from: Story Time, Cooking Together, Outdoor Walk, Board Game / Card Game, Art & Craft Together, Movie/Show Time Together. Use category "bonding". Add them at natural breaks in the day — not at school/work hours if parent is busy.
 ${isWorkingDay === false ? "- Parent is on holiday: add MORE joint parent-child activities throughout the day." : ""}
@@ -173,7 +182,7 @@ ${isWorkingDay === true ? "- Parent is working: during work hours, assign indepe
 ${specialPlans ? "- SPECIAL PLANS take priority: schedule the special activity first, then arrange the rest of the day around it." : ""}
 - For each MEAL item (breakfast, lunch, snack, dinner): suggest 2-3 specific healthy kid-friendly options in the notes field, formatted as "Options: [option 1] | [option 2] | [option 3]"
 - If fridge items are provided, ONLY suggest meals that can be made with those ingredients
-- Respect food preferences (veg/non-veg) and avoid any allergens
+- Strictly follow the child's food preference: ${childFoodLabel}
 - Add 5-10 minute buffer gaps between major transitions
 - Make durations realistic for a ${child.age}-year-old
 - If a babysitter is assigned, add "Babysitter:" prefix to notes for tasks during parent's working hours
@@ -187,8 +196,8 @@ Return a JSON object with:
   - time: start time like "7:00 AM"
   - activity: clear activity name
   - duration: duration in minutes (integer)
-  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter", "bonding"
-  - notes: for meals, format as "Options: [meal 1] | [meal 2] | [meal 3]". For bonding activities, add a fun tip for the parent. For other items, a short tip. Can be empty string.
+  - category: one of "morning", "school", "travel", "meal", "homework", "play", "screen", "hygiene", "sleep", "wind-down", "babysitter", "bonding", "tiffin"
+  - notes: for meals and tiffin, format as "Options: [meal 1] | [meal 2] | [meal 3]". For bonding activities, add a fun tip for the parent. For other items, a short tip. Can be empty string.
   - status: always "pending"
 
 Return ONLY valid JSON, no markdown, no explanation.`;

@@ -52,6 +52,7 @@ const CATEGORY_STYLES: Record<string, string> = {
   sleep:      "bg-slate-100 text-slate-600 border-slate-200",
   "wind-down":"bg-violet-100 text-violet-700 border-violet-200",
   bonding:    "bg-rose-100 text-rose-800 border-rose-200",
+  tiffin:     "bg-amber-100 text-amber-800 border-amber-200",
 };
 
 const STATUS_STYLES: Record<ItemStatus, string> = {
@@ -434,6 +435,12 @@ export default function RoutineDetail() {
                     <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-rose-500 text-xs">❤️</span>
                       <span className="text-rose-600 text-xs font-bold">Family Bonding Time</span>
+                    </div>
+                  )}
+                  {item.category === "tiffin" && (
+                    <div className="bg-amber-50 border-b border-amber-100 px-4 py-1.5 flex items-center gap-1.5">
+                      <span className="text-amber-500 text-xs">🍱</span>
+                      <span className="text-amber-700 text-xs font-bold">Tiffin / Lunchbox Prep</span>
                     </div>
                   )}
                   <CardContent className="p-4 sm:p-5">
