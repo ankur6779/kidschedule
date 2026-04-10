@@ -5,9 +5,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Sparkles, Calendar, User, Check, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Sparkles, Calendar, User, Loader2, Clock, GraduationCap, Car } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+
+const TRAVEL_MODE_LABELS: Record<string, string> = {
+  van: "🚐 Van / Bus",
+  car: "🚗 Car",
+  walk: "🚶 Walking",
+  other: "✏️ Custom",
+};
 
 export default function RoutineGenerate() {
   const [_, setLocation] = useLocation();
@@ -26,20 +34,15 @@ export default function RoutineGenerate() {
   const isFormValid = selectedChild && date;
   const isGenerating = generateMutation.isPending || createMutation.isPending;
 
+  const selectedChildData = children?.find((c) => c.id === selectedChild);
+
   const handleGenerate = () => {
     if (!isFormValid) return;
 
     generateMutation.mutate(
-      {
-        data: {
-          childId: selectedChild,
-          date,
-        }
-      },
+      { data: { childId: selectedChild, date } },
       {
         onSuccess: (generatedData) => {
-          const childName = children?.find(c => c.id === selectedChild)?.name || "";
-          
           createMutation.mutate(
             {
               data: {
@@ -51,19 +54,15 @@ export default function RoutineGenerate() {
             },
             {
               onSuccess: (savedRoutine) => {
-                toast({ title: "Routine generated successfully!" });
+                toast({ title: "✨ Routine generated!" });
                 queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
                 setLocation(`/routines/${savedRoutine.id}`);
               },
-              onError: () => {
-                toast({ title: "Failed to save routine", variant: "destructive" });
-              }
+              onError: () => toast({ title: "Failed to save routine", variant: "destructive" }),
             }
           );
         },
-        onError: () => {
-          toast({ title: "Failed to generate routine", variant: "destructive" });
-        }
+        onError: () => toast({ title: "Failed to generate routine", variant: "destructive" }),
       }
     );
   };
@@ -72,17 +71,11 @@ export default function RoutineGenerate() {
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
       <header className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild className="rounded-full">
-          <Link href="/routines">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+          <Link href="/routines"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
-          <h1 className="font-quicksand text-3xl font-bold text-foreground">
-            Generate Routine
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Let AI build a perfect day based on goals and school times.
-          </p>
+          <h1 className="font-quicksand text-3xl font-bold text-foreground">Generate Routine</h1>
+          <p className="text-muted-foreground mt-1">AI builds a personalized full-day plan using your child's profile.</p>
         </div>
       </header>
 
@@ -97,7 +90,7 @@ export default function RoutineGenerate() {
             </div>
             <div>
               <h3 className="font-quicksand text-2xl font-bold mb-2">Crafting the perfect day...</h3>
-              <p className="text-muted-foreground">Analyzing school times, goals, and behavior history to create a structured schedule.</p>
+              <p className="text-muted-foreground">Analyzing sleep times, travel mode, goals, and behavior history to build a smart schedule.</p>
             </div>
             <div className="w-full max-w-xs bg-muted rounded-full h-2 mt-4 overflow-hidden">
               <div className="bg-primary h-full rounded-full w-1/2 animate-[pulse_2s_ease-in-out_infinite]" />
@@ -107,66 +100,114 @@ export default function RoutineGenerate() {
       ) : (
         <Card className="rounded-3xl border-none shadow-sm overflow-hidden bg-card mt-4">
           <CardContent className="p-6 sm:p-8 space-y-8">
+
+            {/* Step 1 — Select Child */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">1</div>
                 <Label className="text-lg font-bold">Who is this schedule for?</Label>
               </div>
-              
+
               <div className="flex flex-wrap gap-3">
                 {loadingChildren ? (
                   <div className="animate-pulse bg-muted h-12 w-32 rounded-xl" />
                 ) : children?.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-destructive p-3 bg-destructive/10 rounded-xl w-full border border-destructive/20">
-                    Please add a child profile first.
+                  <p className="text-sm text-destructive p-3 bg-destructive/10 rounded-xl w-full border border-destructive/20">
+                    Please add a child profile first to generate routines.
                   </p>
                 ) : (
-                  children?.map(child => (
+                  children?.map((child) => (
                     <button
                       key={child.id}
                       onClick={() => setSelectedChild(child.id)}
                       className={`px-4 py-3 rounded-2xl font-bold transition-all border-2 flex items-center gap-2 ${
-                        selectedChild === child.id 
-                          ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                        selectedChild === child.id
+                          ? "bg-primary text-primary-foreground border-primary shadow-sm"
                           : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-muted"
                       }`}
                     >
                       <User className="h-4 w-4" />
                       {child.name}
+                      <span className="text-xs opacity-70">age {child.age}</span>
                     </button>
                   ))
                 )}
               </div>
+
+              {/* Child profile summary */}
+              {selectedChildData && (
+                <div className="bg-muted/50 rounded-2xl p-4 space-y-2 border border-border/50">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Profile Summary</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      Wake: <strong>{selectedChildData.wakeUpTime}</strong>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                      Sleep: <strong>{selectedChildData.sleepTime}</strong>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
+                      School: <strong>{selectedChildData.schoolStartTime}–{selectedChildData.schoolEndTime}</strong>
+                    </div>
+                    <div className="flex items-center gap-2 text-foreground/80">
+                      <Car className="h-3.5 w-3.5 text-muted-foreground" />
+                      Travel: <strong>
+                        {selectedChildData.travelMode === "other"
+                          ? selectedChildData.travelModeOther || "Other"
+                          : TRAVEL_MODE_LABELS[selectedChildData.travelMode] ?? selectedChildData.travelMode}
+                      </strong>
+                    </div>
+                  </div>
+                  {selectedChildData.goals && (
+                    <div className="mt-2 pt-2 border-t border-border/50">
+                      <p className="text-xs text-muted-foreground">🎯 {selectedChildData.goals}</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
+            {/* Step 2 — Date */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>
                 <Label className="text-lg font-bold">Which day?</Label>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <div className="flex items-center bg-card border-2 border-border rounded-2xl px-4 py-3 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all flex-1 max-w-sm">
-                  <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
-                  <input 
-                    type="date" 
-                    value={date} 
-                    onChange={(e) => setDate(e.target.value)}
-                    className="bg-transparent border-none outline-none text-foreground font-medium w-full text-lg"
-                  />
-                </div>
+
+              <div className="flex items-center bg-card border-2 border-border rounded-2xl px-4 py-3 focus-within:border-primary transition-all max-w-sm">
+                <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-transparent border-none outline-none text-foreground font-medium w-full text-lg"
+                />
               </div>
             </div>
 
-            <div className="pt-6 border-t border-border/50">
-              <Button 
-                onClick={handleGenerate} 
-                disabled={!isFormValid || isGenerating} 
-                size="lg" 
-                className="w-full rounded-full h-14 text-lg font-bold shadow-sm hover-elevate transition-all bg-primary text-primary-foreground hover:bg-primary/90"
+            {/* What the AI uses */}
+            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/70 space-y-1">
+              <p className="font-bold text-foreground text-sm mb-2">✨ What the AI considers:</p>
+              <ul className="space-y-1 list-none">
+                <li>⏰ Wake-up & bedtime for accurate time slots</li>
+                <li>🏫 School start & end times with travel buffers</li>
+                <li>🚌 Travel mode for realistic commute durations</li>
+                <li>🎯 Daily goals (study, sports, activities)</li>
+                <li>📊 Recent behavior history to adapt the plan</li>
+              </ul>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                onClick={handleGenerate}
+                disabled={!isFormValid || isGenerating}
+                size="lg"
+                className="w-full rounded-full h-14 text-lg font-bold shadow-sm transition-all"
               >
                 <Sparkles className="h-5 w-5 mr-2" />
-                Generate Routine
+                Generate Smart Routine
               </Button>
             </div>
           </CardContent>

@@ -8,6 +8,10 @@ export const childrenTable = pgTable("children", {
   age: integer("age").notNull(),
   schoolStartTime: text("school_start_time").notNull(),
   schoolEndTime: text("school_end_time").notNull(),
+  wakeUpTime: text("wake_up_time").notNull().default("07:00"),
+  sleepTime: text("sleep_time").notNull().default("21:00"),
+  travelMode: text("travel_mode").notNull().default("car"),
+  travelModeOther: text("travel_mode_other"),
   goals: text("goals").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

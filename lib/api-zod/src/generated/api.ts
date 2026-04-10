@@ -23,6 +23,10 @@ export const ListChildrenResponseItem = zod.object({
   age: zod.number(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  wakeUpTime: zod.string(),
+  sleepTime: zod.string(),
+  travelMode: zod.string(),
+  travelModeOther: zod.string().nullish(),
   goals: zod.string(),
   createdAt: zod.string(),
 });
@@ -36,6 +40,10 @@ export const CreateChildBody = zod.object({
   age: zod.number(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  wakeUpTime: zod.string(),
+  sleepTime: zod.string(),
+  travelMode: zod.string(),
+  travelModeOther: zod.string().optional(),
   goals: zod.string(),
 });
 
@@ -52,6 +60,10 @@ export const GetChildResponse = zod.object({
   age: zod.number(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  wakeUpTime: zod.string(),
+  sleepTime: zod.string(),
+  travelMode: zod.string(),
+  travelModeOther: zod.string().nullish(),
   goals: zod.string(),
   createdAt: zod.string(),
 });
@@ -68,6 +80,10 @@ export const UpdateChildBody = zod.object({
   age: zod.number().optional(),
   schoolStartTime: zod.string().optional(),
   schoolEndTime: zod.string().optional(),
+  wakeUpTime: zod.string().optional(),
+  sleepTime: zod.string().optional(),
+  travelMode: zod.string().optional(),
+  travelModeOther: zod.string().optional(),
   goals: zod.string().optional(),
 });
 
@@ -77,6 +93,10 @@ export const UpdateChildResponse = zod.object({
   age: zod.number(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  wakeUpTime: zod.string(),
+  sleepTime: zod.string(),
+  travelMode: zod.string(),
+  travelModeOther: zod.string().nullish(),
   goals: zod.string(),
   createdAt: zod.string(),
 });
@@ -86,6 +106,18 @@ export const UpdateChildResponse = zod.object({
  */
 export const DeleteChildParams = zod.object({
   id: zod.coerce.number(),
+});
+
+/**
+ * Routine item shape (shared)
+ */
+export const RoutineItemSchema = zod.object({
+  time: zod.string(),
+  activity: zod.string(),
+  duration: zod.number(),
+  category: zod.string(),
+  notes: zod.string().optional(),
+  status: zod.enum(["pending", "completed", "skipped", "delayed"]).optional(),
 });
 
 /**
@@ -101,15 +133,7 @@ export const ListRoutinesResponseItem = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(
-    zod.object({
-      time: zod.string(),
-      activity: zod.string(),
-      duration: zod.number(),
-      category: zod.string(),
-      notes: zod.string().optional(),
-    }),
-  ),
+  items: zod.array(RoutineItemSchema),
   createdAt: zod.string(),
 });
 export const ListRoutinesResponse = zod.array(ListRoutinesResponseItem);
@@ -121,15 +145,7 @@ export const CreateRoutineBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(
-    zod.object({
-      time: zod.string(),
-      activity: zod.string(),
-      duration: zod.number(),
-      category: zod.string(),
-      notes: zod.string().optional(),
-    }),
-  ),
+  items: zod.array(RoutineItemSchema),
 });
 
 /**
@@ -145,15 +161,7 @@ export const GetRoutineResponse = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(
-    zod.object({
-      time: zod.string(),
-      activity: zod.string(),
-      duration: zod.number(),
-      category: zod.string(),
-      notes: zod.string().optional(),
-    }),
-  ),
+  items: zod.array(RoutineItemSchema),
   createdAt: zod.string(),
 });
 
@@ -162,6 +170,17 @@ export const GetRoutineResponse = zod.object({
  */
 export const DeleteRoutineParams = zod.object({
   id: zod.coerce.number(),
+});
+
+/**
+ * @summary Update routine items (status tracking)
+ */
+export const UpdateRoutineItemsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateRoutineItemsBody = zod.object({
+  items: zod.array(RoutineItemSchema),
 });
 
 /**
@@ -174,15 +193,7 @@ export const GenerateRoutineBody = zod.object({
 
 export const GenerateRoutineResponse = zod.object({
   title: zod.string(),
-  items: zod.array(
-    zod.object({
-      time: zod.string(),
-      activity: zod.string(),
-      duration: zod.number(),
-      category: zod.string(),
-      notes: zod.string().optional(),
-    }),
-  ),
+  items: zod.array(RoutineItemSchema),
 });
 
 /**
@@ -206,14 +217,14 @@ export const ListBehaviorsResponseItem = zod.object({
 export const ListBehaviorsResponse = zod.array(ListBehaviorsResponseItem);
 
 /**
- * @summary Log a behavior
+ * @summary Create a behavior log
  */
 export const CreateBehaviorLogBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
   behavior: zod.string(),
   type: zod.string(),
-  notes: zod.string().nullish(),
+  notes: zod.string().optional(),
 });
 
 /**
@@ -243,15 +254,7 @@ export const GetRecentRoutinesResponseItem = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(
-    zod.object({
-      time: zod.string(),
-      activity: zod.string(),
-      duration: zod.number(),
-      category: zod.string(),
-      notes: zod.string().optional(),
-    }),
-  ),
+  items: zod.array(RoutineItemSchema),
   createdAt: zod.string(),
 });
 export const GetRecentRoutinesResponse = zod.array(
