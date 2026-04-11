@@ -1,0 +1,148 @@
+Upgrade my web app "AmyNest" to add an interactive, engaging, and age-based system for Toddler (1–3 years) and Preschool (3–5 years).
+
+IMPORTANT:
+- Use ZERO API cost
+- Use rule-based logic + predefined content
+- Make it interactive (not static)
+
+--------------------------------
+1. Age Group Detection
+--------------------------------
+- Use existing ageGroup:
+  - Toddler (1–3)
+  - Preschool (3–5)
+
+- Show label:
+  “Toddler Mode” / “Preschool Mode”
+
+--------------------------------
+2. Daily Interactive Dashboard (Core 🔥)
+--------------------------------
+Create a section:
+“Today for Your Child”
+
+Include cards:
+
+- 🎯 Today Activity
+- 🧠 Skill Builder
+- ❤️ Parent Task
+- 🎮 Fun Activity
+
+Each card:
+- Shows 1 item at a time
+- Has buttons:
+  - ✅ Done
+  - ➡️ Next
+
+--------------------------------
+3. Activity System (Age-Based)
+--------------------------------
+
+Toddler Activities:
+- Color recognition
+- Toy play
+- Shape sorting
+- Simple movements
+
+Preschool Activities:
+- Drawing
+- Alphabet practice
+- Counting
+- Story listening
+
+Use arrays:
+toddlerActivities = [...]
+preschoolActivities = [...]
+
+--------------------------------
+4. Skill Builder System
+--------------------------------
+- Rotate skills daily:
+  - Communication
+  - Creativity
+  - Motor skills
+  - Memory
+
+- Show:
+  “Today Skill: Communication”
+
+--------------------------------
+5. Parent Task System (Very Important 🔥)
+--------------------------------
+- Give parents daily tasks:
+
+Examples:
+- Talk with child for 10 minutes
+- Play together
+- Ask questions
+
+- Add buttons:
+  - Done
+  - Next
+
+--------------------------------
+6. Gamified Interaction (Addiction 🔥)
+--------------------------------
+- When user clicks:
+  “Done”
+
+- Show:
+  - ⭐ “Great job!”
+  - Small reward feedback
+
+--------------------------------
+7. Storytelling System
+--------------------------------
+- Add:
+  “Play Story” button
+
+- Include:
+  - 5–10 short moral stories
+
+- Add:
+  - Next story button
+
+--------------------------------
+8. Routine + Interactive Mix
+--------------------------------
+- Keep routine system
+
+- But ALSO show:
+  - Interactive cards
+
+--------------------------------
+9. Smart Rotation Logic
+--------------------------------
+- Ensure:
+  - Activities rotate
+  - No immediate repetition
+
+--------------------------------
+10. UI Improvements
+--------------------------------
+- Card-based layout
+- Bright colors (kid-friendly)
+- Large buttons (easy tap)
+
+--------------------------------
+11. Data Storage
+--------------------------------
+Use localStorage:
+- activity index
+- skill index
+- parent task index
+
+--------------------------------
+12. Keep everything simple
+--------------------------------
+- No backend
+- No API calls
+- Fast performance
+
+--------------------------------
+Return:
+Working code with:
+- Interactive toddler system
+- Interactive preschool system
+- Gamified experience
+- Daily rotating activities

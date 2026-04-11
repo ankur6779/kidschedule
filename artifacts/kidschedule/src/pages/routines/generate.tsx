@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { InfantMode } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
+import { ToddlerPreschoolMode } from "@/components/toddler-preschool-mode";
 
 type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
 const MOOD_OPTIONS: MoodOption[] = [
@@ -984,8 +985,22 @@ export default function RoutineGenerate() {
                 {/* Age-based sections (non-infant) shown after child selection */}
                 {selectedChildData && !isInfantMode && selectedChildAgeGroup && (
                   <>
-                    <SkillFocusSection group={selectedChildAgeGroup} childName={selectedChildData.name} />
-                    <StorySection group={selectedChildAgeGroup} childName={selectedChildData.name} />
+                    {/* Toddler / Preschool — fully interactive dashboard */}
+                    {(selectedChildAgeGroup === "toddler" || selectedChildAgeGroup === "preschool") && (
+                      <ToddlerPreschoolMode
+                        ageGroup={selectedChildAgeGroup}
+                        childName={selectedChildData.name}
+                        ageYears={selectedChildData.age}
+                        ageMonths={(selectedChildData as any).ageMonths ?? 0}
+                      />
+                    )}
+                    {/* Older kids — keep existing skill / story sections */}
+                    {selectedChildAgeGroup !== "toddler" && selectedChildAgeGroup !== "preschool" && (
+                      <>
+                        <SkillFocusSection group={selectedChildAgeGroup} childName={selectedChildData.name} />
+                        <StorySection group={selectedChildAgeGroup} childName={selectedChildData.name} />
+                      </>
+                    )}
                   </>
                 )}
 
