@@ -364,14 +364,17 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
 // ─────────────────────────────────────────────────────────────
 // ToddlerPreschoolMode — MAIN EXPORT
 // ─────────────────────────────────────────────────────────────
+export type ToddlerShowOnly = "activity" | "skill" | "task" | "fun" | "story";
+
 interface ToddlerPreschoolModeProps {
   ageGroup: "toddler" | "preschool";
   childName: string;
   ageYears: number;
   ageMonths: number;
+  showOnly?: ToddlerShowOnly | null;
 }
 
-export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths }: ToddlerPreschoolModeProps) {
+export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths, showOnly }: ToddlerPreschoolModeProps) {
   const isToddler = ageGroup === "toddler";
   const label = isToddler ? "Toddler Mode" : "Preschool Mode";
   const headerEmoji = isToddler ? "🍼" : "🎒";
@@ -422,11 +425,13 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
   const task  = parentTasks[taskIdx];
   const fun   = funList[funIdx];
 
+  const show = (section: ToddlerShowOnly) => !showOnly || showOnly === section;
+
   return (
     <div className="space-y-5">
 
-      {/* ── Hero Banner ── */}
-      <div className={`rounded-3xl border-2 p-5 ${
+      {/* ── Hero Banner — hidden in focused view ── */}
+      {!showOnly && <div className={`rounded-3xl border-2 p-5 ${
         isToddler
           ? "bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-purple-200"
           : "bg-gradient-to-br from-blue-50 via-green-50 to-teal-50 border-blue-200"
@@ -465,10 +470,10 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
             <span className="text-xs font-bold text-yellow-600 ml-1">🎊 Super Parent Day!</span>
           )}
         </div>
-      </div>
+      </div>}
 
       {/* ── 🎯 Today Activity ── */}
-      <InteractiveCard
+      {show("activity") && <InteractiveCard
         emoji="🎯"
         sectionLabel="Today's Activity"
         title={act.title}
@@ -479,10 +484,10 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
         onNext={nextAct}
         doneCount={doneCounts["act"] ?? 0}
         totalCount={activities.length}
-      />
+      />}
 
       {/* ── 🧠 Skill Builder ── */}
-      <InteractiveCard
+      {show("skill") && <InteractiveCard
         emoji="🧠"
         sectionLabel="Skill Builder"
         title={`Today's Focus: ${skill.skill}`}
@@ -493,10 +498,10 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
         onNext={nextSkill}
         doneCount={doneCounts["skill"] ?? 0}
         totalCount={skills.length}
-      />
+      />}
 
       {/* ── ❤️ Parent Task ── */}
-      <InteractiveCard
+      {show("task") && <InteractiveCard
         emoji="❤️"
         sectionLabel="Your Parent Task"
         title={task.task}
@@ -507,10 +512,10 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
         onNext={nextTask}
         doneCount={doneCounts["task"] ?? 0}
         totalCount={parentTasks.length}
-      />
+      />}
 
       {/* ── 🎮 Fun Activity ── */}
-      <InteractiveCard
+      {show("fun") && <InteractiveCard
         emoji="🎮"
         sectionLabel="Fun Activity"
         title={fun.name}
@@ -521,17 +526,17 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths 
         onNext={nextFun}
         doneCount={doneCounts["fun"] ?? 0}
         totalCount={funList.length}
-      />
+      />}
 
       {/* ── 📖 Story Time ── */}
-      <StoryPlayer
+      {show("story") && <StoryPlayer
         stories={stories}
         childName={childName}
         accentColor={ageGroup}
-      />
+      />}
 
-      {/* ── 🌟 All Done Banner ── */}
-      {totalDone >= 4 && (
+      {/* ── 🌟 All Done Banner — only in full view ── */}
+      {!showOnly && totalDone >= 4 && (
         <Card className="rounded-3xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 shadow-none">
           <CardContent className="p-5 text-center">
             <div className="text-4xl mb-2">🏆</div>

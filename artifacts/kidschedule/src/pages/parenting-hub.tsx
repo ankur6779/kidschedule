@@ -3,18 +3,125 @@ import { Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, BookOpen, Calendar, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
-import { InfantMode } from "@/components/infant-mode";
+import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
-import { ToddlerPreschoolMode } from "@/components/toddler-preschool-mode";
+import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
 import type { AgeGroup } from "@/lib/age-groups";
 
+// ─── Category definitions ─────────────────────────────────────
+type CategoryDef = { id: string; emoji: string; label: string; colors: string; activeColors: string };
+
+const INFANT_CATEGORIES: CategoryDef[] = [
+  { id: "feeding",     emoji: "🍼", label: "Feeding",     colors: "bg-orange-50 border-orange-200 text-orange-800",  activeColors: "bg-orange-500 border-orange-500 text-white" },
+  { id: "health",      emoji: "🏥", label: "Health",      colors: "bg-red-50 border-red-200 text-red-800",           activeColors: "bg-red-500 border-red-500 text-white" },
+  { id: "development", emoji: "🧠", label: "Development", colors: "bg-blue-50 border-blue-200 text-blue-800",        activeColors: "bg-blue-500 border-blue-500 text-white" },
+  { id: "bonding",     emoji: "❤️", label: "Bonding",    colors: "bg-pink-50 border-pink-200 text-pink-800",        activeColors: "bg-pink-500 border-pink-500 text-white" },
+  { id: "lullaby",     emoji: "🎵", label: "Lullabies",   colors: "bg-purple-50 border-purple-200 text-purple-800",  activeColors: "bg-purple-500 border-purple-500 text-white" },
+  { id: "vaccines",    emoji: "💉", label: "Vaccines",    colors: "bg-green-50 border-green-200 text-green-800",     activeColors: "bg-green-500 border-green-500 text-white" },
+  { id: "memory",      emoji: "📸", label: "Memories",    colors: "bg-yellow-50 border-yellow-200 text-yellow-800",  activeColors: "bg-yellow-500 border-yellow-500 text-white" },
+];
+
+const TODDLER_CATEGORIES: CategoryDef[] = [
+  { id: "activity", emoji: "🎯", label: "Activities", colors: "bg-blue-50 border-blue-200 text-blue-800",    activeColors: "bg-blue-500 border-blue-500 text-white" },
+  { id: "skill",    emoji: "🧠", label: "Skills",     colors: "bg-violet-50 border-violet-200 text-violet-800", activeColors: "bg-violet-500 border-violet-500 text-white" },
+  { id: "task",     emoji: "❤️", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",  activeColors: "bg-rose-500 border-rose-500 text-white" },
+  { id: "fun",      emoji: "🎮", label: "Fun",         colors: "bg-green-50 border-green-200 text-green-800",  activeColors: "bg-green-500 border-green-500 text-white" },
+  { id: "story",    emoji: "📖", label: "Stories",     colors: "bg-amber-50 border-amber-200 text-amber-800",  activeColors: "bg-amber-500 border-amber-500 text-white" },
+];
+
+const OLDER_CATEGORIES: CategoryDef[] = [
+  { id: "skills",  emoji: "🧠", label: "Skill Focus", colors: "bg-violet-50 border-violet-200 text-violet-800", activeColors: "bg-violet-500 border-violet-500 text-white" },
+  { id: "stories", emoji: "📖", label: "Stories",     colors: "bg-amber-50 border-amber-200 text-amber-800",   activeColors: "bg-amber-500 border-amber-500 text-white" },
+  { id: "tasks",   emoji: "💝", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",     activeColors: "bg-rose-500 border-rose-500 text-white" },
+];
+
+// ─── Category Pill Grid ────────────────────────────────────────
+function CategoryGrid({
+  categories,
+  selected,
+  onSelect,
+}: {
+  categories: CategoryDef[];
+  selected: string | null;
+  onSelect: (id: string | null) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Choose a category</p>
+        {selected && (
+          <button
+            onClick={() => onSelect(null)}
+            className="text-xs text-primary font-semibold hover:underline"
+          >
+            Show All
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+        {categories.map((cat) => {
+          const isActive = selected === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => onSelect(isActive ? null : cat.id)}
+              className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 px-2 py-3 transition-all duration-200 font-semibold text-xs shadow-none hover:shadow-sm ${
+                isActive ? cat.activeColors + " shadow-sm" : cat.colors
+              }`}
+            >
+              <span className="text-2xl">{cat.emoji}</span>
+              <span className="leading-tight text-center">{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Older kids accordion wrappers ────────────────────────────
+function OlderSection({
+  id,
+  emoji,
+  label,
+  selected,
+  onToggle,
+  children,
+}: {
+  id: string;
+  emoji: string;
+  label: string;
+  selected: string | null;
+  onToggle: (id: string) => void;
+  children: React.ReactNode;
+}) {
+  const isOpen = selected === id;
+  return (
+    <div className={`rounded-3xl border-2 overflow-hidden transition-all ${isOpen ? "border-primary/40" : "border-border"}`}>
+      <button
+        onClick={() => onToggle(id)}
+        className={`w-full flex items-center justify-between px-5 py-4 transition-colors ${isOpen ? "bg-primary/5" : "bg-card hover:bg-muted/40"}`}
+      >
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">{emoji}</span>
+          <span className="font-bold text-base">{label}</span>
+        </div>
+        {isOpen ? <ChevronUp className="h-5 w-5 text-primary" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+      </button>
+      {isOpen && <div className="px-0 pb-0">{children}</div>}
+    </div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────
 export default function ParentingHub() {
   const { data: children = [], isLoading } = useListChildren({
     query: { queryKey: getListChildrenQueryKey() },
   });
   const [selectedChildId, setSelectedChildId] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const childList = (children as any[]) ?? [];
 
@@ -28,6 +135,15 @@ export default function ParentingHub() {
 
   const isInfant           = ageGroup === "infant";
   const isToddlerOrPreschool = ageGroup === "toddler" || ageGroup === "preschool";
+  const isOlder            = !isInfant && !isToddlerOrPreschool;
+
+  const categories = isInfant ? INFANT_CATEGORIES : isToddlerOrPreschool ? TODDLER_CATEGORIES : OLDER_CATEGORIES;
+
+  // Reset category when child changes
+  const handleChildSelect = (id: number) => {
+    setSelectedChildId(id);
+    setSelectedCategory(null);
+  };
 
   // ── Loading ──────────────────────────────────────────────────
   if (isLoading) {
@@ -63,7 +179,7 @@ export default function ParentingHub() {
 
   // ── Main layout ──────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-6 pb-8">
+    <div className="max-w-2xl mx-auto space-y-5 pb-10">
       <PageHeader />
 
       {/* Child selector — only shown when there are multiple children */}
@@ -76,7 +192,7 @@ export default function ParentingHub() {
             return (
               <button
                 key={child.id}
-                onClick={() => setSelectedChildId(child.id)}
+                onClick={() => handleChildSelect(child.id)}
                 className={`shrink-0 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border-2 transition-all ${
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
@@ -103,38 +219,86 @@ export default function ParentingHub() {
             {getAgeGroupInfo(ageGroup).emoji} {getAgeGroupInfo(ageGroup).label}
           </Badge>
           <span className="text-xs text-muted-foreground">
-            Content tailored for {effectiveChild.name}
+            Personalised for {effectiveChild.name}
           </span>
         </div>
       )}
 
-      {/* Age-based content */}
+      {/* ── Category selector ──────────────────────────────── */}
       {effectiveChild && ageGroup && (
-        <div className="space-y-6">
+        <CategoryGrid
+          categories={categories}
+          selected={selectedCategory}
+          onSelect={setSelectedCategory}
+        />
+      )}
+
+      {/* ── Content ────────────────────────────────────────── */}
+      {effectiveChild && ageGroup && (
+        <div className="space-y-5">
+
+          {/* INFANT */}
           {isInfant && (
             <InfantMode
               childName={effectiveChild.name}
               ageYears={effectiveChild.age}
               ageMonths={(effectiveChild as any).ageMonths ?? 0}
+              showOnly={selectedCategory as InfantShowOnly | null}
             />
           )}
 
+          {/* TODDLER / PRESCHOOL */}
           {isToddlerOrPreschool && (
             <ToddlerPreschoolMode
               ageGroup={ageGroup as "toddler" | "preschool"}
               childName={effectiveChild.name}
               ageYears={effectiveChild.age}
               ageMonths={(effectiveChild as any).ageMonths ?? 0}
+              showOnly={selectedCategory as ToddlerShowOnly | null}
             />
           )}
 
-          {!isInfant && !isToddlerOrPreschool && (
-            <>
-              <SkillFocusSection group={ageGroup} childName={effectiveChild.name} />
-              <StorySection group={ageGroup} childName={effectiveChild.name} />
-              <ParentTasksSection group={ageGroup} childName={effectiveChild.name} />
-            </>
+          {/* OLDER KIDS — accordion sections */}
+          {isOlder && (
+            <div className="space-y-3">
+              <OlderSection
+                id="skills"
+                emoji="🧠"
+                label="Skills to Focus On"
+                selected={selectedCategory}
+                onToggle={(id) => setSelectedCategory(selectedCategory === id ? null : id)}
+              >
+                <div className="p-4">
+                  <SkillFocusSection group={ageGroup} childName={effectiveChild.name} />
+                </div>
+              </OlderSection>
+
+              <OlderSection
+                id="stories"
+                emoji="📖"
+                label="Story Time"
+                selected={selectedCategory}
+                onToggle={(id) => setSelectedCategory(selectedCategory === id ? null : id)}
+              >
+                <div className="p-4">
+                  <StorySection group={ageGroup} childName={effectiveChild.name} />
+                </div>
+              </OlderSection>
+
+              <OlderSection
+                id="tasks"
+                emoji="💝"
+                label="Your Parent Tasks"
+                selected={selectedCategory}
+                onToggle={(id) => setSelectedCategory(selectedCategory === id ? null : id)}
+              >
+                <div className="p-4">
+                  <ParentTasksSection group={ageGroup} childName={effectiveChild.name} />
+                </div>
+              </OlderSection>
+            </div>
           )}
+
         </div>
       )}
 
@@ -165,7 +329,7 @@ function PageHeader() {
           Parenting Hub
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Age-appropriate tips, stories &amp; learning activities
+          Tap a category to explore tips, activities &amp; stories
         </p>
       </div>
     </div>
