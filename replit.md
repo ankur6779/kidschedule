@@ -16,7 +16,7 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Auth**: Clerk (`@clerk/react` frontend, `@clerk/express` backend) — proxy at `/api/__clerk`
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec in lib/api-spec)
-- **AI**: OpenAI via Replit AI Integrations (gpt-5.2 for routine generation)
+- **Routine Engine**: Fully rule-based, zero-cost (no OpenAI calls) — `lib/routine-templates.ts`
 - **Build**: esbuild (CJS bundle)
 
 ## Features
@@ -26,10 +26,9 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Children** — add/edit/delete child profiles with age, school times, travel mode, wake/sleep times, goals, and babysitter assignment
 - **Parent Profile** — role (Mother/Father), work type (WFH/WFO/Homemaker), work hours, free availability slots, food preferences (veg/non-veg) and allergies
 - **Babysitter Management** — add/remove babysitters with name, mobile number, and notes; assign to children
-- **AI Routine Generator** — generates full daily schedule using child profile + parent work availability + babysitter assignment + behavior history + food preferences + fridge items
-- **Smart Nutrition** — AI suggests 2-3 meal options per meal slot in generated routines; each option is tappable to view a full AI recipe (ingredients, steps, prep/cook times, parent tips)
-- **Fridge-Based Meals** — optionally enter available fridge ingredients before generating; AI only suggests meals using those items
-- **Recipe Viewer** — on-demand AI-generated recipes for any meal suggestion in a routine detail dialog
+- **Routine Generator** — rule-based full-day schedule engine (`routine-templates.ts`); age-appropriate templates for 5 groups; handles school/no-school, mood, parent availability, food type — zero API cost
+- **Smart Nutrition** — 5 veg + 5 non-veg options per meal type (breakfast/lunch/snack/dinner/tiffin) with seeded rotation for daily variety; each option is tappable to view a static recipe
+- **Recipe Viewer** — static recipe database (`recipe-database.ts`) with keyword matching; 8 veg + 5 non-veg full recipes with ingredients, steps, prep/cook times, tips
 - **Routine Detail** — task status tracking (Complete/Delay/Skip) with auto-shift on delay, progress bar, browser notifications, and Share button; inline task editing with time-cascade (pencil icon on hover); Regenerate Remaining Day button (keeps completed tasks, re-generates pending ones via AI); Add Activity dialog to inject a new activity and have AI refit the schedule
 - **Next-Day Auto-Generation** — marking a sleep/bedtime task as complete triggers a dialog offering to auto-generate tomorrow's routine (weekend detection auto-sets hasSchool=false)
 - **Partial Regeneration** — `POST /api/routines/:id/partial-regenerate` endpoint keeps completed tasks and regenerates all pending tasks from current time; supports `newActivity` body param to inject a new activity
@@ -39,7 +38,7 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Mobile-friendly** — responsive layout with bottom nav (Dashboard, Routines, Progress, Assistant) on mobile, full sidebar on desktop
 - **Weekly Calendar View** — Routines page has Calendar tab (default) with Mon–Sun week grid, navigation arrows, color-coded day indicators (green = has routine, primary = today, muted = weekend), and click-to-navigate
 - **Progress & Insights Dashboard** — `/progress` page with 🔥 streak tracker (consecutive days with routines), overall completion donut chart, 7-day bar chart, per-child breakdown with progress bars
-- **AI Insights** — POST `/api/insights` generates AI parenting insights based on routine completion/skip/delay patterns; displayed on the Progress page
+- **Smart Insights** — POST `/api/insights` generates rule-based parenting insights from real completion/skip/delay data (`generateRuleBasedInsights()`); no API cost
 - **Weekend Auto-Detection** — generate page detects Sat/Sun from selected date, auto-sets hasSchool=false and shows "🏖️ Weekend auto-detected" badge
 - **Today's Schedule Card** — Dashboard shows current + upcoming activities from today's routine, highlighting the "NOW" slot in real time
 - **Streak Teaser on Dashboard** — Compact 🔥 streak card on dashboard links to /progress page
@@ -49,7 +48,9 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Story Section** — age-appropriate moral stories with "Read Aloud" TTS button (SpeechSynthesis API); toddlers/preschoolers get 2 stories, older children get 2 with thematic titles
 - **Parent Tasks Section** — checkable daily parent task list on generate page based on age group
 - **Age Group Badge** — profile summary on generate page shows emoji + age group label + formatted age (e.g. "7y 3m")
-- **AI Prompt Age Context** — age group classification injected into AI routine generation prompt with tailored instructions per group (infant care, toddler play, school study blocks, pre-teen independence)
+- **Zero-Cost Architecture** — ALL routine generation, insights, recipe lookup, and parenting assistant answers are rule-based/static. No external AI API calls anywhere in the app.
+- **Parenting Assistant** — keyword-matched FAQ database (`parenting-faq.ts`) covering sleep, eating, tantrums, screen time, homework, anxiety, puberty, and more; context-aware by child name/age
+- **Static Activity Library** — 5 age-group pools of afternoon activities + 8 bonding activities; seeded shuffle ensures daily variety without repetition
 
 ## Key Commands
 
