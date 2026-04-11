@@ -30,7 +30,9 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Smart Nutrition** — AI suggests 2-3 meal options per meal slot in generated routines; each option is tappable to view a full AI recipe (ingredients, steps, prep/cook times, parent tips)
 - **Fridge-Based Meals** — optionally enter available fridge ingredients before generating; AI only suggests meals using those items
 - **Recipe Viewer** — on-demand AI-generated recipes for any meal suggestion in a routine detail dialog
-- **Routine Detail** — task status tracking (Complete/Delay/Skip) with auto-shift on delay, progress bar, browser notifications, and Share button
+- **Routine Detail** — task status tracking (Complete/Delay/Skip) with auto-shift on delay, progress bar, browser notifications, and Share button; inline task editing with time-cascade (pencil icon on hover); Regenerate Remaining Day button (keeps completed tasks, re-generates pending ones via AI); Add Activity dialog to inject a new activity and have AI refit the schedule
+- **Next-Day Auto-Generation** — marking a sleep/bedtime task as complete triggers a dialog offering to auto-generate tomorrow's routine (weekend detection auto-sets hasSchool=false)
+- **Partial Regeneration** — `POST /api/routines/:id/partial-regenerate` endpoint keeps completed tasks and regenerates all pending tasks from current time; supports `newActivity` body param to inject a new activity
 - **Share Routine** — copy routine as a formatted message or open directly in WhatsApp to send to babysitter
 - **Behavior Tracker** — log positive/negative/neutral behaviors per child per day
 - **AI Parenting Assistant** — full chat interface at `/assistant` with suggested questions; get warm, practical parenting advice on sleep, food, behavior, anxiety, screen time, etc.
@@ -64,6 +66,7 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - `GET/DELETE /api/routines/:id` — view and delete routine
 - `POST /api/routines/generate` — AI-generate a routine for a child
 - `POST /api/insights` — AI-generate weekly parenting insights from routine stats
+- `POST /api/routines/:id/partial-regenerate` — keep completed tasks, regenerate pending tasks from now; optional `newActivity: {name, duration}` in body
 - `GET/POST /api/behaviors` — list and log behavior entries
 - `DELETE /api/behaviors/:id` — remove a behavior log
 - `GET /api/dashboard/summary` — stats for dashboard

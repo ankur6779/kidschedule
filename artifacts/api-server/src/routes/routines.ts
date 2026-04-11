@@ -428,6 +428,102 @@ Return ONLY valid JSON, no markdown, no explanation.`;
   res.json(GenerateInsightsResponse.parse(generated));
 });
 
+// Partially regenerate a routine — keep completed tasks, regenerate the rest from now
+router.post("/routines/:id/partial-regenerate", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+  const routineId = parseInt(req.params.id);
+  if (isNaN(routineId)) { res.status(400).json({ error: "Invalid id" }); return; }
+
+  const [routine] = await db.select().from(routinesTable).where(eq(routinesTable.id, routineId));
+  if (!routine) { res.status(404).json({ error: "Not found" }); return; }
+
+  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
+  if (!child) { res.status(404).json({ error: "Child not found" }); return; }
+
+  const items = (routine.items ?? []) as Array<RoutineItem & { imageUrl?: string }>;
+  const { newActivity } = req.body as { newActivity?: { name: string; time?: string; duration?: number } };
+
+  // Current time in minutes
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  const parse12hToMins = (t: string) => {
+    const m = t.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!m) return -1;
+    let h = parseInt(m[1]);
+    const min = parseInt(m[2]);
+    const ampm = m[3].toUpperCase();
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  };
+
+  const minsToTime = (total: number) => {
+    const h = Math.floor(total / 60) % 24;
+    const m = total % 60;
+    const ampm = h >= 12 ? "PM" : "AM";
+    const dh = h % 12 === 0 ? 12 : h % 12;
+    return `${dh}:${m.toString().padStart(2, "0")} ${ampm}`;
+  };
+
+  // Find pivot: first non-completed item at or after current time
+  let pivotIndex = items.length;
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.status === "completed" || item.status === "skipped") continue;
+    const itemMins = parse12hToMins(item.time);
+    if (itemMins >= currentMinutes) {
+      pivotIndex = i;
+      break;
+    }
+  }
+
+  const keptItems = items.slice(0, pivotIndex);
+  const lastKept = keptItems[keptItems.length - 1];
+  const startMins = lastKept
+    ? Math.max(parse12hToMins(lastKept.time) + (lastKept.duration ?? 30), currentMinutes)
+    : currentMinutes;
+  const startTime = minsToTime(startMins);
+  const sleepTime = (child as any).sleepTime ?? "9:00 PM";
+
+  const newActivityContext = newActivity
+    ? `MUST include this new activity: "${newActivity.name}" at approximately ${newActivity.time ?? startTime} for about ${newActivity.duration ?? 30} minutes. Fit other tasks around it.`
+    : "";
+
+  const childFoodLabel = (child as any).foodType === "veg" ? "Vegetarian only" : "Non-vegetarian allowed";
+
+  const prompt = `You are a parenting schedule assistant. Regenerate ONLY the remaining part of today's routine for ${child.name}, age ${child.age}.
+
+COMPLETED TASKS (DO NOT change these):
+${keptItems.length > 0 ? keptItems.map((it) => `- ${it.time}: ${it.activity} (${it.duration}min)`).join("\n") : "None yet"}
+
+Generate new tasks from ${startTime} until ${sleepTime}.
+${newActivityContext}
+
+CHILD: ${child.age} years old, ${childFoodLabel}, goals: ${child.goals}
+
+Return valid JSON with a "items" array. Each item needs: time (12h format), activity, duration (number in minutes), category (morning/meal/school/homework/play/exercise/sleep/wind-down/hygiene/bonding/tiffin/travel/snack/screen/reading), and optional notes.
+Make it realistic — do not leave large gaps.`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    max_completion_tokens: 2000,
+    messages: [{ role: "user", content: prompt }],
+    response_format: { type: "json_object" },
+  });
+
+  const content = completion.choices[0]?.message?.content ?? '{"items":[]}';
+  const generated = JSON.parse(content);
+  const newItems = (generated.items ?? []).map((it: any) => ({ ...it, status: "pending" }));
+
+  const updatedItems = [...keptItems, ...newItems];
+  await db.update(routinesTable).set({ items: updatedItems as any }).where(eq(routinesTable.id, routineId));
+
+  res.json({ items: updatedItems });
+});
+
 // Generate personalized AI activity images using child's actual photo
 router.post("/routines/:id/generate-images", async (req, res): Promise<void> => {
   const routineId = parseInt(req.params.id);

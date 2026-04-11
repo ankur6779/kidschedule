@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
@@ -27,6 +29,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
@@ -112,6 +115,23 @@ export default function RoutineDetail() {
   const [aiImagesLoading, setAiImagesLoading] = useState(false);
   const aiImagesTriggeredRef = useRef(false);
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  // Editing state
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<{ activity: string; time: string; duration: string }>({ activity: "", time: "", duration: "" });
+
+  // Add activity dialog
+  const [addActivityOpen, setAddActivityOpen] = useState(false);
+  const [addActivityForm, setAddActivityForm] = useState({ name: "", duration: "30" });
+
+  // Next-day dialog
+  const [nextDayDialogOpen, setNextDayDialogOpen] = useState(false);
+  const [nextDayLoading, setNextDayLoading] = useState(false);
+  const [pendingNextDayChildId, setPendingNextDayChildId] = useState<number | null>(null);
+
+  // Partial regen
+  const [partialRegenLoading, setPartialRegenLoading] = useState(false);
+  const [addActivityLoading, setAddActivityLoading] = useState(false);
 
   const { data: routine, isLoading } = useGetRoutine(routineId, {
     query: { enabled: !!routineId, queryKey: getGetRoutineQueryKey(routineId) }
@@ -205,6 +225,114 @@ export default function RoutineDetail() {
     }
   };
 
+  // ── Inline Edit Handlers ──────────────────────────────────────────
+  const handleEditStart = (index: number) => {
+    const item = (localItems ?? [])[index];
+    if (!item) return;
+    setEditForm({ activity: item.activity, time: item.time, duration: String(item.duration) });
+    setEditingIndex(index);
+  };
+
+  const handleEditSave = (index: number) => {
+    setLocalItems((prev) => {
+      if (!prev) return prev;
+      const updated = prev.map((item, i) => {
+        if (i !== index) return item;
+        return { ...item, activity: editForm.activity.trim() || item.activity, time: editForm.time || item.time, duration: parseInt(editForm.duration) || item.duration };
+      });
+      // If time changed on a pending item, cascade shift all subsequent PENDING items
+      const originalMins = parse12hToMinutes(prev[index].time);
+      const newMins = parse12hToMinutes(editForm.time);
+      if (newMins >= 0 && newMins !== originalMins) {
+        const diff = newMins - originalMins;
+        for (let i = index + 1; i < updated.length; i++) {
+          if (updated[i].status === "completed" || updated[i].status === "skipped") continue;
+          const m = parse12hToMinutes(updated[i].time);
+          if (m >= 0) updated[i] = { ...updated[i], time: minutesToTime(m + diff) };
+        }
+        if (diff !== 0) toast({ title: diff > 0 ? `⏩ Shifted +${diff} min` : `⏪ Shifted ${diff} min`, description: "Upcoming tasks adjusted." });
+      }
+      saveItemsMutation.mutate(updated);
+      return updated;
+    });
+    setEditingIndex(null);
+  };
+
+  // ── Partial Regenerate ───────────────────────────────────────────
+  const handlePartialRegen = async () => {
+    setPartialRegenLoading(true);
+    try {
+      const res = await authFetch(getApiUrl(`/api/routines/${routineId}/partial-regenerate`), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      if (data.items) {
+        setLocalItems(data.items);
+        aiImagesTriggeredRef.current = false; // allow image regen
+        toast({ title: "🔄 Day regenerated!", description: "Remaining tasks have been updated by AI." });
+      }
+    } catch {
+      toast({ title: "Could not regenerate", variant: "destructive" });
+    } finally {
+      setPartialRegenLoading(false);
+    }
+  };
+
+  // ── Add Activity ────────────────────────────────────────────────
+  const handleAddActivity = async () => {
+    if (!addActivityForm.name.trim()) return;
+    setAddActivityLoading(true);
+    try {
+      const res = await authFetch(getApiUrl(`/api/routines/${routineId}/partial-regenerate`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newActivity: { name: addActivityForm.name, duration: parseInt(addActivityForm.duration) || 30 } }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      if (data.items) {
+        setLocalItems(data.items);
+        aiImagesTriggeredRef.current = false;
+        toast({ title: "✅ Activity added!", description: `"${addActivityForm.name}" has been fit into your schedule.` });
+      }
+    } catch {
+      toast({ title: "Could not add activity", variant: "destructive" });
+    } finally {
+      setAddActivityLoading(false);
+      setAddActivityOpen(false);
+      setAddActivityForm({ name: "", duration: "30" });
+    }
+  };
+
+  // ── Next-Day Generation ─────────────────────────────────────────
+  const handleNextDayGen = async () => {
+    if (!pendingNextDayChildId) return;
+    setNextDayLoading(true);
+    try {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dayOfWeek = tomorrow.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dateStr = tomorrow.toISOString().split("T")[0];
+      const res = await authFetch(getApiUrl("/api/routines/generate"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ childId: pendingNextDayChildId, date: dateStr, hasSchool: !isWeekend }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      toast({
+        title: `🌅 Tomorrow's routine ready!`,
+        description: `${isWeekend ? "Weekend" : "School day"} routine generated for ${data.childName ?? "your child"}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
+    } catch {
+      toast({ title: "Could not generate tomorrow's routine", variant: "destructive" });
+    } finally {
+      setNextDayLoading(false);
+      setNextDayDialogOpen(false);
+    }
+  };
+
   const deleteMutation = useDeleteRoutine();
 
   // Save items to backend
@@ -248,10 +376,21 @@ export default function RoutineDetail() {
         toast({ title: "⏱ Schedule shifted +15 min", description: "Remaining tasks adjusted for the delay." });
       }
 
+      // Detect sleep/bedtime completion → prompt next-day generation
+      if (status === "completed") {
+        const item = prev[index];
+        const isSleep = ["sleep", "wind-down"].includes(item.category?.toLowerCase() ?? "") ||
+          /sleep|bed\s*time|good night/i.test(item.activity);
+        if (isSleep && routine?.childId) {
+          setPendingNextDayChildId(routine.childId);
+          setTimeout(() => setNextDayDialogOpen(true), 600);
+        }
+      }
+
       saveItemsMutation.mutate(updated);
       return updated;
     });
-  }, [saveItemsMutation, toast]);
+  }, [saveItemsMutation, toast, routine]);
 
   // Notifications
   const scheduleNotifications = useCallback((items: RoutineItem[]) => {
@@ -354,6 +493,17 @@ export default function RoutineDetail() {
           </Button>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePartialRegen}
+              disabled={partialRegenLoading}
+              className="rounded-full gap-2 bg-primary/5 border-primary/30 text-primary hover:bg-primary/10"
+            >
+              <RotateCcw className={`h-4 w-4 ${partialRegenLoading ? "animate-spin" : ""}`} />
+              {partialRegenLoading ? "Updating…" : "Regen Rest"}
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -524,6 +674,50 @@ export default function RoutineDetail() {
                           })()}
                         </div>
                         <div className="flex-1 min-w-0">
+                          {editingIndex === index ? (
+                            /* ── Inline Edit Form ── */
+                            <div className="space-y-2 py-1">
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Activity</Label>
+                                <Input
+                                  value={editForm.activity}
+                                  onChange={(e) => setEditForm((f) => ({ ...f, activity: e.target.value }))}
+                                  className="h-8 text-sm rounded-lg mt-0.5"
+                                  autoFocus
+                                />
+                              </div>
+                              <div className="flex gap-2">
+                                <div className="flex-1">
+                                  <Label className="text-xs text-muted-foreground">Time (e.g. 7:30 AM)</Label>
+                                  <Input
+                                    value={editForm.time}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, time: e.target.value }))}
+                                    className="h-8 text-sm rounded-lg mt-0.5"
+                                    placeholder="7:30 AM"
+                                  />
+                                </div>
+                                <div className="w-20">
+                                  <Label className="text-xs text-muted-foreground">Min</Label>
+                                  <Input
+                                    type="number"
+                                    value={editForm.duration}
+                                    onChange={(e) => setEditForm((f) => ({ ...f, duration: e.target.value }))}
+                                    className="h-8 text-sm rounded-lg mt-0.5"
+                                    min={5}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-1">
+                                <Button size="sm" className="rounded-full h-7 text-xs gap-1" onClick={() => handleEditSave(index)}>
+                                  <Save className="h-3 w-3" /> Save
+                                </Button>
+                                <Button size="sm" variant="ghost" className="rounded-full h-7 text-xs gap-1" onClick={() => setEditingIndex(null)}>
+                                  <X className="h-3 w-3" /> Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                          <>
                           <h3 className={`font-bold text-base text-foreground leading-tight ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
                             {item.activity}
                           </h3>
@@ -550,6 +744,8 @@ export default function RoutineDetail() {
                           ) : item.notes ? (
                             <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{item.notes}</p>
                           ) : null}
+                          </>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {status === "completed" && <Badge className="bg-green-100 text-green-700 border-green-200 rounded-full text-xs font-bold">✓ Done</Badge>}
@@ -558,11 +754,20 @@ export default function RoutineDetail() {
                           <Badge className={`rounded-full text-xs font-bold border ${catStyle}`}>
                             {item.category}
                           </Badge>
+                          {editingIndex !== index && status !== "completed" && status !== "skipped" && (
+                            <button
+                              onClick={() => handleEditStart(index)}
+                              className="ml-1 p-1 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
+                              title="Edit task"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      {/* Status action buttons */}
-                      {status !== "completed" && status !== "skipped" && (
+                      {/* Status action buttons — hidden when editing */}
+                      {editingIndex !== index && status !== "completed" && status !== "skipped" && (
                         <div className="flex gap-2 flex-wrap">
                           <button
                             onClick={() => updateItemStatus(index, "completed")}
@@ -586,7 +791,7 @@ export default function RoutineDetail() {
                       )}
 
                       {/* Undo for completed/skipped */}
-                      {(status === "completed" || status === "skipped") && (
+                      {editingIndex !== index && (status === "completed" || status === "skipped") && (
                         <button
                           onClick={() => updateItemStatus(index, "pending")}
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors self-start"
@@ -603,7 +808,15 @@ export default function RoutineDetail() {
         </div>
       </div>
 
-      <div className="mt-6 flex justify-center pb-8 border-t border-border/50 pt-8">
+      <div className="mt-6 flex items-center justify-center gap-3 pb-8 border-t border-border/50 pt-8">
+        <Button
+          variant="outline"
+          className="rounded-full shadow-sm gap-2 border-primary/30 text-primary hover:bg-primary/5"
+          onClick={() => setAddActivityOpen(true)}
+        >
+          <Plus className="h-4 w-4" />
+          Add Activity
+        </Button>
         <Button asChild variant="outline" className="rounded-full shadow-sm">
           <Link href="/behavior">Log Today's Behavior</Link>
         </Button>
@@ -690,6 +903,96 @@ export default function RoutineDetail() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Activity Dialog */}
+      <Dialog open={addActivityOpen} onOpenChange={setAddActivityOpen}>
+        <DialogContent className="rounded-2xl max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-quicksand flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Add Activity
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              AI will fit this activity into the remaining schedule.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">What activity?</Label>
+              <Input
+                className="mt-1.5 rounded-xl"
+                placeholder="e.g. Piano practice, Park visit…"
+                value={addActivityForm.name}
+                onChange={(e) => setAddActivityForm((f) => ({ ...f, name: e.target.value }))}
+                onKeyDown={(e) => e.key === "Enter" && handleAddActivity()}
+                autoFocus
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Duration (minutes)</Label>
+              <Input
+                type="number"
+                className="mt-1.5 rounded-xl"
+                value={addActivityForm.duration}
+                onChange={(e) => setAddActivityForm((f) => ({ ...f, duration: e.target.value }))}
+                min={5}
+                max={120}
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <Button
+              className="flex-1 rounded-full"
+              onClick={handleAddActivity}
+              disabled={addActivityLoading || !addActivityForm.name.trim()}
+            >
+              {addActivityLoading ? (
+                <><RotateCcw className="h-4 w-4 mr-2 animate-spin" />Adding…</>
+              ) : (
+                <><Plus className="h-4 w-4 mr-2" />Add to Schedule</>
+              )}
+            </Button>
+            <Button variant="outline" className="rounded-full" onClick={() => setAddActivityOpen(false)}>
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Next Day Generation Dialog */}
+      <Dialog open={nextDayDialogOpen} onOpenChange={setNextDayDialogOpen}>
+        <DialogContent className="rounded-2xl max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-quicksand flex items-center gap-2">
+              <Moon className="h-5 w-5 text-indigo-500" />
+              Great job today! 🌙
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              Bedtime is done! Should AI generate tomorrow's routine automatically?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-sm text-indigo-800">
+            <p className="font-medium mb-0.5">Tomorrow's schedule will include:</p>
+            <p className="text-xs text-indigo-600">• Weekend or school-day activities detected automatically<br />• Balanced meals, play, learning & rest<br />• Ready the moment you wake up</p>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              className="flex-1 rounded-full bg-indigo-600 hover:bg-indigo-700"
+              onClick={handleNextDayGen}
+              disabled={nextDayLoading}
+            >
+              {nextDayLoading ? (
+                <><RotateCcw className="h-4 w-4 mr-2 animate-spin" />Generating…</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-2" />Generate Tomorrow</>
+              )}
+            </Button>
+            <Button variant="outline" className="rounded-full" onClick={() => setNextDayDialogOpen(false)}>
+              Later
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
