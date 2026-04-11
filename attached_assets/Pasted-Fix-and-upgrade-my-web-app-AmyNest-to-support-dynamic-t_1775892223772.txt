@@ -1,0 +1,84 @@
+Fix and upgrade my web app "AmyNest" to support dynamic time shifting along with automatic task skipping based on real-time schedule changes.
+
+Add the following features:
+
+1. Dynamic Time Adjustment (Existing Fix):
+- When user changes:
+  - Task duration OR start time
+  - Or clicks “Delayed +X min”
+
+- Then:
+  - Recalculate end time of that task
+  - Shift ALL upcoming tasks forward
+  - Maintain duration and order
+
+2. Cascade Shift Logic:
+- Each next task should start immediately after previous task ends
+- No overlapping allowed
+
+3. Real-Time System Awareness (Important 🔥):
+- Use current system time
+- Identify:
+  - Past tasks → keep unchanged
+  - Current task → editable
+  - Future tasks → adjustable
+
+4. Auto Skip Logic (Core New Feature 🔥🔥):
+- If delay or edit causes time to exceed important future milestone (e.g., bedtime):
+
+Example:
+- Mall: 7:00 PM → 9:00 PM
+- Bedtime: 9:15 PM
+
+Then:
+- Skip all tasks between mall and bedtime
+- Only keep essential tasks:
+  - Brush
+  - Sleep
+
+5. Smart Skip Rules:
+- Automatically skip:
+  - Low priority tasks (play, extra activities)
+- Always keep:
+  - High priority tasks:
+    - Hygiene (brush, bath)
+    - Meals (if possible)
+    - Sleep
+
+6. Priority-Based System:
+- Assign priority levels:
+  - High: Sleep, hygiene, meals
+  - Medium: Study
+  - Low: Play, optional activities
+
+- When time shortage happens:
+  - Remove low priority tasks first
+  - Then medium if needed
+
+7. Partial Day Regeneration:
+- Only adjust future tasks
+- Do NOT change completed tasks
+
+8. Multi-Kid Handling:
+- Apply same logic per child
+- Adjust merged family timeline
+
+9. UI Feedback:
+- Mark skipped tasks as:
+  - “⏭️ Skipped due to time adjustment”
+- Show reason clearly
+
+10. Delay Button Integration:
+- If user clicks delay:
+  - Shift tasks
+  - Trigger skip logic automatically if needed
+
+11. Performance:
+- Do not reload full routine
+- Update UI dynamically
+
+12. Keep logic simple:
+- Use loop-based adjustment
+- Beginner-friendly implementation
+
+Return updated working code with proper auto-shift + auto-skip intelligent system.

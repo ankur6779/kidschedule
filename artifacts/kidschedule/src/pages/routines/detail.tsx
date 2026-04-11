@@ -41,6 +41,8 @@ type RoutineItem = {
   category: string;
   notes?: string;
   status?: ItemStatus;
+  skipReason?: string;
+  imageUrl?: string;
 };
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -85,15 +87,97 @@ function minutesToTime(mins: number): string {
   return `${displayH}:${m.toString().padStart(2, "0")} ${ampm}`;
 }
 
-function shiftScheduleFromIndex(items: RoutineItem[], fromIndex: number, delayMinutes: number): RoutineItem[] {
+// ── Priority System ────────────────────────────────────────────────
+const CATEGORY_PRIORITY: Record<string, "high" | "medium" | "low"> = {
+  sleep:       "high",
+  "wind-down": "high",
+  hygiene:     "high",
+  meal:        "high",
+  tiffin:      "high",
+  school:      "high",
+  morning:     "medium",
+  homework:    "medium",
+  exercise:    "medium",
+  bonding:     "medium",
+  travel:      "medium",
+  reading:     "medium",
+  snack:       "medium",
+  play:        "low",
+  screen:      "low",
+};
+
+function getPriority(category: string, activity = ""): "high" | "medium" | "low" {
+  const key = Object.keys(CATEGORY_PRIORITY).find((k) => category?.toLowerCase().includes(k));
+  if (key) return CATEGORY_PRIORITY[key];
+  if (/sleep|bedtime|bath|brush|toilet|shower/i.test(activity)) return "high";
+  if (/breakfast|lunch|dinner|meal|eat|tiffin/i.test(activity)) return "high";
+  return "medium";
+}
+
+// ── Smart Cascade (shift + auto-skip) ─────────────────────────────
+// Shifts all pending tasks from `fromIndex` by `delayMinutes`.
+// If a task would end past the sleep anchor, auto-skips it if it's low or medium priority.
+// HIGH priority tasks (hygiene, meals, sleep) are NEVER auto-skipped.
+function smartCascade(
+  items: RoutineItem[],
+  fromIndex: number,
+  delayMinutes: number
+): { items: RoutineItem[]; autoSkipped: number } {
   const updated = [...items];
-  for (let i = fromIndex; i < updated.length; i++) {
-    const mins = parse12hToMinutes(updated[i].time);
-    if (mins >= 0) {
-      updated[i] = { ...updated[i], time: minutesToTime(mins + delayMinutes) };
+  let autoSkipped = 0;
+
+  // Find the first sleep/bedtime anchor after fromIndex to use as a hard deadline
+  let sleepAnchorMins = -1;
+  for (let i = fromIndex; i < items.length; i++) {
+    const cat = items[i].category?.toLowerCase() ?? "";
+    if (cat === "sleep" || /sleep|bedtime|good night/i.test(items[i].activity)) {
+      sleepAnchorMins = parse12hToMinutes(items[i].time);
+      break;
     }
   }
-  return updated;
+
+  for (let i = fromIndex; i < updated.length; i++) {
+    const item = updated[i];
+    if (item.status === "completed") continue; // never touch completed
+
+    const currentMins = parse12hToMinutes(item.time);
+    if (currentMins < 0) continue;
+
+    const newStartMins = currentMins + delayMinutes;
+    const dur = item.duration ?? 30;
+    const priority = getPriority(item.category, item.activity);
+
+    // Is this the sleep anchor itself? Keep it but shift it
+    const isSleepAnchor = item.category === "sleep" || /sleep|bedtime|good night/i.test(item.activity);
+
+    // If this non-anchor task would end past the sleep anchor, auto-skip it
+    if (!isSleepAnchor && sleepAnchorMins > 0 && newStartMins + dur > sleepAnchorMins) {
+      if (priority === "low" || priority === "medium") {
+        updated[i] = { ...item, status: "skipped", skipReason: "⏭️ Skipped — not enough time" };
+        autoSkipped++;
+        continue;
+      }
+      // HIGH priority task that doesn't fit: keep it shifted (may push past sleep — unavoidable)
+    }
+
+    // If task was previously auto-skipped and now fits again, restore it
+    const wasAutoSkipped = item.skipReason === "⏭️ Skipped — not enough time";
+    const nowFits = isSleepAnchor || sleepAnchorMins < 0 || newStartMins + dur <= sleepAnchorMins;
+    if (wasAutoSkipped && nowFits && item.status === "skipped") {
+      updated[i] = { ...item, status: "pending", time: minutesToTime(newStartMins), skipReason: undefined };
+      continue;
+    }
+
+    // Normal shift
+    updated[i] = { ...item, time: minutesToTime(newStartMins), skipReason: undefined };
+  }
+
+  return { items: updated, autoSkipped };
+}
+
+// Keep backward-compat shim (used only for notifications scheduling)
+function shiftScheduleFromIndex(items: RoutineItem[], fromIndex: number, delayMinutes: number): RoutineItem[] {
+  return smartCascade(items, fromIndex, delayMinutes).items;
 }
 
 export default function RoutineDetail() {
@@ -236,24 +320,44 @@ export default function RoutineDetail() {
   const handleEditSave = (index: number) => {
     setLocalItems((prev) => {
       if (!prev) return prev;
-      const updated = prev.map((item, i) => {
-        if (i !== index) return item;
-        return { ...item, activity: editForm.activity.trim() || item.activity, time: editForm.time || item.time, duration: parseInt(editForm.duration) || item.duration };
-      });
-      // If time changed on a pending item, cascade shift all subsequent PENDING items
-      const originalMins = parse12hToMinutes(prev[index].time);
-      const newMins = parse12hToMinutes(editForm.time);
-      if (newMins >= 0 && newMins !== originalMins) {
-        const diff = newMins - originalMins;
-        for (let i = index + 1; i < updated.length; i++) {
-          if (updated[i].status === "completed" || updated[i].status === "skipped") continue;
-          const m = parse12hToMinutes(updated[i].time);
-          if (m >= 0) updated[i] = { ...updated[i], time: minutesToTime(m + diff) };
-        }
-        if (diff !== 0) toast({ title: diff > 0 ? `⏩ Shifted +${diff} min` : `⏪ Shifted ${diff} min`, description: "Upcoming tasks adjusted." });
+      const original = prev[index];
+      const newTime = editForm.time.trim() || original.time;
+      const newDuration = parseInt(editForm.duration) || original.duration;
+      const newActivity = editForm.activity.trim() || original.activity;
+
+      // Apply edits to this item
+      const base = prev.map((item, i) =>
+        i === index ? { ...item, activity: newActivity, time: newTime, duration: newDuration } : item
+      );
+
+      // Calculate how much downstream tasks need to shift:
+      // timeDiff = how much the START moved, plus any extra duration added
+      const origStartMins = parse12hToMinutes(original.time);
+      const newStartMins = parse12hToMinutes(newTime);
+      const timeDiff = newStartMins >= 0 ? newStartMins - origStartMins : 0;
+      const durDiff = newDuration - (original.duration ?? 30);
+      const totalDelay = timeDiff + durDiff; // positive = tasks pushed later, negative = earlier
+
+      if (totalDelay === 0) {
+        saveItemsMutation.mutate(base);
+        return base;
       }
-      saveItemsMutation.mutate(updated);
-      return updated;
+
+      const { items: cascaded, autoSkipped } = smartCascade(base, index + 1, totalDelay);
+
+      if (autoSkipped > 0) {
+        toast({
+          title: `⏭️ ${autoSkipped} task${autoSkipped > 1 ? "s" : ""} auto-skipped`,
+          description: "Low-priority activities cleared to protect bedtime.",
+        });
+      } else if (totalDelay > 0) {
+        toast({ title: `⏩ Shifted +${totalDelay} min`, description: "Upcoming tasks adjusted." });
+      } else {
+        toast({ title: `⏪ Shifted ${Math.abs(totalDelay)} min earlier`, description: "Upcoming tasks moved forward." });
+      }
+
+      saveItemsMutation.mutate(cascaded);
+      return cascaded;
     });
     setEditingIndex(null);
   };
@@ -370,10 +474,18 @@ export default function RoutineDetail() {
       if (!prev) return prev;
       let updated = prev.map((item, i) => i === index ? { ...item, status } : item);
 
-      // Adaptive: if marked delayed, shift next items by 15 min
+      // Smart delay: shift + auto-skip if needed
       if (status === "delayed") {
-        updated = shiftScheduleFromIndex(updated, index + 1, 15);
-        toast({ title: "⏱ Schedule shifted +15 min", description: "Remaining tasks adjusted for the delay." });
+        const { items: cascaded, autoSkipped } = smartCascade(updated, index + 1, 15);
+        updated = cascaded;
+        if (autoSkipped > 0) {
+          toast({
+            title: `⏱ Delayed · ${autoSkipped} task${autoSkipped > 1 ? "s" : ""} auto-skipped`,
+            description: "Low-priority activities removed to protect bedtime.",
+          });
+        } else {
+          toast({ title: "⏱ Schedule shifted +15 min", description: "Remaining tasks adjusted." });
+        }
       }
 
       // Detect sleep/bedtime completion → prompt next-day generation
@@ -612,17 +724,28 @@ export default function RoutineDetail() {
             const status = item.status ?? "pending";
             const catStyle = getCategoryStyle(item.category);
             const statusStyle = STATUS_STYLES[status];
+            const priority = getPriority(item.category, item.activity);
+
+            // Real-time awareness
+            const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+            const taskStart = parse12hToMinutes(item.time);
+            const taskEnd = taskStart + (item.duration ?? 30);
+            const isCurrentTask = status === "pending" && taskStart <= nowMins && nowMins < taskEnd;
+            const isPastTask = status === "pending" && taskEnd <= nowMins;
 
             return (
               <div key={index} className="flex gap-4 sm:gap-6 group">
                 {/* Time column */}
                 <div className="flex flex-col items-center pt-3 w-[80px] sm:w-[110px] shrink-0 bg-background">
-                  <div className="text-sm font-bold text-foreground text-right w-full pr-2 sm:pr-4">{item.time}</div>
+                  <div className={`text-sm font-bold text-right w-full pr-2 sm:pr-4 ${isPastTask ? "text-muted-foreground line-through" : isCurrentTask ? "text-primary" : "text-foreground"}`}>{item.time}</div>
                   <div className="text-xs text-muted-foreground font-medium text-right w-full pr-2 sm:pr-4">{item.duration}m</div>
+                  {isCurrentTask && (
+                    <div className="mt-1 text-[9px] font-black uppercase tracking-wide text-primary bg-primary/10 rounded-full px-1.5 py-0.5 w-fit ml-auto mr-2 sm:mr-4">NOW</div>
+                  )}
                 </div>
 
                 {/* Activity Card */}
-                <Card className={`flex-1 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
+                <Card className={`flex-1 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
                   {item.category === "bonding" && (
                     <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-rose-500 text-xs">❤️</span>
@@ -633,6 +756,12 @@ export default function RoutineDetail() {
                     <div className="bg-amber-50 border-b border-amber-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-amber-500 text-xs">🍱</span>
                       <span className="text-amber-700 text-xs font-bold">Tiffin / Lunchbox Prep</span>
+                    </div>
+                  )}
+                  {isCurrentTask && (
+                    <div className="bg-primary/10 border-b border-primary/20 px-4 py-1.5 flex items-center gap-1.5">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      <span className="text-primary text-xs font-bold">Happening now</span>
                     </div>
                   )}
                   <CardContent className="p-4 sm:p-5">
@@ -721,6 +850,18 @@ export default function RoutineDetail() {
                           <h3 className={`font-bold text-base text-foreground leading-tight ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
                             {item.activity}
                           </h3>
+                          {/* Priority badge for high-priority tasks */}
+                          {priority === "high" && status === "pending" && !isCurrentTask && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 bg-rose-50 border border-rose-200 rounded-full px-1.5 py-0.5 mt-0.5">
+                              ★ Essential
+                            </span>
+                          )}
+                          {/* Auto-skip reason */}
+                          {item.skipReason && (
+                            <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mt-1 font-medium">
+                              {item.skipReason}
+                            </p>
+                          )}
                           {item.notes && item.notes.startsWith("Options:") ? (
                             <div className="mt-1.5 space-y-1.5">
                               <p className="text-xs text-muted-foreground font-medium">🍽️ Today's options:</p>
@@ -749,7 +890,8 @@ export default function RoutineDetail() {
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           {status === "completed" && <Badge className="bg-green-100 text-green-700 border-green-200 rounded-full text-xs font-bold">✓ Done</Badge>}
-                          {status === "skipped" && <Badge className="bg-muted text-muted-foreground border-border rounded-full text-xs font-bold">Skipped</Badge>}
+                          {status === "skipped" && item.skipReason && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-xs font-bold">⏭️ Auto-skipped</Badge>}
+                          {status === "skipped" && !item.skipReason && <Badge className="bg-muted text-muted-foreground border-border rounded-full text-xs font-bold">Skipped</Badge>}
                           {status === "delayed" && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-xs font-bold">⏱ Delayed</Badge>}
                           <Badge className={`rounded-full text-xs font-bold border ${catStyle}`}>
                             {item.category}

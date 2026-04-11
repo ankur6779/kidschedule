@@ -581,12 +581,12 @@ router.post("/routines/:id/generate-images", async (req, res): Promise<void> => 
           model: "gpt-image-1",
           image: imageFile,
           prompt,
-          size: "512x512" as any,
+          size: "1024x1024",
         }), 25000);
         const b64 = response.data[0]?.b64_json ?? "";
         imageBuffer = Buffer.from(b64, "base64");
       } else {
-        imageBuffer = await withTimeout(generateImageBuffer(prompt, "512x512"), 20000);
+        imageBuffer = await withTimeout(generateImageBuffer(prompt, "1024x1024"), 20000);
       }
       return `data:image/png;base64,${imageBuffer.toString("base64")}`;
     } catch (err) {
