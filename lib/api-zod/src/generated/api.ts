@@ -31,6 +31,7 @@ export const ListChildrenResponseItem = zod.object({
   foodType: zod.string().default("veg"),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
+  photoUrl: zod.string().nullish(),
   createdAt: zod.string(),
 });
 export const ListChildrenResponse = zod.array(ListChildrenResponseItem);
@@ -51,6 +52,7 @@ export const CreateChildBody = zod.object({
   foodType: zod.string().optional(),
   goals: zod.string(),
   babysitterId: zod.number().optional(),
+  photoUrl: zod.string().optional(),
 });
 
 /**
@@ -74,6 +76,7 @@ export const GetChildResponse = zod.object({
   foodType: zod.string().default("veg"),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
+  photoUrl: zod.string().nullish(),
   createdAt: zod.string(),
 });
 
@@ -97,6 +100,7 @@ export const UpdateChildBody = zod.object({
   foodType: zod.string().optional(),
   goals: zod.string().optional(),
   babysitterId: zod.number().nullish(),
+  photoUrl: zod.string().nullish(),
 });
 
 export const UpdateChildResponse = zod.object({
@@ -113,6 +117,7 @@ export const UpdateChildResponse = zod.object({
   foodType: zod.string().default("veg"),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
+  photoUrl: zod.string().nullish(),
   createdAt: zod.string(),
 });
 

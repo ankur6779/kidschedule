@@ -16,6 +16,7 @@ export const childrenTable = pgTable("children", {
   foodType: text("food_type").notNull().default("veg"),
   goals: text("goals").notNull(),
   babysitterId: integer("babysitter_id"),
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, Link, useParams } from "wouter";
-import { useGetRoutine, getGetRoutineQueryKey, useDeleteRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
+import { useGetRoutine, getGetRoutineQueryKey, useDeleteRoutine, getListRoutinesQueryKey, useGetChild, getGetChildQueryKey } from "@workspace/api-client-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { getActivityImage } from "@/lib/activity-images";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +114,12 @@ export default function RoutineDetail() {
   const { data: routine, isLoading } = useGetRoutine(routineId, {
     query: { enabled: !!routineId, queryKey: getGetRoutineQueryKey(routineId) }
   });
+
+  const childId = (routine as any)?.childId ?? 0;
+  const { data: childData } = useGetChild(childId, {
+    query: { enabled: !!childId, queryKey: getGetChildQueryKey(childId) }
+  });
+  const childPhotoUrl: string | null = (childData as any)?.photoUrl ?? null;
 
   useEffect(() => {
     if (routine?.items && !localItems) {
@@ -385,7 +392,11 @@ export default function RoutineDetail() {
 
           <div className="flex flex-wrap items-center gap-3 mt-4">
             <div className="flex items-center gap-1.5 bg-secondary/30 text-secondary-foreground border border-secondary/50 px-3 py-1 rounded-full text-sm font-medium">
-              <User className="h-3.5 w-3.5" />
+              {childPhotoUrl ? (
+                <img src={childPhotoUrl} alt={routine.childName} className="w-5 h-5 rounded-full object-cover" />
+              ) : (
+                <User className="h-3.5 w-3.5" />
+              )}
               {routine.childName}
             </div>
             <div className="flex items-center gap-1.5 bg-muted px-3 py-1 rounded-full text-sm font-medium text-foreground/80">
@@ -446,6 +457,38 @@ export default function RoutineDetail() {
                   <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
+                        {/* Activity Illustration */}
+                        <div className="relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
+                          {(() => {
+                            const seed = (routineId ?? 0) * 100 + index;
+                            const imgData = getActivityImage(item.category, item.activity, seed);
+                            return (
+                              <>
+                                <img
+                                  src={imgData.src}
+                                  alt={item.activity}
+                                  className={`w-full h-full object-cover ${status === "skipped" ? "grayscale opacity-50" : status === "completed" ? "opacity-80" : ""}`}
+                                />
+                                {imgData.variant === "negative" && (
+                                  <div className="absolute bottom-0.5 right-0.5 bg-amber-400 rounded-full text-[8px] w-4 h-4 flex items-center justify-center">⚠️</div>
+                                )}
+                                {status === "completed" && (
+                                  <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
+                                    <div className="bg-green-500 rounded-full w-5 h-5 flex items-center justify-center">
+                                      <span className="text-white text-[10px] font-black">✓</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {/* Child photo avatar overlay */}
+                                {childPhotoUrl && (
+                                  <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full border-2 border-background overflow-hidden bg-muted shadow-sm">
+                                    <img src={childPhotoUrl} alt={routine?.childName} className="w-full h-full object-cover" />
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
                         <div className="flex-1 min-w-0">
                           <h3 className={`font-bold text-base text-foreground leading-tight ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
                             {item.activity}

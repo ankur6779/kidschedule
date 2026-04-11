@@ -1,0 +1,122 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "SzXDGdZn8lFXv86FpO3m4"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/wake_up_positive.png"
+type = "image"
+title = "child waking up happy"
+
+[[generated]]
+id = "KnQEtduPtsr0SwkwPwuZz"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/brushing_positive.png"
+type = "image"
+title = "child brushing teeth happy"
+
+[[generated]]
+id = "6mO16lvojC4rSKZzMq6ZJ"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/brushing_negative.png"
+type = "image"
+title = "child skipping brushing reminder"
+
+[[generated]]
+id = "A5Qu5nwVynqTKrhbSGbV9"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/breakfast_positive.png"
+type = "image"
+title = "child eating breakfast happy"
+
+[[generated]]
+id = "WRXSPp6YVyCoeS4Hgyqs1"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/school_positive.png"
+type = "image"
+title = "child excited for school"
+
+[[generated]]
+id = "juDFclujol2bFlafjgkgb"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/study_positive.png"
+type = "image"
+title = "child studying focused happy"
+
+[[generated]]
+id = "uEzZSKMDBgveISeRgzTUb"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/study_negative.png"
+type = "image"
+title = "child distracted from study"
+
+[[generated]]
+id = "QNx63qAjs21MVxek2Ubcr"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/playing_positive.png"
+type = "image"
+title = "child playing outdoor happy"
+
+[[generated]]
+id = "quoJN1HuTrdMwhtbhzUJJ"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/sleeping_positive.png"
+type = "image"
+title = "child sleeping peacefully"
+
+[[generated]]
+id = "TUYhRNnji3tEgd9OfeHmI"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/sleeping_negative.png"
+type = "image"
+title = "child fighting sleep tired"
+
+[[generated]]
+id = "uHzQ63_iHFr4B0LWU7cDg"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/exercise_positive.png"
+type = "image"
+title = "child morning exercise"
+
+[[generated]]
+id = "zyZn9qxWzUUFdeN4I3Vrg"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/exercise_negative.png"
+type = "image"
+title = "child being lazy reminder"
+
+[[generated]]
+id = "LH7bxu8Hfr8crqei8pTwB"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/bath_positive.png"
+type = "image"
+title = "child bath time happy"
+
+[[generated]]
+id = "6xfKUxiDgyf03Ur6H7b0k"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/tiffin_positive.png"
+type = "image"
+title = "colorful tiffin lunchbox"
+
+[[generated]]
+id = "52JNcsxo29qW9yklrma09"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/bonding_positive.png"
+type = "image"
+title = "family bonding together"
+
+[[generated]]
+id = "oD9Eikr3H2ACvJqhJAMHe"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/reading_positive.png"
+type = "image"
+title = "child reading book cozy"
+
+[[generated]]
+id = "PuVlkCp_4KJg5geoVnNEY"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/snack_positive.png"
+type = "image"
+title = "child eating healthy snack"
+
+[[generated]]
+id = "E6PA_EdQ92TCedF58L5x1"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/travel_positive.png"
+type = "image"
+title = "child school travel happy"
+
+[[generated]]
+id = "OjjS2Kt8rDEBvsoJMqAWz"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/homework_positive.png"
+type = "image"
+title = "child finishing homework proud"
+
+[[generated]]
+id = "vva3pYQnJOQdPQHRjZumJ"
+uri = "file://artifacts/kidschedule/src/assets/activity-images/dinner_positive.png"
+type = "image"
+title = "family dinner together happy"

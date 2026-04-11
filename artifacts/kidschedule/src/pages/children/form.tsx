@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Trash2, Loader2, Baby } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Loader2, Baby, Camera, X } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
@@ -61,6 +61,8 @@ export default function ChildForm() {
   const queryClient = useQueryClient();
   const authFetch = useAuthFetch();
   const [babysitters, setBabysitters] = useState<Babysitter[]>([]);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isEditing = !!params.id && params.id !== "new";
   const childId = isEditing ? parseInt(params.id as string) : 0;
@@ -118,8 +120,23 @@ export default function ChildForm() {
         goals: child.goals,
         babysitterId: child.babysitterId ?? undefined,
       });
+      if ((child as any).photoUrl) setPhotoPreview((child as any).photoUrl);
     }
   }, [child, form, isEditing]);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Photo too large", description: "Please choose an image under 2MB.", variant: "destructive" });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = (data: ChildFormValues) => {
     const payload = {
@@ -127,6 +144,7 @@ export default function ChildForm() {
       childClass: data.childClass?.trim() || undefined,
       travelModeOther: data.travelMode === "other" ? data.travelModeOther : undefined,
       babysitterId: data.babysitterId || undefined,
+      photoUrl: photoPreview || undefined,
     };
 
     if (isEditing) {
@@ -195,6 +213,52 @@ export default function ChildForm() {
         <CardContent className="p-6 sm:p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+              {/* Child Photo Upload */}
+              <div>
+                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Child's Photo</p>
+                <div className="flex items-center gap-5">
+                  <div
+                    className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-primary/20 bg-muted flex items-center justify-center cursor-pointer hover:border-primary/50 transition-all group"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    {photoPreview ? (
+                      <>
+                        <img src={photoPreview} alt="Child photo" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Camera className="h-6 w-6 text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                        <Camera className="h-7 w-7" />
+                        <span className="text-[10px] font-bold">Add Photo</span>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-foreground text-sm">Upload a photo of your child</p>
+                    <p className="text-xs text-muted-foreground mt-1">This will be shown alongside their daily routine to make it feel more personal. Max 2MB.</p>
+                    <div className="flex gap-2 mt-2">
+                      <Button type="button" size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={() => fileInputRef.current?.click()}>
+                        <Camera className="h-3 w-3 mr-1.5" />Choose Photo
+                      </Button>
+                      {photoPreview && (
+                        <Button type="button" size="sm" variant="ghost" className="rounded-full h-8 text-xs text-muted-foreground" onClick={() => { setPhotoPreview(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}>
+                          <X className="h-3 w-3 mr-1" />Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Name + Age + Class */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
