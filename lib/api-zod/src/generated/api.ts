@@ -20,8 +20,10 @@ export const HealthCheckResponse = zod.object({
 export const ListChildrenResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
+  dob: zod.string().nullish(),
   age: zod.number(),
   ageMonths: zod.number().default(0),
+  isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
@@ -42,8 +44,10 @@ export const ListChildrenResponse = zod.array(ListChildrenResponseItem);
  */
 export const CreateChildBody = zod.object({
   name: zod.string(),
+  dob: zod.string().optional(),
   age: zod.number(),
   ageMonths: zod.number().optional(),
+  isSchoolGoing: zod.boolean().optional(),
   childClass: zod.string().optional(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
@@ -67,8 +71,10 @@ export const GetChildParams = zod.object({
 export const GetChildResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
+  dob: zod.string().nullish(),
   age: zod.number(),
   ageMonths: zod.number().default(0),
+  isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
@@ -92,8 +98,10 @@ export const UpdateChildParams = zod.object({
 
 export const UpdateChildBody = zod.object({
   name: zod.string().optional(),
+  dob: zod.string().optional(),
   age: zod.number().optional(),
   ageMonths: zod.number().optional(),
+  isSchoolGoing: zod.boolean().optional(),
   childClass: zod.string().optional(),
   schoolStartTime: zod.string().optional(),
   schoolEndTime: zod.string().optional(),
@@ -110,8 +118,10 @@ export const UpdateChildBody = zod.object({
 export const UpdateChildResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
+  dob: zod.string().nullish(),
   age: zod.number(),
   ageMonths: zod.number().default(0),
+  isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),

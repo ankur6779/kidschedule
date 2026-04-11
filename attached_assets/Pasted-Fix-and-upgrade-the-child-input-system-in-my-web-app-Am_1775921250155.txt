@@ -1,0 +1,119 @@
+Fix and upgrade the child input system in my web app "AmyNest" to make it intelligent, age-aware, and user-friendly.
+
+--------------------------------
+1. Replace Age Input with DOB (Important 🔥)
+--------------------------------
+- Instead of asking:
+  - Age in years/months
+
+- Ask:
+  - Date of Birth (DOB)
+
+- Automatically calculate:
+  - Age in years and months using current system date
+
+--------------------------------
+2. Auto Age Calculation Logic
+--------------------------------
+- Use system date
+- Calculate:
+  ageYears
+  ageMonths
+
+- Store:
+  { dob, ageYears, ageMonths }
+
+--------------------------------
+3. Age Group Detection
+--------------------------------
+- Based on calculated age:
+  - Infant: 0–1 year
+  - Toddler: 1–3
+  - Preschool: 3–5
+  - School Age: 5+
+
+--------------------------------
+4. School Input Logic (Fix Current Bug 🔥)
+--------------------------------
+- Ask parent:
+  “Does your child go to school?”
+
+Options:
+  - Yes
+  - No
+
+--------------------------------
+5. Conditional Fields (Very Important)
+--------------------------------
+
+IF school = YES:
+- Show full fields:
+  - School time
+  - Travel mode
+  - Class (optional)
+
+IF school = NO:
+- DO NOT show:
+  - School time
+  - Travel mode
+
+- Only ask:
+  - Basic routine preferences (optional)
+
+--------------------------------
+6. Infant Special Handling
+--------------------------------
+IF ageGroup == Infant:
+- DO NOT ask school question at all
+- Directly:
+  - Enable Infant Mode
+  - Show parenting guidance
+
+--------------------------------
+7. Smart UX Flow
+--------------------------------
+Step 1: Enter child name  
+Step 2: Enter DOB  
+Step 3: System calculates age  
+Step 4:
+  IF not infant → ask school question  
+  IF infant → skip school completely  
+
+--------------------------------
+8. Data Storage
+--------------------------------
+Store:
+{
+  name,
+  dob,
+  ageYears,
+  ageMonths,
+  ageGroup,
+  isSchoolGoing (true/false),
+  schoolDetails (only if applicable)
+}
+
+--------------------------------
+9. UI Improvements
+--------------------------------
+- Show:
+  “Age: 2 years 3 months” (auto calculated)
+- Show age group label:
+  “Toddler Mode”
+
+--------------------------------
+10. Validation
+--------------------------------
+- Ensure DOB is valid
+- Prevent future dates
+
+--------------------------------
+11. Keep everything simple
+--------------------------------
+- Beginner-friendly
+- No backend required
+- Use localStorage
+
+--------------------------------
+Return:
+Updated working code with DOB-based input, smart school logic, and proper conditional flow implemented.

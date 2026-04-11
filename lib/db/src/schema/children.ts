@@ -1,12 +1,14 @@
-import { pgTable, text, integer, serial, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, serial, timestamp, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
 export const childrenTable = pgTable("children", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  dob: text("dob"),
   age: integer("age").notNull(),
   ageMonths: integer("age_months").notNull().default(0),
+  isSchoolGoing: boolean("is_school_going"),
   childClass: text("child_class"),
   schoolStartTime: text("school_start_time").notNull(),
   schoolEndTime: text("school_end_time").notNull(),

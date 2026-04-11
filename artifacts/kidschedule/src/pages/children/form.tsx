@@ -10,21 +10,16 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Trash2, Loader2, Baby, Camera, X } from "lucide-react";
+import { ArrowLeft, Save, Trash2, Loader2, Baby, Camera, X, GraduationCap, School } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+  AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface Babysitter {
@@ -37,21 +32,49 @@ const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
 const childSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  age: z.coerce.number().min(0, "Age must be 0 or more").max(18, "Age must be 18 or under"),
-  ageMonths: z.coerce.number().min(0).max(11).optional(),
+  dob: z.string().min(1, "Date of birth is required"),
+  isSchoolGoing: z.boolean().optional(),
   childClass: z.string().optional(),
   wakeUpTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   sleepTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
-  schoolStartTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
-  schoolEndTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
-  travelMode: z.enum(["van", "car", "walk", "other"]),
+  schoolStartTime: z.string().optional(),
+  schoolEndTime: z.string().optional(),
+  travelMode: z.enum(["van", "car", "walk", "other"]).optional(),
   travelModeOther: z.string().optional(),
   foodType: z.enum(["veg", "non_veg"]),
-  goals: z.string().min(1, "Goals are required to generate good routines"),
+  goals: z.string().optional(),
   babysitterId: z.coerce.number().optional(),
 });
 
 type ChildFormValues = z.infer<typeof childSchema>;
+
+function calculateAge(dob: string): { years: number; months: number } {
+  if (!dob) return { years: 0, months: 0 };
+  const today = new Date();
+  const birth = new Date(dob + "T00:00:00");
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  if (today.getDate() < birth.getDate()) months--;
+  if (months < 0) { years--; months += 12; }
+  return { years: Math.max(0, years), months: Math.max(0, months) };
+}
+
+function formatAge(years: number, months: number): string {
+  if (years === 0 && months === 0) return "Newborn";
+  if (years === 0) return `${months} month${months !== 1 ? "s" : ""}`;
+  if (months === 0) return `${years} year${years !== 1 ? "s" : ""}`;
+  return `${years} year${years !== 1 ? "s" : ""} ${months} month${months !== 1 ? "s" : ""}`;
+}
+
+function getAgeGroupInfo(totalMonths: number) {
+  if (totalMonths < 12) return { label: "Infant", emoji: "👶", color: "bg-pink-100 text-pink-800 border-pink-200" };
+  if (totalMonths < 36) return { label: "Toddler", emoji: "🍼", color: "bg-purple-100 text-purple-800 border-purple-200" };
+  if (totalMonths < 60) return { label: "Preschool", emoji: "🎨", color: "bg-blue-100 text-blue-800 border-blue-200" };
+  if (totalMonths < 120) return { label: "School Age", emoji: "📚", color: "bg-green-100 text-green-800 border-green-200" };
+  return { label: "Pre-Teen", emoji: "🎯", color: "bg-orange-100 text-orange-800 border-orange-200" };
+}
+
+const todayStr = new Date().toISOString().slice(0, 10);
 
 const inputClass = "rounded-xl h-12 bg-muted/50 border-transparent focus-visible:bg-background";
 
@@ -75,15 +98,14 @@ export default function ChildForm() {
   const createMutation = useCreateChild();
   const updateMutation = useUpdateChild();
   const deleteMutation = useDeleteChild();
-
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const form = useForm<ChildFormValues>({
     resolver: zodResolver(childSchema),
     defaultValues: {
       name: "",
-      age: 7,
-      ageMonths: 0,
+      dob: "",
+      isSchoolGoing: undefined,
       childClass: "",
       wakeUpTime: "07:00",
       sleepTime: "21:00",
@@ -96,10 +118,15 @@ export default function ChildForm() {
       babysitterId: undefined,
     },
   });
-  
-  const watchAge = form.watch("age");
 
+  const watchDob = form.watch("dob");
+  const watchIsSchoolGoing = form.watch("isSchoolGoing");
   const travelMode = form.watch("travelMode");
+
+  const calculatedAge = watchDob ? calculateAge(watchDob) : null;
+  const totalMonths = calculatedAge ? calculatedAge.years * 12 + calculatedAge.months : 0;
+  const isInfant = totalMonths < 12;
+  const ageGroupInfo = calculatedAge ? getAgeGroupInfo(totalMonths) : null;
 
   useEffect(() => {
     authFetch("/api/babysitters")
@@ -110,19 +137,21 @@ export default function ChildForm() {
 
   useEffect(() => {
     if (child && isEditing) {
+      const dobValue = (child as any).dob ?? "";
+      const isSchoolGoingValue = (child as any).isSchoolGoing;
       form.reset({
         name: child.name,
-        age: child.age,
-        ageMonths: (child as any).ageMonths ?? 0,
+        dob: dobValue,
+        isSchoolGoing: isSchoolGoingValue ?? undefined,
         childClass: child.childClass ?? "",
         wakeUpTime: child.wakeUpTime ?? "07:00",
         sleepTime: child.sleepTime ?? "21:00",
-        schoolStartTime: child.schoolStartTime,
-        schoolEndTime: child.schoolEndTime,
+        schoolStartTime: child.schoolStartTime ?? "08:00",
+        schoolEndTime: child.schoolEndTime ?? "15:00",
         travelMode: (child.travelMode as "van" | "car" | "walk" | "other") ?? "car",
         travelModeOther: child.travelModeOther ?? "",
         foodType: (child.foodType as "veg" | "non_veg") ?? "veg",
-        goals: child.goals,
+        goals: child.goals ?? "",
         babysitterId: child.babysitterId ?? undefined,
       });
       if ((child as any).photoUrl) setPhotoPreview((child as any).photoUrl);
@@ -155,10 +184,24 @@ export default function ChildForm() {
   };
 
   const onSubmit = (data: ChildFormValues) => {
+    const age = calculatedAge ?? { years: 0, months: 0 };
+    const schoolGoing = isInfant ? false : (data.isSchoolGoing ?? false);
+
     const payload = {
-      ...data,
+      name: data.name,
+      dob: data.dob,
+      age: age.years,
+      ageMonths: age.months,
+      isSchoolGoing: schoolGoing,
       childClass: data.childClass?.trim() || undefined,
-      travelModeOther: data.travelMode === "other" ? data.travelModeOther : undefined,
+      wakeUpTime: data.wakeUpTime,
+      sleepTime: data.sleepTime,
+      schoolStartTime: schoolGoing ? (data.schoolStartTime ?? "08:00") : "08:00",
+      schoolEndTime: schoolGoing ? (data.schoolEndTime ?? "15:00") : "15:00",
+      travelMode: schoolGoing ? (data.travelMode ?? "car") : "car",
+      travelModeOther: schoolGoing && data.travelMode === "other" ? data.travelModeOther : undefined,
+      foodType: data.foodType,
+      goals: data.goals?.trim() || "General daily routine",
       babysitterId: data.babysitterId || undefined,
       photoUrl: photoPreview || undefined,
     };
@@ -230,7 +273,7 @@ export default function ChildForm() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
-              {/* Child Photo Upload */}
+              {/* Photo Upload */}
               <div>
                 <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Child's Photo</p>
                 <div className="flex items-center gap-5">
@@ -251,17 +294,11 @@ export default function ChildForm() {
                         <span className="text-[10px] font-bold">Add Photo</span>
                       </div>
                     )}
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePhotoChange}
-                    />
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-foreground text-sm">Upload a photo of your child</p>
-                    <p className="text-xs text-muted-foreground mt-1">This will be shown alongside their daily routine to make it feel more personal. Max 2MB.</p>
+                    <p className="text-xs text-muted-foreground mt-1">Shown alongside daily routines. Max 2MB.</p>
                     <div className="flex gap-2 mt-2">
                       <Button type="button" size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={() => fileInputRef.current?.click()}>
                         <Camera className="h-3 w-3 mr-1.5" />Choose Photo
@@ -276,85 +313,217 @@ export default function ChildForm() {
                 </div>
               </div>
 
-              {/* Name + Age + Class */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* ── STEP 1: Name ── */}
+              <div>
+                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Step 1 — Child Info</p>
                 <FormField control={form.control} name="name" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold">Child's Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Leo" className={inputClass} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="age" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Age (Years)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} max={18} className={inputClass} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="ageMonths" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">
-                      Months{" "}
-                      <span className="font-normal text-muted-foreground">(for infants)</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" min={0} max={11} placeholder="0–11" className={inputClass} {...field} />
+                      <Input placeholder="e.g. Aarav, Priya, Leo" className={inputClass} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
               </div>
 
-              {/* Infant banner */}
-              {Number(watchAge) === 0 && (
+              {/* ── STEP 2: DOB ── */}
+              <div>
+                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Step 2 — Date of Birth</p>
+                <FormField control={form.control} name="dob" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">📅 Date of Birth</FormLabel>
+                    <FormDescription>We use this to auto-detect the age group and customize the routine.</FormDescription>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        max={todayStr}
+                        className={inputClass}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+
+                {/* Auto-calculated age display */}
+                {calculatedAge && watchDob && (
+                  <div className="mt-3 flex items-center gap-3 flex-wrap">
+                    <div className="bg-muted/50 border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2.5">
+                      <span className="text-xl">{ageGroupInfo?.emoji}</span>
+                      <div>
+                        <p className="text-xs text-muted-foreground font-medium">Calculated Age</p>
+                        <p className="font-bold text-foreground text-sm">
+                          {formatAge(calculatedAge.years, calculatedAge.months)}
+                        </p>
+                      </div>
+                    </div>
+                    {ageGroupInfo && (
+                      <Badge className={`text-sm font-bold border px-3 py-1.5 ${ageGroupInfo.color}`}>
+                        {ageGroupInfo.emoji} {ageGroupInfo.label} Mode
+                      </Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── INFANT BANNER ── */}
+              {calculatedAge && isInfant && (
                 <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 flex items-start gap-3">
                   <span className="text-2xl">👶</span>
                   <div>
                     <p className="font-bold text-pink-800">Infant Mode will be used</p>
                     <p className="text-xs text-pink-700 mt-1">
-                      For babies under 1 year, AmyNest shows parenting guidance cards, feeding tips, vaccination reminders, and lullaby music instead of a daily routine.
+                      For babies under 1 year, AmyNest shows parenting guidance cards, feeding schedules, vaccination reminders, and soothing tips. School and travel questions are skipped.
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Age group label for older children */}
-              {Number(watchAge) >= 1 && Number(watchAge) <= 15 && (() => {
-                const totalMonths = Number(watchAge) * 12 + Number(form.watch("ageMonths") ?? 0);
-                const group = totalMonths < 36 ? "Toddler 🍼" : totalMonths < 60 ? "Preschool 🎨" : totalMonths < 120 ? "School Age 📚" : "Pre-Teen 🎯";
-                return (
-                  <div className="text-xs text-muted-foreground bg-muted/50 rounded-xl px-4 py-2 inline-flex items-center gap-2">
-                    <span className="font-bold">Age Group:</span> {group}
+              {/* ── STEP 3: School Question (non-infant only) ── */}
+              {calculatedAge && !isInfant && (
+                <div>
+                  <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide flex items-center gap-2">
+                    <School className="h-3.5 w-3.5" />
+                    Step 3 — School
+                  </p>
+                  <p className="font-bold text-foreground mb-3">Does {form.watch("name") || "your child"} go to school?</p>
+                  <div className="flex gap-3">
+                    {[
+                      { value: true, label: "🏫 Yes, goes to school" },
+                      { value: false, label: "🏠 Not yet / Homeschool" },
+                    ].map((opt) => (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onClick={() => form.setValue("isSchoolGoing", opt.value, { shouldValidate: true })}
+                        className={`flex-1 py-3 px-4 rounded-2xl font-bold border-2 transition-all text-sm ${
+                          watchIsSchoolGoing === opt.value
+                            ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                            : "bg-muted/50 text-foreground border-transparent hover:border-primary/40"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
                   </div>
-                );
-              })()}
+                  {watchIsSchoolGoing === undefined && (
+                    <p className="text-xs text-amber-600 mt-2 font-medium">Please select an option to continue</p>
+                  )}
+                </div>
+              )}
 
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                <FormField control={form.control} name="childClass" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="font-bold">Class / Grade <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Grade 5, Class 3" className={inputClass} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+              {/* ── SCHOOL DETAILS (only if school = YES) ── */}
+              {calculatedAge && !isInfant && watchIsSchoolGoing === true && (
+                <>
+                  {/* Class */}
+                  <div>
+                    <FormField control={form.control} name="childClass" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-bold flex items-center gap-2">
+                          <GraduationCap className="h-4 w-4 text-primary" />
+                          Class / Grade <span className="font-normal text-muted-foreground">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Grade 5, UKG, Class 3" className={inputClass} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                  </div>
+
+                  {/* School Hours */}
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">School Hours</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField control={form.control} name="schoolStartTime" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-bold">🎒 School Starts</FormLabel>
+                          <FormControl>
+                            <Input type="time" className={inputClass} defaultValue="08:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField control={form.control} name="schoolEndTime" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-bold">🏠 School Ends</FormLabel>
+                          <FormControl>
+                            <Input type="time" className={inputClass} defaultValue="15:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                  </div>
+
+                  {/* Travel Mode */}
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">School Travel</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField control={form.control} name="travelMode" render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-bold">🚌 Travel Mode</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value ?? "car"}>
+                            <FormControl>
+                              <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Select travel mode" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="van">🚐 School Van / Bus</SelectItem>
+                              <SelectItem value="car">🚗 Car (Parent Drop-off)</SelectItem>
+                              <SelectItem value="walk">🚶 Walking</SelectItem>
+                              <SelectItem value="other">✏️ Other (specify)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      {travelMode === "other" && (
+                        <FormField control={form.control} name="travelModeOther" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-bold">Specify Travel Mode</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Bicycle, Rickshaw..." className={inputClass} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* ── WAKE / SLEEP ── */}
+              <div>
+                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Daily Schedule</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField control={form.control} name="wakeUpTime" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">⏰ Wake-up Time</FormLabel>
+                      <FormControl><Input type="time" className={inputClass} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="sleepTime" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold">🌙 Bedtime</FormLabel>
+                      <FormControl><Input type="time" className={inputClass} {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
               </div>
 
-              {/* Food Preference */}
+              {/* ── FOOD PREFERENCE ── */}
               <div>
                 <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Food Preference</p>
                 <FormField control={form.control} name="foodType" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold">🍽️ Diet Type</FormLabel>
-                    <FormDescription>
-                      Used for smart tiffin and meal suggestions tailored to your child.
-                    </FormDescription>
+                    <FormDescription>Used for smart tiffin and meal suggestions.</FormDescription>
                     <div className="flex gap-3 mt-1">
                       {[
                         { value: "veg", label: "🥦 Vegetarian", desc: "No meat/fish/eggs" },
@@ -380,107 +549,16 @@ export default function ChildForm() {
                 )} />
               </div>
 
-              {/* Wake-up + Sleep */}
-              <div>
-                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">Daily Schedule</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="wakeUpTime" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-bold">⏰ Wake-up Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" className={inputClass} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="sleepTime" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-bold">🌙 Bedtime</FormLabel>
-                      <FormControl>
-                        <Input type="time" className={inputClass} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-              </div>
-
-              {/* School times */}
-              <div>
-                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">School Hours</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="schoolStartTime" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-bold">🎒 School Starts</FormLabel>
-                      <FormControl>
-                        <Input type="time" className={inputClass} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="schoolEndTime" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-bold">🏠 School Ends</FormLabel>
-                      <FormControl>
-                        <Input type="time" className={inputClass} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-              </div>
-
-              {/* Travel Mode */}
-              <div>
-                <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">School Travel</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="travelMode" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="font-bold">🚌 Travel Mode</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger className={inputClass}>
-                            <SelectValue placeholder="Select travel mode" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="van">🚐 School Van / Bus</SelectItem>
-                          <SelectItem value="car">🚗 Car (Parent Drop-off)</SelectItem>
-                          <SelectItem value="walk">🚶 Walking</SelectItem>
-                          <SelectItem value="other">✏️ Other (specify)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-
-                  {travelMode === "other" && (
-                    <FormField control={form.control} name="travelModeOther" render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-bold">Specify Travel Mode</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Bicycle, Rickshaw..." className={inputClass} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-                  )}
-                </div>
-              </div>
-
-              {/* Babysitter Assignment */}
+              {/* ── BABYSITTER ── */}
               {babysitters.length > 0 && (
                 <div>
                   <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">
-                    <Baby className="h-3.5 w-3.5 inline mr-1" />
-                    Babysitter
+                    <Baby className="h-3.5 w-3.5 inline mr-1" />Babysitter
                   </p>
                   <FormField control={form.control} name="babysitterId" render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="font-bold">Assign a Babysitter (optional)</FormLabel>
-                      <FormDescription>
-                        The AI will tailor the routine for when a babysitter is on duty.
-                      </FormDescription>
+                      <FormLabel className="font-bold">Assign a Babysitter <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                      <FormDescription>Routines will be tailored when a babysitter is on duty.</FormDescription>
                       <Select
                         onValueChange={(v) => field.onChange(v === "none" ? undefined : parseInt(v))}
                         value={field.value ? String(field.value) : "none"}
@@ -505,17 +583,19 @@ export default function ChildForm() {
                 </div>
               )}
 
-              {/* Goals */}
+              {/* ── GOALS ── */}
               <FormField control={form.control} name="goals" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold">🎯 Daily Goals & Focus</FormLabel>
+                  <FormLabel className="font-bold">🎯 Daily Goals & Focus <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
                   <FormDescription>
-                    What are you working on? (e.g., "Study math, join swimming, reduce screen time")
+                    What are you working on? (e.g., "Math practice, swimming on Tuesdays, reduce screen time")
                   </FormDescription>
                   <FormControl>
                     <Textarea
-                      placeholder="Leo is working on math and reading every day. He also does swimming on Tuesdays and Thursdays."
-                      className="min-h-[100px] rounded-xl bg-muted/50 border-transparent focus-visible:bg-background resize-none"
+                      placeholder={isInfant
+                        ? "e.g. Tummy time, sensory play, sleep training"
+                        : `${form.watch("name") || "Your child"} is working on... (leave blank for default routine)`}
+                      className="min-h-[90px] rounded-xl bg-muted/50 border-transparent focus-visible:bg-background resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -523,47 +603,56 @@ export default function ChildForm() {
                 </FormItem>
               )} />
 
-              <div className="flex items-center justify-between pt-4 mt-6 border-t border-border/50">
-                {isEditing ? (
+              {/* ── ACTION BUTTONS ── */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="submit"
+                  disabled={isSaving || !watchDob || (!isInfant && watchIsSchoolGoing === undefined)}
+                  className="flex-1 rounded-full h-12 font-bold"
+                >
+                  {isSaving ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>
+                  ) : (
+                    <><Save className="h-4 w-4 mr-2" />{isEditing ? "Update Profile" : "Add Child"}</>
+                  )}
+                </Button>
+
+                {isEditing && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button type="button" variant="destructive" className="rounded-full bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground">
-                        <Trash2 className="h-4 w-4 mr-2" />Delete
+                      <Button type="button" variant="outline" size="icon" className="rounded-full h-12 w-12 border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent className="rounded-3xl">
+                    <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete this profile?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete {child?.name}'s profile and all their routines. This cannot be undone.
+                          This will permanently delete {child?.name}'s profile and all their routine data. This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel className="rounded-full">Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="rounded-full bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                          Delete Profile
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Yes, delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                ) : <div />}
-
-                <Button type="submit" disabled={isSaving} className="rounded-full shadow-sm ml-auto min-w-[120px]">
-                  {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                  {isEditing ? "Save Changes" : "Add Child"}
-                </Button>
+                )}
               </div>
+
+              {!watchDob && (
+                <p className="text-center text-xs text-muted-foreground">Enter your child's date of birth to continue</p>
+              )}
+              {!isInfant && watchDob && watchIsSchoolGoing === undefined && (
+                <p className="text-center text-xs text-amber-600 font-medium">Please answer the school question above</p>
+              )}
+
             </form>
           </Form>
         </CardContent>
       </Card>
-
-      {babysitters.length === 0 && (
-        <p className="text-xs text-center text-muted-foreground">
-          Want to assign a babysitter?{" "}
-          <Link href="/babysitters" className="text-primary underline">Add a babysitter first</Link>.
-        </p>
-      )}
     </div>
   );
 }
