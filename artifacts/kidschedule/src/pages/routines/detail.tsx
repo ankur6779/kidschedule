@@ -109,6 +109,8 @@ export default function RoutineDetail() {
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
   const [recipeData, setRecipeData] = useState<any>(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
+  const [aiImagesLoading, setAiImagesLoading] = useState(false);
+  const aiImagesTriggeredRef = useRef(false);
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const { data: routine, isLoading } = useGetRoutine(routineId, {
@@ -142,6 +144,22 @@ export default function RoutineDetail() {
         .catch(() => {});
     }
   }, [routine]);
+
+  // Auto-trigger AI personalized image generation
+  useEffect(() => {
+    if (!localItems || aiImagesTriggeredRef.current || !routineId) return;
+    const needsGeneration = localItems.some((it) => !(it as any).imageUrl);
+    if (!needsGeneration) return;
+    aiImagesTriggeredRef.current = true;
+    setAiImagesLoading(true);
+    authFetch(`/api/routines/${routineId}/generate-images`, { method: "POST" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: any) => {
+        if (data?.items) setLocalItems(data.items as RoutineItem[]);
+      })
+      .catch(() => {})
+      .finally(() => setAiImagesLoading(false));
+  }, [localItems, routineId]);
 
   const buildShareMessage = () => {
     if (!routine) return "";
@@ -423,6 +441,19 @@ export default function RoutineDetail() {
         )}
       </header>
 
+      {/* AI Image Generation Banner */}
+      {aiImagesLoading && (
+        <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl px-4 py-3 mb-4">
+          <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center animate-pulse">
+            <span className="text-base">✨</span>
+          </div>
+          <div>
+            <p className="text-sm font-bold text-purple-800">Creating personalized illustrations…</p>
+            <p className="text-xs text-purple-600">AI is drawing {routine?.childName} in each activity using their photo. This takes ~30–60 seconds and is saved for next time.</p>
+          </div>
+        </div>
+      )}
+
       <div className="relative mt-2">
         <div className="absolute left-[39px] sm:left-[55px] top-4 bottom-4 w-0.5 bg-border/60 z-0 rounded-full" />
 
@@ -460,18 +491,24 @@ export default function RoutineDetail() {
                         {/* Activity Illustration */}
                         <div className="relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
                           {(() => {
+                            const aiImageUrl = (item as any).imageUrl as string | undefined;
                             const seed = (routineId ?? 0) * 100 + index;
-                            const imgData = getActivityImage(item.category, item.activity, seed);
+                            const fallback = getActivityImage(item.category, item.activity, seed);
+                            const isLoading = aiImagesLoading && !aiImageUrl;
+                            if (isLoading) {
+                              return (
+                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 animate-pulse">
+                                  <span className="text-xl">✨</span>
+                                </div>
+                              );
+                            }
                             return (
                               <>
                                 <img
-                                  src={imgData.src}
+                                  src={aiImageUrl ?? fallback.src}
                                   alt={item.activity}
                                   className={`w-full h-full object-cover ${status === "skipped" ? "grayscale opacity-50" : status === "completed" ? "opacity-80" : ""}`}
                                 />
-                                {imgData.variant === "negative" && (
-                                  <div className="absolute bottom-0.5 right-0.5 bg-amber-400 rounded-full text-[8px] w-4 h-4 flex items-center justify-center">⚠️</div>
-                                )}
                                 {status === "completed" && (
                                   <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center">
                                     <div className="bg-green-500 rounded-full w-5 h-5 flex items-center justify-center">
@@ -479,11 +516,8 @@ export default function RoutineDetail() {
                                     </div>
                                   </div>
                                 )}
-                                {/* Child photo avatar overlay */}
-                                {childPhotoUrl && (
-                                  <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full border-2 border-background overflow-hidden bg-muted shadow-sm">
-                                    <img src={childPhotoUrl} alt={routine?.childName} className="w-full h-full object-cover" />
-                                  </div>
+                                {aiImageUrl && (
+                                  <div className="absolute top-0.5 right-0.5 bg-purple-500 rounded-full w-4 h-4 flex items-center justify-center text-[8px]">✨</div>
                                 )}
                               </>
                             );

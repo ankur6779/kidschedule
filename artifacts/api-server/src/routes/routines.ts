@@ -15,7 +15,10 @@ import {
   GenerateRoutineResponse,
   GenerateInsightsResponse,
 } from "@workspace/api-zod";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { openai, generateImageBuffer, toFile } from "@workspace/integrations-openai-ai-server";
+import { writeFileSync, unlinkSync } from "fs";
+import { join } from "path";
+import { tmpdir } from "os";
 
 type RoutineItem = {
   time: string;
@@ -423,6 +426,97 @@ Return ONLY valid JSON, no markdown, no explanation.`;
   const generated = JSON.parse(content);
 
   res.json(GenerateInsightsResponse.parse(generated));
+});
+
+// Generate personalized AI activity images using child's actual photo
+router.post("/routines/:id/generate-images", async (req, res): Promise<void> => {
+  const routineId = parseInt(req.params.id);
+  if (isNaN(routineId)) { res.status(400).json({ error: "Invalid routine id" }); return; }
+
+  const [routine] = await db.select().from(routinesTable).where(eq(routinesTable.id, routineId));
+  if (!routine) { res.status(404).json({ error: "Routine not found" }); return; }
+
+  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
+
+  const items = (routine.items ?? []) as Array<RoutineItem & { imageUrl?: string }>;
+
+  // Return cached if all images already generated
+  if (items.length > 0 && items.every((it) => it.imageUrl)) {
+    res.json({ items });
+    return;
+  }
+
+  const childName = child?.name ?? "a child";
+  const childAge = child?.age ?? 6;
+  const childPhotoUrl = (child as any)?.photoUrl as string | null ?? null;
+
+  let tempPhotoPath: string | null = null;
+  if (childPhotoUrl) {
+    try {
+      const base64Data = childPhotoUrl.replace(/^data:image\/\w+;base64,/, "");
+      const buf = Buffer.from(base64Data, "base64");
+      const ext = childPhotoUrl.includes("data:image/png") ? "png" : "jpg";
+      tempPhotoPath = join(tmpdir(), `amynest-child-${child!.id}-${Date.now()}.${ext}`);
+      writeFileSync(tempPhotoPath, buf);
+    } catch {
+      tempPhotoPath = null;
+    }
+  }
+
+  const generateOne = async (item: RoutineItem & { imageUrl?: string }, index: number): Promise<RoutineItem & { imageUrl?: string }> => {
+    if (item.imageUrl) return item;
+
+    const activityVerb = item.activity.toLowerCase();
+    const prompt = tempPhotoPath
+      ? `Using this child's photo as a reference, create a vibrant Pixar/Disney-cartoon style illustration of this exact child, ${childAge} years old, happily ${activityVerb}. Maintain the child's facial features, hair color and style, and skin tone but in a cute cartoon style. The scene should be warm, cheerful, safe for kids, and brightly colored. No text or words in the image.`
+      : `A vibrant Pixar/Disney-cartoon style illustration of a cheerful ${childAge}-year-old child named ${childName} happily ${activityVerb}. Warm, colorful, safe for kids, bright background. No text in the image.`;
+
+    try {
+      let imageBuffer: Buffer;
+      if (tempPhotoPath) {
+        const fs = await import("fs");
+        const mimeType = tempPhotoPath.endsWith(".png") ? "image/png" : "image/jpeg";
+        const fname = `child-photo.${tempPhotoPath.endsWith(".png") ? "png" : "jpg"}`;
+        const imageFile = await toFile(fs.createReadStream(tempPhotoPath), fname, { type: mimeType });
+        const response = await openai.images.edit({
+          model: "gpt-image-1",
+          image: imageFile,
+          prompt,
+          size: "1024x1024",
+        });
+        const b64 = response.data[0]?.b64_json ?? "";
+        imageBuffer = Buffer.from(b64, "base64");
+      } else {
+        imageBuffer = await generateImageBuffer(prompt, "1024x1024");
+      }
+      const base64 = imageBuffer.toString("base64");
+      return { ...item, imageUrl: `data:image/png;base64,${base64}` };
+    } catch (err) {
+      console.error(`Image gen failed for item ${index}:`, err);
+      return item;
+    }
+  };
+
+  // Process in parallel batches of 3
+  const BATCH = 3;
+  const updatedItems: Array<RoutineItem & { imageUrl?: string }> = new Array(items.length);
+  for (let i = 0; i < items.length; i += BATCH) {
+    const batch = items.slice(i, i + BATCH);
+    const results = await Promise.all(batch.map((item, bi) => generateOne(item, i + bi)));
+    results.forEach((r, bi) => { updatedItems[i + bi] = r; });
+  }
+
+  // Clean up temp file
+  if (tempPhotoPath) {
+    try { unlinkSync(tempPhotoPath); } catch {}
+  }
+
+  // Persist generated images in DB
+  await db.update(routinesTable)
+    .set({ items: updatedItems as any })
+    .where(eq(routinesTable.id, routineId));
+
+  res.json({ items: updatedItems });
 });
 
 export default router;
