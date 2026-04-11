@@ -6,6 +6,7 @@ export const childrenTable = pgTable("children", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   age: integer("age").notNull(),
+  ageMonths: integer("age_months").notNull().default(0),
   childClass: text("child_class"),
   schoolStartTime: text("school_start_time").notNull(),
   schoolEndTime: text("school_end_time").notNull(),

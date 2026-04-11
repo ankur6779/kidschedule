@@ -13,6 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
 import { format } from "date-fns";
+import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
+import { InfantMode } from "@/components/infant-mode";
+import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
 
 type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
 const MOOD_OPTIONS: MoodOption[] = [
@@ -617,6 +620,13 @@ export default function RoutineGenerate() {
 
   const selectedChildData = children?.find((c) => c.id === selectedChild) as ChildType | undefined;
 
+  // Compute age group for selected child
+  const selectedChildAgeGroup = selectedChildData
+    ? getAgeGroup(selectedChildData.age, (selectedChildData as any).ageMonths ?? 0)
+    : null;
+  const selectedChildAgeGroupInfo = selectedChildAgeGroup ? getAgeGroupInfo(selectedChildAgeGroup) : null;
+  const isInfantMode = selectedChildAgeGroup === "infant";
+
   // Single mode generate
   const handleGenerate = (forceOverride = false) => {
     if (!isFormValid) return;
@@ -854,44 +864,76 @@ export default function RoutineGenerate() {
                   </div>
 
                   {selectedChildData && (
-                    <div className="bg-muted/50 rounded-2xl p-4 space-y-2 border border-border/50">
-                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Profile Summary</p>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-2 text-foreground/80">
-                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                          Wake: <strong>{selectedChildData.wakeUpTime}</strong>
+                    <>
+                      <div className="bg-muted/50 rounded-2xl p-4 space-y-2 border border-border/50">
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Profile Summary</p>
+                          {selectedChildAgeGroupInfo && (
+                            <Badge className={`text-xs font-bold border ${selectedChildAgeGroupInfo.bgColor} ${selectedChildAgeGroupInfo.color}`}>
+                              {selectedChildAgeGroupInfo.emoji} {selectedChildAgeGroupInfo.label}
+                              {" · "}
+                              {formatAge(selectedChildData.age, (selectedChildData as any).ageMonths ?? 0)}
+                            </Badge>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2 text-foreground/80">
-                          <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-                          Sleep: <strong>{selectedChildData.sleepTime}</strong>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            Wake: <strong>{selectedChildData.wakeUpTime}</strong>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                            Sleep: <strong>{selectedChildData.sleepTime}</strong>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
+                            School: <strong>{selectedChildData.schoolStartTime}–{selectedChildData.schoolEndTime}</strong>
+                          </div>
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Car className="h-3.5 w-3.5 text-muted-foreground" />
+                            Travel: <strong>
+                              {selectedChildData.travelMode === "other"
+                                ? selectedChildData.travelModeOther || "Other"
+                                : TRAVEL_MODE_LABELS[selectedChildData.travelMode] ?? selectedChildData.travelMode}
+                            </strong>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-foreground/80">
-                          <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
-                          School: <strong>{selectedChildData.schoolStartTime}–{selectedChildData.schoolEndTime}</strong>
+                        <div className="flex items-center gap-2 text-sm mt-1">
+                          <span className="text-muted-foreground text-xs">Diet:</span>
+                          <span className="text-xs font-medium">{selectedChildData.foodType === "non_veg" ? "🍗 Non-Vegetarian" : "🥦 Vegetarian"}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-foreground/80">
-                          <Car className="h-3.5 w-3.5 text-muted-foreground" />
-                          Travel: <strong>
-                            {selectedChildData.travelMode === "other"
-                              ? selectedChildData.travelModeOther || "Other"
-                              : TRAVEL_MODE_LABELS[selectedChildData.travelMode] ?? selectedChildData.travelMode}
-                          </strong>
-                        </div>
+                        {selectedChildData.goals && (
+                          <div className="mt-2 pt-2 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground">🎯 {selectedChildData.goals}</p>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm mt-1">
-                        <span className="text-muted-foreground text-xs">Diet:</span>
-                        <span className="text-xs font-medium">{selectedChildData.foodType === "non_veg" ? "🍗 Non-Vegetarian" : "🥦 Vegetarian"}</span>
-                      </div>
-                      {selectedChildData.goals && (
-                        <div className="mt-2 pt-2 border-t border-border/50">
-                          <p className="text-xs text-muted-foreground">🎯 {selectedChildData.goals}</p>
+
+                      {/* Infant Mode — replace rest of form */}
+                      {isInfantMode && (
+                        <div className="mt-6 space-y-6">
+                          <InfantMode
+                            childName={selectedChildData.name}
+                            ageYears={selectedChildData.age}
+                            ageMonths={(selectedChildData as any).ageMonths ?? 0}
+                          />
                         </div>
                       )}
-                    </div>
+                    </>
                   )}
                 </div>
 
-                {/* Step 2 — Date */}
+                {/* Age-based sections (non-infant) shown after child selection */}
+                {selectedChildData && !isInfantMode && selectedChildAgeGroup && (
+                  <>
+                    <SkillFocusSection group={selectedChildAgeGroup} childName={selectedChildData.name} />
+                    <StorySection group={selectedChildAgeGroup} childName={selectedChildData.name} />
+                  </>
+                )}
+
+                {/* Step 2 — Date (hidden for infants) */}
+                {isInfantMode ? null : <></> /* placeholder to avoid empty expression */}
+                {!isInfantMode && /* Step 2 — Date */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>

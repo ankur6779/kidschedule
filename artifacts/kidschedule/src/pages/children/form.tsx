@@ -37,7 +37,8 @@ const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 
 const childSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  age: z.coerce.number().min(1, "Age must be at least 1").max(18, "Age must be 18 or under"),
+  age: z.coerce.number().min(0, "Age must be 0 or more").max(18, "Age must be 18 or under"),
+  ageMonths: z.coerce.number().min(0).max(11).optional(),
   childClass: z.string().optional(),
   wakeUpTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   sleepTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
@@ -82,6 +83,7 @@ export default function ChildForm() {
     defaultValues: {
       name: "",
       age: 7,
+      ageMonths: 0,
       childClass: "",
       wakeUpTime: "07:00",
       sleepTime: "21:00",
@@ -94,6 +96,8 @@ export default function ChildForm() {
       babysitterId: undefined,
     },
   });
+  
+  const watchAge = form.watch("age");
 
   const travelMode = form.watch("travelMode");
 
@@ -109,6 +113,7 @@ export default function ChildForm() {
       form.reset({
         name: child.name,
         age: child.age,
+        ageMonths: (child as any).ageMonths ?? 0,
         childClass: child.childClass ?? "",
         wakeUpTime: child.wakeUpTime ?? "07:00",
         sleepTime: child.sleepTime ?? "21:00",
@@ -284,13 +289,52 @@ export default function ChildForm() {
                 )} />
                 <FormField control={form.control} name="age" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="font-bold">Age</FormLabel>
+                    <FormLabel className="font-bold">Age (Years)</FormLabel>
                     <FormControl>
-                      <Input type="number" min={1} max={18} className={inputClass} {...field} />
+                      <Input type="number" min={0} max={18} className={inputClass} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+                <FormField control={form.control} name="ageMonths" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-bold">
+                      Months{" "}
+                      <span className="font-normal text-muted-foreground">(for infants)</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="number" min={0} max={11} placeholder="0–11" className={inputClass} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+
+              {/* Infant banner */}
+              {Number(watchAge) === 0 && (
+                <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 flex items-start gap-3">
+                  <span className="text-2xl">👶</span>
+                  <div>
+                    <p className="font-bold text-pink-800">Infant Mode will be used</p>
+                    <p className="text-xs text-pink-700 mt-1">
+                      For babies under 1 year, AmyNest shows parenting guidance cards, feeding tips, vaccination reminders, and lullaby music instead of a daily routine.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Age group label for older children */}
+              {Number(watchAge) >= 1 && Number(watchAge) <= 15 && (() => {
+                const totalMonths = Number(watchAge) * 12 + Number(form.watch("ageMonths") ?? 0);
+                const group = totalMonths < 36 ? "Toddler 🍼" : totalMonths < 60 ? "Preschool 🎨" : totalMonths < 120 ? "School Age 📚" : "Pre-Teen 🎯";
+                return (
+                  <div className="text-xs text-muted-foreground bg-muted/50 rounded-xl px-4 py-2 inline-flex items-center gap-2">
+                    <span className="font-bold">Age Group:</span> {group}
+                  </div>
+                );
+              })()}
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 <FormField control={form.control} name="childClass" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="font-bold">Class / Grade <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>

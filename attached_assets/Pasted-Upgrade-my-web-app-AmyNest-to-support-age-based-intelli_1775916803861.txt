@@ -1,0 +1,105 @@
+Upgrade my web app "AmyNest" to support age-based intelligent parenting, routines, and guidance from infants to 15 years.
+
+Add the following features:
+
+1. Child Age Input Upgrade:
+- Ask:
+  - Age in Years
+  - Age in Months (Important for infants)
+
+- Example:
+  - 0 years 6 months
+  - 3 years 2 months
+
+2. Age Group Classification (Core Logic 🔥):
+- Automatically categorize child into groups:
+
+  a) Infant: 0–1 year
+  b) Toddler: 1–3 years
+  c) Preschool: 3–5 years
+  d) Early School: 5–10 years
+  e) Pre-Teen: 10–15 years
+
+3. Infant Mode (Special Feature 🔥):
+- Do NOT generate strict routine
+- Instead show:
+  - Parenting guidance cards
+
+Include:
+- Feeding tips:
+  - Breastfeeding benefits
+  - Feeding intervals
+- Vaccination reminders:
+  - Why timely vaccination is important
+- Sleep guidance:
+  - Infant sleep cycles
+- Potty training timing suggestions
+
+4. Infant Engagement Features:
+- Add:
+  - Lullaby music section (play button)
+  - Soft sleep music
+- Keep audio simple (use basic audio player)
+
+5. Toddler & Preschool Mode:
+- Generate light routine:
+  - Play
+  - Basic learning
+  - Sleep
+- Add:
+  - Skill-building activities
+  - Parent-child interaction tasks
+
+6. Storytelling Feature (All Ages):
+- Add section:
+  - “Play Story”
+- Include:
+  - Moral stories (short, simple)
+  - Audio playback option
+
+7. Age-Based Activity System:
+- Suggest activities based on age:
+  Examples:
+  - Toddlers: color recognition, play
+  - Kids: study + sports
+  - Teens: focus + discipline
+
+8. Skill Development Engine:
+- Add:
+  - “Today Skill Focus”
+  Examples:
+  - Communication
+  - Creativity
+  - Discipline
+
+9. Parent Task System:
+- Give parents tasks:
+  Examples:
+  - Spend 15 min talking
+  - Read story together
+  - Outdoor activity
+
+10. Routine Personalization:
+- Adjust routine based on:
+  - Age group
+  - Parent availability
+  - School schedule
+
+11. UI Updates:
+- Show:
+  - Age group label
+  - Mode:
+    - Infant Mode / Routine Mode
+
+- Add sections:
+  - Parenting tips
+  - Activities
+  - Story section
+  - Music player
+
+12. Keep everything simple:
+- Beginner-friendly code
+- Use basic audio integration
+- Do not overcomplicate backend
+
+Return updated working code with full age-based intelligent system integrated.
