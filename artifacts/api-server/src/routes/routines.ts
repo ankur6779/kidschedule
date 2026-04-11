@@ -208,9 +208,30 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
     ? `SPECIAL PLANS TODAY: "${specialPlans.trim()}" — adjust the ENTIRE routine to revolve around this. Place it at a realistic time and rearrange other blocks accordingly.`
     : "";
 
+  // Age group classification for the prompt
+  const totalAgeMonths = (child.age * 12) + ((child as any).ageMonths ?? 0);
+  const ageGroupLabel =
+    totalAgeMonths < 12 ? "Infant (0–12 months)"
+    : totalAgeMonths < 36 ? "Toddler (1–3 years)"
+    : totalAgeMonths < 60 ? "Preschool (3–5 years)"
+    : totalAgeMonths < 120 ? "School Age (5–10 years)"
+    : "Pre-Teen (10–15 years)";
+
+  const ageGroupInstructions =
+    totalAgeMonths < 12
+      ? `AGE GROUP — INFANT: This child is a baby. DO NOT create a structured routine. Instead generate gentle daily care guidance: feeding schedule, tummy time, nap windows, bonding activities, and sensory play. Keep all activities very short (5–15 min). No screen time. Prioritize sleep and feeding.`
+      : totalAgeMonths < 36
+      ? `AGE GROUP — TODDLER: Keep activities SHORT (10–20 min each). Include LOTS of free play and sensory exploration. No long focused tasks. Prioritize nap time (1–2 hours in afternoon). Add one skill-building activity (colors, shapes, songs). Language development through reading or naming.`
+      : totalAgeMonths < 60
+      ? `AGE GROUP — PRESCHOOL: Mix of structured play and creative activities (drawing, pretend play, puzzles). Include one pre-literacy activity (story, alphabet). Keep academic blocks to max 20 min. Nap optional. Add outdoor play 30 min.`
+      : totalAgeMonths < 120
+      ? `AGE GROUP — SCHOOL AGE: Include focused study blocks (30 min), outdoor sport (30 min), creative activity, screen time limit (45 min), reading before bed. Homework right after snack. Family bonding in evenings.`
+      : `AGE GROUP — PRE-TEEN: Include independent study (Pomodoro style: 25 min work, 5 min break), physical activity (20 min), limited screen time (60 min), and a self-reflection moment. Give age-appropriate independence.`;
+
   const prompt = `You are a smart parenting schedule assistant. Create a realistic, balanced full-day routine for a ${child.age}-year-old child named ${child.name}.
 
 CHILD DETAILS:
+- Age: ${child.age} years${(child as any).ageMonths ? ` ${(child as any).ageMonths} months` : ""} (${ageGroupLabel})
 - Wake-up time: ${child.wakeUpTime}
 - Bedtime / Sleep time: ${child.sleepTime}
 - School starts: ${child.schoolStartTime}
@@ -219,6 +240,8 @@ CHILD DETAILS:
 ${childClassLabel ? `- ${childClassLabel}` : ""}
 - Daily goals: ${child.goals}
 - Date: ${parsed.data.date}
+
+${ageGroupInstructions}
 
 SCHOOL STATUS: ${schoolStatus}
 

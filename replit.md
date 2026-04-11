@@ -43,6 +43,13 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Weekend Auto-Detection** — generate page detects Sat/Sun from selected date, auto-sets hasSchool=false and shows "🏖️ Weekend auto-detected" badge
 - **Today's Schedule Card** — Dashboard shows current + upcoming activities from today's routine, highlighting the "NOW" slot in real time
 - **Streak Teaser on Dashboard** — Compact 🔥 streak card on dashboard links to /progress page
+- **Age-Based Intelligence** — child profiles now include `ageMonths` (0–11) in addition to `age` (years); age group is auto-classified as Infant/Toddler/Preschool/School Age/Pre-Teen; `getAgeGroup()` + `getAgeGroupInfo()` + `formatAge()` in `age-groups.ts`
+- **Infant Mode** — when a child's age group is "Infant", the generate page replaces the routine form with a full care guidance panel (feeding tips, vaccination schedule, sleep guidance, potty training), lullaby music player (Web Audio API, 3 tracks, looping), and parent tasks checklist
+- **Skill Focus Section** — shown on generate page for all non-infant children; displays 4 age-appropriate skill activities based on age group
+- **Story Section** — age-appropriate moral stories with "Read Aloud" TTS button (SpeechSynthesis API); toddlers/preschoolers get 2 stories, older children get 2 with thematic titles
+- **Parent Tasks Section** — checkable daily parent task list on generate page based on age group
+- **Age Group Badge** — profile summary on generate page shows emoji + age group label + formatted age (e.g. "7y 3m")
+- **AI Prompt Age Context** — age group classification injected into AI routine generation prompt with tailored instructions per group (infant care, toddler play, school study blocks, pre-teen independence)
 
 ## Key Commands
 

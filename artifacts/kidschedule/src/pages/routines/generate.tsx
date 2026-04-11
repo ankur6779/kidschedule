@@ -931,9 +931,10 @@ export default function RoutineGenerate() {
                   </>
                 )}
 
-                {/* Step 2 — Date (hidden for infants) */}
-                {isInfantMode ? null : <></> /* placeholder to avoid empty expression */}
-                {!isInfantMode && /* Step 2 — Date */}
+                {/* Steps 2–end are hidden for infants */}
+                {!isInfantMode && (
+                <div className="space-y-8">
+                {/* Step 2 — Date */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>
@@ -1149,6 +1150,8 @@ export default function RoutineGenerate() {
                     </>
                   )}
                 </div>
+                </div>
+                )}
               </CardContent>
             </Card>
           )}
