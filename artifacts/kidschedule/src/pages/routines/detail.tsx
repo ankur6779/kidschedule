@@ -602,6 +602,17 @@ export default function RoutineDetail() {
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
+  // Date-awareness: compare routine date vs system date
+  const routineDateStr = routine?.date?.slice(0, 10) ?? "";
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const dateMode: "past" | "today" | "future" = !routineDateStr
+    ? "today"
+    : routineDateStr < todayStr
+    ? "past"
+    : routineDateStr > todayStr
+    ? "future"
+    : "today";
+
   if (isLoading) {
     return (
       <div className="flex flex-col gap-6 max-w-3xl mx-auto">
@@ -636,16 +647,18 @@ export default function RoutineDetail() {
           </Button>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePartialRegen}
-              disabled={partialRegenLoading}
-              className="rounded-full gap-2 bg-primary/5 border-primary/30 text-primary hover:bg-primary/10"
-            >
-              <RotateCcw className={`h-4 w-4 ${partialRegenLoading ? "animate-spin" : ""}`} />
-              {partialRegenLoading ? "Updating…" : "Regen Rest"}
-            </Button>
+            {dateMode !== "past" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePartialRegen}
+                disabled={partialRegenLoading}
+                className="rounded-full gap-2 bg-primary/5 border-primary/30 text-primary hover:bg-primary/10"
+              >
+                <RotateCcw className={`h-4 w-4 ${partialRegenLoading ? "animate-spin" : ""}`} />
+                {partialRegenLoading ? "Updating…" : "Regen Rest"}
+              </Button>
+            )}
 
             <Button
               variant="outline"
@@ -725,11 +738,32 @@ export default function RoutineDetail() {
               )}
               {routine.childName}
             </div>
-            <div className="flex items-center gap-1.5 bg-muted px-3 py-1 rounded-full text-sm font-medium text-foreground/80">
+            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${
+              dateMode === "today" ? "bg-primary/10 text-primary border border-primary/30 font-bold" :
+              dateMode === "future" ? "bg-blue-50 text-blue-700 border border-blue-200" :
+              "bg-muted text-muted-foreground border border-border"
+            }`}>
               <CalendarIcon className="h-3.5 w-3.5" />
-              {new Date(routine.date).toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+              {new Date(routine.date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}
+              {dateMode === "today" && <span className="ml-1 text-[10px] font-black uppercase tracking-wide bg-primary text-white rounded-full px-1.5 py-0.5">Today</span>}
+              {dateMode === "future" && <span className="ml-1 text-[10px] font-black uppercase tracking-wide bg-blue-600 text-white rounded-full px-1.5 py-0.5">Upcoming</span>}
+              {dateMode === "past" && <span className="ml-1 text-[10px] font-black uppercase tracking-wide bg-muted-foreground text-white rounded-full px-1.5 py-0.5">Past</span>}
             </div>
           </div>
+
+          {/* Date mode banners */}
+          {dateMode === "future" && (
+            <div className="mt-3 flex items-center gap-2.5 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 text-sm text-blue-800">
+              <span className="text-lg">📅</span>
+              <span><strong>Future routine</strong> — all tasks are shown as scheduled. You can start interacting on the day itself.</span>
+            </div>
+          )}
+          {dateMode === "past" && (
+            <div className="mt-3 flex items-center gap-2.5 bg-muted/60 border border-border rounded-2xl px-4 py-3 text-sm text-muted-foreground">
+              <span className="text-lg">🗂️</span>
+              <span><strong>Past routine</strong> — this is a read-only record. Generate a new routine to plan upcoming days.</span>
+            </div>
+          )}
         </div>
 
         {/* Progress bar */}
@@ -772,12 +806,14 @@ export default function RoutineDetail() {
             const statusStyle = STATUS_STYLES[status];
             const priority = getPriority(item.category, item.activity);
 
-            // Real-time awareness
+            // Real-time awareness — only applies to today's routines
             const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
             const taskStart = parse12hToMinutes(item.time);
             const taskEnd = taskStart + (item.duration ?? 30);
-            const isCurrentTask = status === "pending" && taskStart <= nowMins && nowMins < taskEnd;
-            const isPastTask = status === "pending" && taskEnd <= nowMins;
+            const isCurrentTask = dateMode === "today" && status === "pending" && taskStart <= nowMins && nowMins < taskEnd;
+            const isPastTask = dateMode === "today" && status === "pending" && taskEnd <= nowMins;
+            // Past routines are read-only; today and future allow full interaction
+            const isInteractive = dateMode !== "past";
 
             return (
               <div key={index} className="flex gap-4 sm:gap-6 group">
@@ -942,7 +978,7 @@ export default function RoutineDetail() {
                           <Badge className={`rounded-full text-xs font-bold border ${catStyle}`}>
                             {item.category}
                           </Badge>
-                          {editingIndex !== index && status !== "completed" && status !== "skipped" && (
+                          {isInteractive && editingIndex !== index && status !== "completed" && status !== "skipped" && (
                             <button
                               onClick={() => handleEditStart(index)}
                               className="ml-1 p-1 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
@@ -954,8 +990,8 @@ export default function RoutineDetail() {
                         </div>
                       </div>
 
-                      {/* Status action buttons — hidden when editing */}
-                      {editingIndex !== index && status !== "completed" && status !== "skipped" && (
+                      {/* Status action buttons — hidden when editing or non-interactive */}
+                      {isInteractive && editingIndex !== index && status !== "completed" && status !== "skipped" && (
                         <div className="flex gap-2 flex-wrap">
                           <button
                             onClick={() => updateItemStatus(index, "completed")}
@@ -978,8 +1014,8 @@ export default function RoutineDetail() {
                         </div>
                       )}
 
-                      {/* Undo for completed/skipped */}
-                      {editingIndex !== index && (status === "completed" || status === "skipped") && (
+                      {/* Undo for completed/skipped — only on non-past routines */}
+                      {isInteractive && editingIndex !== index && (status === "completed" || status === "skipped") && (
                         <button
                           onClick={() => updateItemStatus(index, "pending")}
                           className="text-xs text-muted-foreground hover:text-foreground transition-colors self-start"
@@ -997,17 +1033,27 @@ export default function RoutineDetail() {
       </div>
 
       <div className="mt-6 flex items-center justify-center gap-3 pb-8 border-t border-border/50 pt-8">
-        <Button
-          variant="outline"
-          className="rounded-full shadow-sm gap-2 border-primary/30 text-primary hover:bg-primary/5"
-          onClick={() => setAddActivityOpen(true)}
-        >
-          <Plus className="h-4 w-4" />
-          Add Activity
-        </Button>
+        {dateMode !== "past" && (
+          <Button
+            variant="outline"
+            className="rounded-full shadow-sm gap-2 border-primary/30 text-primary hover:bg-primary/5"
+            onClick={() => setAddActivityOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Add Activity
+          </Button>
+        )}
         <Button asChild variant="outline" className="rounded-full shadow-sm">
           <Link href="/behavior">Log Today's Behavior</Link>
         </Button>
+        {dateMode === "past" && (
+          <Button asChild variant="outline" className="rounded-full shadow-sm gap-2 border-primary/30 text-primary hover:bg-primary/5">
+            <Link href="/routines/generate">
+              <Sparkles className="h-4 w-4" />
+              Generate New Routine
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Recipe Dialog */}

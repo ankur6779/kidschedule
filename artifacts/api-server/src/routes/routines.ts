@@ -4,6 +4,8 @@ import { getAuth } from "@clerk/express";
 import { db, routinesTable, childrenTable, behaviorsTable, parentProfilesTable, babysittersTable } from "@workspace/db";
 import {
   CreateRoutineBody,
+  CheckRoutineQueryParams,
+  CheckRoutineResponse,
   GetRoutineParams,
   DeleteRoutineParams,
   UpdateRoutineItemsParams,
@@ -258,6 +260,26 @@ router.get("/routines", async (req, res): Promise<void> => {
   );
 });
 
+// Check if a routine exists for a given child + date
+router.get("/routines/check", async (req, res): Promise<void> => {
+  const parsed = CheckRoutineQueryParams.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const existing = await db
+    .select({ id: routinesTable.id })
+    .from(routinesTable)
+    .where(and(eq(routinesTable.childId, parsed.data.childId), eq(routinesTable.date, parsed.data.date)))
+    .limit(1);
+
+  if (existing.length > 0) {
+    res.json(CheckRoutineResponse.parse({ exists: true, routineId: existing[0].id }));
+  } else {
+    res.json(CheckRoutineResponse.parse({ exists: false }));
+  }
+});
+
 router.post("/routines", async (req, res): Promise<void> => {
   const parsed = CreateRoutineBody.safeParse(req.body);
   if (!parsed.success) {
@@ -265,6 +287,14 @@ router.post("/routines", async (req, res): Promise<void> => {
     return;
   }
   const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
+
+  // If override flag is set, delete any existing routine for this child+date first
+  if (parsed.data.override) {
+    await db.delete(routinesTable).where(
+      and(eq(routinesTable.childId, parsed.data.childId), eq(routinesTable.date, parsed.data.date))
+    );
+  }
+
   const [routine] = await db.insert(routinesTable).values({
     childId: parsed.data.childId,
     date: parsed.data.date,

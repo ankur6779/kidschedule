@@ -166,6 +166,17 @@ export const CreateRoutineBody = zod.object({
   date: zod.string(),
   title: zod.string(),
   items: zod.array(RoutineItemSchema),
+  override: zod.boolean().optional(),
+});
+
+export const CheckRoutineQueryParams = zod.object({
+  childId: zod.coerce.number(),
+  date: zod.string(),
+});
+
+export const CheckRoutineResponse = zod.object({
+  exists: zod.boolean(),
+  routineId: zod.number().optional(),
 });
 
 /**

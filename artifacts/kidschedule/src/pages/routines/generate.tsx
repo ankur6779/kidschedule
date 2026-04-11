@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey, useGenerateRoutine, useCreateRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,9 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { getApiUrl } from "@/lib/api";
 import { format } from "date-fns";
 
 type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
@@ -244,6 +245,11 @@ export default function RoutineGenerate() {
   const [familyResults, setFamilyResults] = useState<FamilyResult[] | null>(null);
   const [isSavingAll, setIsSavingAll] = useState(false);
 
+  // Existing routine check
+  const [existingRoutine, setExistingRoutine] = useState<{ exists: boolean; routineId?: number } | null>(null);
+  const [overrideMode, setOverrideMode] = useState(false);
+  const checkDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const authFetch = useAuthFetch();
@@ -272,6 +278,26 @@ export default function RoutineGenerate() {
       setHasSchool(false);
     }
   }, [date]);
+
+  // Check for existing routine when child + date both selected
+  useEffect(() => {
+    if (!selectedChild || !date) {
+      setExistingRoutine(null);
+      setOverrideMode(false);
+      return;
+    }
+    if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current);
+    checkDebounceRef.current = setTimeout(() => {
+      authFetch(getApiUrl(`/api/routines/check?childId=${selectedChild}&date=${date}`))
+        .then((r) => r.ok ? r.json() : null)
+        .then((data: any) => {
+          setExistingRoutine(data ?? null);
+          if (data?.exists) setOverrideMode(false);
+        })
+        .catch(() => setExistingRoutine(null));
+    }, 400);
+    return () => { if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current); };
+  }, [selectedChild, date]);
 
   // Auto-detect weekends for family mode and pre-set hasSchool=false
   useEffect(() => {
@@ -314,8 +340,11 @@ export default function RoutineGenerate() {
   const selectedChildData = children?.find((c) => c.id === selectedChild) as ChildType | undefined;
 
   // Single mode generate
-  const handleGenerate = () => {
+  const handleGenerate = (forceOverride = false) => {
     if (!isFormValid) return;
+
+    // Block if routine exists and user hasn't confirmed override
+    if (existingRoutine?.exists && !forceOverride && !overrideMode) return;
 
     generateMutation.mutate(
       {
@@ -331,6 +360,7 @@ export default function RoutineGenerate() {
       },
       {
         onSuccess: (generatedData) => {
+          const shouldOverride = forceOverride || overrideMode || existingRoutine?.exists;
           createMutation.mutate(
             {
               data: {
@@ -338,11 +368,12 @@ export default function RoutineGenerate() {
                 date,
                 title: generatedData.title,
                 items: generatedData.items,
+                override: shouldOverride,
               }
             },
             {
               onSuccess: (savedRoutine) => {
-                toast({ title: "✨ Routine generated!" });
+                toast({ title: shouldOverride ? "🔄 Routine replaced!" : "✨ Routine generated!" });
                 queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
                 setLocation(`/routines/${savedRoutine.id}`);
               },
@@ -594,10 +625,52 @@ export default function RoutineGenerate() {
                     <input
                       type="date"
                       value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => { setDate(e.target.value); setExistingRoutine(null); setOverrideMode(false); }}
                       className="bg-transparent border-none outline-none text-foreground font-medium w-full text-lg"
                     />
                   </div>
+
+                  {/* Existing routine warning */}
+                  {existingRoutine?.exists && !overrideMode && (
+                    <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-amber-900 text-sm">Routine already exists for this date!</p>
+                          <p className="text-amber-700 text-xs mt-0.5">
+                            {selectedChildData?.name ?? "This child"} already has a routine on{" "}
+                            {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })}.
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Link href={`/routines/${existingRoutine.routineId}`}>
+                          <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 transition-colors">
+                            <ExternalLink className="h-3.5 w-3.5" />
+                            View Existing Routine
+                          </button>
+                        </Link>
+                        <button
+                          onClick={() => setOverrideMode(true)}
+                          className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                        >
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Override & Regenerate
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {overrideMode && (
+                    <div className="rounded-2xl border-2 border-orange-300 bg-orange-50 p-3 flex items-center gap-3">
+                      <RefreshCw className="h-4 w-4 text-orange-600 shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-bold text-orange-900">Override mode active</p>
+                        <p className="text-xs text-orange-700">The existing routine will be replaced when you generate.</p>
+                      </div>
+                      <button onClick={() => setOverrideMode(false)} className="text-xs text-orange-600 underline font-medium">Cancel</button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Step 3 — School today? */}
@@ -757,19 +830,30 @@ export default function RoutineGenerate() {
                 </div>
 
                 <div className="pt-2">
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={!isFormValid || isGenerating}
-                    size="lg"
-                    className="w-full rounded-full h-14 text-lg font-bold shadow-sm transition-all"
-                  >
-                    <Sparkles className="h-5 w-5 mr-2" />
-                    Generate Smart Routine
-                  </Button>
-                  {!isFormValid && (
-                    <p className="text-center text-xs text-muted-foreground mt-2">
-                      Please select a child and answer the school question to continue.
+                  {existingRoutine?.exists && !overrideMode ? (
+                    <p className="text-center text-sm text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-2xl py-3 px-4">
+                      ⚠️ Choose <strong>View Existing Routine</strong> or <strong>Override & Regenerate</strong> above to continue.
                     </p>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={() => handleGenerate(false)}
+                        disabled={!isFormValid || isGenerating}
+                        size="lg"
+                        className={`w-full rounded-full h-14 text-lg font-bold shadow-sm transition-all ${overrideMode ? "bg-orange-600 hover:bg-orange-700" : ""}`}
+                      >
+                        {overrideMode ? (
+                          <><RefreshCw className="h-5 w-5 mr-2" />Regenerate & Override</>
+                        ) : (
+                          <><Sparkles className="h-5 w-5 mr-2" />Generate Smart Routine</>
+                        )}
+                      </Button>
+                      {!isFormValid && (
+                        <p className="text-center text-xs text-muted-foreground mt-2">
+                          Please select a child and answer the school question to continue.
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </CardContent>
