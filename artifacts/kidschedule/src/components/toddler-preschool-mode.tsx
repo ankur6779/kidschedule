@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX, ChevronRight, CheckCircle2, Star, SkipForward, Sparkles } from "lucide-react";
+import { speak } from "@/lib/voice";
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
@@ -280,26 +281,16 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
   const story = stories[idx];
 
   const handleSpeak = () => {
-    if (!window.speechSynthesis) return;
     if (speaking) {
-      window.speechSynthesis.cancel();
+      window.speechSynthesis?.cancel();
       setSpeaking(false);
       return;
     }
     setSpeaking(true);
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(
-      `${story.title}. ${story.story}. The moral is: ${story.moral}`
-    );
-    utt.rate = 0.82;
-    utt.pitch = 1.1;
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find((v) => v.lang.startsWith("en") && (v.name.includes("Female") || v.name.includes("Samantha") || v.name.includes("Karen")))
-      || voices.find((v) => v.lang.startsWith("en"));
-    if (preferred) utt.voice = preferred;
-    utt.onend = () => setSpeaking(false);
-    utt.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utt);
+    speak(`${story.title}. ${story.story}. The moral is: ${story.moral}`).catch(() => {});
+    const checkDone = setInterval(() => {
+      if (!window.speechSynthesis?.speaking) { setSpeaking(false); clearInterval(checkDone); }
+    }, 500);
   };
 
   const handleNext = () => {

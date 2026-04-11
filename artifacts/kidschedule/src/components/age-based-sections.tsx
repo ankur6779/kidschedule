@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 import { AgeGroup, SKILL_FOCUS_BY_GROUP, STORIES_BY_GROUP, PARENT_TASKS_BY_GROUP } from "@/lib/age-groups";
+import { speak } from "@/lib/voice";
 
 // ─────────────────────────────────────────────────────────────
 // Skill Focus Section
@@ -55,21 +56,6 @@ interface StorySectionProps {
   childName: string;
 }
 
-function speakText(text: string) {
-  if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.rate = 0.85;
-  utt.pitch = 1.1;
-
-  const voices = window.speechSynthesis.getVoices();
-  const preferredVoice = voices.find((v) =>
-    v.lang.startsWith("en") && (v.name.includes("Female") || v.name.includes("Samantha") || v.name.includes("Karen") || v.name.includes("Google UK English Female"))
-  ) || voices.find((v) => v.lang.startsWith("en"));
-
-  if (preferredVoice) utt.voice = preferredVoice;
-  window.speechSynthesis.speak(utt);
-}
 
 export function StorySection({ group, childName }: StorySectionProps) {
   const stories = STORIES_BY_GROUP[group];
@@ -86,18 +72,15 @@ export function StorySection({ group, childName }: StorySectionProps) {
     }
     setSpeaking(true);
     const text = `${story.title}. ${story.story}. Moral: ${story.moral}`;
-    if (!window.speechSynthesis) { setSpeaking(false); return; }
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.rate = 0.85;
-    utt.pitch = 1.1;
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find((v) => v.lang.startsWith("en") && (v.name.includes("Female") || v.name.includes("Samantha") || v.name.includes("Karen")))
-      || voices.find((v) => v.lang.startsWith("en"));
-    if (preferred) utt.voice = preferred;
-    utt.onend = () => setSpeaking(false);
-    utt.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utt);
+    speak(text).catch(() => {});
+    // Listen for end/error to flip speaking state
+    const utterThis = () => {
+      if (!("speechSynthesis" in window)) { setSpeaking(false); return; }
+      const checkDone = setInterval(() => {
+        if (!window.speechSynthesis.speaking) { setSpeaking(false); clearInterval(checkDone); }
+      }, 500);
+    };
+    setTimeout(utterThis, 100);
   };
 
   if (!story) return null;

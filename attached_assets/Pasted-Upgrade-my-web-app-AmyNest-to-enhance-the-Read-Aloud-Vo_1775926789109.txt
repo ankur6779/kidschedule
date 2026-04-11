@@ -1,0 +1,111 @@
+Upgrade my web app "AmyNest" to enhance the Read Aloud / Voice system with multi-language (Hindi + English) and multiple natural voice options.
+
+IMPORTANT:
+- Use ZERO API cost (no paid AI voice services)
+- Use browser speechSynthesis API
+- Make voices sound as natural as possible (prefer Indian voices)
+
+--------------------------------
+1. Language Support (Core 🔥)
+--------------------------------
+- Add language selection:
+  - English
+  - Hindi
+
+- Allow user to switch anytime
+
+--------------------------------
+2. Voice Selection System
+--------------------------------
+- Detect available voices using:
+  speechSynthesis.getVoices()
+
+- Filter voices:
+  - Hindi voices → lang = "hi-IN"
+  - English Indian voices → lang = "en-IN"
+
+--------------------------------
+3. Voice Options (Important 🔥)
+--------------------------------
+Provide options:
+
+- Female Voice
+- Male Voice
+
+- If multiple voices available:
+  - Show dropdown list:
+    Example:
+      “Hindi Female 1”
+      “Hindi Female 2”
+      “English Female”
+      “English Male”
+
+--------------------------------
+4. Default Voice Logic
+--------------------------------
+- Prefer:
+  - Hindi Female voice (hi-IN)
+- Fallback:
+  - English Indian Female (en-IN)
+- Final fallback:
+  - Any female voice
+
+--------------------------------
+5. Apply Voice to Read Aloud
+--------------------------------
+- Use:
+  SpeechSynthesisUtterance
+
+- Set:
+  utterance.voice = selectedVoice
+  utterance.lang = selected language
+
+--------------------------------
+6. Natural Sound Improvements
+--------------------------------
+- Set:
+  speech rate = 0.85–0.95 (slightly slower for kids)
+  pitch = 1 (normal)
+  volume = 1
+
+- Add small pauses between sentences
+
+--------------------------------
+7. Read Aloud Integration
+--------------------------------
+- Apply this system to:
+  - Storytelling
+  - Tips
+  - Parenting guidance
+  - Any “Read Aloud” button
+
+--------------------------------
+8. UI Controls
+--------------------------------
+Add:
+- Language selector (EN / HI)
+- Voice selector dropdown
+- Toggle:
+  - Voice ON / OFF
+
+--------------------------------
+9. Persistence
+--------------------------------
+- Save user selection in localStorage:
+  - selectedLanguage
+  - selectedVoice
+
+--------------------------------
+10. Keep everything simple
+--------------------------------
+- No external API
+- No heavy processing
+- Works in most browsers
+
+--------------------------------
+Return:
+Updated working code with:
+- Hindi + English support
+- Female/Male voice options
+- Natural sounding speech system
+- UI controls for voice selection

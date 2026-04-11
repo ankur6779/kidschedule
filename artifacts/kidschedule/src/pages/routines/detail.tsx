@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { addPoints, checkAndAwardBadges, getTotalPoints } from "@/lib/rewards";
-import { announceCurrentTask, isVoiceEnabled, setVoiceEnabled, getEnglishVoices, getSavedVoiceName, saveVoiceName } from "@/lib/voice";
+import { announceCurrentTask, isVoiceEnabled, getVoiceSettings } from "@/lib/voice";
+import { VoiceSettingsPanel } from "@/components/voice-settings";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -193,9 +194,6 @@ export default function RoutineDetail() {
   const [localItems, setLocalItems] = useState<RoutineItem[] | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [voiceOn, setVoiceOn] = useState(() => isVoiceEnabled());
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState<string>(() => getSavedVoiceName() ?? "");
-  const [voiceSelectorOpen, setVoiceSelectorOpen] = useState(false);
   const announcedTaskRef = useRef<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [babysitterInfo, setBabysitterInfo] = useState<{ name: string; mobileNumber?: string | null } | null>(null);
@@ -255,16 +253,6 @@ export default function RoutineDetail() {
   }, [routine]);
 
 
-  // Load available voices on mount (and when voice is toggled on)
-  useEffect(() => {
-    getEnglishVoices().then((voices) => {
-      setAvailableVoices(voices);
-      // If no saved preference, auto-select the top-scored voice
-      if (!getSavedVoiceName() && voices.length > 0) {
-        setSelectedVoiceName(voices[0].name);
-      }
-    });
-  }, []);
 
   // Voice announcement for current task
   useEffect(() => {
@@ -668,74 +656,7 @@ export default function RoutineDetail() {
               )}
             </Button>
 
-            <div className="relative flex items-center gap-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const next = !voiceOn;
-                  setVoiceOn(next);
-                  setVoiceEnabled(next);
-                  if (next) {
-                    getEnglishVoices().then((voices) => setAvailableVoices(voices));
-                  }
-                  toast({ title: next ? "🔊 Voice reminders on!" : "🔇 Voice reminders off" });
-                }}
-                className={`rounded-full gap-2 ${voiceOn ? "bg-violet-50 border-violet-300 text-violet-700" : ""}`}
-              >
-                {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                {voiceOn ? "Voice On" : "Voice"}
-              </Button>
-              {voiceOn && availableVoices.length > 0 && (
-                <button
-                  title="Select voice"
-                  onClick={() => setVoiceSelectorOpen((o) => !o)}
-                  className="p-1.5 rounded-full border border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors text-[11px] font-bold"
-                >
-                  🎙
-                </button>
-              )}
-              {voiceSelectorOpen && voiceOn && availableVoices.length > 0 && (
-                <div className="absolute top-9 right-0 z-50 bg-card border border-border rounded-2xl shadow-xl w-64 p-3 space-y-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-foreground">Select Voice</p>
-                    <button onClick={() => setVoiceSelectorOpen(false)} className="text-muted-foreground hover:text-foreground text-lg leading-none">&times;</button>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto space-y-1">
-                    {availableVoices.map((v) => {
-                      const isIndian = v.lang.toLowerCase().startsWith("en-in");
-                      const isSelected = selectedVoiceName === v.name;
-                      return (
-                        <button
-                          key={v.name}
-                          onClick={() => {
-                            setSelectedVoiceName(v.name);
-                            saveVoiceName(v.name);
-                            setVoiceSelectorOpen(false);
-                            toast({ title: `🎙 Voice: ${v.name}` });
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all ${
-                            isSelected ? "bg-violet-100 text-violet-800 font-bold border border-violet-300" : "hover:bg-muted text-foreground"
-                          }`}
-                        >
-                          <div className="flex items-center gap-2">
-                            {isIndian && <span className="text-sm">🇮🇳</span>}
-                            <div>
-                              <p className="font-semibold leading-tight">{v.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{v.lang}{v.localService ? " · local" : ""}</p>
-                            </div>
-                            {isSelected && <span className="ml-auto text-violet-600">✓</span>}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground pt-1 border-t border-border">
-                    🇮🇳 = Indian English (en-IN) — preferred for AmyNest
-                  </p>
-                </div>
-              )}
-            </div>
+            <VoiceSettingsPanel onToggle={(enabled) => setVoiceOn(enabled)} />
 
             <Button
               variant="outline"
