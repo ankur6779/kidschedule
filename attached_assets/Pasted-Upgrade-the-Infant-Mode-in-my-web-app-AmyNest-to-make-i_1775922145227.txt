@@ -1,0 +1,133 @@
+Upgrade the Infant Mode in my web app "AmyNest" to make it interactive, personalized, and dynamically changing based on baby's age in months.
+
+IMPORTANT:
+- Use ZERO API cost (no AI calls)
+- Use rule-based + predefined data
+- Make system interactive and engaging
+
+--------------------------------
+1. Month-Based Personalization (Core 🔥)
+--------------------------------
+- Use child's ageMonths
+
+- Create data sets based on age:
+  Example:
+    tips_0_3_months = [...]
+    tips_3_6_months = [...]
+    tips_6_9_months = [...]
+
+- Always show tips relevant to baby’s current month range
+- Do NOT show generic tips
+
+--------------------------------
+2. Interactive Tip System (Swipe/Next Logic)
+--------------------------------
+
+For each category:
+- Feeding Tip
+- Health Tip
+- Development Tip
+- Bonding Activity
+
+Show 1 tip at a time
+
+Add buttons:
+- “✅ I Understand”
+- “➡️ Next Tip”
+
+On click:
+- Show next tip from list
+- Rotate through tips
+- Store current index in localStorage
+
+--------------------------------
+3. Smart Rotation Logic
+--------------------------------
+- Ensure:
+  - Tips do not repeat immediately
+  - Loop after all tips shown
+
+--------------------------------
+4. Multiple Tip Categories UI
+--------------------------------
+Create separate cards:
+
+- 🍼 Feeding Tip
+- 🏥 Health Tip
+- 🧠 Development Tip
+- ❤️ Bonding Activity
+
+Each card:
+- Has its own Next system
+- Works independently
+
+--------------------------------
+5. Lullaby System (Important 🔥)
+--------------------------------
+- Add 5–6 different lullaby audio files
+
+Example:
+  lullaby1.mp3
+  lullaby2.mp3
+  white_noise.mp3
+  soft_music.mp3
+
+- Show:
+  - Play button
+  - Next Song button
+
+- On click Next:
+  - Switch to next audio
+
+--------------------------------
+6. Lullaby Personalization
+--------------------------------
+- Optionally rotate based on time:
+  - Night → sleep music
+  - Day → soft play sound
+
+--------------------------------
+7. Daily Refresh Logic
+--------------------------------
+- Each day:
+  - Reset tip order slightly
+  - Show new combinations
+
+--------------------------------
+8. Memory System (Optional Add-on)
+--------------------------------
+- Add button:
+  “Save Today’s Moment”
+
+--------------------------------
+9. UI Improvements
+--------------------------------
+- Card-based layout
+- Clean buttons:
+  - Understand
+  - Next
+- Show:
+  “Tips for 6 Month Baby”
+
+--------------------------------
+10. Data Storage
+--------------------------------
+Use localStorage:
+- tipIndex per category
+- last shown tips
+- lullaby index
+
+--------------------------------
+11. Keep everything simple
+--------------------------------
+- No backend required
+- No API calls
+- Fast performance
+
+--------------------------------
+Return:
+Working code with fully interactive infant system including:
+- Month-based tips
+- Next/Understand buttons
+- Rotating lullabies
+- Personalized experience
