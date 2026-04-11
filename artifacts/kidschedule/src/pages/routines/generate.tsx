@@ -100,6 +100,79 @@ function saveAvailability(date: string, data: ParentAvailData): void {
   try { localStorage.setItem(AVAIL_KEY(date), JSON.stringify(data)); } catch {}
 }
 
+// ─── Wake-time helpers (localStorage, no backend) ─────────────────────────────
+const WAKE_KEY = (childId: number, date: string) => `amynest_wake_${childId}_${date}`;
+function getStoredWakeTime(childId: number, date: string): string | null {
+  try { return localStorage.getItem(WAKE_KEY(childId, date)); } catch { return null; }
+}
+function storeWakeTime(childId: number, date: string, t: string): void {
+  try { localStorage.setItem(WAKE_KEY(childId, date), t); } catch {}
+}
+
+// Parse "7:00 AM" → total minutes
+function parseDisplayTime(t: string): number {
+  const m = t.replace(/\s+/g, " ").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return -1;
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+// Total minutes → "H:MM AM/PM"
+function minsToDisplay(total: number): string {
+  const w = ((total % 1440) + 1440) % 1440;
+  const h = Math.floor(w / 60);
+  const m = w % 60;
+  const ampm = h >= 12 ? "PM" : "AM";
+  const dh = h % 12 === 0 ? 12 : h % 12;
+  return `${dh}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
+// input[type=time] "HH:MM" → "H:MM AM/PM"
+function inputToDisplay(hm: string): string {
+  const parts = hm.split(":");
+  if (parts.length < 2) return "";
+  let h = parseInt(parts[0]);
+  const m = parseInt(parts[1]);
+  const ampm = h >= 12 ? "PM" : "AM";
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${m.toString().padStart(2, "0")} ${ampm}`;
+}
+
+// "H:MM AM/PM" → input[type=time] "HH:MM"
+function displayToInput(t: string): string {
+  const m = t.replace(/\s+/g, " ").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return "07:00";
+  let h = parseInt(m[1]);
+  const min = parseInt(m[2]);
+  if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+  if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+  return `${h.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+}
+
+// Shift all non-sleep items by the delta between default and actual wake time
+function shiftRoutineItems(items: RoutineItem[], defaultWake: string, actualWake: string): RoutineItem[] {
+  const defMins = parseDisplayTime(defaultWake);
+  const actMins = parseDisplayTime(actualWake);
+  if (defMins < 0 || actMins < 0 || defMins === actMins) return items;
+  const diff = actMins - defMins;
+  return items.map((item) => {
+    if (item.category === "sleep" || /sleep|bedtime|good night/i.test(item.activity)) return item;
+    const newMins = parseDisplayTime(item.time) + diff;
+    if (newMins < 0) return item;
+    return { ...item, time: minsToDisplay(newMins) };
+  });
+}
+
+// Detect essential tasks (brushing, meals, hygiene, sleep)
+function isEssentialTask(activity: string, category: string): boolean {
+  return /brush|breakfast|lunch|dinner|snack|meal|eat|morning|wake|bath|hygiene|toilet|tiffin/i.test(activity) ||
+    ["meal", "hygiene", "tiffin", "morning"].includes((category ?? "").toLowerCase());
+}
+
 function parentStatusLabel(entry: ParentAvailEntry): string {
   if (!entry.workType) return "Not set";
   if (entry.workType === "homemaker") return "Free all day 🏠";
@@ -519,6 +592,20 @@ export default function RoutineGenerate() {
   const [overrideMode, setOverrideMode] = useState(false);
   const checkDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Wake-up confirmation system
+  const [showWakeConfirm, setShowWakeConfirm] = useState(false);
+  const [wakeAnswer, setWakeAnswer] = useState<"yes" | "no" | null>(null);
+  const [wakeInputValue, setWakeInputValue] = useState("07:00");
+  const [confirmedWakeTime, setConfirmedWakeTime] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ type: "standard" | "ai"; forceOverride: boolean } | null>(null);
+
+  // Past essential task check (after routine generated for today)
+  type PendingRoutineSave = { generatedData: GeneratedRoutine; shouldOverride: boolean | undefined };
+  const [showTaskCheck, setShowTaskCheck] = useState(false);
+  const [pendingRoutineSave, setPendingRoutineSave] = useState<PendingRoutineSave | null>(null);
+  const [pastEssentialTasks, setPastEssentialTasks] = useState<{ idx: number; item: RoutineItem }[]>([]);
+  const [taskCheckMap, setTaskCheckMap] = useState<Record<number, boolean>>({});
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const authFetch = useAuthFetch();
@@ -641,6 +728,172 @@ export default function RoutineGenerate() {
 
   const selectedChildData = children?.find((c) => c.id === selectedChild) as ChildType | undefined;
 
+  // ── Core save helper ───────────────────────────────────────────────────────
+  const saveGeneratedRoutine = React.useCallback((data: GeneratedRoutine, shouldOverride: boolean | undefined) => {
+    createMutation.mutate(
+      { data: { childId: selectedChild!, date, title: data.title, items: data.items, override: shouldOverride } },
+      {
+        onSuccess: (savedRoutine) => {
+          toast({ title: shouldOverride ? "🔄 Routine replaced!" : "✨ Routine generated!" });
+          queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
+          setLocation(`/routines/${savedRoutine.id}`);
+        },
+        onError: () => toast({ title: "Failed to save routine", variant: "destructive" }),
+      }
+    );
+  }, [createMutation, selectedChild, date, toast, queryClient, setLocation]);
+
+  // ── Post-generate: adjust for today (past tasks + wake shift) ─────────────
+  const handlePostGenerate = React.useCallback((
+    generatedData: { title: string; items: RoutineItem[] },
+    shouldOverride: boolean | undefined,
+    wakeTime: string | null
+  ) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    const isToday = date === today;
+    const childDefaultWake = selectedChildData?.wakeUpTime ?? "7:00 AM";
+
+    let adjustedItems = [...generatedData.items] as RoutineItem[];
+
+    // 1. Shift by actual wake time if different from default
+    if (isToday && wakeTime && wakeTime !== childDefaultWake) {
+      adjustedItems = shiftRoutineItems(adjustedItems, childDefaultWake, wakeTime);
+    }
+
+    // 2. For today: identify past tasks; auto-complete non-essentials; queue essentials
+    if (isToday) {
+      const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+      const essentials: { idx: number; item: RoutineItem }[] = [];
+
+      adjustedItems = adjustedItems.map((item, idx) => {
+        const itemMins = parseDisplayTime(item.time);
+        if (itemMins < 0 || itemMins >= nowMins) return item; // future item
+        if (item.category === "sleep") return item; // never auto-touch sleep
+        if (isEssentialTask(item.activity, item.category)) {
+          essentials.push({ idx, item: { ...item } });
+          return item; // will be resolved by task check dialog
+        }
+        return { ...item, status: "completed" }; // auto-complete minor past tasks
+      });
+
+      const adjustedData = { title: generatedData.title, items: adjustedItems };
+
+      if (essentials.length > 0) {
+        setPastEssentialTasks(essentials);
+        setTaskCheckMap(Object.fromEntries(essentials.map(({ idx }) => [idx, true])));
+        setPendingRoutineSave({ generatedData: adjustedData, shouldOverride });
+        setShowTaskCheck(true);
+        return;
+      }
+
+      saveGeneratedRoutine(adjustedData, shouldOverride);
+    } else {
+      saveGeneratedRoutine({ title: generatedData.title, items: adjustedItems }, shouldOverride);
+    }
+  }, [date, selectedChildData, saveGeneratedRoutine]);
+
+  // ── Core generate (rule-based) ─────────────────────────────────────────────
+  const proceedGenerate = React.useCallback((forceOverride: boolean, wakeTime: string | null) => {
+    const shouldOverride = forceOverride || overrideMode || !!existingRoutine?.exists;
+    generateMutation.mutate(
+      {
+        data: {
+          childId: selectedChild!,
+          date,
+          hasSchool: hasSchool ?? undefined,
+          specialPlans: specialPlans.trim() || undefined,
+          fridgeItems: fridgeItems.trim() || undefined,
+          mood: mood !== "normal" ? mood : undefined,
+          ...buildParentAvailPayload(parentAvail),
+        }
+      },
+      {
+        onSuccess: (generatedData) => handlePostGenerate(generatedData as { title: string; items: RoutineItem[] }, shouldOverride, wakeTime),
+        onError: () => toast({ title: "Failed to generate routine", variant: "destructive" }),
+      }
+    );
+  }, [generateMutation, overrideMode, existingRoutine, selectedChild, date, hasSchool, specialPlans, fridgeItems, mood, parentAvail, handlePostGenerate, toast]);
+
+  // ── Core generate (AI) ─────────────────────────────────────────────────────
+  const proceedAiGenerate = React.useCallback(async (forceOverride: boolean, wakeTime: string | null) => {
+    const shouldOverride = forceOverride || overrideMode || !!existingRoutine?.exists;
+    setIsAiGenerating(true);
+    try {
+      const payload = {
+        childId: selectedChild!,
+        date,
+        hasSchool: hasSchool ?? undefined,
+        specialPlans: specialPlans.trim() || undefined,
+        fridgeItems: fridgeItems.trim() || undefined,
+        mood: mood !== "normal" ? mood : undefined,
+        ...buildParentAvailPayload(parentAvail),
+      };
+      const res = await authFetch("/api/routines/generate-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("AI generation failed");
+      const generatedData = await res.json();
+      handlePostGenerate(generatedData as { title: string; items: RoutineItem[] }, shouldOverride, wakeTime);
+    } catch {
+      toast({ title: "AI generation failed — try the standard routine instead.", variant: "destructive" });
+    } finally {
+      setIsAiGenerating(false);
+    }
+  }, [overrideMode, existingRoutine, selectedChild, date, hasSchool, specialPlans, fridgeItems, mood, parentAvail, authFetch, handlePostGenerate, toast]);
+
+  // ── Wake-up confirmation gate ──────────────────────────────────────────────
+  const triggerWithWakeCheck = React.useCallback((type: "standard" | "ai", forceOverride: boolean) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    if (date !== today) {
+      // Not today — no wake check needed, use default
+      if (type === "standard") proceedGenerate(forceOverride, null);
+      else proceedAiGenerate(forceOverride, null);
+      return;
+    }
+    // Today — check stored or confirmed wake time
+    const stored = getStoredWakeTime(selectedChild!, date);
+    const wakeTime = confirmedWakeTime ?? stored;
+    if (wakeTime) {
+      if (type === "standard") proceedGenerate(forceOverride, wakeTime);
+      else proceedAiGenerate(forceOverride, wakeTime);
+      return;
+    }
+    // No wake time yet — show confirmation dialog
+    setPendingAction({ type, forceOverride });
+    setWakeAnswer(null);
+    setWakeInputValue(displayToInput(selectedChildData?.wakeUpTime ?? "7:00 AM"));
+    setShowWakeConfirm(true);
+  }, [date, selectedChild, confirmedWakeTime, selectedChildData, proceedGenerate, proceedAiGenerate]);
+
+  // ── Wake confirm submit ────────────────────────────────────────────────────
+  const handleWakeConfirmSubmit = () => {
+    const childDefaultWake = selectedChildData?.wakeUpTime ?? "7:00 AM";
+    const finalWakeTime = wakeAnswer === "yes"
+      ? childDefaultWake
+      : (inputToDisplay(wakeInputValue) || childDefaultWake);
+    storeWakeTime(selectedChild!, date, finalWakeTime);
+    setConfirmedWakeTime(finalWakeTime);
+    setShowWakeConfirm(false);
+    if (pendingAction?.type === "standard") proceedGenerate(pendingAction.forceOverride, finalWakeTime);
+    else if (pendingAction?.type === "ai") proceedAiGenerate(pendingAction.forceOverride, finalWakeTime);
+    setPendingAction(null);
+  };
+
+  // ── Task check submit ──────────────────────────────────────────────────────
+  const handleTaskCheckDone = () => {
+    if (!pendingRoutineSave) return;
+    const updatedItems = pendingRoutineSave.generatedData.items.map((item, idx) => {
+      const checked = taskCheckMap[idx];
+      if (checked === undefined) return item;
+      return { ...item, status: checked ? "completed" as const : "skipped" as const };
+    });
+    setShowTaskCheck(false);
+    setPendingRoutineSave(null);
+    saveGeneratedRoutine({ ...pendingRoutineSave.generatedData, items: updatedItems }, pendingRoutineSave.shouldOverride);
+  };
+
   // Compute age group for selected child
   const selectedChildAgeGroup = selectedChildData
     ? getAgeGroup(selectedChildData.age, (selectedChildData as any).ageMonths ?? 0)
@@ -657,104 +910,18 @@ export default function RoutineGenerate() {
   })();
   const isFormValid = selectedChild && date && (!schoolQuestionRequired || hasSchool !== null);
 
-  // Single mode generate
+  // Single mode generate — now goes through wake-time gate
   const handleGenerate = (forceOverride = false) => {
     if (!isFormValid) return;
-
-    // Block if routine exists and user hasn't confirmed override
     if (existingRoutine?.exists && !forceOverride && !overrideMode) return;
-
-    generateMutation.mutate(
-      {
-        data: {
-          childId: selectedChild!,
-          date,
-          hasSchool: hasSchool ?? undefined,
-          specialPlans: specialPlans.trim() || undefined,
-          fridgeItems: fridgeItems.trim() || undefined,
-          mood: mood !== "normal" ? mood : undefined,
-          ...buildParentAvailPayload(parentAvail),
-        }
-      },
-      {
-        onSuccess: (generatedData) => {
-          const shouldOverride = forceOverride || overrideMode || existingRoutine?.exists;
-          createMutation.mutate(
-            {
-              data: {
-                childId: selectedChild!,
-                date,
-                title: generatedData.title,
-                items: generatedData.items,
-                override: shouldOverride,
-              }
-            },
-            {
-              onSuccess: (savedRoutine) => {
-                toast({ title: shouldOverride ? "🔄 Routine replaced!" : "✨ Routine generated!" });
-                queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
-                setLocation(`/routines/${savedRoutine.id}`);
-              },
-              onError: () => toast({ title: "Failed to save routine", variant: "destructive" }),
-            }
-          );
-        },
-        onError: () => toast({ title: "Failed to generate routine", variant: "destructive" }),
-      }
-    );
+    triggerWithWakeCheck("standard", forceOverride);
   };
 
-  // AI-powered routine generation via Smart AI Routine button
-  const handleAiGenerate = async (forceOverride = false) => {
+  // AI generate — also goes through wake-time gate
+  const handleAiGenerate = (forceOverride = false) => {
     if (!isFormValid || isAiGenerating) return;
     if (existingRoutine?.exists && !forceOverride && !overrideMode) return;
-
-    setIsAiGenerating(true);
-    try {
-      const payload = {
-        childId: selectedChild!,
-        date,
-        hasSchool: hasSchool ?? undefined,
-        specialPlans: specialPlans.trim() || undefined,
-        fridgeItems: fridgeItems.trim() || undefined,
-        mood: mood !== "normal" ? mood : undefined,
-        ...buildParentAvailPayload(parentAvail),
-      };
-
-      const res = await authFetch("/api/routines/generate-ai", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error("AI generation failed");
-      const generatedData = await res.json();
-      const shouldOverride = forceOverride || overrideMode || existingRoutine?.exists;
-
-      createMutation.mutate(
-        {
-          data: {
-            childId: selectedChild!,
-            date,
-            title: generatedData.title,
-            items: generatedData.items,
-            override: shouldOverride,
-          }
-        },
-        {
-          onSuccess: (savedRoutine) => {
-            toast({ title: shouldOverride ? "🔄 AI Routine replaced!" : "✨ Smart AI Routine generated!" });
-            queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
-            setLocation(`/routines/${savedRoutine.id}`);
-          },
-          onError: () => toast({ title: "Failed to save AI routine", variant: "destructive" }),
-        }
-      );
-    } catch {
-      toast({ title: "AI generation failed — try the standard routine instead.", variant: "destructive" });
-    } finally {
-      setIsAiGenerating(false);
-    }
+    triggerWithWakeCheck("ai", forceOverride);
   };
 
   // Family mode generate — sequential
@@ -1662,6 +1829,163 @@ export default function RoutineGenerate() {
             </Card>
           )}
         </>
+      )}
+
+      {/* ── Wake-up Confirmation Dialog ──────────────────────────────────────── */}
+      {showWakeConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border animate-in slide-in-from-bottom-4 duration-300">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-t-3xl p-5 text-white">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="text-3xl">⏰</span>
+                <div>
+                  <p className="font-quicksand font-bold text-lg leading-tight">Good morning!</p>
+                  <p className="text-amber-100 text-xs">Let's personalise today's routine</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-5">
+              <div>
+                <p className="font-bold text-foreground text-base">
+                  Did {selectedChildData?.name ?? "your child"} wake up at their usual time?
+                </p>
+                <p className="text-2xl font-black text-primary mt-1">
+                  {selectedChildData?.wakeUpTime ?? "7:00 AM"}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setWakeAnswer("yes")}
+                  className={`flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 font-bold transition-all ${
+                    wakeAnswer === "yes"
+                      ? "bg-green-500 border-green-500 text-white"
+                      : "bg-card border-border text-foreground hover:border-green-400"
+                  }`}
+                >
+                  <span className="text-2xl">✅</span>
+                  <span className="text-sm">Yes, on time</span>
+                </button>
+                <button
+                  onClick={() => setWakeAnswer("no")}
+                  className={`flex flex-col items-center gap-1.5 py-4 rounded-2xl border-2 font-bold transition-all ${
+                    wakeAnswer === "no"
+                      ? "bg-orange-500 border-orange-500 text-white"
+                      : "bg-card border-border text-foreground hover:border-orange-400"
+                  }`}
+                >
+                  <span className="text-2xl">⏱️</span>
+                  <span className="text-sm">No, different time</span>
+                </button>
+              </div>
+
+              {wakeAnswer === "no" && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <p className="text-sm font-bold text-muted-foreground">Enter today's actual wake-up time:</p>
+                  <div className="flex items-center bg-muted/30 border-2 border-primary rounded-2xl px-4 py-3 gap-3">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <input
+                      type="time"
+                      value={wakeInputValue}
+                      onChange={(e) => setWakeInputValue(e.target.value)}
+                      className="bg-transparent border-none outline-none text-foreground font-bold text-lg flex-1"
+                    />
+                    {wakeInputValue && (
+                      <span className="text-xs font-bold text-primary">{inputToDisplay(wakeInputValue)}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    The routine will shift to start from this time.
+                  </p>
+                </div>
+              )}
+
+              <Button
+                onClick={handleWakeConfirmSubmit}
+                disabled={wakeAnswer === null || (wakeAnswer === "no" && !wakeInputValue)}
+                className="w-full rounded-full h-12 font-bold"
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                {wakeAnswer === "yes" ? "Great! Generate Routine" : "Adjust & Generate"}
+              </Button>
+
+              <button
+                onClick={() => { setShowWakeConfirm(false); setPendingAction(null); }}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Past Essential Task Check Dialog ─────────────────────────────────── */}
+      {showTaskCheck && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-sm bg-card rounded-3xl shadow-2xl border border-border animate-in slide-in-from-bottom-4 duration-300 max-h-[85vh] flex flex-col">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-t-3xl p-5 text-white shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">✅</span>
+                <div>
+                  <p className="font-quicksand font-bold text-lg leading-tight">Morning Check-in</p>
+                  <p className="text-blue-100 text-xs">Mark what's already been done</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
+              <p className="text-sm text-muted-foreground">
+                These activities should have happened before now. Did {selectedChildData?.name ?? "your child"} complete them?
+              </p>
+
+              <div className="space-y-2">
+                {pastEssentialTasks.map(({ idx, item }) => (
+                  <button
+                    key={idx}
+                    onClick={() => setTaskCheckMap((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                    className={`w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left ${
+                      taskCheckMap[idx]
+                        ? "bg-green-50 border-green-400 text-green-900"
+                        : "bg-rose-50 border-rose-300 text-rose-900"
+                    }`}
+                  >
+                    <span className="text-xl">{taskCheckMap[idx] ? "✅" : "❌"}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{item.activity}</p>
+                      <p className="text-xs opacity-70">{item.time} · {item.duration}m</p>
+                    </div>
+                    <span className="text-xs font-bold shrink-0">
+                      {taskCheckMap[idx] ? "Done" : "Missed"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-xs text-muted-foreground text-center">
+                Tap to toggle. Missed tasks will be marked as skipped.
+              </p>
+            </div>
+
+            <div className="p-5 pt-0 shrink-0 space-y-2">
+              <Button onClick={handleTaskCheckDone} className="w-full rounded-full h-12 font-bold">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Save & View Routine
+              </Button>
+              <button
+                onClick={() => {
+                  setShowTaskCheck(false);
+                  if (pendingRoutineSave) saveGeneratedRoutine(pendingRoutineSave.generatedData, pendingRoutineSave.shouldOverride);
+                  setPendingRoutineSave(null);
+                }}
+                className="w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors py-1"
+              >
+                Skip check-in — save as-is
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

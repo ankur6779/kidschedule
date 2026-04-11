@@ -1,0 +1,142 @@
+Upgrade my web app "AmyNest" to implement a smart wake-up confirmation system and real-time adaptive routine generation.
+
+IMPORTANT:
+- Use rule-based logic (no AI required)
+- Keep system simple and reliable
+- Do NOT break existing routine engine
+
+--------------------------------
+1. Wake-Up Time Confirmation (Core 🔥)
+--------------------------------
+- Default wakeTime should come from:
+  child details (stored value)
+
+- Before generating routine (ONLY for today's date):
+  Ask parent:
+
+  “Did your child wake up at the usual time (07:00 AM)?”
+
+Options:
+  - Yes → use stored wakeTime
+  - No → ask:
+      “Enter today’s actual wake-up time”
+
+--------------------------------
+2. Conditional Input Logic (Very Important)
+--------------------------------
+
+IF routine date == system current date:
+  → Ask wake-up confirmation
+
+IF routine date > today (future date):
+  → DO NOT ask anything
+  → Use default wakeTime from child data
+
+IF routine date < today:
+  → Do NOT ask
+  → Show read-only routine
+
+--------------------------------
+3. Real-Time Adjustment System (Core 🔥🔥)
+--------------------------------
+
+- When generating routine for TODAY:
+
+- Get:
+  current system time
+
+- Split tasks into:
+  - Past tasks
+  - Current task
+  - Future tasks
+
+--------------------------------
+4. Past Task Handling
+--------------------------------
+
+For tasks before current time:
+
+- Ask parent:
+  “Did your child complete these activities?”
+
+Options:
+  - Yes → mark as completed
+  - No → mark as skipped OR auto-adjust
+
+- Optional:
+  Only ask for important (ESSENTIAL) tasks:
+    - Brush
+    - Meals
+    - Sleep
+
+--------------------------------
+5. Essential Task Logic
+--------------------------------
+
+- Mark tasks with priority:
+  - Essential
+  - Optional
+
+- Only prompt user for essential tasks
+- Skip unnecessary questions
+
+--------------------------------
+6. Future Task Generation
+--------------------------------
+
+- Generate ONLY future tasks
+- Adjust timing based on:
+  - Actual wake time
+  - Current system time
+
+- Apply:
+  - Time shifting
+  - Auto-skip logic
+
+--------------------------------
+7. Do NOT Ask for Future Dates
+--------------------------------
+
+- If generating future routine:
+  - No wake-up confirmation
+  - No task completion questions
+
+--------------------------------
+8. UI Flow
+--------------------------------
+
+For today:
+- Show:
+  - Wake-up confirmation popup
+  - Essential task confirmation (optional)
+
+For future:
+- Directly show routine
+
+--------------------------------
+9. Multi-Child Handling
+--------------------------------
+
+- Apply same logic per child independently
+
+--------------------------------
+10. Data Handling
+--------------------------------
+
+Store:
+- actualWakeTime (for today)
+- task completion status
+
+--------------------------------
+11. Keep everything simple
+--------------------------------
+- No backend required
+- Use localStorage
+- Avoid complex flows
+
+--------------------------------
+Return:
+Updated working code with:
+- Wake-up confirmation system
+- Real-time adaptive routine generation
+- Smart past/future task handling
