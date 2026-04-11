@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save, BookOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -657,6 +657,13 @@ export default function RoutineDetail() {
             </Button>
 
             <VoiceSettingsPanel onToggle={(enabled) => setVoiceOn(enabled)} />
+
+            <Link href="/parenting-hub">
+              <Button variant="outline" size="sm" className="rounded-full gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                <BookOpen className="h-4 w-4" />
+                Hub
+              </Button>
+            </Link>
 
             <Button
               variant="outline"

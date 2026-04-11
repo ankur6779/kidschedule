@@ -1,0 +1,110 @@
+Refactor the UI of my web app "AmyNest" to separate Routine from Tips, Stories, and Learning content to improve clarity and user experience.
+
+IMPORTANT:
+- Do NOT remove any feature
+- Only reorganize UI into clean sections
+- Keep it simple and mobile-friendly
+
+--------------------------------
+1. Core Problem Fix (Important 🔥)
+--------------------------------
+- Currently:
+  - Routine + Tips + Stories mixed together
+
+- Fix:
+  - Separate into different sections
+
+--------------------------------
+2. Create Main Navigation Tabs
+--------------------------------
+Add top navigation or tabs:
+
+1. 🗓️ Routine
+2. 🧠 Learn / Parenting Hub
+3. 👶 Child Profile (optional)
+
+--------------------------------
+3. Routine Section (Focused View)
+--------------------------------
+- Show ONLY:
+  - Daily routine timeline
+  - Tasks (Complete / Delay / Skip)
+
+- Remove:
+  - Tips
+  - Stories
+  - Lullabies
+
+- Keep it clean and distraction-free
+
+--------------------------------
+4. Parenting Hub (New Section 🔥)
+--------------------------------
+Move all non-routine content here:
+
+Include:
+- 🍼 Feeding Tips
+- 🏥 Health Tips
+- 🧠 Development Tips
+- ❤️ Bonding Activities
+- 📖 Stories
+- 🎵 Lullabies
+
+--------------------------------
+5. Parenting Hub Layout
+--------------------------------
+- Use cards or categories:
+
+Example:
+- Tips
+- Activities
+- Stories
+- Music
+
+- Each opens its own sub-section
+
+--------------------------------
+6. Age-Based Filtering
+--------------------------------
+- Show content based on:
+  - ageGroup
+
+Example:
+- Infant → feeding + lullaby
+- Toddler → play + stories
+- Kids → learning + discipline
+
+--------------------------------
+7. Quick Access (Smart UX)
+--------------------------------
+- In Routine screen:
+  Add small button:
+  “Go to Parenting Hub”
+
+--------------------------------
+8. UI Cleanliness
+--------------------------------
+- Reduce clutter
+- Keep:
+  - Simple spacing
+  - Clear headings
+  - Minimal text
+
+--------------------------------
+9. Performance
+--------------------------------
+- Load sections separately
+- Avoid heavy UI in one screen
+
+--------------------------------
+10. Keep everything simple
+--------------------------------
+- Beginner-friendly code
+- No backend changes required
+
+--------------------------------
+Return:
+Updated UI with:
+- Separate Routine section
+- Separate Parenting Hub
+- Clean and organized layout

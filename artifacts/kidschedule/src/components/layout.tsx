@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -7,21 +7,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BrandLogo } from "@/components/brand-logo";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/children", label: "Children", icon: Users },
-  { href: "/routines", label: "Routines", icon: Calendar },
-  { href: "/progress", label: "Progress", icon: TrendingUp },
-  { href: "/behavior", label: "Behavior", icon: Star },
-  { href: "/assistant", label: "AI Assistant", icon: Bot },
-  { href: "/babysitters", label: "Babysitters", icon: Baby },
-  { href: "/parent-profile", label: "My Profile", icon: UserCircle },
+  { href: "/dashboard",     label: "Dashboard",     icon: Home },
+  { href: "/children",      label: "Children",      icon: Users },
+  { href: "/routines",      label: "Routines",      icon: Calendar },
+  { href: "/parenting-hub", label: "Parenting Hub", icon: BookOpen },
+  { href: "/progress",      label: "Progress",      icon: TrendingUp },
+  { href: "/behavior",      label: "Behavior",      icon: Star },
+  { href: "/assistant",     label: "AI Assistant",  icon: Bot },
+  { href: "/babysitters",   label: "Babysitters",   icon: Baby },
+  { href: "/parent-profile",label: "My Profile",    icon: UserCircle },
 ];
 
 const BOTTOM_NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/routines", label: "Routines", icon: Calendar },
-  { href: "/progress", label: "Progress", icon: TrendingUp },
-  { href: "/assistant", label: "Assistant", icon: Bot },
+  { href: "/dashboard",     label: "Dashboard", icon: Home },
+  { href: "/routines",      label: "Routines",  icon: Calendar },
+  { href: "/parenting-hub", label: "Hub",        icon: BookOpen },
+  { href: "/assistant",     label: "Assistant", icon: Bot },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

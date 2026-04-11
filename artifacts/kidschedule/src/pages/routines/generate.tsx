@@ -14,9 +14,6 @@ import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
 import { format } from "date-fns";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
-import { InfantMode } from "@/components/infant-mode";
-import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
-import { ToddlerPreschoolMode } from "@/components/toddler-preschool-mode";
 
 type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
 const MOOD_OPTIONS: MoodOption[] = [
@@ -899,8 +896,6 @@ export default function RoutineGenerate() {
     ? getAgeGroup(selectedChildData.age, (selectedChildData as any).ageMonths ?? 0)
     : null;
   const selectedChildAgeGroupInfo = selectedChildAgeGroup ? getAgeGroupInfo(selectedChildAgeGroup) : null;
-  const isInfantMode = selectedChildAgeGroup === "infant";
-
   // School question is only required for preschoolers who go to school, and school-age+
   const schoolQuestionRequired = (() => {
     if (!selectedChildAgeGroup) return true;
@@ -1163,44 +1158,30 @@ export default function RoutineGenerate() {
                         )}
                       </div>
 
-                      {/* Infant Mode — replace rest of form */}
-                      {isInfantMode && (
-                        <div className="mt-6 space-y-6">
-                          <InfantMode
-                            childName={selectedChildData.name}
-                            ageYears={selectedChildData.age}
-                            ageMonths={(selectedChildData as any).ageMonths ?? 0}
-                          />
-                        </div>
-                      )}
                     </>
                   )}
                 </div>
 
-                {/* Age-based sections (non-infant) shown after child selection */}
-                {selectedChildData && !isInfantMode && selectedChildAgeGroup && (
-                  <>
-                    {/* Toddler / Preschool — fully interactive dashboard */}
-                    {(selectedChildAgeGroup === "toddler" || selectedChildAgeGroup === "preschool") && (
-                      <ToddlerPreschoolMode
-                        ageGroup={selectedChildAgeGroup}
-                        childName={selectedChildData.name}
-                        ageYears={selectedChildData.age}
-                        ageMonths={(selectedChildData as any).ageMonths ?? 0}
-                      />
-                    )}
-                    {/* Older kids — keep existing skill / story sections */}
-                    {selectedChildAgeGroup !== "toddler" && selectedChildAgeGroup !== "preschool" && (
-                      <>
-                        <SkillFocusSection group={selectedChildAgeGroup} childName={selectedChildData.name} />
-                        <StorySection group={selectedChildAgeGroup} childName={selectedChildData.name} />
-                      </>
-                    )}
-                  </>
+                {/* Parenting Hub promo — shown after child is selected */}
+                {selectedChildData && (
+                  <Link href="/parenting-hub">
+                    <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 flex items-center gap-4 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer">
+                      <div className="h-10 w-10 rounded-2xl bg-emerald-100 flex items-center justify-center shrink-0">
+                        <span className="text-xl">📚</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-emerald-900 text-sm leading-tight">
+                          Parenting Hub — Tips, Stories &amp; Activities
+                        </p>
+                        <p className="text-xs text-emerald-700 mt-0.5">
+                          Age-based content for {selectedChildData.name} →
+                        </p>
+                      </div>
+                      <Brain className="h-5 w-5 text-emerald-500 shrink-0" />
+                    </div>
+                  </Link>
                 )}
 
-                {/* Steps 2–end are hidden for infants */}
-                {!isInfantMode && (
                 <div className="space-y-8">
                 {/* Step 2 — Date */}
                 <div className="space-y-4">
@@ -1488,7 +1469,6 @@ export default function RoutineGenerate() {
                   )}
                 </div>
                 </div>
-                )}
               </CardContent>
             </Card>
           )}
