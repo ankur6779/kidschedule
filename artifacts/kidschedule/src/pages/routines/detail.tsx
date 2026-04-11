@@ -203,8 +203,6 @@ export default function RoutineDetail() {
   const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
   const [recipeData, setRecipeData] = useState<any>(null);
   const [recipeLoading, setRecipeLoading] = useState(false);
-  const [aiImagesLoading, setAiImagesLoading] = useState(false);
-  const aiImagesTriggeredRef = useRef(false);
   const notifTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   // Editing state
@@ -256,21 +254,6 @@ export default function RoutineDetail() {
     }
   }, [routine]);
 
-  // Auto-trigger AI personalized image generation
-  useEffect(() => {
-    if (!localItems || aiImagesTriggeredRef.current || !routineId) return;
-    const needsGeneration = localItems.some((it) => !(it as any).imageUrl);
-    if (!needsGeneration) return;
-    aiImagesTriggeredRef.current = true;
-    setAiImagesLoading(true);
-    authFetch(`/api/routines/${routineId}/generate-images`, { method: "POST" })
-      .then((r) => r.ok ? r.json() : null)
-      .then((data: any) => {
-        if (data?.items) setLocalItems(data.items as RoutineItem[]);
-      })
-      .catch(() => {})
-      .finally(() => setAiImagesLoading(false));
-  }, [localItems, routineId]);
 
   // Load available voices on mount (and when voice is toggled on)
   useEffect(() => {
@@ -407,7 +390,6 @@ export default function RoutineDetail() {
       const data = await res.json();
       if (data.items) {
         setLocalItems(data.items);
-        aiImagesTriggeredRef.current = false; // allow image regen
         toast({ title: "🔄 Day regenerated!", description: "Remaining tasks have been updated by AI." });
       }
     } catch {
@@ -431,7 +413,6 @@ export default function RoutineDetail() {
       const data = await res.json();
       if (data.items) {
         setLocalItems(data.items);
-        aiImagesTriggeredRef.current = false;
         toast({ title: "✅ Activity added!", description: `"${addActivityForm.name}" has been fit into your schedule.` });
       }
     } catch {
@@ -851,18 +832,6 @@ export default function RoutineDetail() {
         )}
       </header>
 
-      {/* AI Image Generation Banner */}
-      {aiImagesLoading && (
-        <div className="flex items-center gap-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl px-4 py-3 mb-4">
-          <div className="shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center animate-pulse">
-            <span className="text-base">✨</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-purple-800">Creating personalized illustrations…</p>
-            <p className="text-xs text-purple-600">AI is drawing {routine?.childName} in each activity using their photo. This takes ~30–60 seconds and is saved for next time.</p>
-          </div>
-        </div>
-      )}
 
       <div className="relative mt-2">
         <div className="absolute left-[39px] sm:left-[55px] top-4 bottom-4 w-0.5 bg-border/60 z-0 rounded-full" />
@@ -917,24 +886,15 @@ export default function RoutineDetail() {
                   <CardContent className="p-4 sm:p-5">
                     <div className="flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
-                        {/* Activity Illustration */}
+                        {/* Activity Illustration — static image library */}
                         <div className="relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
                           {(() => {
-                            const aiImageUrl = (item as any).imageUrl as string | undefined;
                             const seed = (routineId ?? 0) * 100 + index;
-                            const fallback = getActivityImage(item.category, item.activity, seed);
-                            const isLoading = aiImagesLoading && !aiImageUrl;
-                            if (isLoading) {
-                              return (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 animate-pulse">
-                                  <span className="text-xl">✨</span>
-                                </div>
-                              );
-                            }
+                            const img = getActivityImage(item.category, item.activity, seed);
                             return (
                               <>
                                 <img
-                                  src={aiImageUrl ?? fallback.src}
+                                  src={img.src}
                                   alt={item.activity}
                                   className={`w-full h-full object-cover ${status === "skipped" ? "grayscale opacity-50" : status === "completed" ? "opacity-80" : ""}`}
                                 />
@@ -944,9 +904,6 @@ export default function RoutineDetail() {
                                       <span className="text-white text-[10px] font-black">✓</span>
                                     </div>
                                   </div>
-                                )}
-                                {aiImageUrl && (
-                                  <div className="absolute top-0.5 right-0.5 bg-purple-500 rounded-full w-4 h-4 flex items-center justify-center text-[8px]">✨</div>
                                 )}
                               </>
                             );

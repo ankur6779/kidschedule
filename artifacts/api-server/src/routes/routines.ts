@@ -17,10 +17,7 @@ import {
   GenerateRoutineResponse,
   GenerateInsightsResponse,
 } from "@workspace/api-zod";
-import { openai, generateImageBuffer, toFile } from "@workspace/integrations-openai-ai-server";
-import { writeFileSync, unlinkSync } from "fs";
-import { join } from "path";
-import { tmpdir } from "os";
+import { openai } from "@workspace/integrations-openai-ai-server";
 
 type RoutineItem = {
   time: string;
@@ -637,120 +634,6 @@ Make it realistic — do not leave large gaps.`;
 
   const updatedItems = [...keptItems, ...newItems];
   await db.update(routinesTable).set({ items: updatedItems as any }).where(eq(routinesTable.id, routineId));
-
-  res.json({ items: updatedItems });
-});
-
-// Generate personalized AI activity images using child's actual photo
-router.post("/routines/:id/generate-images", async (req, res): Promise<void> => {
-  const routineId = parseInt(req.params.id);
-  if (isNaN(routineId)) { res.status(400).json({ error: "Invalid routine id" }); return; }
-
-  const [routine] = await db.select().from(routinesTable).where(eq(routinesTable.id, routineId));
-  if (!routine) { res.status(404).json({ error: "Routine not found" }); return; }
-
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
-
-  const items = (routine.items ?? []) as Array<RoutineItem & { imageUrl?: string }>;
-
-  // Return cached immediately if all images already generated
-  if (items.length > 0 && items.every((it) => it.imageUrl)) {
-    res.json({ items });
-    return;
-  }
-
-  // Deduplicate: reuse image from same category if already generated in this batch
-  const categoryImageCache: Record<string, string> = {};
-
-  const childName = child?.name ?? "a child";
-  const childAge = child?.age ?? 6;
-  const childPhotoUrl = (child as any)?.photoUrl as string | null ?? null;
-
-  let tempPhotoPath: string | null = null;
-  if (childPhotoUrl) {
-    try {
-      const base64Data = childPhotoUrl.replace(/^data:image\/\w+;base64,/, "");
-      const buf = Buffer.from(base64Data, "base64");
-      const ext = childPhotoUrl.includes("data:image/png") ? "png" : "jpg";
-      tempPhotoPath = join(tmpdir(), `amynest-child-${child!.id}-${Date.now()}.${ext}`);
-      writeFileSync(tempPhotoPath, buf);
-    } catch {
-      tempPhotoPath = null;
-    }
-  }
-
-  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
-
-  const generateForActivity = async (activityName: string, category: string): Promise<string | null> => {
-    const activityVerb = activityName.toLowerCase();
-    const prompt = tempPhotoPath
-      ? `Pixar cartoon of this child (${childAge} yo) ${activityVerb}. Keep their face, hair, skin tone. Bright, cheerful, kid-friendly. No text.`
-      : `Pixar cartoon of a cheerful ${childAge}-year-old child ${activityVerb}. Bright, colorful, kid-friendly. No text.`;
-    try {
-      let imageBuffer: Buffer;
-      if (tempPhotoPath) {
-        const fs = await import("fs");
-        const mimeType = tempPhotoPath.endsWith(".png") ? "image/png" : "image/jpeg";
-        const fname = `child-photo.${tempPhotoPath.endsWith(".png") ? "png" : "jpg"}`;
-        const imageFile = await toFile(fs.createReadStream(tempPhotoPath), fname, { type: mimeType });
-        const response = await withTimeout(openai.images.edit({
-          model: "gpt-image-1",
-          image: imageFile,
-          prompt,
-          size: "1024x1024",
-        }), 25000);
-        const b64 = response.data[0]?.b64_json ?? "";
-        imageBuffer = Buffer.from(b64, "base64");
-      } else {
-        imageBuffer = await withTimeout(generateImageBuffer(prompt, "1024x1024"), 20000);
-      }
-      return `data:image/png;base64,${imageBuffer.toString("base64")}`;
-    } catch (err) {
-      console.error(`Image gen failed for "${activityName}":`, err);
-      return null;
-    }
-  };
-
-  // Find unique categories among items needing generation
-  const needsGeneration = items.filter((it) => !it.imageUrl);
-  const uniqueCategories = [...new Set(needsGeneration.map((it) => it.category?.toLowerCase() ?? "general"))];
-
-  // Pick a representative activity name per category (first occurrence)
-  const categoryRepresentative: Record<string, string> = {};
-  for (const item of needsGeneration) {
-    const key = item.category?.toLowerCase() ?? "general";
-    if (!categoryRepresentative[key]) categoryRepresentative[key] = item.activity;
-  }
-
-  // Generate one image per unique category — all in parallel
-  const categoryImageResults = await Promise.all(
-    uniqueCategories.map(async (cat) => ({
-      cat,
-      imageUrl: await generateForActivity(categoryRepresentative[cat], cat),
-    }))
-  );
-
-  for (const { cat, imageUrl } of categoryImageResults) {
-    if (imageUrl) categoryImageCache[cat] = imageUrl;
-  }
-
-  // Assign images to items
-  const updatedItems = items.map((item) => {
-    if (item.imageUrl) return item;
-    const cat = item.category?.toLowerCase() ?? "general";
-    return categoryImageCache[cat] ? { ...item, imageUrl: categoryImageCache[cat] } : item;
-  });
-
-  // Clean up temp file
-  if (tempPhotoPath) {
-    try { unlinkSync(tempPhotoPath); } catch {}
-  }
-
-  // Persist generated images in DB
-  await db.update(routinesTable)
-    .set({ items: updatedItems as any })
-    .where(eq(routinesTable.id, routineId));
 
   res.json({ items: updatedItems });
 });
