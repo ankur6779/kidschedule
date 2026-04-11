@@ -1,0 +1,123 @@
+Upgrade my web app "AmyNest" to implement a hybrid architecture with controlled AI usage, but WITHOUT implementing full premium/paid system yet.
+
+IMPORTANT:
+- Do NOT add payment system
+- Do NOT lock features completely
+- Keep everything usable but limit-heavy features smartly
+- Keep existing age-based system unchanged
+
+--------------------------------
+1. Core Principle
+--------------------------------
+- Keep all existing systems intact:
+  - Age-based logic (already implemented)
+  - Routine system
+  - Parent scheduling
+  - Multi-child support
+
+- Add AI in a controlled and lightweight way
+
+--------------------------------
+2. Parenting Q&A (AI Feature)
+--------------------------------
+- Add AI for:
+  “Ask Anything About Your Child”
+
+- Add soft usage limit:
+  - Allow approx 3–5 questions per day
+
+- If limit reached:
+  - Show message:
+    “Daily limit reached. Try again tomorrow.”
+
+- Reset count daily using localStorage
+
+--------------------------------
+3. Weekly Insights (AI Feature)
+--------------------------------
+- Generate insights ONLY once per week
+
+- Input:
+  - Task completion
+  - Delays
+  - Skips
+
+- Store result locally
+- Do NOT regenerate repeatedly
+
+--------------------------------
+4. Optional Smart Routine (AI)
+--------------------------------
+- Add button:
+  “Smart AI Routine”
+
+- Use AI ONLY when user clicks this
+- Otherwise use existing rule-based routine
+
+--------------------------------
+5. No AI Areas (Important)
+--------------------------------
+Ensure NO AI is used in:
+- Time adjustment
+- Auto skip logic
+- Daily routine edits
+- Activities
+- Tips
+- Story system
+- Age-based logic
+
+--------------------------------
+6. Voice System (Free)
+--------------------------------
+- Use speechSynthesis API
+- Prefer Indian female voice
+
+--------------------------------
+7. Image System
+--------------------------------
+- Keep existing zero-cost image system
+- No AI image generation
+
+--------------------------------
+8. Future Monetization Ready (Important 🔥)
+--------------------------------
+- Add structure only (no lock):
+
+Add flag:
+  isPremium = false
+
+- Use this flag in code but DO NOT restrict features yet
+
+--------------------------------
+9. UI Improvements
+--------------------------------
+- Add labels:
+  - “AI Feature” tag
+- Add soft hint:
+  - “Advanced features coming soon”
+
+--------------------------------
+10. Performance Optimization
+--------------------------------
+- Cache AI responses
+- Avoid repeated API calls
+- Keep app fast
+
+--------------------------------
+11. Data Storage
+--------------------------------
+- Use localStorage for:
+  - AI usage count
+  - Weekly insights
+  - Settings
+
+--------------------------------
+12. Keep everything simple
+--------------------------------
+- Beginner-friendly
+- No backend required
+- Maintain app stability
+
+--------------------------------
+Return:
+Updated working code with hybrid AI system, soft limits, and future-ready structure (without payment system).

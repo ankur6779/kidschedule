@@ -19,6 +19,108 @@ import {
 } from "@workspace/api-zod";
 import { generateRuleBasedRoutine, generateRuleBasedInsights, generatePartialRoutine, timeToMins, minsToTime, type AgeGroup } from "../lib/routine-templates.js";
 
+// ─── AI Routine Generation helper ──────────────────────────────────────────
+async function generateAiRoutine(params: {
+  childName: string;
+  age: number;
+  ageGroup: AgeGroup;
+  wakeUpTime: string;
+  sleepTime: string;
+  schoolStartTime: string;
+  schoolEndTime: string;
+  hasSchool: boolean;
+  foodType: string;
+  mood: string;
+  specialPlans?: string;
+  fridgeItems?: string;
+  goals?: string | null;
+  travelMode?: string;
+  childClass?: string;
+  date: string;
+  parentAvailSummary: string;
+}): Promise<{ title: string; items: RoutineItem[] }> {
+  const { openai } = await import("@workspace/integrations-openai-ai-server");
+
+  const dayOfWeek = new Date(params.date + "T00:00:00").toLocaleDateString("en-US", { weekday: "long" });
+  const ageGroupLabel =
+    params.ageGroup === "infant" ? "Infant (0–11 months)"
+    : params.ageGroup === "toddler" ? "Toddler (1–3 years)"
+    : params.ageGroup === "preschool" ? "Preschool (3–5 years)"
+    : params.ageGroup === "early_school" ? "School Age (5–10 years)"
+    : "Pre-Teen (10–15 years)";
+
+  const systemPrompt = `You are an expert child development specialist and daily routine planner.
+Generate a complete, realistic daily schedule for a child as a JSON object.
+The schedule must be age-appropriate, structured, and include family bonding time.
+Return ONLY valid JSON, no markdown, no explanation.`;
+
+  const userPrompt = `Create a full daily routine for this child:
+- Name: ${params.childName}
+- Age group: ${ageGroupLabel} (${params.age} years)
+- Date: ${params.date} (${dayOfWeek})
+- School today: ${params.hasSchool ? "Yes" : "No"}
+${params.hasSchool ? `- School: ${params.schoolStartTime} to ${params.schoolEndTime}` : ""}
+- Wake up: ${params.wakeUpTime}
+- Bedtime: ${params.sleepTime}
+- Diet: ${params.foodType === "non_veg" ? "Non-Vegetarian" : "Vegetarian"}
+- Mood today: ${params.mood}
+${params.goals ? `- Goals/focus: ${params.goals}` : ""}
+${params.specialPlans ? `- Special plans: ${params.specialPlans}` : ""}
+${params.fridgeItems ? `- Available fridge items: ${params.fridgeItems}` : ""}
+- Parent availability: ${params.parentAvailSummary}
+
+Return JSON exactly like this:
+{
+  "title": "string — include child name and day",
+  "items": [
+    {
+      "time": "HH:MM",
+      "activity": "Activity name",
+      "duration": 30,
+      "category": "one of: morning_routine, meal, school, study, play, family, creative, outdoor, self_care, rest, sleep",
+      "notes": "optional parent tip"
+    }
+  ]
+}
+
+Requirements:
+- 12–16 activities covering wake-up to sleep
+- Every meal slot (breakfast, lunch, snack, dinner) must be included
+- Include at least 2 outdoor/play activities
+- Include 1–2 family bonding activities
+- Activities must match the child's age and mood
+- Times must not overlap (duration determines when next activity starts)`;
+
+  const completion = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    response_format: { type: "json_object" },
+    max_tokens: 2000,
+  });
+
+  const raw = completion.choices[0]?.message?.content ?? "{}";
+  const parsed = JSON.parse(raw);
+
+  if (!parsed.title || !Array.isArray(parsed.items) || parsed.items.length < 5) {
+    throw new Error("Invalid AI response structure");
+  }
+
+  return {
+    title: parsed.title,
+    items: parsed.items.map((item: Record<string, unknown>) => ({
+      time: String(item.time ?? "08:00"),
+      activity: String(item.activity ?? "Activity"),
+      duration: Number(item.duration ?? 30),
+      category: String(item.category ?? "play"),
+      notes: item.notes ? String(item.notes) : undefined,
+      status: "pending" as const,
+    })),
+  };
+}
+
 type RoutineItem = {
   time: string;
   activity: string;
@@ -99,6 +201,107 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
   });
 
   res.json(GenerateRoutineResponse.parse(generated));
+});
+
+// AI-powered routine generation — uses OpenAI; rate-limited on frontend
+router.post("/routines/generate-ai", async (req, res): Promise<void> => {
+  const parsed = GenerateRoutineBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+
+  const { userId } = getAuth(req);
+
+  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
+  if (!child) {
+    res.status(404).json({ error: "Child not found" });
+    return;
+  }
+
+  const totalAgeMonths = (child.age * 12) + ((child as any).ageMonths ?? 0);
+  const ageGroup: AgeGroup =
+    totalAgeMonths < 12 ? "infant"
+    : totalAgeMonths < 36 ? "toddler"
+    : totalAgeMonths < 60 ? "preschool"
+    : totalAgeMonths < 120 ? "early_school"
+    : "pre_teen";
+
+  const {
+    hasSchool, isWorkingDay, specialPlans, mood, fridgeItems,
+    parent1Role, parent1WorkType, parent1IsWorking,
+    parent2Role, parent2WorkType, parent2IsWorking,
+  } = parsed.data;
+
+  let foodType = (child as any).foodType ?? "veg";
+  if (userId && foodType === "veg") {
+    const [pp] = await db.select().from(parentProfilesTable).where(eq(parentProfilesTable.userId, userId));
+    if (pp?.foodType) foodType = pp.foodType;
+  }
+
+  const p1Status = parent1WorkType === "homemaker" ? "free all day (homemaker)"
+    : parent1IsWorking === false ? "free today"
+    : parent1IsWorking === true ? "working today"
+    : isWorkingDay === false ? "free today" : "working today";
+
+  const p2Status = parent2Role
+    ? (parent2WorkType === "homemaker" ? "free all day (homemaker)"
+      : parent2IsWorking === false ? "free today"
+      : "working today")
+    : null;
+
+  const parentAvailSummary = p2Status
+    ? `${parent1Role ?? "Parent 1"}: ${p1Status}; ${parent2Role}: ${p2Status}`
+    : `${parent1Role ?? "Parent"}: ${p1Status}`;
+
+  try {
+    const generated = await generateAiRoutine({
+      childName: child.name,
+      age: child.age,
+      ageGroup,
+      wakeUpTime: child.wakeUpTime,
+      sleepTime: child.sleepTime,
+      schoolStartTime: child.schoolStartTime,
+      schoolEndTime: child.schoolEndTime,
+      hasSchool: hasSchool !== false,
+      foodType,
+      mood: mood ?? "normal",
+      specialPlans,
+      fridgeItems,
+      goals: child.goals,
+      travelMode: child.travelMode,
+      childClass: (child as any).childClass ?? undefined,
+      date: parsed.data.date,
+      parentAvailSummary,
+    });
+    res.json(GenerateRoutineResponse.parse(generated));
+  } catch {
+    // Fallback to rule-based if AI fails
+    const p1Free = parent1WorkType === "homemaker" || parent1IsWorking === false || isWorkingDay === false;
+    const p2Free = parent2Role ? (parent2WorkType === "homemaker" || parent2IsWorking === false) : false;
+    const bothBusy = (parent1IsWorking === true || isWorkingDay === true) && (!parent2Role || parent2IsWorking === true);
+    const generated = generateRuleBasedRoutine({
+      childName: child.name,
+      ageGroup,
+      totalAgeMonths,
+      wakeUpTime: child.wakeUpTime,
+      sleepTime: child.sleepTime,
+      schoolStartTime: child.schoolStartTime,
+      schoolEndTime: child.schoolEndTime,
+      travelMode: child.travelMode,
+      hasSchool: hasSchool !== false,
+      mood: mood ?? "normal",
+      foodType,
+      goals: child.goals,
+      specialPlans,
+      p1Free,
+      p2Free,
+      bothBusy,
+      childClass: (child as any).childClass ?? undefined,
+      date: parsed.data.date,
+    });
+    res.json(GenerateRoutineResponse.parse(generated));
+  }
 });
 
 router.get("/routines", async (req, res): Promise<void> => {

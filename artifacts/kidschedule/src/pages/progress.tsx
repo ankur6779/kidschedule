@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useListRoutines, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import {
   Flame, CheckCircle2, Clock, SkipForward, TrendingUp, Sparkles,
-  AlertTriangle, Lightbulb, Star, ArrowRight, BarChart2
+  AlertTriangle, Lightbulb, Star, ArrowRight, BarChart2, Zap, RefreshCw
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { getCachedInsights, saveCachedInsights, clearInsightsCache } from "@/lib/ai-limits";
 
 type RoutineItem = {
   time: string;
@@ -66,6 +68,17 @@ export default function ProgressPage() {
   const authFetch = useAuthFetch();
   const [insights, setInsights] = useState<{ summary: string; insights: Insight[] } | null>(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
+  const [insightsCached, setInsightsCached] = useState(false);
+  const [insightsCachedAt, setInsightsCachedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    const cached = getCachedInsights();
+    if (cached) {
+      setInsights(cached.data);
+      setInsightsCached(true);
+      setInsightsCachedAt(cached.generatedAt);
+    }
+  }, []);
 
   const { data: routines, isLoading } = useListRoutines(undefined, {
     query: { queryKey: getListRoutinesQueryKey() }
@@ -119,19 +132,37 @@ export default function ProgressPage() {
     });
   }
 
-  const handleGenerateInsights = async () => {
+  const handleGenerateInsights = async (forceRefresh = false) => {
+    if (!forceRefresh) {
+      const cached = getCachedInsights();
+      if (cached) {
+        setInsights(cached.data);
+        setInsightsCached(true);
+        setInsightsCachedAt(cached.generatedAt);
+        return;
+      }
+    }
     setLoadingInsights(true);
     try {
       const res = await authFetch("/api/insights", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
         setInsights(data);
+        saveCachedInsights(data);
+        setInsightsCached(false);
+        setInsightsCachedAt(new Date().toISOString());
       }
     } catch {
       // ignore
     } finally {
       setLoadingInsights(false);
     }
+  };
+
+  const handleRefreshInsights = () => {
+    clearInsightsCache();
+    setInsightsCached(false);
+    handleGenerateInsights(true);
   };
 
   if (isLoading) {
@@ -334,24 +365,49 @@ export default function ProgressPage() {
       {/* AI Insights */}
       <Card className="rounded-3xl border-none shadow-sm bg-card overflow-hidden">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="font-quicksand font-bold text-foreground text-lg flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
               AI Parenting Insights
+              <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-xs font-bold border-0">
+                <Zap className="h-3 w-3 mr-1" />
+                AI Feature
+              </Badge>
             </h3>
-            <Button
-              onClick={handleGenerateInsights}
-              disabled={loadingInsights}
-              size="sm"
-              className="rounded-full"
-            >
-              {loadingInsights ? (
-                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 animate-spin" />Analyzing...</span>
-              ) : (
-                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />{insights ? "Refresh" : "Generate"}</span>
+            <div className="flex items-center gap-2">
+              {insights && !loadingInsights && (
+                <Button
+                  onClick={handleRefreshInsights}
+                  disabled={loadingInsights}
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-full text-muted-foreground h-8 px-3"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                  Refresh
+                </Button>
               )}
-            </Button>
+              <Button
+                onClick={() => handleGenerateInsights(false)}
+                disabled={loadingInsights}
+                size="sm"
+                className="rounded-full"
+              >
+                {loadingInsights ? (
+                  <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 animate-spin" />Analyzing...</span>
+                ) : (
+                  <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5" />{insights ? "View" : "Generate"}</span>
+                )}
+              </Button>
+            </div>
           </div>
+
+          {insightsCached && insightsCachedAt && (
+            <p className="text-xs text-muted-foreground mb-3 flex items-center gap-1.5">
+              <RefreshCw className="h-3 w-3" />
+              Cached this week · generated {new Date(insightsCachedAt).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+            </p>
+          )}
 
           {!insights && !loadingInsights && (
             <div className="text-center py-6">
@@ -359,6 +415,7 @@ export default function ProgressPage() {
                 <Lightbulb className="h-7 w-7 text-primary" />
               </div>
               <p className="text-muted-foreground text-sm">Click "Generate" to get AI-powered insights based on your family's routine patterns, completion rates, and behavior trends.</p>
+              <p className="text-xs text-muted-foreground mt-2 opacity-70">Insights are cached for the week — generated once, shown all week.</p>
             </div>
           )}
 

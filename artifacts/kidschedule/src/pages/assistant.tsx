@@ -3,9 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Loader2, User, Sparkles, RefreshCw } from "lucide-react";
+import { Bot, Send, Loader2, User, Sparkles, RefreshCw, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import {
+  getQuestionsUsed,
+  getRemainingQuestions,
+  isQuestionLimitReached,
+  recordQuestion,
+  AI_DAILY_QUESTION_LIMIT,
+} from "@/lib/ai-limits";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,6 +34,7 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [questionsUsed, setQuestionsUsed] = useState(() => getQuestionsUsed());
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -34,9 +42,22 @@ export default function AssistantPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const limitReached = questionsUsed >= AI_DAILY_QUESTION_LIMIT;
+  const remaining = Math.max(0, AI_DAILY_QUESTION_LIMIT - questionsUsed);
+
   const sendMessage = async (question?: string) => {
     const text = (question ?? input).trim();
     if (!text || loading) return;
+
+    if (isQuestionLimitReached()) {
+      setQuestionsUsed(getQuestionsUsed());
+      toast({
+        title: "Daily limit reached",
+        description: "You've used all 5 AI questions today. Come back tomorrow!",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const userMsg: Message = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
@@ -44,7 +65,7 @@ export default function AssistantPage() {
     setLoading(true);
 
     try {
-      const res = await authFetch("/api/ai/assistant", {
+      const res = await authFetch("/api/ai/assistant-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: text }),
@@ -53,6 +74,8 @@ export default function AssistantPage() {
       const data = await res.json();
       const assistantMsg: Message = { role: "assistant", content: data.answer };
       setMessages((prev) => [...prev, assistantMsg]);
+      recordQuestion();
+      setQuestionsUsed(getQuestionsUsed());
     } catch {
       toast({ title: "Failed to get a response. Please try again.", variant: "destructive" });
     } finally {
@@ -82,8 +105,12 @@ export default function AssistantPage() {
           <h1 className="font-quicksand text-3xl font-bold text-foreground flex items-center gap-2">
             <Bot className="h-7 w-7 text-primary" />
             AI Parenting Assistant
+            <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-xs font-bold border-0 ml-1">
+              <Zap className="h-3 w-3 mr-1" />
+              AI Feature
+            </Badge>
           </h1>
-          <p className="text-muted-foreground mt-1">Ask anything about parenting — get warm, practical advice.</p>
+          <p className="text-muted-foreground mt-1">Ask anything about parenting — get warm, practical AI-powered advice.</p>
         </div>
         {!isEmpty && (
           <Button variant="ghost" size="sm" onClick={clearChat} className="rounded-full gap-2 text-muted-foreground">
@@ -91,6 +118,36 @@ export default function AssistantPage() {
             Clear
           </Button>
         )}
+      </div>
+
+      {/* Daily limit bar */}
+      <div className={`flex-shrink-0 mb-3 rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 border text-sm ${
+        limitReached
+          ? "bg-rose-50 border-rose-200 text-rose-700"
+          : remaining <= 2
+          ? "bg-amber-50 border-amber-200 text-amber-700"
+          : "bg-primary/5 border-primary/20 text-primary/80"
+      }`}>
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 shrink-0" />
+          {limitReached ? (
+            <span className="font-bold">Daily limit reached — try again tomorrow.</span>
+          ) : (
+            <span>
+              <strong>{remaining}</strong> of {AI_DAILY_QUESTION_LIMIT} AI questions remaining today
+            </span>
+          )}
+        </div>
+        <div className="flex gap-1">
+          {Array.from({ length: AI_DAILY_QUESTION_LIMIT }).map((_, i) => (
+            <div
+              key={i}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i < questionsUsed ? "bg-current opacity-80" : "bg-current opacity-20"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Chat area */}
@@ -101,7 +158,7 @@ export default function AssistantPage() {
               <Sparkles className="h-10 w-10" />
             </div>
             <div>
-              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Your Parenting Co-pilot</h2>
+              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Your AI Parenting Co-pilot</h2>
               <p className="text-muted-foreground text-sm max-w-xs">
                 Ask about sleep, food, behavior, school anxiety, screen time, or any parenting challenge.
               </p>
@@ -114,13 +171,21 @@ export default function AssistantPage() {
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
-                    className="text-left text-sm p-3 rounded-2xl border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground/80 font-medium"
+                    disabled={limitReached}
+                    className="text-left text-sm p-3 rounded-2xl border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground/80 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {q}
                   </button>
                 ))}
               </div>
             </div>
+
+            {limitReached && (
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700 max-w-sm text-center">
+                <p className="font-bold mb-1">Daily limit reached</p>
+                <p>You've used all {AI_DAILY_QUESTION_LIMIT} AI questions for today. Your limit resets at midnight — come back tomorrow!</p>
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -178,28 +243,37 @@ export default function AssistantPage() {
 
       {/* Input */}
       <div className="flex-shrink-0 pt-3 border-t border-border/50">
-        <div className="flex gap-3 items-end bg-card rounded-2xl border border-border p-3 shadow-sm focus-within:border-primary transition-colors">
-          <Textarea
-            ref={textareaRef}
-            placeholder="Ask about sleep, tantrums, food, school anxiety..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 border-none shadow-none resize-none focus-visible:ring-0 min-h-[40px] max-h-[120px] bg-transparent p-0 text-sm placeholder:text-muted-foreground"
-            rows={1}
-          />
-          <Button
-            onClick={() => sendMessage()}
-            disabled={!input.trim() || loading}
-            size="icon"
-            className="rounded-xl h-9 w-9 shrink-0"
-          >
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Press Enter to send · Shift+Enter for new line
-        </p>
+        {limitReached ? (
+          <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center text-rose-700">
+            <p className="font-bold text-sm mb-0.5">Daily limit reached</p>
+            <p className="text-xs">Your {AI_DAILY_QUESTION_LIMIT} AI questions for today are used up. Resets at midnight.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex gap-3 items-end bg-card rounded-2xl border border-border p-3 shadow-sm focus-within:border-primary transition-colors">
+              <Textarea
+                ref={textareaRef}
+                placeholder="Ask about sleep, tantrums, food, school anxiety..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="flex-1 border-none shadow-none resize-none focus-visible:ring-0 min-h-[40px] max-h-[120px] bg-transparent p-0 text-sm placeholder:text-muted-foreground"
+                rows={1}
+              />
+              <Button
+                onClick={() => sendMessage()}
+                disabled={!input.trim() || loading || limitReached}
+                size="icon"
+                className="rounded-xl h-9 w-9 shrink-0"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Press Enter to send · Shift+Enter for new line
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

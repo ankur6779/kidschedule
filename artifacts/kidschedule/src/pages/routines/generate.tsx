@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw, Home, Building2, UserCheck, PlusCircle, MinusCircle } from "lucide-react";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw, Home, Building2, UserCheck, PlusCircle, MinusCircle, Zap, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
@@ -528,6 +528,7 @@ export default function RoutineGenerate() {
 
   const generateMutation = useGenerateRoutine();
   const createMutation = useCreateRoutine();
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
 
   // Load/save single-mode parent availability per date
   useEffect(() => { setParentAvail(loadAvailability(date)); }, [date]);
@@ -674,6 +675,59 @@ export default function RoutineGenerate() {
     );
   };
 
+  // AI-powered routine generation via Smart AI Routine button
+  const handleAiGenerate = async (forceOverride = false) => {
+    if (!isFormValid || isAiGenerating) return;
+    if (existingRoutine?.exists && !forceOverride && !overrideMode) return;
+
+    setIsAiGenerating(true);
+    try {
+      const payload = {
+        childId: selectedChild!,
+        date,
+        hasSchool: hasSchool ?? undefined,
+        specialPlans: specialPlans.trim() || undefined,
+        fridgeItems: fridgeItems.trim() || undefined,
+        mood: mood !== "normal" ? mood : undefined,
+        ...buildParentAvailPayload(parentAvail),
+      };
+
+      const res = await authFetch("/api/routines/generate-ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("AI generation failed");
+      const generatedData = await res.json();
+      const shouldOverride = forceOverride || overrideMode || existingRoutine?.exists;
+
+      createMutation.mutate(
+        {
+          data: {
+            childId: selectedChild!,
+            date,
+            title: generatedData.title,
+            items: generatedData.items,
+            override: shouldOverride,
+          }
+        },
+        {
+          onSuccess: (savedRoutine) => {
+            toast({ title: shouldOverride ? "🔄 AI Routine replaced!" : "✨ Smart AI Routine generated!" });
+            queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
+            setLocation(`/routines/${savedRoutine.id}`);
+          },
+          onError: () => toast({ title: "Failed to save AI routine", variant: "destructive" }),
+        }
+      );
+    } catch {
+      toast({ title: "AI generation failed — try the standard routine instead.", variant: "destructive" });
+    } finally {
+      setIsAiGenerating(false);
+    }
+  };
+
   // Family mode generate — sequential
   const handleFamilyGenerate = async () => {
     if (!children) return;
@@ -803,23 +857,27 @@ export default function RoutineGenerate() {
       {/* ==================== SINGLE MODE ==================== */}
       {mode === "single" && (
         <>
-          {isGenerating ? (
+          {isGenerating || isAiGenerating ? (
             <Card className="rounded-3xl border-none shadow-sm overflow-hidden bg-card mt-4">
               <CardContent className="p-12 flex flex-col items-center justify-center text-center space-y-6">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping" />
-                  <div className="relative bg-primary/10 text-primary w-20 h-20 rounded-full flex items-center justify-center">
-                    <Sparkles className="h-10 w-10 animate-pulse" />
+                  <div className={`absolute inset-0 rounded-full animate-ping ${isAiGenerating ? "bg-violet-400/20" : "bg-primary/20"}`} />
+                  <div className={`relative w-20 h-20 rounded-full flex items-center justify-center ${isAiGenerating ? "bg-violet-100 text-violet-600" : "bg-primary/10 text-primary"}`}>
+                    {isAiGenerating ? <Brain className="h-10 w-10 animate-pulse" /> : <Sparkles className="h-10 w-10 animate-pulse" />}
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-quicksand text-2xl font-bold mb-2">Crafting the perfect day...</h3>
+                  <h3 className="font-quicksand text-2xl font-bold mb-2">
+                    {isAiGenerating ? "AI is crafting your routine..." : "Crafting the perfect day..."}
+                  </h3>
                   <p className="text-muted-foreground">
-                    Analyzing school schedule, parent availability, special plans, and behavior history to build a smart routine with family bonding time.
+                    {isAiGenerating
+                      ? "Our AI is analyzing your child's profile, school schedule, mood, and parent availability to create a truly personalized routine."
+                      : "Analyzing school schedule, parent availability, special plans, and behavior history to build a smart routine with family bonding time."}
                   </p>
                 </div>
                 <div className="w-full max-w-xs bg-muted rounded-full h-2 mt-4 overflow-hidden">
-                  <div className="bg-primary h-full rounded-full w-1/2 animate-[pulse_2s_ease-in-out_infinite]" />
+                  <div className={`h-full rounded-full w-1/2 animate-[pulse_2s_ease-in-out_infinite] ${isAiGenerating ? "bg-violet-500" : "bg-primary"}`} />
                 </div>
               </CardContent>
             </Card>
@@ -1123,27 +1181,55 @@ export default function RoutineGenerate() {
                   </ul>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 space-y-3">
                   {existingRoutine?.exists && !overrideMode ? (
                     <p className="text-center text-sm text-amber-700 font-medium bg-amber-50 border border-amber-200 rounded-2xl py-3 px-4">
                       ⚠️ Choose <strong>View Existing Routine</strong> or <strong>Override & Regenerate</strong> above to continue.
                     </p>
                   ) : (
                     <>
+                      {/* Standard rule-based routine */}
                       <Button
                         onClick={() => handleGenerate(false)}
-                        disabled={!isFormValid || isGenerating}
+                        disabled={!isFormValid || isGenerating || isAiGenerating}
                         size="lg"
                         className={`w-full rounded-full h-14 text-lg font-bold shadow-sm transition-all ${overrideMode ? "bg-orange-600 hover:bg-orange-700" : ""}`}
                       >
-                        {overrideMode ? (
+                        {isGenerating ? (
+                          <><Sparkles className="h-5 w-5 mr-2 animate-spin" />Generating...</>
+                        ) : overrideMode ? (
                           <><RefreshCw className="h-5 w-5 mr-2" />Regenerate & Override</>
                         ) : (
                           <><Sparkles className="h-5 w-5 mr-2" />Generate Smart Routine</>
                         )}
                       </Button>
+
+                      {/* Smart AI Routine button */}
+                      <div className="relative">
+                        <Button
+                          onClick={() => handleAiGenerate(false)}
+                          disabled={!isFormValid || isGenerating || isAiGenerating || createMutation.isPending}
+                          size="lg"
+                          variant="outline"
+                          className="w-full rounded-full h-12 text-base font-bold border-2 border-violet-300 text-violet-700 hover:bg-violet-50 hover:border-violet-400 transition-all"
+                        >
+                          {isAiGenerating ? (
+                            <><Brain className="h-5 w-5 mr-2 animate-pulse" />AI is thinking...</>
+                          ) : (
+                            <><Zap className="h-5 w-5 mr-2" />Smart AI Routine</>
+                          )}
+                        </Button>
+                        <Badge className="absolute -top-2 -right-1 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[10px] font-bold border-0 px-1.5 py-0.5">
+                          AI Feature
+                        </Badge>
+                      </div>
+
+                      <p className="text-center text-xs text-muted-foreground">
+                        Standard routine is instant &amp; free · AI routine is smarter but takes ~10s
+                      </p>
+
                       {!isFormValid && (
-                        <p className="text-center text-xs text-muted-foreground mt-2">
+                        <p className="text-center text-xs text-destructive">
                           Please select a child and answer the school question to continue.
                         </p>
                       )}

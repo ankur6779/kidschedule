@@ -48,8 +48,15 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - **Story Section** — age-appropriate moral stories with "Read Aloud" TTS button (SpeechSynthesis API); toddlers/preschoolers get 2 stories, older children get 2 with thematic titles
 - **Parent Tasks Section** — checkable daily parent task list on generate page based on age group
 - **Age Group Badge** — profile summary on generate page shows emoji + age group label + formatted age (e.g. "7y 3m")
-- **Zero-Cost Architecture** — ALL routine generation, insights, recipe lookup, and parenting assistant answers are rule-based/static. No external AI API calls anywhere in the app.
-- **Parenting Assistant** — keyword-matched FAQ database (`parenting-faq.ts`) covering sleep, eating, tantrums, screen time, homework, anxiety, puberty, and more; context-aware by child name/age
+- **Hybrid AI Architecture** — `IS_PREMIUM = false` flag in `ai-limits.ts`; rule-based system is always free; AI features are opt-in and rate-limited:
+  - `POST /ai/assistant-ai` — OpenAI-powered parenting assistant (gpt-5.2); falls back to static FAQ on error
+  - `POST /routines/generate-ai` — OpenAI-powered routine generation with JSON mode; falls back to rule-based on error
+  - `POST /api/insights` — still rule-based, but cached weekly in localStorage
+- **AI Daily Question Limit** — 5 AI questions/day tracked in localStorage (`amynest_ai_q_{date}`); shown as dot progress bar in assistant header
+- **Weekly Insights Cache** — insights stored in `amynest_insights_{year}_w{weekNum}` in localStorage; auto-loaded on page visit; "Refresh" button clears cache and regenerates
+- **Smart AI Routine Button** — secondary violet button on generate page; shows "AI Feature" badge; triggers `/routines/generate-ai`; loading overlay turns purple with Brain icon
+- **"AI Feature" Badges** — violet gradient badges on Assistant page header, AI Insights section title, Smart AI Routine button
+- **Parenting Assistant** — calls `/ai/assistant-ai` (OpenAI) while limit allows; stops with "Daily limit reached" message; falls back gracefully
 - **Static Activity Library** — 5 age-group pools of afternoon activities + 8 bonding activities; seeded shuffle ensures daily variety without repetition
 
 ## Key Commands
