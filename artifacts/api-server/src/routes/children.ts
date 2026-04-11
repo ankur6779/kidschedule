@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
+import { getAuth } from "@clerk/express";
 import { db, childrenTable } from "@workspace/db";
 import {
   CreateChildBody,
@@ -14,28 +15,50 @@ import {
 
 const router: IRouter = Router();
 
-router.get("/children", async (_req, res): Promise<void> => {
-  const children = await db.select().from(childrenTable).orderBy(childrenTable.createdAt);
+router.get("/children", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  const children = await db
+    .select()
+    .from(childrenTable)
+    .where(eq(childrenTable.userId, userId))
+    .orderBy(childrenTable.createdAt);
   res.json(ListChildrenResponse.parse(children.map((c) => ({ ...c, createdAt: c.createdAt.toISOString() }))));
 });
 
 router.post("/children", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const parsed = CreateChildBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.insert(childrenTable).values(parsed.data).returning();
+  const [child] = await db.insert(childrenTable).values({ ...parsed.data, userId }).returning();
   res.status(201).json(GetChildResponse.parse({ ...child, createdAt: child.createdAt.toISOString() }));
 });
 
 router.get("/children/:id", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = GetChildParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -44,6 +67,11 @@ router.get("/children/:id", async (req, res): Promise<void> => {
 });
 
 router.patch("/children/:id", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = UpdateChildParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -54,7 +82,11 @@ router.patch("/children/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.update(childrenTable).set(parsed.data).where(eq(childrenTable.id, params.data.id)).returning();
+  const [child] = await db
+    .update(childrenTable)
+    .set(parsed.data)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, userId)))
+    .returning();
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -63,12 +95,20 @@ router.patch("/children/:id", async (req, res): Promise<void> => {
 });
 
 router.delete("/children/:id", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = DeleteChildParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.delete(childrenTable).where(eq(childrenTable.id, params.data.id)).returning();
+  const [child] = await db
+    .delete(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, userId)))
+    .returning();
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;

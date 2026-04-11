@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
+import { getAuth } from "@clerk/express";
 import { db, childrenTable, routinesTable, behaviorsTable } from "@workspace/db";
 import { GetDashboardSummaryResponse, GetRecentRoutinesResponse, GetBehaviorStatsResponse } from "@workspace/api-zod";
 
@@ -13,13 +14,29 @@ type RoutineItem = {
 
 const router: IRouter = Router();
 
-router.get("/dashboard/summary", async (_req, res): Promise<void> => {
+router.get("/dashboard/summary", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
   const today = new Date().toISOString().split("T")[0];
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-  const children = await db.select().from(childrenTable);
-  const routines = await db.select().from(routinesTable);
-  const todayBehaviors = await db.select().from(behaviorsTable).where(eq(behaviorsTable.date, today!));
+  const children = await db.select().from(childrenTable).where(eq(childrenTable.userId, userId));
+  const childIds = children.map((c) => c.id);
+
+  const routines = childIds.length > 0
+    ? await db.select().from(routinesTable).where(inArray(routinesTable.childId, childIds))
+    : [];
+
+  const todayBehaviors = childIds.length > 0
+    ? await db.select().from(behaviorsTable).where(
+        eq(behaviorsTable.date, today!)
+      ).then((rows) => rows.filter((b) => childIds.includes(b.childId)))
+    : [];
+
   const weekRoutines = routines.filter((r) => r.createdAt.toISOString().split("T")[0]! >= weekAgo!);
 
   const positiveBehaviorsToday = todayBehaviors.filter((b) => b.type === "positive").length;
@@ -36,11 +53,26 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/dashboard/recent-routines", async (_req, res): Promise<void> => {
-  const children = await db.select().from(childrenTable);
-  const childMap = new Map(children.map((c) => [c.id, c.name]));
+router.get("/dashboard/recent-routines", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-  const routines = await db.select().from(routinesTable).orderBy(desc(routinesTable.createdAt)).limit(5);
+  const children = await db.select().from(childrenTable).where(eq(childrenTable.userId, userId));
+  const childMap = new Map(children.map((c) => [c.id, c.name]));
+  const childIds = children.map((c) => c.id);
+
+  const routines = childIds.length > 0
+    ? await db
+        .select()
+        .from(routinesTable)
+        .where(inArray(routinesTable.childId, childIds))
+        .orderBy(desc(routinesTable.createdAt))
+        .limit(5)
+    : [];
+
   res.json(
     GetRecentRoutinesResponse.parse(
       routines.map((r) => ({
@@ -53,9 +85,19 @@ router.get("/dashboard/recent-routines", async (_req, res): Promise<void> => {
   );
 });
 
-router.get("/dashboard/behavior-stats", async (_req, res): Promise<void> => {
-  const children = await db.select().from(childrenTable);
-  const behaviors = await db.select().from(behaviorsTable);
+router.get("/dashboard/behavior-stats", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+
+  const children = await db.select().from(childrenTable).where(eq(childrenTable.userId, userId));
+  const childIds = children.map((c) => c.id);
+
+  const behaviors = childIds.length > 0
+    ? await db.select().from(behaviorsTable).where(inArray(behaviorsTable.childId, childIds))
+    : [];
 
   const stats = children.map((child) => {
     const childBehaviors = behaviors.filter((b) => b.childId === child.id);

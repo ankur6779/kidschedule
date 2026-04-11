@@ -320,7 +320,7 @@ export default function ChildForm() {
                   <FormItem>
                     <FormLabel className="font-bold">Child's Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Aarav, Priya, Leo" className={inputClass} {...field} />
+                      <Input placeholder="Enter your child's name" className={inputClass} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { db, routinesTable, childrenTable, parentProfilesTable } from "@workspace/db";
 import {
@@ -373,20 +373,32 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
 });
 
 router.get("/routines", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const queryParams = ListRoutinesQueryParams.safeParse(req.query);
   if (!queryParams.success) {
     res.status(400).json({ error: queryParams.error.message });
     return;
   }
 
-  const children = await db.select().from(childrenTable);
+  const children = await db.select().from(childrenTable).where(eq(childrenTable.userId, userId));
   const childMap = new Map(children.map((c) => [c.id, c.name]));
+  const childIds = children.map((c) => c.id);
 
   let results;
   if (queryParams.data.childId) {
+    if (!childIds.includes(queryParams.data.childId)) {
+      res.json(ListRoutinesResponse.parse([]));
+      return;
+    }
     results = await db.select().from(routinesTable).where(eq(routinesTable.childId, queryParams.data.childId)).orderBy(desc(routinesTable.createdAt));
+  } else if (childIds.length > 0) {
+    results = await db.select().from(routinesTable).where(inArray(routinesTable.childId, childIds)).orderBy(desc(routinesTable.createdAt));
   } else {
-    results = await db.select().from(routinesTable).orderBy(desc(routinesTable.createdAt));
+    results = [];
   }
 
   res.json(
@@ -530,12 +542,16 @@ router.post("/insights", async (req, res): Promise<void> => {
     return;
   }
 
-  const children = await db.select().from(childrenTable);
-  const allRoutines = await db
-    .select()
-    .from(routinesTable)
-    .orderBy(desc(routinesTable.createdAt))
-    .limit(60);
+  const children = await db.select().from(childrenTable).where(eq(childrenTable.userId, userId));
+  const childIds = children.map((c) => c.id);
+  const allRoutines = childIds.length > 0
+    ? await db
+        .select()
+        .from(routinesTable)
+        .where(inArray(routinesTable.childId, childIds))
+        .orderBy(desc(routinesTable.createdAt))
+        .limit(60)
+    : [];
 
   const childMap = new Map(children.map((c) => [c.id, c.name]));
 

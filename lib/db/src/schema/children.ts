@@ -4,6 +4,7 @@ import { z } from "zod/v4";
 
 export const childrenTable = pgTable("children", {
   id: serial("id").primaryKey(),
+  userId: text("user_id"),
   name: text("name").notNull(),
   dob: text("dob"),
   age: integer("age").notNull(),

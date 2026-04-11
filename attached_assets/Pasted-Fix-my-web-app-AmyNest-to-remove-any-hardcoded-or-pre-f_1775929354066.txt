@@ -1,0 +1,89 @@
+Fix my web app "AmyNest" to remove any hardcoded or pre-filled child name and ensure each user enters a fresh child name during onboarding.
+
+--------------------------------
+1. Core Issue (Important 🔥)
+--------------------------------
+- Currently:
+  - Child name is auto-filled (e.g., developer’s personal data)
+
+- Fix:
+  - Remove ALL hardcoded default values
+
+--------------------------------
+2. Remove Pre-Filled Data
+--------------------------------
+- In child input form:
+  - Remove any default value in:
+    - name field
+    - DOB
+    - school info
+
+- Ensure:
+  input value = empty
+
+--------------------------------
+3. Fresh Input Required
+--------------------------------
+- Make child name field:
+  - Required
+
+- Show validation:
+  “Please enter your child’s name”
+
+--------------------------------
+4. Multi-User Safety (Important)
+--------------------------------
+- Ensure:
+  - Each user sees ONLY their own data
+
+- Do NOT reuse:
+  - Previous user data
+  - Developer test data
+
+--------------------------------
+5. LocalStorage Fix
+--------------------------------
+- Check if:
+  old test data exists
+
+- If found:
+  - Clear or reset for new users
+
+--------------------------------
+6. First-Time User Logic
+--------------------------------
+- On new login:
+  - Show:
+    “Add Child” form
+
+- Do NOT auto-create child
+
+--------------------------------
+7. Edit Option
+--------------------------------
+- Allow user to:
+  - Edit child name anytime
+
+--------------------------------
+8. UI Fix
+--------------------------------
+- Input placeholder:
+  “Enter your child’s name”
+
+- No pre-filled text
+
+--------------------------------
+9. Safety Check
+--------------------------------
+- If child list is empty:
+  - Force user to add child first
+
+--------------------------------
+10. Keep everything simple
+--------------------------------
+- No backend required
+- Use localStorage safely
+
+--------------------------------
+Return:
+Updated working code with no hardcoded child data and proper user-based input system.
