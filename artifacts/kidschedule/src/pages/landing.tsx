@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Calendar, Activity, Users, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, Activity, Users, ArrowRight, Sparkles, Bot, ImagePlay } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
 import logoImg from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
@@ -60,33 +60,70 @@ export default function LandingPage() {
 
       {/* Features */}
       <section className="px-6 py-16 bg-card border-t">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="flex flex-col gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Calendar className="h-5 w-5" />
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Existing features */}
+            <div className="flex flex-col gap-3 p-5 rounded-2xl hover:bg-muted/50 transition-colors">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <h3 className="font-quicksand text-lg font-bold">AI Routine Generator</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Enter your child's age, school times, and goals — and get a full structured daily schedule instantly.
+              </p>
             </div>
-            <h3 className="font-quicksand text-lg font-bold">AI Routine Generator</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Enter your child's age, school times, and goals — and get a full structured daily schedule instantly.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
-              <Activity className="h-5 w-5" />
+            <div className="flex flex-col gap-3 p-5 rounded-2xl hover:bg-muted/50 transition-colors">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/20 text-accent">
+                <Activity className="h-5 w-5" />
+              </div>
+              <h3 className="font-quicksand text-lg font-bold">Behavior Tracker</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Log positive, neutral, and challenging moments with a tap. See trends and celebrate wins.
+              </p>
             </div>
-            <h3 className="font-quicksand text-lg font-bold">Behavior Tracker</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Log positive, neutral, and challenging moments with a tap. See trends and celebrate wins.
-            </p>
-          </div>
-          <div className="flex flex-col gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/50 text-secondary-foreground">
-              <Users className="h-5 w-5" />
+            <div className="flex flex-col gap-3 p-5 rounded-2xl hover:bg-muted/50 transition-colors">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/50 text-secondary-foreground">
+                <Users className="h-5 w-5" />
+              </div>
+              <h3 className="font-quicksand text-lg font-bold">Multiple Children</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Manage routines and behavior for each child individually, all in one place.
+              </p>
             </div>
-            <h3 className="font-quicksand text-lg font-bold">Multiple Children</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Manage routines and behavior for each child individually, all in one place.
-            </p>
+
+            {/* New AI-powered features */}
+            <div className="flex flex-col gap-3 p-5 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50/60 to-indigo-50/40 hover:shadow-md transition-all">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{ background: "linear-gradient(135deg, #8B5CF6, #6366F1)", color: "#fff" }}>
+                <Bot className="h-5 w-5" />
+              </div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-quicksand text-lg font-bold">AI Parenting Assistant</h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: "linear-gradient(135deg, #8B5CF6, #6366F1)", color: "#fff" }}>
+                  NEW
+                </span>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Ask anything about your child — from behavior and habits to study and health — and get smart, practical advice instantly.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 p-5 rounded-2xl border border-pink-100 bg-gradient-to-br from-pink-50/60 to-orange-50/40 hover:shadow-md transition-all sm:col-span-2 lg:col-span-1">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl"
+                style={{ background: "linear-gradient(135deg, #F59E0B, #EC4899)", color: "#fff" }}>
+                <ImagePlay className="h-5 w-5" />
+              </div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-quicksand text-lg font-bold">AI Cartoon Routine</h3>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{ background: "linear-gradient(135deg, #F59E0B, #EC4899)", color: "#fff" }}>
+                  NEW
+                </span>
+              </div>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                See your child in their daily routine with AI-generated cartoon images — making habits fun and easy to follow.
+              </p>
+            </div>
           </div>
         </div>
       </section>
