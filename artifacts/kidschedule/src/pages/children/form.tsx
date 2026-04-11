@@ -127,13 +127,24 @@ export default function ChildForm() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "Photo too large", description: "Please choose an image under 2MB.", variant: "destructive" });
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Photo too large", description: "Please choose an image under 5MB.", variant: "destructive" });
       return;
     }
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 400;
+        const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setPhotoPreview(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
