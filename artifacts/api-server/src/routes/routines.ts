@@ -129,6 +129,59 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
   const fridgeItems = parsed.data.fridgeItems?.trim();
   const { hasSchool, isWorkingDay, specialPlans, mood } = parsed.data;
 
+  // Build per-date parent availability context from new fields
+  const {
+    parent1Role, parent1WorkType, parent1IsWorking, parent1WorkHours,
+    parent2Role, parent2WorkType, parent2IsWorking, parent2WorkHours,
+  } = parsed.data;
+
+  function describeParent(
+    role: string | undefined,
+    workType: string | undefined,
+    isWorking: boolean | undefined,
+    workHours: string | undefined
+  ): string | null {
+    if (!role || !workType) return null;
+    const wt = workType === "work_from_home" ? "works from home"
+      : workType === "work_from_office" ? "works from office"
+      : "homemaker (at home all day)";
+    if (workType === "homemaker") {
+      return `${role}: Homemaker — free and available all day.`;
+    }
+    if (isWorking === true) {
+      const hrs = workHours?.trim() ? ` Working hours: ${workHours}.` : "";
+      return `${role}: ${wt} — TODAY IS A WORKING DAY.${hrs} Busy during work hours; assign independent or babysitter tasks then. Available before/after work for parent-child activities.`;
+    }
+    if (isWorking === false) {
+      return `${role}: ${wt} — TODAY IS A HOLIDAY / DAY OFF. Fully free all day. Add plenty of joint parent-child activities.`;
+    }
+    return `${role}: ${wt}.`;
+  }
+
+  const p1Desc = describeParent(parent1Role, parent1WorkType, parent1IsWorking, parent1WorkHours);
+  const p2Desc = describeParent(parent2Role, parent2WorkType, parent2IsWorking, parent2WorkHours);
+
+  // Build multi-parent coordination instructions
+  let multiParentInstructions = "";
+  if (p1Desc || p2Desc) {
+    // Override the old parentContext if we have specific per-date data
+    const bothBusy = (parent1IsWorking === true) && (parent2IsWorking === true);
+    const p1Free = parent1WorkType === "homemaker" || parent1IsWorking === false;
+    const p2Free = parent2Role ? (parent2WorkType === "homemaker" || parent2IsWorking === false) : false;
+    const onlyP2Free = !p1Free && p2Free;
+    const onlyP1Free = p1Free && !p2Free;
+
+    if (bothBusy) {
+      multiParentInstructions = "BOTH PARENTS ARE WORKING TODAY: Assign mostly independent or babysitter tasks during work hours. Add bonding activities only before/after work.";
+    } else if (onlyP2Free && parent2Role) {
+      multiParentInstructions = `${parent2Role} IS FREE TODAY while ${parent1Role ?? "the other parent"} is working. Assign parent-child activities primarily to ${parent2Role}.`;
+    } else if (onlyP1Free && parent1Role) {
+      multiParentInstructions = `${parent1Role} IS FREE TODAY${parent2Role ? ` while ${parent2Role} is working` : ""}. Assign parent-child activities primarily to ${parent1Role}.`;
+    } else if (p1Free && p2Free) {
+      multiParentInstructions = "BOTH PARENTS ARE FREE TODAY: Excellent day for family activities! Add plenty of joint parent-child and family bonding time.";
+    }
+  }
+
   // Mood-based context for AI prompt
   const moodContext = mood === "angry"
     ? "CHILD'S MOOD TODAY: ANGRY/UPSET — reduce frustrating tasks, add calming activities (deep breathing, quiet play, gentle walk), avoid homework right after school, add fun and engaging activities to lift mood."
@@ -172,8 +225,9 @@ SCHOOL STATUS: ${schoolStatus}
 CHILD'S FOOD PREFERENCE: ${childFoodLabel}
 
 PARENT AVAILABILITY:
-${parentContext}
-${availabilityStatus ? availabilityStatus : ""}
+${(p1Desc || p2Desc) ? [p1Desc, p2Desc].filter(Boolean).join("\n") : parentContext}
+${(p1Desc || p2Desc) ? "" : (availabilityStatus ? availabilityStatus : "")}
+${multiParentInstructions ? `\nMULTI-PARENT COORDINATION: ${multiParentInstructions}` : ""}
 ${babysitterContext ? `\nBABYSITTER: ${babysitterContext}` : ""}
 ${specialPlansContext ? `\n${specialPlansContext}` : ""}
 

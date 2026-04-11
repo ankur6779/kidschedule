@@ -225,6 +225,15 @@ export const GenerateRoutineBody = zod.object({
   isWorkingDay: zod.boolean().optional(),
   specialPlans: zod.string().optional(),
   mood: zod.enum(["happy", "angry", "lazy", "normal"]).optional(),
+  // Per-date parent availability
+  parent1Role: zod.string().optional(),
+  parent1WorkType: zod.string().optional(),
+  parent1IsWorking: zod.boolean().optional(),
+  parent1WorkHours: zod.string().optional(),
+  parent2Role: zod.string().optional(),
+  parent2WorkType: zod.string().optional(),
+  parent2IsWorking: zod.boolean().optional(),
+  parent2WorkHours: zod.string().optional(),
 });
 
 export const GenerateRoutineResponse = zod.object({

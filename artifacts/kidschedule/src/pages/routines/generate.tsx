@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey, useGenerateRoutine, useCreateRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw } from "lucide-react";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw, Home, Building2, UserCheck, PlusCircle, MinusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
@@ -62,6 +62,270 @@ type FamilyResult = {
   child: ChildType;
   routine: GeneratedRoutine;
 };
+
+// ---- Parent Availability Types ----
+type WorkType = "work_from_home" | "work_from_office" | "homemaker";
+
+type ParentAvailEntry = {
+  role: string;
+  workType: WorkType | null;
+  isWorking: boolean | null;
+  workHours: string;
+};
+
+type ParentAvailData = {
+  p1: ParentAvailEntry;
+  p2: ParentAvailEntry | null;
+  hasSecondParent: boolean;
+};
+
+const DEFAULT_P1: ParentAvailEntry = { role: "Mother", workType: null, isWorking: null, workHours: "" };
+const DEFAULT_P2: ParentAvailEntry = { role: "Father", workType: null, isWorking: null, workHours: "" };
+
+const AVAIL_KEY = (date: string) => `amynest_parent_avail_${date}`;
+
+function loadAvailability(date: string): ParentAvailData {
+  try {
+    const raw = localStorage.getItem(AVAIL_KEY(date));
+    if (raw) return JSON.parse(raw) as ParentAvailData;
+  } catch {}
+  return { p1: { ...DEFAULT_P1 }, p2: null, hasSecondParent: false };
+}
+
+function saveAvailability(date: string, data: ParentAvailData): void {
+  try { localStorage.setItem(AVAIL_KEY(date), JSON.stringify(data)); } catch {}
+}
+
+function parentStatusLabel(entry: ParentAvailEntry): string {
+  if (!entry.workType) return "Not set";
+  if (entry.workType === "homemaker") return "Free all day 🏠";
+  if (entry.isWorking === true) return entry.workHours ? `Busy (${entry.workHours}) 💼` : "Busy today 💼";
+  if (entry.isWorking === false) return "Holiday — free all day 🎉";
+  return "Work schedule not answered";
+}
+
+function isParentAvailComplete(entry: ParentAvailEntry): boolean {
+  if (!entry.workType) return false;
+  if (entry.workType === "homemaker") return true;
+  return entry.isWorking !== null;
+}
+
+// ---- ParentAvailSection Component ----
+const WORK_TYPE_OPTIONS: { value: WorkType; label: string; icon: React.ReactNode; hint: string }[] = [
+  { value: "work_from_home",   label: "Work from Home",   icon: <Home className="h-4 w-4" />,      hint: "Remote worker" },
+  { value: "work_from_office", label: "Work from Office", icon: <Building2 className="h-4 w-4" />, hint: "Office commute" },
+  { value: "homemaker",        label: "Homemaker",        icon: <Heart className="h-4 w-4" />,     hint: "At home all day" },
+];
+
+function ParentEntryForm({
+  entry,
+  onChange,
+  label,
+}: {
+  entry: ParentAvailEntry;
+  onChange: (e: ParentAvailEntry) => void;
+  label: string;
+}) {
+  const needsWorkingDayQ = entry.workType === "work_from_home" || entry.workType === "work_from_office";
+  const roleOptions = ["Mother", "Father", "Parent"];
+
+  return (
+    <div className="rounded-2xl border border-border bg-muted/30 p-4 space-y-4">
+      {/* Role selector */}
+      <div className="space-y-2">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{label} — Role</p>
+        <div className="flex gap-2 flex-wrap">
+          {roleOptions.map((r) => (
+            <button
+              key={r}
+              onClick={() => onChange({ ...entry, role: r })}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
+                entry.role === r ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:border-primary/40"
+              }`}
+            >
+              {r === "Mother" ? "👩 Mother" : r === "Father" ? "👨 Father" : "🧑 Parent"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Work type */}
+      <div className="space-y-2">
+        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Work Type</p>
+        <div className="grid grid-cols-3 gap-2">
+          {WORK_TYPE_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => onChange({ ...entry, workType: opt.value, isWorking: opt.value === "homemaker" ? null : entry.isWorking, workHours: "" })}
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 text-xs font-bold transition-all ${
+                entry.workType === opt.value
+                  ? "bg-primary/10 border-primary text-primary"
+                  : "bg-card border-border hover:border-primary/30 text-foreground"
+              }`}
+            >
+              {opt.icon}
+              <span className="text-center leading-tight">{opt.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Conditional: is today a working day? */}
+      {needsWorkingDayQ && (
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Is today a working day?</p>
+          <div className="flex gap-2">
+            {([
+              { label: "💼 Yes, working", val: true },
+              { label: "🎉 Holiday / Off", val: false },
+            ] as const).map(({ label: l, val }) => (
+              <button
+                key={String(val)}
+                onClick={() => onChange({ ...entry, isWorking: val })}
+                className={`flex-1 py-2.5 px-3 rounded-xl font-bold border-2 transition-all text-xs ${
+                  entry.isWorking === val
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border hover:border-primary/40"
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          {entry.isWorking === true && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
+              The AI will assign independent or babysitter tasks during work hours.
+            </div>
+          )}
+          {entry.isWorking === false && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-xs text-green-800">
+              Great — the AI will add plenty of parent-child activities today!
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Conditional: working hours input */}
+      {needsWorkingDayQ && entry.isWorking === true && (
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Working Hours <span className="font-normal">(optional)</span></p>
+          <div className="flex items-center bg-card border-2 border-border rounded-xl px-3 py-2 focus-within:border-primary transition-all gap-2">
+            <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              value={entry.workHours}
+              onChange={(e) => onChange({ ...entry, workHours: e.target.value })}
+              placeholder="e.g. 9:00 AM – 6:00 PM"
+              className="bg-transparent border-none outline-none text-sm text-foreground w-full"
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground">The AI will use these exact hours to plan tasks correctly.</p>
+        </div>
+      )}
+
+      {/* Homemaker info */}
+      {entry.workType === "homemaker" && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
+          🏠 As a homemaker, you're free all day — the AI will include more parent-child bonding activities!
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ParentAvailSection({
+  stepNum,
+  avail,
+  onChange,
+  date,
+}: {
+  stepNum: number;
+  avail: ParentAvailData;
+  onChange: (a: ParentAvailData) => void;
+  date: string;
+}) {
+  const p1Complete = isParentAvailComplete(avail.p1);
+  const p2Complete = !avail.hasSecondParent || isParentAvailComplete(avail.p2 ?? DEFAULT_P2);
+
+  // Status badges for summary
+  const p1Status = avail.p1.workType
+    ? (avail.p1.workType === "homemaker" ? "free" : avail.p1.isWorking === true ? "busy" : avail.p1.isWorking === false ? "free" : "pending")
+    : "pending";
+  const p2Status = avail.hasSecondParent && avail.p2?.workType
+    ? (avail.p2.workType === "homemaker" ? "free" : avail.p2.isWorking === true ? "busy" : avail.p2.isWorking === false ? "free" : "pending")
+    : null;
+
+  const statusColor = {
+    busy: "bg-amber-100 text-amber-800 border-amber-300",
+    free: "bg-green-100 text-green-800 border-green-300",
+    pending: "bg-muted text-muted-foreground border-border",
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">{stepNum}</div>
+          <Label className="text-lg font-bold flex items-center gap-2">
+            <UserCheck className="h-5 w-5 text-primary" />
+            Parent Schedule for{" "}
+            <span className="text-primary font-bold">
+              {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+            </span>
+          </Label>
+        </div>
+        {/* Status summary */}
+        {(p1Complete || p2Status !== null) && (
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {p1Complete && (
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor[p1Status as "busy" | "free" | "pending"]}`}>
+                {avail.p1.role}: {p1Status === "busy" ? "Busy" : "Free"}
+              </span>
+            )}
+            {p2Status && (
+              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor[p2Status as "busy" | "free"]}`}>
+                {avail.p2?.role}: {p2Status === "busy" ? "Busy" : "Free"}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Parent 1 */}
+      <ParentEntryForm
+        entry={avail.p1}
+        label="Parent 1"
+        onChange={(e) => onChange({ ...avail, p1: e })}
+      />
+
+      {/* Second parent toggle */}
+      <button
+        onClick={() => {
+          if (avail.hasSecondParent) {
+            onChange({ ...avail, hasSecondParent: false, p2: null });
+          } else {
+            onChange({ ...avail, hasSecondParent: true, p2: { ...DEFAULT_P2 } });
+          }
+        }}
+        className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors py-1"
+      >
+        {avail.hasSecondParent
+          ? <><MinusCircle className="h-4 w-4" /> Remove second parent</>
+          : <><PlusCircle className="h-4 w-4" /> Add second parent (for co-parenting coordination)</>
+        }
+      </button>
+
+      {/* Parent 2 */}
+      {avail.hasSecondParent && avail.p2 && (
+        <ParentEntryForm
+          entry={avail.p2}
+          label="Parent 2"
+          onChange={(e) => onChange({ ...avail, p2: e })}
+        />
+      )}
+    </div>
+  );
+}
 
 function ToggleGroup({
   value,
@@ -229,16 +493,17 @@ export default function RoutineGenerate() {
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [hasSchool, setHasSchool] = useState<boolean | null>(null);
-  const [isWorkingDay, setIsWorkingDay] = useState<boolean | null>(null);
   const [specialPlans, setSpecialPlans] = useState("");
   const [fridgeItems, setFridgeItems] = useState("");
   const [mood, setMood] = useState<"happy" | "angry" | "lazy" | "normal">("normal");
-  const [parentWorkType, setParentWorkType] = useState<string | null>(null);
+
+  // Per-date parent availability
+  const [parentAvail, setParentAvail] = useState<ParentAvailData>(() => loadAvailability(format(new Date(), "yyyy-MM-dd")));
 
   // Family mode
   const [familyChildSettings, setFamilyChildSettings] = useState<Record<number, { hasSchool: boolean | null; selected: boolean }>>({});
   const [familyDate, setFamilyDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [familyIsWorkingDay, setFamilyIsWorkingDay] = useState<boolean | null>(null);
+  const [familyParentAvail, setFamilyParentAvail] = useState<ParentAvailData>(() => loadAvailability(format(new Date(), "yyyy-MM-dd")));
   const [familySpecialPlans, setFamilySpecialPlans] = useState("");
   const [familyFridgeItems, setFamilyFridgeItems] = useState("");
   const [familyProgress, setFamilyProgress] = useState<{ current: number; total: number; currentName: string } | null>(null);
@@ -261,14 +526,13 @@ export default function RoutineGenerate() {
   const generateMutation = useGenerateRoutine();
   const createMutation = useCreateRoutine();
 
-  useEffect(() => {
-    authFetch("/api/parent-profile")
-      .then((r) => r.ok ? r.json() : null)
-      .then((data: any) => {
-        if (data?.workType) setParentWorkType(data.workType);
-      })
-      .catch(() => {});
-  }, []);
+  // Load/save single-mode parent availability per date
+  useEffect(() => { setParentAvail(loadAvailability(date)); }, [date]);
+  useEffect(() => { saveAvailability(date, parentAvail); }, [date, parentAvail]);
+
+  // Load/save family-mode parent availability per date
+  useEffect(() => { setFamilyParentAvail(loadAvailability(familyDate)); }, [familyDate]);
+  useEffect(() => { saveAvailability(familyDate, familyParentAvail); }, [familyDate, familyParentAvail]);
 
   // Auto-detect weekends for single mode
   useEffect(() => {
@@ -332,7 +596,21 @@ export default function RoutineGenerate() {
     }
   }, [children]);
 
-  const showWorkingDayQuestion = parentWorkType === "work_from_office" || parentWorkType === "work_from_home";
+  // Build parent avail payload for mutation
+  function buildParentAvailPayload(avail: ParentAvailData) {
+    const p1 = avail.p1;
+    const p2 = avail.hasSecondParent ? avail.p2 : null;
+    return {
+      parent1Role: p1.role || undefined,
+      parent1WorkType: p1.workType || undefined,
+      parent1IsWorking: p1.workType !== "homemaker" && p1.isWorking !== null ? p1.isWorking : undefined,
+      parent1WorkHours: p1.workType !== "homemaker" && p1.isWorking ? (p1.workHours || undefined) : undefined,
+      parent2Role: p2?.role || undefined,
+      parent2WorkType: p2?.workType || undefined,
+      parent2IsWorking: p2 && p2.workType !== "homemaker" && p2.isWorking !== null ? p2.isWorking : undefined,
+      parent2WorkHours: p2 && p2.workType !== "homemaker" && p2.isWorking ? (p2.workHours || undefined) : undefined,
+    };
+  }
 
   const isFormValid = selectedChild && date && hasSchool !== null;
   const isGenerating = generateMutation.isPending || createMutation.isPending;
@@ -352,10 +630,10 @@ export default function RoutineGenerate() {
           childId: selectedChild!,
           date,
           hasSchool: hasSchool ?? undefined,
-          isWorkingDay: showWorkingDayQuestion && isWorkingDay !== null ? isWorkingDay : undefined,
           specialPlans: specialPlans.trim() || undefined,
           fridgeItems: fridgeItems.trim() || undefined,
           mood: mood !== "normal" ? mood : undefined,
+          ...buildParentAvailPayload(parentAvail),
         }
       },
       {
@@ -413,9 +691,9 @@ export default function RoutineGenerate() {
                 childId: child.id,
                 date: familyDate,
                 hasSchool: familyChildSettings[child.id]?.hasSchool ?? undefined,
-                isWorkingDay: showWorkingDayQuestion && familyIsWorkingDay !== null ? familyIsWorkingDay : undefined,
                 specialPlans: familySpecialPlans.trim() || undefined,
                 fridgeItems: familyFridgeItems.trim() || undefined,
+                ...buildParentAvailPayload(familyParentAvail),
               }
             },
             {
@@ -472,7 +750,6 @@ export default function RoutineGenerate() {
     }
   };
 
-  const stepCount = showWorkingDayQuestion ? 5 : 4;
   const isGeneratingFamily = !!familyProgress;
 
   const familySelectedCount = Object.values(familyChildSettings).filter((s) => s.selected).length;
@@ -709,43 +986,18 @@ export default function RoutineGenerate() {
                   )}
                 </div>
 
-                {/* Step 4 — Parent working day? (only for WFH/office parents) */}
-                {showWorkingDayQuestion && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">4</div>
-                      <Label className="text-lg font-bold flex items-center gap-2">
-                        <Briefcase className="h-5 w-5 text-primary" />
-                        Is this a working day for you?
-                      </Label>
-                    </div>
-                    <ToggleGroup
-                      value={isWorkingDay}
-                      onChange={setIsWorkingDay}
-                      options={[
-                        ["Working day", true, "💼"],
-                        ["Holiday / Day off", false, "🎉"],
-                      ]}
-                    />
-                    {isWorkingDay === false && (
-                      <div className="bg-green-50 border border-green-200 rounded-2xl p-3 text-sm text-green-800">
-                        The AI will plan more joint parent-child activities since you're free all day!
-                      </div>
-                    )}
-                    {isWorkingDay === true && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-3 text-sm text-blue-800">
-                        The AI will assign independent tasks during your work hours and parent-child activities after work.
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Step 4 — Parent availability for this date */}
+                <ParentAvailSection
+                  stepNum={4}
+                  avail={parentAvail}
+                  onChange={setParentAvail}
+                  date={date}
+                />
 
-                {/* Step 5 (or 4) — Special plans */}
+                {/* Step 5 — Special plans */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
-                      {showWorkingDayQuestion ? "5" : "4"}
-                    </div>
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">5</div>
                     <Label className="text-lg font-bold flex items-center gap-2">
                       <Star className="h-5 w-5 text-primary" />
                       Any special plans today? <span className="text-sm font-normal text-muted-foreground">(optional)</span>
@@ -760,12 +1012,10 @@ export default function RoutineGenerate() {
                   <p className="text-xs text-muted-foreground">The AI will adjust the entire routine around your special plans.</p>
                 </div>
 
-                {/* Step 6 (or 5) — Fridge Items */}
+                {/* Step 6 — Fridge Items */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
-                      {showWorkingDayQuestion ? "6" : "5"}
-                    </div>
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">6</div>
                     <Label className="text-lg font-bold">What's in your fridge? <span className="text-sm font-normal text-muted-foreground">(optional)</span></Label>
                   </div>
                   <div className="relative">
@@ -784,9 +1034,7 @@ export default function RoutineGenerate() {
                 {/* Mood Selector */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
-                      {showWorkingDayQuestion ? "7" : "6"}
-                    </div>
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">7</div>
                     <Label className="text-lg font-bold">How is your child feeling today?</Label>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -819,7 +1067,10 @@ export default function RoutineGenerate() {
                   <ul className="space-y-1 list-none">
                     <li>🏫 School status — includes or skips school blocks</li>
                     <li>🍱 Tiffin suggestion — 3 options for school-going kids</li>
-                    <li>👨‍👩‍👧 Parent availability — joint vs. independent activities</li>
+                    <li>👩‍💼 Parent work type — homemaker, WFH, or office schedule</li>
+                    <li>💼 Working day check — busy vs. free affects task assignment</li>
+                    <li>🕘 Work hours — tasks planned around exact busy windows</li>
+                    <li>👨‍👩‍👧 Co-parent coordination — smart role assignment when both parents added</li>
                     <li>🌟 Special plans — adjusts the whole day around them</li>
                     <li>❤️ Family bonding — always adds 2–3 quality moments</li>
                     <li>⏰ Wake-up & bedtime for accurate time slots</li>
@@ -1088,33 +1339,18 @@ export default function RoutineGenerate() {
                   </div>
                 </div>
 
-                {/* Step 3 — Parent working day */}
-                {showWorkingDayQuestion && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">3</div>
-                      <Label className="text-lg font-bold flex items-center gap-2">
-                        <Briefcase className="h-5 w-5 text-primary" />
-                        Is this a working day for you?
-                      </Label>
-                    </div>
-                    <ToggleGroup
-                      value={familyIsWorkingDay}
-                      onChange={setFamilyIsWorkingDay}
-                      options={[
-                        ["Working day", true, "💼"],
-                        ["Holiday / Day off", false, "🎉"],
-                      ]}
-                    />
-                  </div>
-                )}
+                {/* Step 3 — Parent availability for this date */}
+                <ParentAvailSection
+                  stepNum={3}
+                  avail={familyParentAvail}
+                  onChange={setFamilyParentAvail}
+                  date={familyDate}
+                />
 
                 {/* Step 4 — Special plans */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
-                      {showWorkingDayQuestion ? "4" : "3"}
-                    </div>
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">4</div>
                     <Label className="text-lg font-bold flex items-center gap-2">
                       <Star className="h-5 w-5 text-primary" />
                       Any special family plans? <span className="text-sm font-normal text-muted-foreground">(optional)</span>
@@ -1131,9 +1367,7 @@ export default function RoutineGenerate() {
                 {/* Step 5 — Fridge */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
-                      {showWorkingDayQuestion ? "5" : "4"}
-                    </div>
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">5</div>
                     <Label className="text-lg font-bold">What's in your fridge? <span className="text-sm font-normal text-muted-foreground">(optional)</span></Label>
                   </div>
                   <div className="relative">
