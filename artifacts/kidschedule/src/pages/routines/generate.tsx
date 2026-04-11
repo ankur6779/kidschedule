@@ -13,6 +13,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { format } from "date-fns";
 
+type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
+const MOOD_OPTIONS: MoodOption[] = [
+  { value: "happy",  label: "Happy",  emoji: "😊", hint: "Productive & energetic", color: "border-green-300 bg-green-50 text-green-800" },
+  { value: "normal", label: "Normal", emoji: "😐", hint: "Balanced routine",       color: "border-blue-200  bg-blue-50  text-blue-800"  },
+  { value: "lazy",   label: "Lazy",   emoji: "😴", hint: "Easier tasks + breaks",  color: "border-amber-300 bg-amber-50 text-amber-800" },
+  { value: "angry",  label: "Upset",  emoji: "😡", hint: "Calming activities",     color: "border-rose-300  bg-rose-50  text-rose-800"  },
+];
+
 const TRAVEL_MODE_LABELS: Record<string, string> = {
   van: "🚐 Van / Bus",
   car: "🚗 Car",
@@ -223,6 +231,7 @@ export default function RoutineGenerate() {
   const [isWorkingDay, setIsWorkingDay] = useState<boolean | null>(null);
   const [specialPlans, setSpecialPlans] = useState("");
   const [fridgeItems, setFridgeItems] = useState("");
+  const [mood, setMood] = useState<"happy" | "angry" | "lazy" | "normal">("normal");
   const [parentWorkType, setParentWorkType] = useState<string | null>(null);
 
   // Family mode
@@ -317,6 +326,7 @@ export default function RoutineGenerate() {
           isWorkingDay: showWorkingDayQuestion && isWorkingDay !== null ? isWorkingDay : undefined,
           specialPlans: specialPlans.trim() || undefined,
           fridgeItems: fridgeItems.trim() || undefined,
+          mood: mood !== "normal" ? mood : undefined,
         }
       },
       {
@@ -698,6 +708,38 @@ export default function RoutineGenerate() {
                   <p className="text-xs text-muted-foreground">The AI will suggest meals and tiffin using only what you have.</p>
                 </div>
 
+                {/* Mood Selector */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">
+                      {showWorkingDayQuestion ? "7" : "6"}
+                    </div>
+                    <Label className="text-lg font-bold">How is your child feeling today?</Label>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {MOOD_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setMood(opt.value)}
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border-2 transition-all ${
+                          mood === opt.value
+                            ? `${opt.color} border-2 shadow-sm scale-105`
+                            : "bg-card border-border hover:border-primary/40 hover:bg-muted"
+                        }`}
+                      >
+                        <span className="text-2xl">{opt.emoji}</span>
+                        <span className="font-bold text-sm">{opt.label}</span>
+                        <span className="text-[10px] text-center opacity-70 leading-tight">{opt.hint}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {mood !== "normal" && (
+                    <div className="bg-muted/60 border border-border rounded-xl px-3 py-2 text-xs text-foreground/70">
+                      🎯 AI will adapt the routine for a <strong>{mood}</strong> mood day — {MOOD_OPTIONS.find(o => o.value === mood)?.hint?.toLowerCase()}.
+                    </div>
+                  )}
+                </div>
+
                 {/* What the AI uses */}
                 <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/70 space-y-1">
                   <p className="font-bold text-foreground text-sm mb-2">✨ What the AI considers:</p>
@@ -710,6 +752,7 @@ export default function RoutineGenerate() {
                     <li>⏰ Wake-up & bedtime for accurate time slots</li>
                     <li>🥦 Child's food preference — veg or non-veg</li>
                     <li>🍽️ Fridge ingredients for meal suggestions</li>
+                    <li>😊 Child's mood — adjusts tone & activity intensity</li>
                   </ul>
                 </div>
 

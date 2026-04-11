@@ -1,11 +1,12 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Flame } from "lucide-react";
+import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Flame, Sparkles, Gift, Trophy, Bot } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { getTotalPoints, getBadges, getRewards, redeemReward, type Reward } from "@/lib/rewards";
 
 type RoutineItem = {
   time: string;
@@ -128,6 +129,225 @@ function TodayScheduleCard({ routines }: { routines: Routine[] }) {
             </Link>
           );
         })}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Rewards Card ───────────────────────────────────────────────────────────
+function RewardsCard({ streak }: { streak: number }) {
+  const [points, setPoints] = useState(0);
+  const [badges, setBadges] = useState<ReturnType<typeof getBadges>>([]);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [redeemMsg, setRedeemMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPoints(getTotalPoints());
+    setBadges(getBadges());
+    setRewards(getRewards());
+  }, []);
+
+  const handleRedeem = (reward: Reward) => {
+    const ok = redeemReward(reward, "Child");
+    if (ok) {
+      setPoints(getTotalPoints());
+      setRedeemMsg(`🎉 Redeemed: ${reward.emoji} ${reward.label}!`);
+      setTimeout(() => setRedeemMsg(null), 3000);
+    } else {
+      setRedeemMsg(`❌ Not enough points (need ${reward.cost})`);
+      setTimeout(() => setRedeemMsg(null), 2000);
+    }
+  };
+
+  return (
+    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-violet-50/60 to-indigo-50/40">
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-quicksand text-base flex items-center gap-2">
+            <Trophy className="h-4 w-4 text-violet-600" />
+            Rewards & Points
+          </CardTitle>
+          <div className="flex items-center gap-1.5 bg-violet-100 text-violet-700 rounded-full px-3 py-1">
+            <Star className="h-3.5 w-3.5 fill-violet-500" />
+            <span className="font-black text-sm">{points}</span>
+            <span className="text-xs font-medium">pts</span>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-4 space-y-4">
+        {redeemMsg && (
+          <div className="text-sm font-medium text-center py-1.5 px-3 bg-green-50 border border-green-200 rounded-xl text-green-800">
+            {redeemMsg}
+          </div>
+        )}
+        {/* Badges */}
+        {badges.length > 0 && (
+          <div>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Badges Earned</p>
+            <div className="flex flex-wrap gap-2">
+              {badges.map((b) => (
+                <div key={b.id} className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 text-xs font-bold text-amber-800">
+                  {b.emoji} {b.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {badges.length === 0 && (
+          <p className="text-xs text-muted-foreground">Complete tasks to earn badges! Complete a task to unlock <strong>🌟 First Day Completed</strong>.</p>
+        )}
+        {/* Reward Store */}
+        <div>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Reward Store</p>
+          <div className="space-y-2">
+            {rewards.slice(0, 4).map((r) => (
+              <div key={r.id} className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/50">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{r.emoji}</span>
+                  <div>
+                    <p className="text-sm font-semibold leading-tight">{r.label}</p>
+                    <p className="text-xs text-muted-foreground">{r.cost} pts</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleRedeem(r)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-full transition-all ${
+                    points >= r.cost
+                      ? "bg-violet-600 text-white hover:bg-violet-700"
+                      : "bg-muted text-muted-foreground cursor-not-allowed"
+                  }`}
+                >
+                  Redeem
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── AI Co-Parent Suggestions ────────────────────────────────────────────────
+function CoParentCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
+  const allItems = todayRoutines.flatMap((r) => r.items);
+  const total = allItems.length;
+  const completed = allItems.filter((i) => i.status === "completed").length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const hour = new Date().getHours();
+
+  const suggestions: { emoji: string; text: string; color: string }[] = [];
+
+  if (total === 0) {
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", color: "bg-blue-50 border-blue-200 text-blue-800" });
+  } else if (pct < 30 && hour >= 14) {
+    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", color: "bg-amber-50 border-amber-200 text-amber-800" });
+  } else if (pct >= 80) {
+    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", color: "bg-green-50 border-green-200 text-green-800" });
+  }
+
+  if (hour >= 15 && hour <= 17) {
+    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", color: "bg-rose-50 border-rose-200 text-rose-800" });
+  }
+
+  if (streak >= 3) {
+    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, color: "bg-orange-50 border-orange-200 text-orange-800" });
+  } else if (streak === 0 && hour < 10) {
+    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", color: "bg-sky-50 border-sky-200 text-sky-800" });
+  }
+
+  if (hour >= 19) {
+    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", color: "bg-indigo-50 border-indigo-200 text-indigo-800" });
+  }
+
+  const display = suggestions.slice(0, 3);
+
+  return (
+    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-violet-50/40 to-pink-50/30">
+        <CardTitle className="font-quicksand text-base flex items-center gap-2">
+          <Bot className="h-4 w-4 text-violet-600" />
+          AI Co-Parent Suggestions
+        </CardTitle>
+        <CardDescription>Personalized nudges based on your day</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4 space-y-2.5">
+        {display.map((s, i) => (
+          <div key={i} className={`flex items-start gap-2.5 p-3 rounded-xl border text-sm ${s.color}`}>
+            <span className="text-base shrink-0 mt-0.5">{s.emoji}</span>
+            <p className="leading-snug">{s.text}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Parent Score Card ───────────────────────────────────────────────────────
+function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const last7 = routines.slice(0, 7);
+  const totalItems = last7.flatMap((r) => r.items).length;
+  const completedItems = last7.flatMap((r) => r.items).filter((i) => i.status === "completed").length;
+  const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  const daysActive = last7.length;
+  const streakBonus = Math.min(streak * 5, 30);
+  const score = Math.min(Math.round(completionRate * 0.5 + daysActive * 5 + streakBonus), 100);
+
+  const percentile = score >= 80 ? 90 : score >= 60 ? 70 : score >= 40 ? 50 : score >= 20 ? 30 : 15;
+  const grade = score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
+  const gradeColor = score >= 80 ? "text-green-600" : score >= 60 ? "text-blue-600" : score >= 40 ? "text-amber-600" : "text-red-600";
+
+  return (
+    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
+      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-green-50/50 to-emerald-50/30">
+        <CardTitle className="font-quicksand text-base flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-green-600" />
+          Your Parent Score
+        </CardTitle>
+        <CardDescription>Based on last 7 days of activity</CardDescription>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="relative w-20 h-20 shrink-0">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" />
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke={score >= 80 ? "#22c55e" : score >= 60 ? "#3b82f6" : score >= 40 ? "#f59e0b" : "#ef4444"}
+                strokeWidth="3" strokeDasharray={`${score} ${100 - score}`} strokeLinecap="round" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className={`text-xl font-black ${gradeColor}`}>{grade}</span>
+              <span className="text-[9px] text-muted-foreground font-medium">{score}/100</span>
+            </div>
+          </div>
+          <div className="flex-1 space-y-2">
+            <p className="text-sm font-semibold text-foreground">
+              You're doing better than <span className="text-primary font-black">{percentile}%</span> of parents!
+            </p>
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Task completion</span>
+                <span className="font-bold text-foreground">{completionRate}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5">
+                <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${completionRate}%` }} />
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Days active</span>
+                <span className="font-bold text-foreground">{daysActive}/7</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5">
+                <div className="bg-accent h-1.5 rounded-full transition-all" style={{ width: `${(daysActive / 7) * 100}%` }} />
+              </div>
+            </div>
+          </div>
+        </div>
+        {score < 60 && (
+          <p className="text-xs text-muted-foreground bg-muted/50 rounded-xl p-2.5">
+            💡 Tip: Complete at least 5 tasks per day to boost your score this week!
+          </p>
+        )}
       </CardContent>
     </Card>
   );
@@ -262,6 +482,12 @@ export default function Dashboard() {
         )}
       </div>
 
+      {/* AI Co-Parent + Parent Score */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CoParentCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+        <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Routines */}
         <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden flex flex-col">
@@ -391,6 +617,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Rewards Card */}
+      <RewardsCard streak={streak} />
     </div>
   );
 }

@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, User, Trash2, Sparkles, Check, SkipForward, Clock, Bell, BellOff, Share2, Copy, ChefHat, Timer, Users, Pencil, Plus, RotateCcw, Moon, X, Save, Volume2, VolumeX } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { addPoints, checkAndAwardBadges, getTotalPoints } from "@/lib/rewards";
+import { announceCurrentTask, isVoiceEnabled, setVoiceEnabled } from "@/lib/voice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -190,6 +192,8 @@ export default function RoutineDetail() {
 
   const [localItems, setLocalItems] = useState<RoutineItem[] | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [voiceOn, setVoiceOn] = useState(() => isVoiceEnabled());
+  const announcedTaskRef = useRef<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [babysitterInfo, setBabysitterInfo] = useState<{ name: string; mobileNumber?: string | null } | null>(null);
   const [recipeOpen, setRecipeOpen] = useState(false);
@@ -264,6 +268,24 @@ export default function RoutineDetail() {
       .catch(() => {})
       .finally(() => setAiImagesLoading(false));
   }, [localItems, routineId]);
+
+  // Voice announcement for current task
+  useEffect(() => {
+    if (!voiceOn) return;
+    const items = localItems ?? (routine?.items as RoutineItem[]) ?? [];
+    const childName = (childData as any)?.name ?? routine?.childName ?? "buddy";
+    const nowMins = new Date().getHours() * 60 + new Date().getMinutes();
+    const currentTask = items.find((item) => {
+      if ((item.status ?? "pending") !== "pending") return false;
+      const start = parse12hToMinutes(item.time);
+      const end = start + (item.duration ?? 30);
+      return start <= nowMins && nowMins < end;
+    });
+    if (currentTask && announcedTaskRef.current !== currentTask.activity) {
+      announcedTaskRef.current = currentTask.activity;
+      announceCurrentTask(childName, currentTask.activity);
+    }
+  });
 
   const buildShareMessage = () => {
     if (!routine) return "";
@@ -491,6 +513,15 @@ export default function RoutineDetail() {
       // Detect sleep/bedtime completion → prompt next-day generation
       if (status === "completed") {
         const item = prev[index];
+        // Award points for completing task
+        const childName = (childData as any)?.name ?? routine?.childName ?? "Child";
+        addPoints(childName, item.activity, 10);
+        const completedSoFar = updated.filter((i) => i.status === "completed").length;
+        const newBadges = checkAndAwardBadges(completedSoFar, 0);
+        if (newBadges.length > 0) {
+          toast({ title: `🏆 Badge earned: ${newBadges[0].emoji} ${newBadges[0].label}!` });
+        }
+
         const isSleep = ["sleep", "wind-down"].includes(item.category?.toLowerCase() ?? "") ||
           /sleep|bed\s*time|good night/i.test(item.activity);
         if (isSleep && routine?.childId) {
@@ -627,6 +658,21 @@ export default function RoutineDetail() {
               ) : (
                 <><Bell className="h-4 w-4" /> Notify Me</>
               )}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const next = !voiceOn;
+                setVoiceOn(next);
+                setVoiceEnabled(next);
+                toast({ title: next ? "🔊 Voice reminders on!" : "🔇 Voice reminders off" });
+              }}
+              className={`rounded-full gap-2 ${voiceOn ? "bg-violet-50 border-violet-300 text-violet-700" : ""}`}
+            >
+              {voiceOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              {voiceOn ? "Voice On" : "Voice"}
             </Button>
 
             <Button

@@ -125,7 +125,16 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
   }
 
   const fridgeItems = parsed.data.fridgeItems?.trim();
-  const { hasSchool, isWorkingDay, specialPlans } = parsed.data;
+  const { hasSchool, isWorkingDay, specialPlans, mood } = parsed.data;
+
+  // Mood-based context for AI prompt
+  const moodContext = mood === "angry"
+    ? "CHILD'S MOOD TODAY: ANGRY/UPSET — reduce frustrating tasks, add calming activities (deep breathing, quiet play, gentle walk), avoid homework right after school, add fun and engaging activities to lift mood."
+    : mood === "lazy"
+    ? "CHILD'S MOOD TODAY: LAZY/LOW ENERGY — shorten individual task durations, add more breaks, start with easy fun activities to build momentum, avoid demanding tasks early in the day."
+    : mood === "happy"
+    ? "CHILD'S MOOD TODAY: HAPPY/ENERGETIC — great day for productive tasks, new challenges, learning activities, and more physical exercise. Take advantage of the good mood!"
+    : "";
 
   // Determine school status label for prompt
   const schoolStatus = hasSchool === false
@@ -169,6 +178,7 @@ ${specialPlansContext ? `\n${specialPlansContext}` : ""}
 FAMILY FOOD PREFERENCES:
 ${foodContext || "No family food preferences set."}
 ${fridgeItems ? `Available fridge ingredients today: ${fridgeItems}` : ""}
+${moodContext ? `\n${moodContext}` : ""}
 
 RECENT BEHAVIOR HISTORY (use to adapt the routine):
 ${behaviorContext}

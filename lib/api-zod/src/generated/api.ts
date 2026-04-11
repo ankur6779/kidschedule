@@ -213,6 +213,7 @@ export const GenerateRoutineBody = zod.object({
   hasSchool: zod.boolean().optional(),
   isWorkingDay: zod.boolean().optional(),
   specialPlans: zod.string().optional(),
+  mood: zod.enum(["happy", "angry", "lazy", "normal"]).optional(),
 });
 
 export const GenerateRoutineResponse = zod.object({
