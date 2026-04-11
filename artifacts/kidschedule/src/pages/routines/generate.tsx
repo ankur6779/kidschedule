@@ -548,6 +548,19 @@ export default function RoutineGenerate() {
     }
   }, [date]);
 
+  // Auto-set hasSchool=false for infants, toddlers, and non-school preschoolers
+  useEffect(() => {
+    if (!selectedChild || !children) return;
+    const data = children.find((c) => c.id === selectedChild);
+    if (!data) return;
+    const group = getAgeGroup(data.age, (data as any).ageMonths ?? 0);
+    if (group === "infant" || group === "toddler") {
+      setHasSchool(false);
+    } else if (group === "preschool" && !(data as any).isSchoolGoing) {
+      setHasSchool(false);
+    }
+  }, [selectedChild, children]);
+
   // Check for existing routine when child + date both selected
   useEffect(() => {
     if (!selectedChild || !date) {
@@ -592,8 +605,15 @@ export default function RoutineGenerate() {
       setFamilyChildSettings((prev) => {
         const next = { ...prev };
         children.forEach((c) => {
+          const group = getAgeGroup(c.age, (c as any).ageMonths ?? 0);
+          const notSchoolApplicable =
+            group === "infant" ||
+            group === "toddler" ||
+            (group === "preschool" && !(c as any).isSchoolGoing);
           if (!(c.id in next)) {
-            next[c.id] = { hasSchool: null, selected: true };
+            next[c.id] = { hasSchool: notSchoolApplicable ? false : null, selected: true };
+          } else if (notSchoolApplicable && next[c.id].hasSchool === null) {
+            next[c.id] = { ...next[c.id], hasSchool: false };
           }
         });
         return next;
@@ -617,7 +637,6 @@ export default function RoutineGenerate() {
     };
   }
 
-  const isFormValid = selectedChild && date && hasSchool !== null;
   const isGenerating = generateMutation.isPending || createMutation.isPending;
 
   const selectedChildData = children?.find((c) => c.id === selectedChild) as ChildType | undefined;
@@ -628,6 +647,15 @@ export default function RoutineGenerate() {
     : null;
   const selectedChildAgeGroupInfo = selectedChildAgeGroup ? getAgeGroupInfo(selectedChildAgeGroup) : null;
   const isInfantMode = selectedChildAgeGroup === "infant";
+
+  // School question is only required for preschoolers who go to school, and school-age+
+  const schoolQuestionRequired = (() => {
+    if (!selectedChildAgeGroup) return true;
+    if (selectedChildAgeGroup === "infant" || selectedChildAgeGroup === "toddler") return false;
+    if (selectedChildAgeGroup === "preschool" && !(selectedChildData as any)?.isSchoolGoing) return false;
+    return true;
+  })();
+  const isFormValid = selectedChild && date && (!schoolQuestionRequired || hasSchool !== null);
 
   // Single mode generate
   const handleGenerate = (forceOverride = false) => {
@@ -1066,39 +1094,80 @@ export default function RoutineGenerate() {
                   )}
                 </div>
 
-                {/* Step 3 — School today? */}
+                {/* Step 3 — School today? (age-aware) */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">3</div>
                     <Label className="text-lg font-bold flex items-center gap-2">
                       <School className="h-5 w-5 text-primary" />
-                      Is there school on this day?
+                      {selectedChildAgeGroup === "infant" ? "Care Mode" :
+                       selectedChildAgeGroup === "toddler" ? "Learning Mode" :
+                       "Is there school on this day?"}
                     </Label>
                     {(() => {
                       const d = new Date(date + "T00:00:00");
                       const day = d.getDay();
-                      return (day === 0 || day === 6) ? (
+                      return (day === 0 || day === 6) && schoolQuestionRequired ? (
                         <span className="text-xs bg-amber-100 text-amber-700 font-bold px-2 py-0.5 rounded-full">🏖️ Weekend auto-detected</span>
                       ) : null;
                     })()}
                   </div>
-                  <ToggleGroup
-                    value={hasSchool}
-                    onChange={setHasSchool}
-                    options={[
-                      ["Yes, school day", true, "🏫"],
-                      ["No, day off", false, "🏖️"],
-                    ]}
-                  />
-                  {hasSchool === true && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
-                      🍱 The AI will suggest a tiffin lunchbox for your child and plan school-day blocks.
+
+                  {/* INFANT — no school, just info */}
+                  {selectedChildAgeGroup === "infant" && (
+                    <div className="bg-pink-50 border-2 border-pink-200 rounded-2xl p-4 flex items-center gap-3">
+                      <span className="text-3xl">👶</span>
+                      <div>
+                        <p className="font-bold text-pink-900 text-sm">Infant Care Mode — School Not Applicable</p>
+                        <p className="text-xs text-pink-700 mt-0.5">The routine will focus on feeding, sleep, sensory activities, and parent bonding. No school logic used.</p>
+                      </div>
                     </div>
                   )}
-                  {hasSchool === false && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
-                      The AI will skip school blocks and add outdoor play, hobby activities, and family time instead.
+
+                  {/* TODDLER — no school, play mode */}
+                  {selectedChildAgeGroup === "toddler" && (
+                    <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-4 flex items-center gap-3">
+                      <span className="text-3xl">🧸</span>
+                      <div>
+                        <p className="font-bold text-purple-900 text-sm">Learning & Play Mode Active</p>
+                        <p className="text-xs text-purple-700 mt-0.5">The routine will include age-appropriate play, sensory activities, nap times, and parent interaction blocks — no school scheduling.</p>
+                      </div>
                     </div>
+                  )}
+
+                  {/* PRESCHOOL, no school enrolled */}
+                  {selectedChildAgeGroup === "preschool" && !(selectedChildData as any)?.isSchoolGoing && (
+                    <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex items-center gap-3">
+                      <span className="text-3xl">🎨</span>
+                      <div>
+                        <p className="font-bold text-blue-900 text-sm">Home Learning Mode — Play-Based Routine</p>
+                        <p className="text-xs text-blue-700 mt-0.5">Your child isn't in school yet. The routine will include creative play, story time, arts & crafts, and outdoor exploration.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PRESCHOOL with school, or SCHOOL-AGE+ — show full toggle */}
+                  {schoolQuestionRequired && (
+                    <>
+                      <ToggleGroup
+                        value={hasSchool}
+                        onChange={setHasSchool}
+                        options={[
+                          ["Yes, school day", true, "🏫"],
+                          ["No, day off", false, "🏖️"],
+                        ]}
+                      />
+                      {hasSchool === true && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
+                          🍱 The AI will suggest a tiffin lunchbox for your child and plan school-day blocks.
+                        </div>
+                      )}
+                      {hasSchool === false && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
+                          The AI will skip school blocks and add outdoor play, hobby activities, and family time instead.
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -1431,36 +1500,72 @@ export default function RoutineGenerate() {
                               </div>
                             </div>
 
-                            {/* School toggle for this child */}
-                            {settings.selected && (
-                              <div className="px-4 pb-4">
-                                <p className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1">
-                                  <School className="h-3 w-3" />
-                                  School today for {child.name}?
-                                </p>
-                                <div className="flex gap-2">
-                                  {[
-                                    { label: "🏫 Yes, school", val: true },
-                                    { label: "🏖️ Day off", val: false },
-                                  ].map(({ label, val }) => (
-                                    <button
-                                      key={String(val)}
-                                      onClick={() => setFamilyChildSettings((prev) => ({
-                                        ...prev,
-                                        [child.id]: { ...settings, hasSchool: val }
-                                      }))}
-                                      className={`flex-1 py-2 px-3 rounded-xl font-bold border-2 transition-all text-xs ${
-                                        settings.hasSchool === val
-                                          ? "bg-primary text-primary-foreground border-primary"
-                                          : "bg-card text-foreground border-border hover:border-primary/40"
-                                      }`}
-                                    >
-                                      {label}
-                                    </button>
-                                  ))}
+                            {/* School toggle — age-aware per child */}
+                            {settings.selected && (() => {
+                              const childGroup = getAgeGroup(child.age, (child as any).ageMonths ?? 0);
+                              const notSchoolApplicable =
+                                childGroup === "infant" ||
+                                childGroup === "toddler" ||
+                                (childGroup === "preschool" && !(child as any).isSchoolGoing);
+
+                              if (childGroup === "infant") return (
+                                <div className="px-4 pb-3">
+                                  <div className="flex items-center gap-2 bg-pink-50 border border-pink-200 rounded-xl px-3 py-2">
+                                    <span className="text-lg">👶</span>
+                                    <p className="text-xs font-bold text-pink-800">Infant Care Mode — No school scheduling</p>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              );
+
+                              if (childGroup === "toddler") return (
+                                <div className="px-4 pb-3">
+                                  <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-xl px-3 py-2">
+                                    <span className="text-lg">🧸</span>
+                                    <p className="text-xs font-bold text-purple-800">Learning & Play Mode — No school scheduling</p>
+                                  </div>
+                                </div>
+                              );
+
+                              if (childGroup === "preschool" && !(child as any).isSchoolGoing) return (
+                                <div className="px-4 pb-3">
+                                  <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-xl px-3 py-2">
+                                    <span className="text-lg">🎨</span>
+                                    <p className="text-xs font-bold text-blue-800">Home Learning Mode — Play-based routine</p>
+                                  </div>
+                                </div>
+                              );
+
+                              // School-applicable: preschool (going to school) or school-age+
+                              return (
+                                <div className="px-4 pb-4">
+                                  <p className="text-xs font-bold text-muted-foreground mb-2 flex items-center gap-1">
+                                    <School className="h-3 w-3" />
+                                    School today for {child.name}?
+                                  </p>
+                                  <div className="flex gap-2">
+                                    {[
+                                      { label: "🏫 Yes, school", val: true },
+                                      { label: "🏖️ Day off", val: false },
+                                    ].map(({ label, val }) => (
+                                      <button
+                                        key={String(val)}
+                                        onClick={() => setFamilyChildSettings((prev) => ({
+                                          ...prev,
+                                          [child.id]: { ...settings, hasSchool: val }
+                                        }))}
+                                        className={`flex-1 py-2 px-3 rounded-xl font-bold border-2 transition-all text-xs ${
+                                          settings.hasSchool === val
+                                            ? "bg-primary text-primary-foreground border-primary"
+                                            : "bg-card text-foreground border-border hover:border-primary/40"
+                                        }`}
+                                      >
+                                        {label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                         );
                       })}

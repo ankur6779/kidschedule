@@ -1,0 +1,105 @@
+Fix and upgrade the Family Routine selection system in my web app "AmyNest" to be fully age-aware and context-based.
+
+--------------------------------
+1. Core Problem Fix (Important 🔥)
+--------------------------------
+- Currently:
+  - System asks “School today?” for ALL children
+
+- Fix:
+  - Only ask school-related questions for school-age children
+
+--------------------------------
+2. Age-Based Conditional Logic
+--------------------------------
+
+For each child:
+
+IF ageGroup == Infant (0–1 year):
+- DO NOT show:
+  - School question
+  - School timing
+- Show instead:
+  - “Infant Mode Active”
+  - No school logic
+
+--------------------------------
+
+IF ageGroup == Toddler (1–3 years):
+- DO NOT show school question
+- Optional:
+  - Show “Daycare?” (optional future feature)
+
+--------------------------------
+
+IF ageGroup == Preschool (3–5 years):
+- Ask:
+  “Does child go to school?”
+- Only if YES → show school options
+
+--------------------------------
+
+IF ageGroup >= 5:
+- Show full school logic:
+  - “School today?”
+  - Yes / Day off
+
+--------------------------------
+3. UI Fix (Very Important)
+--------------------------------
+- For Infant:
+  Replace school section with:
+
+  “👶 Infant Care Mode (No School)”
+
+- For Toddler:
+  Show:
+  “🧸 Learning & Play Mode”
+
+--------------------------------
+4. Family Routine Generation Logic
+--------------------------------
+
+- While generating family routine:
+
+IF Infant:
+- Ignore school completely
+- Use:
+  - Feeding
+  - Sleep
+  - Care schedule
+
+IF Toddler/Preschool:
+- Light schedule (play + learning)
+
+IF School-age:
+- Full school routine
+
+--------------------------------
+5. Clean UI Behavior
+--------------------------------
+- Hide unnecessary inputs
+- Do NOT confuse parent with irrelevant questions
+
+--------------------------------
+6. Data Handling
+--------------------------------
+- Store:
+  isSchoolApplicable = true/false
+
+--------------------------------
+7. Multi-Child Smart Handling
+--------------------------------
+- Each child handled independently
+- Merge into one family schedule correctly
+
+--------------------------------
+8. Keep everything simple
+--------------------------------
+- Use existing ageGroup
+- No API required
+- No backend changes
+
+--------------------------------
+Return:
+Updated working code with proper age-based filtering in family routine selection UI and logic.
