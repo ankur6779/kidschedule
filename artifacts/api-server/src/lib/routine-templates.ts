@@ -51,15 +51,29 @@ export function minsToTime(total: number): string {
 }
 
 export function timeToMins(t: string): number {
+  if (!t) return 0;
   const cleaned = t.replace(/\s+/g, " ").trim();
-  const m = cleaned.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!m) return 0;
-  let h = parseInt(m[1]);
-  const min = parseInt(m[2]);
-  const ampm = m[3].toUpperCase();
-  if (ampm === "PM" && h !== 12) h += 12;
-  if (ampm === "AM" && h === 12) h = 0;
-  return h * 60 + min;
+
+  // 12-hour format: "7:00 AM", "12:30 PM"
+  const m12 = cleaned.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (m12) {
+    let h = parseInt(m12[1]);
+    const min = parseInt(m12[2]);
+    const ampm = m12[3].toUpperCase();
+    if (ampm === "PM" && h !== 12) h += 12;
+    if (ampm === "AM" && h === 12) h = 0;
+    return h * 60 + min;
+  }
+
+  // 24-hour format: "07:00", "19:30" — AI often returns this
+  const m24 = cleaned.match(/^(\d{1,2}):(\d{2})$/);
+  if (m24) {
+    const h = parseInt(m24[1]);
+    const min = parseInt(m24[2]);
+    return h * 60 + min;
+  }
+
+  return 0;
 }
 
 // Seeded shuffle so output is deterministic per date+child

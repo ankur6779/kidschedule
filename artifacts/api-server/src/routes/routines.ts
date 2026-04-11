@@ -74,7 +74,7 @@ Return JSON exactly like this:
   "title": "string — include child name and day",
   "items": [
     {
-      "time": "HH:MM",
+      "time": "H:MM AM/PM",
       "activity": "Activity name",
       "duration": 30,
       "category": "one of: morning_routine, meal, school, study, play, family, creative, outdoor, self_care, rest, sleep",
@@ -83,17 +83,15 @@ Return JSON exactly like this:
   ]
 }
 
-CRITICAL RULES — follow exactly:
-- The FIRST activity MUST start at ${params.wakeUpTime} (the wake-up time). NEVER start at 12:00 AM or midnight.
-- Each activity's start time = previous activity's start time + previous activity's duration. Use simple sequential math.
-- currentTime starts at ${params.wakeUpTime}. For each activity: time = currentTime, then currentTime += duration.
-- The last activity must be "Sleep" or "Bedtime" placed at ${params.sleepTime}.
-- 12–16 activities covering wake-up to sleep
-- Every meal slot (breakfast, lunch, snack, dinner) must be included
-- Include at least 2 outdoor/play activities
-- Include 1–2 family bonding activities
-- Activities must match the child's age and mood
-- NEVER output 12:00 AM, 1:00 AM, 2:00 AM etc as activity times — all times must be between wake time and bedtime`;
+CRITICAL RULES — follow ALL exactly:
+- Time format MUST be "H:MM AM/PM" — examples: "7:00 AM", "9:30 AM", "12:00 PM", "3:45 PM". NEVER use 24-hour format like "07:00" or "19:30".
+- The FIRST activity MUST start at exactly ${params.wakeUpTime}. NEVER use 12:00 AM or any time before wake-up.
+- Build times sequentially: currentTime = ${params.wakeUpTime}. For each activity: "time" = currentTime, then currentTime += duration minutes.
+- Example if wake=7:00 AM with durations 30,25,20: first="7:00 AM", second="7:30 AM", third="7:55 AM", fourth="8:15 AM"
+- The final "Sleep" activity must be placed at ${params.sleepTime}.
+- 12–16 activities covering wake-up to sleep. Include breakfast, lunch, dinner, and at least one snack.
+- Include at least 2 outdoor/play activities and 1–2 family bonding activities.
+- Activities must match the child's age group and mood.`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-5.2",
