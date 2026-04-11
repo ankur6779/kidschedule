@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,23 +30,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const initials = user
     ? (user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0] ?? "U")
     : "U";
 
   const handleSignOut = () => {
+    setIsSidebarOpen(false);
     signOut({ redirectUrl: "/" });
   };
+
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
         <BrandLogo size="sm" showTagline={false} />
-        <Sheet>
+        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button>
@@ -70,6 +75,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={closeSidebar}
                   className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
                     location === item.href || location.startsWith(item.href)
                       ? "bg-primary text-primary-foreground font-medium"
