@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import logoImg from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
+import { BrandLogo } from "@/components/brand-logo";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -40,10 +40,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden">
-        <div className="flex items-center gap-2">
-          <img src={logoImg} alt="AmyNest" className="h-9 w-auto" />
-        </div>
+      <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
+        <BrandLogo size="sm" showTagline={false} />
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden">
@@ -96,8 +94,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 flex-col border-r bg-card md:flex">
-          <div className="flex h-20 items-center border-b px-4">
-            <img src={logoImg} alt="AmyNest" className="h-14 w-auto" />
+          <div className="flex h-20 items-center border-b px-5 shadow-sm">
+            <BrandLogo size="md" showTagline={true} />
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-4">
             {NAV_ITEMS.map((item) => (

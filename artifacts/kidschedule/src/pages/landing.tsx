@@ -1,14 +1,15 @@
 import { Link } from "wouter";
-import { Calendar, Activity, Users, ArrowRight } from "lucide-react";
+import { Calendar, Activity, Users, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/brand-logo";
 import logoImg from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Nav */}
-      <header className="flex items-center justify-between px-6 py-3 border-b bg-background/80 backdrop-blur-md sticky top-0 z-10">
-        <img src={logoImg} alt="AmyNest" className="h-12 w-auto" />
+      <header className="flex items-center justify-between px-6 py-3 border-b bg-background/95 backdrop-blur-md sticky top-0 z-10 shadow-sm">
+        <BrandLogo size="sm" showTagline={false} />
         <div className="flex items-center gap-2">
           <Link href="/sign-in">
             <Button variant="ghost" data-testid="link-sign-in">Sign in</Button>
@@ -21,7 +22,21 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section className="flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 flex-1">
-        <img src={logoImg} alt="AmyNest" className="h-28 w-auto mb-8" />
+        <div className="mb-8 flex flex-col items-center gap-3">
+          <img
+            src={logoImg}
+            alt="AmyNest"
+            className="h-28 w-28 rounded-full object-cover shadow-xl ring-4 ring-white"
+            style={{ filter: "drop-shadow(0 8px 24px rgba(59,130,246,0.2))" }}
+          />
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full"
+              style={{ background: "linear-gradient(135deg, #EEF2FF, #F0FDF4)", color: "#6366F1", border: "1px solid #C7D2FE" }}>
+              <Sparkles className="h-3 w-3" />
+              AI-Powered Parenting
+            </span>
+          </div>
+        </div>
         <h1 className="font-quicksand text-4xl md:text-6xl font-bold text-foreground max-w-3xl leading-tight mb-4">
           Where Smart Parenting Begins
         </h1>
@@ -78,7 +93,10 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="px-6 py-6 border-t text-center text-sm text-muted-foreground">
-        AmyNest — Where Smart Parenting Begins
+        <div className="flex items-center justify-center gap-2">
+          <BrandLogo size="sm" showTagline={false} />
+          <span className="text-muted-foreground">— Where Smart Parenting Begins</span>
+        </div>
       </footer>
     </div>
   );
