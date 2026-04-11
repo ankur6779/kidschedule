@@ -83,13 +83,17 @@ Return JSON exactly like this:
   ]
 }
 
-Requirements:
+CRITICAL RULES — follow exactly:
+- The FIRST activity MUST start at ${params.wakeUpTime} (the wake-up time). NEVER start at 12:00 AM or midnight.
+- Each activity's start time = previous activity's start time + previous activity's duration. Use simple sequential math.
+- currentTime starts at ${params.wakeUpTime}. For each activity: time = currentTime, then currentTime += duration.
+- The last activity must be "Sleep" or "Bedtime" placed at ${params.sleepTime}.
 - 12–16 activities covering wake-up to sleep
 - Every meal slot (breakfast, lunch, snack, dinner) must be included
 - Include at least 2 outdoor/play activities
 - Include 1–2 family bonding activities
 - Activities must match the child's age and mood
-- Times must not overlap (duration determines when next activity starts)`;
+- NEVER output 12:00 AM, 1:00 AM, 2:00 AM etc as activity times — all times must be between wake time and bedtime`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-5.2",
@@ -108,16 +112,23 @@ Requirements:
     throw new Error("Invalid AI response structure");
   }
 
+  const rawItems: RoutineItem[] = parsed.items.map((item: Record<string, unknown>) => ({
+    time: String(item.time ?? "08:00"),
+    activity: String(item.activity ?? "Activity"),
+    duration: Number(item.duration ?? 30),
+    category: String(item.category ?? "play"),
+    notes: item.notes ? String(item.notes) : undefined,
+    status: "pending" as const,
+  }));
+
+  // Always re-anchor to wake time — prevents AI from starting at midnight
+  const anchoredItems = params.ageGroup === "infant"
+    ? rawItems  // infants use flexible blocks, skip cascade
+    : reAnchorToWakeTime(rawItems, params.wakeUpTime, params.sleepTime, params.ageGroup);
+
   return {
     title: parsed.title,
-    items: parsed.items.map((item: Record<string, unknown>) => ({
-      time: String(item.time ?? "08:00"),
-      activity: String(item.activity ?? "Activity"),
-      duration: Number(item.duration ?? 30),
-      category: String(item.category ?? "play"),
-      notes: item.notes ? String(item.notes) : undefined,
-      status: "pending" as const,
-    })),
+    items: anchoredItems,
   };
 }
 
@@ -129,6 +140,65 @@ type RoutineItem = {
   notes?: string;
   status?: "pending" | "completed" | "skipped" | "delayed";
 };
+
+// ─── Re-anchor AI routine to wake time ─────────────────────────────────────
+// The AI sometimes ignores the wake time and starts at midnight (00:00).
+// This post-processor sorts items by the time the AI gave them, then
+// rebuilds a strict cascade: first item starts at wakeUpTime, each next
+// item starts exactly when the previous one ends.
+function reAnchorToWakeTime(
+  items: RoutineItem[],
+  wakeUpTime: string,
+  sleepTime: string,
+  ageGroup: AgeGroup
+): RoutineItem[] {
+  if (!items.length) return items;
+  // Infants: keep flexible ordering — just ensure no item is before wakeUpTime
+  const wakeMins = timeToMins(wakeUpTime);
+  const sleepMins = timeToMins(sleepTime);
+  // Effective sleep mins (may be next day for late bedtimes)
+  const effectiveSleepMins = sleepMins < wakeMins ? sleepMins + 1440 : sleepMins;
+
+  // Sort by the AI's original time ordering
+  const sorted = [...items].sort((a, b) => {
+    const ta = timeToMins(a.time);
+    const tb = timeToMins(b.time);
+    // Handle next-day wrap (e.g. 11 PM < 1 AM for ordering purposes)
+    const ra = ta < wakeMins - 120 ? ta + 1440 : ta;
+    const rb = tb < wakeMins - 120 ? tb + 1440 : tb;
+    return ra - rb;
+  });
+
+  // Separate sleep anchor (last item) from the rest
+  let sleepIdx = -1;
+  for (let i = sorted.length - 1; i >= 0; i--) {
+    if (sorted[i].category === "sleep" || /sleep|bedtime|good night/i.test(sorted[i].activity)) {
+      sleepIdx = i;
+      break;
+    }
+  }
+  const sleepAnchor = sleepIdx !== -1 ? sorted.splice(sleepIdx, 1)[0]! : null;
+
+  // Re-cascade: each item starts exactly where the previous one ended
+  let cursor = wakeMins;
+  const anchored: RoutineItem[] = sorted.map((item) => {
+    const dur = Math.max(1, item.duration ?? 30);
+    const result = { ...item, time: minsToTime(cursor) };
+    cursor += dur;
+    // Never push past sleep time
+    if (cursor >= effectiveSleepMins && item.category !== "sleep") {
+      cursor = Math.min(cursor, effectiveSleepMins - 10);
+    }
+    return result;
+  });
+
+  // Always put sleep anchor at the configured sleep time
+  if (sleepAnchor) {
+    anchored.push({ ...sleepAnchor, time: minsToTime(sleepMins) });
+  }
+
+  return anchored;
+}
 
 const router: IRouter = Router();
 

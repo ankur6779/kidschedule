@@ -798,6 +798,19 @@ export default function RoutineDetail() {
               {dateMode === "future" && <span className="ml-1 text-[10px] font-black uppercase tracking-wide bg-blue-600 text-white rounded-full px-1.5 py-0.5">Upcoming</span>}
               {dateMode === "past" && <span className="ml-1 text-[10px] font-black uppercase tracking-wide bg-muted-foreground text-white rounded-full px-1.5 py-0.5">Past</span>}
             </div>
+            {/* Day starts at badge — shows the first activity time (= wake time) */}
+            {routine.items && routine.items.length > 0 && (() => {
+              const firstTime = routine.items.find(
+                (it) => it.category !== "sleep" && !/sleep|bedtime/i.test(it.activity)
+              )?.time;
+              if (!firstTime) return null;
+              return (
+                <div className="flex items-center gap-1.5 bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-sm font-bold">
+                  <Clock className="h-3.5 w-3.5" />
+                  Day starts at {firstTime}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Date mode banners */}

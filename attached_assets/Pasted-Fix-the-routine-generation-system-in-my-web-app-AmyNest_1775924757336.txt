@@ -1,0 +1,93 @@
+Fix the routine generation system in my web app "AmyNest" so that routines start from the child’s wake-up time instead of 12:00 AM.
+
+--------------------------------
+1. Core Issue Fix (Important 🔥)
+--------------------------------
+- Currently routines start from:
+  12:00 AM (incorrect)
+
+- Fix:
+  - All routines must start from:
+    Child's wake-up time
+
+--------------------------------
+2. Wake-Up Time as Base
+--------------------------------
+- Use:
+  wakeTime (already available or input)
+
+- First task:
+  MUST start exactly at wakeTime
+
+Example:
+  Wake: 07:00 AM
+  First task: 07:00 AM
+
+--------------------------------
+3. Timeline Generation Logic
+--------------------------------
+- Create variable:
+  currentTime = wakeTime
+
+- For each task:
+  - task.start = currentTime
+  - task.end = currentTime + duration
+
+  - Update:
+    currentTime = task.end
+
+--------------------------------
+4. Infant Special Case
+--------------------------------
+IF ageGroup == Infant:
+- Do NOT use strict timeline
+- Use flexible blocks:
+  - Feeding
+  - Sleep cycles
+
+--------------------------------
+5. School Integration
+--------------------------------
+- If school exists:
+  - Ensure tasks before school fit correctly
+  - Example:
+    wake → brush → breakfast → school
+
+--------------------------------
+6. Prevent Midnight Start
+--------------------------------
+- Remove any default logic using:
+  00:00 or startOfDay
+
+- Always use:
+  wakeTime as starting anchor
+
+--------------------------------
+7. Multi-Child Handling
+--------------------------------
+- Each child has own wakeTime
+- Generate timelines independently
+- Then merge correctly
+
+--------------------------------
+8. UI Fix
+--------------------------------
+- Show clearly:
+  “Day starts at: 07:00 AM”
+
+--------------------------------
+9. Edge Case Handling
+--------------------------------
+- If wakeTime not provided:
+  - Use default:
+    7:00 AM
+
+--------------------------------
+10. Keep logic simple
+--------------------------------
+- Use simple loop
+- No API required
+
+--------------------------------
+Return:
+Updated working code with proper wake-up based routine timeline instead of midnight start.
