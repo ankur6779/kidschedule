@@ -440,11 +440,14 @@ router.post("/routines/:id/generate-images", async (req, res): Promise<void> => 
 
   const items = (routine.items ?? []) as Array<RoutineItem & { imageUrl?: string }>;
 
-  // Return cached if all images already generated
+  // Return cached immediately if all images already generated
   if (items.length > 0 && items.every((it) => it.imageUrl)) {
     res.json({ items });
     return;
   }
+
+  // Deduplicate: reuse image from same category if already generated in this batch
+  const categoryImageCache: Record<string, string> = {};
 
   const childName = child?.name ?? "a child";
   const childAge = child?.age ?? 6;
@@ -463,14 +466,14 @@ router.post("/routines/:id/generate-images", async (req, res): Promise<void> => 
     }
   }
 
-  const generateOne = async (item: RoutineItem & { imageUrl?: string }, index: number): Promise<RoutineItem & { imageUrl?: string }> => {
-    if (item.imageUrl) return item;
+  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([promise, new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))]);
 
-    const activityVerb = item.activity.toLowerCase();
+  const generateForActivity = async (activityName: string, category: string): Promise<string | null> => {
+    const activityVerb = activityName.toLowerCase();
     const prompt = tempPhotoPath
-      ? `Using this child's photo as a reference, create a vibrant Pixar/Disney-cartoon style illustration of this exact child, ${childAge} years old, happily ${activityVerb}. Maintain the child's facial features, hair color and style, and skin tone but in a cute cartoon style. The scene should be warm, cheerful, safe for kids, and brightly colored. No text or words in the image.`
-      : `A vibrant Pixar/Disney-cartoon style illustration of a cheerful ${childAge}-year-old child named ${childName} happily ${activityVerb}. Warm, colorful, safe for kids, bright background. No text in the image.`;
-
+      ? `Pixar cartoon of this child (${childAge} yo) ${activityVerb}. Keep their face, hair, skin tone. Bright, cheerful, kid-friendly. No text.`
+      : `Pixar cartoon of a cheerful ${childAge}-year-old child ${activityVerb}. Bright, colorful, kid-friendly. No text.`;
     try {
       let imageBuffer: Buffer;
       if (tempPhotoPath) {
@@ -478,33 +481,53 @@ router.post("/routines/:id/generate-images", async (req, res): Promise<void> => 
         const mimeType = tempPhotoPath.endsWith(".png") ? "image/png" : "image/jpeg";
         const fname = `child-photo.${tempPhotoPath.endsWith(".png") ? "png" : "jpg"}`;
         const imageFile = await toFile(fs.createReadStream(tempPhotoPath), fname, { type: mimeType });
-        const response = await openai.images.edit({
+        const response = await withTimeout(openai.images.edit({
           model: "gpt-image-1",
           image: imageFile,
           prompt,
-          size: "1024x1024",
-        });
+          size: "512x512" as any,
+        }), 25000);
         const b64 = response.data[0]?.b64_json ?? "";
         imageBuffer = Buffer.from(b64, "base64");
       } else {
-        imageBuffer = await generateImageBuffer(prompt, "1024x1024");
+        imageBuffer = await withTimeout(generateImageBuffer(prompt, "512x512"), 20000);
       }
-      const base64 = imageBuffer.toString("base64");
-      return { ...item, imageUrl: `data:image/png;base64,${base64}` };
+      return `data:image/png;base64,${imageBuffer.toString("base64")}`;
     } catch (err) {
-      console.error(`Image gen failed for item ${index}:`, err);
-      return item;
+      console.error(`Image gen failed for "${activityName}":`, err);
+      return null;
     }
   };
 
-  // Process in parallel batches of 3
-  const BATCH = 3;
-  const updatedItems: Array<RoutineItem & { imageUrl?: string }> = new Array(items.length);
-  for (let i = 0; i < items.length; i += BATCH) {
-    const batch = items.slice(i, i + BATCH);
-    const results = await Promise.all(batch.map((item, bi) => generateOne(item, i + bi)));
-    results.forEach((r, bi) => { updatedItems[i + bi] = r; });
+  // Find unique categories among items needing generation
+  const needsGeneration = items.filter((it) => !it.imageUrl);
+  const uniqueCategories = [...new Set(needsGeneration.map((it) => it.category?.toLowerCase() ?? "general"))];
+
+  // Pick a representative activity name per category (first occurrence)
+  const categoryRepresentative: Record<string, string> = {};
+  for (const item of needsGeneration) {
+    const key = item.category?.toLowerCase() ?? "general";
+    if (!categoryRepresentative[key]) categoryRepresentative[key] = item.activity;
   }
+
+  // Generate one image per unique category — all in parallel
+  const categoryImageResults = await Promise.all(
+    uniqueCategories.map(async (cat) => ({
+      cat,
+      imageUrl: await generateForActivity(categoryRepresentative[cat], cat),
+    }))
+  );
+
+  for (const { cat, imageUrl } of categoryImageResults) {
+    if (imageUrl) categoryImageCache[cat] = imageUrl;
+  }
+
+  // Assign images to items
+  const updatedItems = items.map((item) => {
+    if (item.imageUrl) return item;
+    const cat = item.category?.toLowerCase() ?? "general";
+    return categoryImageCache[cat] ? { ...item, imageUrl: categoryImageCache[cat] } : item;
+  });
 
   // Clean up temp file
   if (tempPhotoPath) {
