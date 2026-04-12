@@ -1,0 +1,144 @@
+Upgrade my web app "AmyNest" to add an age-based adaptive puzzle system in the Parenting Hub section.
+
+IMPORTANT:
+- ZERO API cost (no AI calls)
+- Use rule-based logic + predefined puzzle data
+- System should feel intelligent and adaptive
+
+--------------------------------
+1. Age-Based Puzzle System
+--------------------------------
+- Show puzzles ONLY for age:
+  3 years to 15 years
+
+- Do NOT show for infants/toddlers under 3
+
+--------------------------------
+2. Daily Puzzle Set (Core 🔥)
+--------------------------------
+- Show 4–5 puzzles per day
+
+- Add title:
+  “🧠 Ask your child today’s puzzle”
+
+- Allow user to:
+  - Solve 1 puzzle
+  - Click “Next Puzzle”
+
+--------------------------------
+3. Puzzle Structure
+--------------------------------
+Each puzzle must have:
+
+{
+  question: "What comes after A, B, C?",
+  options: ["D", "E", "F", "G"],
+  correctAnswer: "D",
+  difficulty: "easy"
+}
+
+--------------------------------
+4. Difficulty Levels (Important 🔥)
+--------------------------------
+Define levels:
+
+- Easy (3–5 years)
+- Medium (6–10 years)
+- Hard (10–15 years)
+
+--------------------------------
+5. Age-Based Filtering
+--------------------------------
+- Select puzzles based on:
+  child.ageGroup
+
+--------------------------------
+6. Adaptive Difficulty System (Core 🔥🔥)
+--------------------------------
+
+- Track:
+  correctAnswersCount
+  wrongAnswersCount
+
+- If child answers correctly:
+  → Increase difficulty gradually
+
+- If wrong:
+  → Keep same or reduce difficulty
+
+--------------------------------
+7. Answer Input System
+--------------------------------
+- Show 4 options per puzzle (radio buttons)
+
+- Parent selects one option
+
+- On submit:
+  - Check answer
+  - Show:
+    “✅ Correct” OR “❌ Try again”
+
+--------------------------------
+8. Learning System (Simulated AI 🔥)
+--------------------------------
+- Store in localStorage:
+  - last difficulty level
+  - score history
+
+- Next day:
+  - Start from previous level
+  - Increase slightly if performance good
+
+--------------------------------
+9. Puzzle Rotation
+--------------------------------
+- Ensure:
+  - No immediate repetition
+  - Rotate puzzles daily
+
+--------------------------------
+10. UI Design
+--------------------------------
+- Card-based layout
+
+Each puzzle card:
+- Question
+- 4 options
+- Submit button
+- Next button
+
+--------------------------------
+11. Gamification (Optional 🔥)
+--------------------------------
+- Show:
+  ⭐ “Great job!”
+  🎉 “Level up!”
+
+--------------------------------
+12. Data Storage
+--------------------------------
+Use localStorage:
+- puzzleIndex
+- difficultyLevel
+- score
+
+--------------------------------
+13. Parenting Hub Integration
+--------------------------------
+- Add new section:
+  “🧩 Daily Puzzle”
+
+--------------------------------
+14. Keep everything simple
+--------------------------------
+- No backend
+- No AI API
+- Fast performance
+
+--------------------------------
+Return:
+Working code with:
+- Age-based puzzles
+- Adaptive difficulty system
+- Daily rotation
+- Interactive UI

@@ -8,6 +8,7 @@ import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
 import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
+import { DailyPuzzle } from "@/components/daily-puzzle";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Category definitions ─────────────────────────────────────
@@ -24,17 +25,27 @@ const INFANT_CATEGORIES: CategoryDef[] = [
 ];
 
 const TODDLER_CATEGORIES: CategoryDef[] = [
-  { id: "activity", emoji: "🎯", label: "Activities", colors: "bg-blue-50 border-blue-200 text-blue-800",    activeColors: "bg-blue-500 border-blue-500 text-white" },
-  { id: "skill",    emoji: "🧠", label: "Skills",     colors: "bg-violet-50 border-violet-200 text-violet-800", activeColors: "bg-violet-500 border-violet-500 text-white" },
-  { id: "task",     emoji: "❤️", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",  activeColors: "bg-rose-500 border-rose-500 text-white" },
-  { id: "fun",      emoji: "🎮", label: "Fun",         colors: "bg-green-50 border-green-200 text-green-800",  activeColors: "bg-green-500 border-green-500 text-white" },
-  { id: "story",    emoji: "📖", label: "Stories",     colors: "bg-amber-50 border-amber-200 text-amber-800",  activeColors: "bg-amber-500 border-amber-500 text-white" },
+  { id: "activity", emoji: "🎯", label: "Activities",  colors: "bg-blue-50 border-blue-200 text-blue-800",       activeColors: "bg-blue-500 border-blue-500 text-white" },
+  { id: "skill",    emoji: "🧠", label: "Skills",      colors: "bg-violet-50 border-violet-200 text-violet-800",  activeColors: "bg-violet-500 border-violet-500 text-white" },
+  { id: "task",     emoji: "❤️", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",      activeColors: "bg-rose-500 border-rose-500 text-white" },
+  { id: "fun",      emoji: "🎮", label: "Fun",          colors: "bg-green-50 border-green-200 text-green-800",    activeColors: "bg-green-500 border-green-500 text-white" },
+  { id: "story",    emoji: "📖", label: "Stories",      colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
+];
+
+const PRESCHOOL_CATEGORIES: CategoryDef[] = [
+  { id: "activity", emoji: "🎯", label: "Activities",   colors: "bg-blue-50 border-blue-200 text-blue-800",       activeColors: "bg-blue-500 border-blue-500 text-white" },
+  { id: "skill",    emoji: "🧠", label: "Skills",       colors: "bg-violet-50 border-violet-200 text-violet-800",  activeColors: "bg-violet-500 border-violet-500 text-white" },
+  { id: "task",     emoji: "❤️", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",       activeColors: "bg-rose-500 border-rose-500 text-white" },
+  { id: "fun",      emoji: "🎮", label: "Fun",           colors: "bg-green-50 border-green-200 text-green-800",    activeColors: "bg-green-500 border-green-500 text-white" },
+  { id: "story",    emoji: "📖", label: "Stories",       colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
+  { id: "puzzle",   emoji: "🧩", label: "Daily Puzzle",  colors: "bg-indigo-50 border-indigo-200 text-indigo-800", activeColors: "bg-indigo-500 border-indigo-500 text-white" },
 ];
 
 const OLDER_CATEGORIES: CategoryDef[] = [
-  { id: "skills",  emoji: "🧠", label: "Skill Focus", colors: "bg-violet-50 border-violet-200 text-violet-800", activeColors: "bg-violet-500 border-violet-500 text-white" },
-  { id: "stories", emoji: "📖", label: "Stories",     colors: "bg-amber-50 border-amber-200 text-amber-800",   activeColors: "bg-amber-500 border-amber-500 text-white" },
-  { id: "tasks",   emoji: "💝", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",     activeColors: "bg-rose-500 border-rose-500 text-white" },
+  { id: "skills",  emoji: "🧠", label: "Skill Focus",  colors: "bg-violet-50 border-violet-200 text-violet-800",  activeColors: "bg-violet-500 border-violet-500 text-white" },
+  { id: "stories", emoji: "📖", label: "Stories",      colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
+  { id: "tasks",   emoji: "💝", label: "Parent Tasks",  colors: "bg-rose-50 border-rose-200 text-rose-800",      activeColors: "bg-rose-500 border-rose-500 text-white" },
+  { id: "puzzle",  emoji: "🧩", label: "Daily Puzzle",  colors: "bg-indigo-50 border-indigo-200 text-indigo-800", activeColors: "bg-indigo-500 border-indigo-500 text-white" },
 ];
 
 // ─── Category Pill Grid ────────────────────────────────────────
@@ -137,7 +148,13 @@ export default function ParentingHub() {
   const isToddlerOrPreschool = ageGroup === "toddler" || ageGroup === "preschool";
   const isOlder            = !isInfant && !isToddlerOrPreschool;
 
-  const categories = isInfant ? INFANT_CATEGORIES : isToddlerOrPreschool ? TODDLER_CATEGORIES : OLDER_CATEGORIES;
+  const categories = isInfant
+    ? INFANT_CATEGORIES
+    : ageGroup === "preschool"
+    ? PRESCHOOL_CATEGORIES
+    : isToddlerOrPreschool
+    ? TODDLER_CATEGORIES
+    : OLDER_CATEGORIES;
 
   // Reset category when child changes
   const handleChildSelect = (id: number) => {
@@ -258,6 +275,21 @@ export default function ParentingHub() {
             />
           )}
 
+          {/* PRESCHOOL PUZZLE (3–5 yrs) — shown when no category selected or "puzzle" selected */}
+          {isToddlerOrPreschool && ageGroup === "preschool" && (!selectedCategory || selectedCategory === "puzzle") && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-lg">🧩</span>
+                <p className="text-sm font-bold text-muted-foreground uppercase tracking-wide">Daily Puzzle</p>
+              </div>
+              <DailyPuzzle
+                childName={effectiveChild.name}
+                ageGroup={ageGroup}
+                ageYears={effectiveChild.age}
+              />
+            </div>
+          )}
+
           {/* OLDER KIDS — accordion sections */}
           {isOlder && (
             <div className="space-y-3">
@@ -294,6 +326,22 @@ export default function ParentingHub() {
               >
                 <div className="p-4">
                   <ParentTasksSection group={ageGroup} childName={effectiveChild.name} />
+                </div>
+              </OlderSection>
+
+              <OlderSection
+                id="puzzle"
+                emoji="🧩"
+                label="Daily Puzzle"
+                selected={selectedCategory}
+                onToggle={(id) => setSelectedCategory(selectedCategory === id ? null : id)}
+              >
+                <div className="p-4">
+                  <DailyPuzzle
+                    childName={effectiveChild.name}
+                    ageGroup={ageGroup}
+                    ageYears={effectiveChild.age}
+                  />
                 </div>
               </OlderSection>
             </div>
