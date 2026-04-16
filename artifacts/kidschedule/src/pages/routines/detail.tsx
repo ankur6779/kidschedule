@@ -221,9 +221,11 @@ function SwipeableItem({
     setDragging(false);
     if (dx >= THRESHOLD) {
       setDx(0);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(50);
       onComplete();
     } else if (dx <= -THRESHOLD) {
       setDx(0);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([30, 50, 30]);
       onSkip();
     } else {
       setSnapping(true);
@@ -258,10 +260,10 @@ function SwipeableItem({
       {/* Draggable card */}
       <div
         style={{
-          transform: `translateX(${dx}px)`,
+          transform: `translateX(${dx}px) scale(${dragging ? 1 - progress * 0.02 : 1})`,
           transition: snapping
             ? "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)"
-            : dragging ? "none" : "transform 0.15s ease",
+            : dragging ? "none" : "transform 0.2s ease",
           willChange: dragging ? "transform" : "auto",
           touchAction: "pan-y",
           userSelect: "none",
@@ -1021,7 +1023,7 @@ export default function RoutineDetail() {
                             </div>
                           ) : (
                           <>
-                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug overflow-wrap-anywhere break-words line-clamp-2 ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
+                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug break-words line-clamp-2 ${status === "skipped" ? "line-through text-muted-foreground" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
                             {item.activity}
                           </h3>
                           {/* Priority badge for high-priority tasks */}
@@ -1057,7 +1059,7 @@ export default function RoutineDetail() {
                               <p className="text-xs text-muted-foreground">Tap a meal to view its recipe</p>
                             </div>
                           ) : item.notes ? (
-                            <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-2 break-words">{item.notes}</p>
+                            <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-3 break-words" style={{ overflowWrap: "break-word" }}>{item.notes}</p>
                           ) : null}
                           </>
                           )}

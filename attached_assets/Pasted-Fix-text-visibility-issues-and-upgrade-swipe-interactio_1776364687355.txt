@@ -1,0 +1,152 @@
+Fix text visibility issues and upgrade swipe interaction with haptic feedback in my web app "AmyNest" Routine section.
+
+IMPORTANT:
+
+* Fix text cutting / overflow issue (critical)
+* Improve readability
+* Add haptic feedback on swipe actions
+* Do NOT break existing functionality
+
+---
+
+1. Fix Text Visibility (Critical 🔥)
+
+---
+
+* Ensure text is fully readable
+
+Apply:
+
+* Remove fixed height from text containers
+
+* Use:
+  white-space: normal;
+  word-break: break-word;
+
+* Title:
+
+  * Allow 2 lines max
+  * Use ellipsis:
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+* Description:
+
+  * Allow 2–3 lines max
+  * No vertical breaking
+
+---
+
+2. Fix Layout Structure
+
+---
+
+* Ensure text container has:
+  flex: 1;
+  min-width: 0;
+
+* Prevent text shrinking issue:
+  flex-shrink: 1;
+
+---
+
+3. Improve Card Spacing
+
+---
+
+* Add padding: 12–16px
+* Increase line-height for readability
+* Add margin between elements
+
+---
+
+4. Swipe Gesture Improvement
+
+---
+
+Keep existing swipe system and enhance:
+
+* Smooth animation
+* Proper reset on release
+
+---
+
+5. Add Haptic Feedback (🔥 Premium)
+
+---
+
+When swipe action triggers:
+
+IF swipe RIGHT (Complete):
+
+* Trigger vibration:
+  navigator.vibrate(50)
+
+IF swipe LEFT (Skip):
+
+* Trigger vibration:
+  navigator.vibrate([30, 50, 30])
+
+---
+
+6. Add Visual Feedback
+
+---
+
+* Right swipe:
+
+  * Green background
+  * ✔️ icon
+
+* Left swipe:
+
+  * Red background
+  * ⏭ icon
+
+---
+
+7. Add Touch Optimization
+
+---
+
+Add CSS:
+touch-action: pan-y;
+
+---
+
+8. Prevent Layout Breaking
+
+---
+
+* No fixed widths
+* Use flexbox properly
+* Ensure mobile responsive
+
+---
+
+9. Optional (Better UX)
+
+---
+
+* Add slight scale animation on swipe
+* Add smooth transition (0.3s)
+
+---
+
+10. Final Output
+
+---
+
+Return:
+
+* Fixed UI (text fully visible)
+* Updated CSS
+* JS with haptic feedback
+
+Ensure:
+
+* No text cut
+* Smooth swipe
+* App-like experience
