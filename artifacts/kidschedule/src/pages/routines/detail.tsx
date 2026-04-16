@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import { useLocation, Link, useParams } from "wouter";
 import { useGetRoutine, getGetRoutineQueryKey, useDeleteRoutine, getListRoutinesQueryKey, useGetChild, getGetChildQueryKey } from "@workspace/api-client-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -183,6 +183,100 @@ function shiftScheduleFromIndex(items: RoutineItem[], fromIndex: number, delayMi
   return smartCascade(items, fromIndex, delayMinutes).items;
 }
 
+// ─── Swipeable Card Wrapper ────────────────────────────────────────────────────
+function SwipeableItem({
+  children, onComplete, onSkip, disabled = false, className = "",
+}: {
+  children: ReactNode; onComplete(): void; onSkip(): void; disabled?: boolean; className?: string;
+}) {
+  const [dx, setDx] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [snapping, setSnapping] = useState(false);
+  const startX = useRef(0);
+  const active = useRef(false);
+  const THRESHOLD = 110;
+
+  const progress = Math.min(Math.abs(dx) / THRESHOLD, 1);
+  const isRight = dx > 20;
+  const isLeft = dx < -20;
+
+  const onDown = (e: React.PointerEvent) => {
+    if (disabled) return;
+    startX.current = e.clientX;
+    active.current = true;
+    setDragging(true);
+    setSnapping(false);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onMove = (e: React.PointerEvent) => {
+    if (!active.current) return;
+    const delta = e.clientX - startX.current;
+    setDx(delta);
+  };
+
+  const onUp = () => {
+    if (!active.current) return;
+    active.current = false;
+    setDragging(false);
+    if (dx >= THRESHOLD) {
+      setDx(0);
+      onComplete();
+    } else if (dx <= -THRESHOLD) {
+      setDx(0);
+      onSkip();
+    } else {
+      setSnapping(true);
+      setDx(0);
+      setTimeout(() => setSnapping(false), 350);
+    }
+  };
+
+  return (
+    <div className={`relative overflow-hidden rounded-2xl flex-1 min-w-0 ${className}`} style={{ touchAction: "pan-y" }}>
+      {/* Swipe background */}
+      <div
+        className="absolute inset-0 rounded-2xl flex items-center justify-between px-5 pointer-events-none"
+        style={{
+          backgroundColor: isRight
+            ? `rgba(34,197,94,${progress * 0.9})`
+            : isLeft
+            ? `rgba(239,68,68,${progress * 0.9})`
+            : "transparent",
+        }}
+      >
+        <div className={`flex items-center gap-1.5 text-white font-black text-sm transition-all ${isRight && progress > 0.2 ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}>
+          <span className="text-2xl">✅</span>
+          <span>Complete</span>
+        </div>
+        <div className={`flex items-center gap-1.5 text-white font-black text-sm transition-all ${isLeft && progress > 0.2 ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}>
+          <span>Skip</span>
+          <span className="text-2xl">⏭️</span>
+        </div>
+      </div>
+
+      {/* Draggable card */}
+      <div
+        style={{
+          transform: `translateX(${dx}px)`,
+          transition: snapping
+            ? "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)"
+            : dragging ? "none" : "transform 0.15s ease",
+          willChange: dragging ? "transform" : "auto",
+          touchAction: "pan-y",
+          userSelect: "none",
+        }}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function RoutineDetail() {
   const [_, setLocation] = useLocation();
   const params = useParams<{ id: string }>();
@@ -219,6 +313,29 @@ export default function RoutineDetail() {
   // Partial regen
   const [partialRegenLoading, setPartialRegenLoading] = useState(false);
   const [addActivityLoading, setAddActivityLoading] = useState(false);
+
+  // Undo state
+  const [undoSnapshot, setUndoSnapshot] = useState<RoutineItem[] | null>(null);
+  const [undoLabel, setUndoLabel] = useState<string>("");
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearUndo = () => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoSnapshot(null);
+    setUndoLabel("");
+  };
+  const showUndo = (snapshot: RoutineItem[], label: string) => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setUndoSnapshot(snapshot);
+    setUndoLabel(label);
+    undoTimerRef.current = setTimeout(() => { setUndoSnapshot(null); setUndoLabel(""); }, 6000);
+  };
+  const handleUndo = () => {
+    if (!undoSnapshot) return;
+    setLocalItems(undoSnapshot);
+    saveItemsMutation.mutate(undoSnapshot);
+    clearUndo();
+    toast({ title: "↩️ Action undone" });
+  };
 
   const { data: routine, isLoading } = useGetRoutine(routineId, {
     query: { enabled: !!routineId, queryKey: getGetRoutineQueryKey(routineId) }
@@ -477,6 +594,9 @@ export default function RoutineDetail() {
   const updateItemStatus = useCallback((index: number, status: ItemStatus) => {
     setLocalItems((prev) => {
       if (!prev) return prev;
+      // Save snapshot for undo
+      const actionLabel = status === "completed" ? "✅ Marked complete" : status === "skipped" ? "⏭ Marked skipped" : "⏱ Delayed";
+      showUndo([...prev], actionLabel);
       let updated = prev.map((item, i) => i === index ? { ...item, status } : item);
 
       // Smart delay: shift + auto-skip if needed
@@ -794,18 +914,24 @@ export default function RoutineDetail() {
             const isInteractive = dateMode !== "past";
 
             return (
-              <div key={index} className="flex gap-4 sm:gap-6 group">
-                {/* Time column */}
-                <div className="flex flex-col items-center pt-3 w-[80px] sm:w-[110px] shrink-0 bg-background">
-                  <div className={`text-sm font-bold text-right w-full pr-2 sm:pr-4 ${isPastTask ? "text-muted-foreground line-through" : isCurrentTask ? "text-primary" : "text-foreground"}`}>{item.time}</div>
-                  <div className="text-xs text-muted-foreground font-medium text-right w-full pr-2 sm:pr-4">{item.duration}m</div>
+              <div key={index} className="flex gap-2 sm:gap-4 group items-start">
+                {/* Time column — fixed left */}
+                <div className="flex flex-col items-end pt-3.5 w-[64px] sm:w-[96px] shrink-0">
+                  <div className={`text-xs sm:text-sm font-bold text-right whitespace-nowrap ${isPastTask ? "text-muted-foreground line-through" : isCurrentTask ? "text-primary" : "text-foreground"}`}>{item.time}</div>
+                  <div className="text-[11px] text-muted-foreground font-medium text-right">{item.duration}m</div>
                   {isCurrentTask && (
-                    <div className="mt-1 text-[9px] font-black uppercase tracking-wide text-primary bg-primary/10 rounded-full px-1.5 py-0.5 w-fit ml-auto mr-2 sm:mr-4">NOW</div>
+                    <div className="mt-1 text-[8px] font-black uppercase tracking-wide text-primary bg-primary/10 rounded-full px-1.5 py-0.5">NOW</div>
                   )}
                 </div>
 
+                {/* Swipeable wrapper */}
+                <SwipeableItem
+                  onComplete={() => updateItemStatus(index, "completed")}
+                  onSkip={() => updateItemStatus(index, "skipped")}
+                  disabled={!isInteractive || status === "completed" || status === "skipped" || editingIndex === index}
+                >
                 {/* Activity Card */}
-                <Card className={`flex-1 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
+                <Card className={`rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
                   {item.category === "bonding" && (
                     <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-rose-500 text-xs">❤️</span>
@@ -824,11 +950,11 @@ export default function RoutineDetail() {
                       <span className="text-primary text-xs font-bold">Happening now</span>
                     </div>
                   )}
-                  <CardContent className="p-4 sm:p-5">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-start justify-between gap-3">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col gap-2.5">
+                      <div className="flex items-start justify-between gap-2">
                         {/* Activity Illustration — static image library */}
-                        <div className="relative shrink-0 w-16 h-16 rounded-2xl overflow-hidden bg-muted/50 shadow-sm">
+                        <div className="relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-muted/50 shadow-sm">
                           {(() => {
                             const seed = (routineId ?? 0) * 100 + index;
                             const img = getActivityImage(item.category, item.activity, seed);
@@ -895,7 +1021,7 @@ export default function RoutineDetail() {
                             </div>
                           ) : (
                           <>
-                          <h3 className={`font-bold text-base text-foreground leading-tight ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
+                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug overflow-wrap-anywhere break-words line-clamp-2 ${status === "skipped" ? "line-through text-muted-foreground" : ""}`}>
                             {item.activity}
                           </h3>
                           {/* Priority badge for high-priority tasks */}
@@ -931,7 +1057,7 @@ export default function RoutineDetail() {
                               <p className="text-xs text-muted-foreground">Tap a meal to view its recipe</p>
                             </div>
                           ) : item.notes ? (
-                            <p className="text-muted-foreground text-xs mt-1 leading-relaxed">{item.notes}</p>
+                            <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-2 break-words">{item.notes}</p>
                           ) : null}
                           </>
                           )}
@@ -992,11 +1118,39 @@ export default function RoutineDetail() {
                     </div>
                   </CardContent>
                 </Card>
+                </SwipeableItem>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* ── Swipe hint (only on today's interactive routines) ───────── */}
+      {dateMode !== "past" && items.some(i => !i.status || i.status === "pending") && (
+        <div className="flex items-center justify-center gap-4 py-2 text-muted-foreground">
+          <span className="flex items-center gap-1.5 text-xs">
+            <span className="text-base">👈</span> Swipe left to skip
+          </span>
+          <span className="text-xs">·</span>
+          <span className="flex items-center gap-1.5 text-xs">
+            Swipe right to complete <span className="text-base">👉</span>
+          </span>
+        </div>
+      )}
+
+      {/* ── Global floating undo chip ───────────────────────────────── */}
+      {undoSnapshot && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white px-4 py-2.5 rounded-2xl shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
+          <span className="text-sm font-medium">{undoLabel}</span>
+          <button
+            onClick={handleUndo}
+            className="text-sm font-black text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            UNDO
+          </button>
+          <button onClick={clearUndo} className="text-gray-400 hover:text-white text-xs ml-1">✕</button>
+        </div>
+      )}
 
       <div className="mt-6 flex items-center justify-center gap-3 pb-8 border-t border-border/50 pt-8">
         {dateMode !== "past" && (

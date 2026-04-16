@@ -1,0 +1,175 @@
+Upgrade my web app "AmyNest" Routine section to a modern mobile-first UI with swipe actions and clean layout.
+
+IMPORTANT:
+
+* Fix current mobile UI issues (text breaking, poor layout)
+* Add swipe gestures (complete / skip)
+* Keep performance smooth
+* Do NOT break existing logic
+
+---
+
+1. Fix Current UI Issues (Critical 🔥)
+
+---
+
+* Fix text overflow:
+
+  * Ensure proper word wrapping
+  * No vertical broken text (one letter per line)
+
+* Limit text:
+
+  * Title → max 2 lines (ellipsis if long)
+  * Description → max 2 lines
+
+---
+
+2. New Mobile Card Layout (Core 🔥)
+
+---
+
+Each routine item should be:
+
+LEFT:
+
+* Time (7:00 AM)
+* Duration (small text)
+
+RIGHT (main card):
+
+* Small image/icon (50px)
+* Title (bold)
+* Short description
+* Category badge (meal, hygiene, etc.)
+
+---
+
+3. Clean UI Design
+
+---
+
+* Rounded corners (16px)
+* Soft shadows
+* Proper padding (12–16px)
+* Spacing between cards
+
+---
+
+4. Swipe Feature (Important 🔥🔥)
+
+---
+
+Add touch gestures:
+
+* Swipe RIGHT → mark task as COMPLETE
+* Swipe LEFT → mark task as SKIPPED
+
+---
+
+5. Swipe Behavior
+
+---
+
+* Smooth drag animation
+* Show background color:
+
+  RIGHT swipe:
+
+  * Green background
+  * Show ✔️ icon
+
+  LEFT swipe:
+
+  * Red background
+  * Show ⏭ icon
+
+---
+
+6. Swipe Threshold
+
+---
+
+* If swipe > 100px → trigger action
+* Else → snap back to original position
+
+---
+
+7. Action Feedback
+
+---
+
+* On complete:
+  → update UI instantly
+
+* On skip:
+  → mark skipped
+
+---
+
+8. Buttons (Fallback)
+
+---
+
+Also keep buttons below card:
+
+* Complete
+* Delay
+* Skip
+
+---
+
+9. Undo Option
+
+---
+
+* Show “Undo” below card after action
+
+---
+
+10. Responsive Layout (Critical)
+
+---
+
+* Use flexbox
+* No fixed widths
+* Works on all mobile screens
+
+---
+
+11. Performance Optimization
+
+---
+
+* Avoid re-render loops
+* Keep swipe logic lightweight
+
+---
+
+12. Code Structure
+
+---
+
+* Separate:
+
+  * UI component
+  * Swipe logic
+* Use reusable functions
+
+---
+
+13. Final Output
+
+---
+
+Return:
+
+* Updated HTML
+* CSS (mobile optimized)
+* JavaScript (swipe logic)
+
+Ensure:
+
+* Smooth UX
+* No layout breaking
+* App-like experience
