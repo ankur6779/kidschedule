@@ -43,22 +43,22 @@ const WORKSHEETS: Worksheet[] = [
 ];
 
 const REELS: Reel[] = [
-  { id:"r1",  title:"Easy Paper Butterfly Craft",     emoji:"🦋", bg:"bg-pink-100",    accent:"#EC4899", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"4 min", ageMin:24, ageMax:96 },
-  { id:"r2",  title:"Rainbow Umbrella Painting",      emoji:"🌈", bg:"bg-yellow-100",  accent:"#F59E0B", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"6 min", ageMin:24, ageMax:84 },
-  { id:"r3",  title:"Clay Fruits – Mango & Apple",    emoji:"🥭", bg:"bg-orange-100",  accent:"#F97316", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"8 min", ageMin:36, ageMax:96 },
-  { id:"r4",  title:"DIY Paper Crown for Kids",       emoji:"👑", bg:"bg-amber-100",   accent:"#D97706", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"5 min", ageMin:24, ageMax:84 },
-  { id:"r5",  title:"Vegetable Stamp Art",            emoji:"🥦", bg:"bg-green-100",   accent:"#10B981", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"7 min", ageMin:24, ageMax:72 },
-  { id:"r6",  title:"How to Draw a Lion – Easy",      emoji:"🦁", bg:"bg-amber-100",   accent:"#B45309", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"6 min", ageMin:36, ageMax:96 },
-  { id:"r7",  title:"Sock Puppet Show Craft",         emoji:"🧦", bg:"bg-purple-100",  accent:"#7C3AED", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"9 min", ageMin:36, ageMax:84 },
-  { id:"r8",  title:"Nature Collage with Leaves",     emoji:"🍃", bg:"bg-teal-100",    accent:"#0D9488", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"7 min", ageMin:24, ageMax:96 },
-  { id:"r9",  title:"Marble Run Paper Craft",         emoji:"⚙️", bg:"bg-blue-100",    accent:"#3B82F6", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"10 min", ageMin:60, ageMax:96 },
-  { id:"r10", title:"Diwali Diya Decoration",         emoji:"🪔", bg:"bg-red-100",     accent:"#DC2626", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"8 min", ageMin:36, ageMax:96 },
-  { id:"r11", title:"Paper Plate Fish Mobile",        emoji:"🐠", bg:"bg-sky-100",     accent:"#0284C7", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"5 min", ageMin:24, ageMax:72 },
-  { id:"r12", title:"Finger Printing Art – Flowers",  emoji:"🌸", bg:"bg-rose-100",    accent:"#F43F5E", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"6 min", ageMin:24, ageMax:72 },
-  { id:"r13", title:"Create a Paper Zoo",             emoji:"🦒", bg:"bg-lime-100",    accent:"#65A30D", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"12 min", ageMin:48, ageMax:96 },
-  { id:"r14", title:"Sand Art Greeting Cards",        emoji:"🏖️", bg:"bg-yellow-100",  accent:"#CA8A04", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"8 min", ageMin:48, ageMax:96 },
-  { id:"r15", title:"Recycled Robot Craft",           emoji:"🤖", bg:"bg-slate-100",   accent:"#475569", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"11 min", ageMin:60, ageMax:96 },
-  { id:"r16", title:"Paper Bag Puppet Animals",       emoji:"🐸", bg:"bg-emerald-100", accent:"#059669", videoUrl:"https://www.youtube.com/watch?v=dQw4w9WgXcQ", duration:"7 min", ageMin:24, ageMax:84 },
+  { id:"r1",  title:"Easy Paper Butterfly Craft",     emoji:"🦋", bg:"bg-pink-100",    accent:"#EC4899", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"4 min", ageMin:24, ageMax:96 },
+  { id:"r2",  title:"Rainbow Umbrella Painting",      emoji:"🌈", bg:"bg-yellow-100",  accent:"#F59E0B", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"6 min", ageMin:24, ageMax:84 },
+  { id:"r3",  title:"Clay Fruits – Mango & Apple",    emoji:"🥭", bg:"bg-orange-100",  accent:"#F97316", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"8 min", ageMin:36, ageMax:96 },
+  { id:"r4",  title:"DIY Paper Crown for Kids",       emoji:"👑", bg:"bg-amber-100",   accent:"#D97706", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"5 min", ageMin:24, ageMax:84 },
+  { id:"r5",  title:"Vegetable Stamp Art",            emoji:"🥦", bg:"bg-green-100",   accent:"#10B981", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"7 min", ageMin:24, ageMax:72 },
+  { id:"r6",  title:"How to Draw a Lion – Easy",      emoji:"🦁", bg:"bg-amber-100",   accent:"#B45309", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"6 min", ageMin:36, ageMax:96 },
+  { id:"r7",  title:"Sock Puppet Show Craft",         emoji:"🧦", bg:"bg-purple-100",  accent:"#7C3AED", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"9 min", ageMin:36, ageMax:84 },
+  { id:"r8",  title:"Nature Collage with Leaves",     emoji:"🍃", bg:"bg-teal-100",    accent:"#0D9488", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"7 min", ageMin:24, ageMax:96 },
+  { id:"r9",  title:"Marble Run Paper Craft",         emoji:"⚙️", bg:"bg-blue-100",    accent:"#3B82F6", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"10 min", ageMin:60, ageMax:96 },
+  { id:"r10", title:"Diwali Diya Decoration",         emoji:"🪔", bg:"bg-red-100",     accent:"#DC2626", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"8 min", ageMin:36, ageMax:96 },
+  { id:"r11", title:"Paper Plate Fish Mobile",        emoji:"🐠", bg:"bg-sky-100",     accent:"#0284C7", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"5 min", ageMin:24, ageMax:72 },
+  { id:"r12", title:"Finger Printing Art – Flowers",  emoji:"🌸", bg:"bg-rose-100",    accent:"#F43F5E", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"6 min", ageMin:24, ageMax:72 },
+  { id:"r13", title:"Create a Paper Zoo",             emoji:"🦒", bg:"bg-lime-100",    accent:"#65A30D", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"12 min", ageMin:48, ageMax:96 },
+  { id:"r14", title:"Sand Art Greeting Cards",        emoji:"🏖️", bg:"bg-yellow-100",  accent:"#CA8A04", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"8 min", ageMin:48, ageMax:96 },
+  { id:"r15", title:"Recycled Robot Craft",           emoji:"🤖", bg:"bg-slate-100",   accent:"#475569", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"11 min", ageMin:60, ageMax:96 },
+  { id:"r16", title:"Paper Bag Puppet Animals",       emoji:"🐸", bg:"bg-emerald-100", accent:"#059669", videoUrl:"https://drive.google.com/drive/folders/1H04rvcdXP5Hj0atuA5Kh49PGJMPmbLvS?usp=drive_link", duration:"7 min", ageMin:24, ageMax:84 },
 ];
 
 const ORIGAMI: Origami[] = [
