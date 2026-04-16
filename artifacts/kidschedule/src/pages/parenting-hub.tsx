@@ -10,6 +10,7 @@ import { SkillFocusSection, StorySection, ParentTasksSection } from "@/component
 import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
 import { DailyPuzzle } from "@/components/daily-puzzle";
 import { InfantSleepTracker } from "@/components/infant-sleep-tracker";
+import { AmazingFacts } from "@/components/amazing-facts";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Category definitions ─────────────────────────────────────
@@ -17,6 +18,7 @@ type CategoryDef = { id: string; emoji: string; label: string; colors: string; a
 
 const INFANT_CATEGORIES: CategoryDef[] = [
   { id: "sleep",       emoji: "🌙", label: "Sleep",       colors: "bg-indigo-50 border-indigo-200 text-indigo-800",  activeColors: "bg-indigo-500 border-indigo-500 text-white" },
+  { id: "facts",       emoji: "🌟", label: "Facts",       colors: "bg-amber-50 border-amber-200 text-amber-800",     activeColors: "bg-amber-500 border-amber-500 text-white" },
   { id: "feeding",     emoji: "🍼", label: "Feeding",     colors: "bg-orange-50 border-orange-200 text-orange-800",  activeColors: "bg-orange-500 border-orange-500 text-white" },
   { id: "health",      emoji: "🏥", label: "Health",      colors: "bg-red-50 border-red-200 text-red-800",           activeColors: "bg-red-500 border-red-500 text-white" },
   { id: "development", emoji: "🧠", label: "Development", colors: "bg-blue-50 border-blue-200 text-blue-800",        activeColors: "bg-blue-500 border-blue-500 text-white" },
@@ -32,6 +34,7 @@ const TODDLER_CATEGORIES: CategoryDef[] = [
   { id: "task",     emoji: "❤️", label: "Parent Tasks", colors: "bg-rose-50 border-rose-200 text-rose-800",      activeColors: "bg-rose-500 border-rose-500 text-white" },
   { id: "fun",      emoji: "🎮", label: "Fun",          colors: "bg-green-50 border-green-200 text-green-800",    activeColors: "bg-green-500 border-green-500 text-white" },
   { id: "story",    emoji: "📖", label: "Stories",      colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
+  { id: "facts",    emoji: "🌟", label: "Facts",        colors: "bg-yellow-50 border-yellow-200 text-yellow-800", activeColors: "bg-yellow-500 border-yellow-500 text-white" },
 ];
 
 const PRESCHOOL_CATEGORIES: CategoryDef[] = [
@@ -41,6 +44,7 @@ const PRESCHOOL_CATEGORIES: CategoryDef[] = [
   { id: "fun",      emoji: "🎮", label: "Fun",           colors: "bg-green-50 border-green-200 text-green-800",    activeColors: "bg-green-500 border-green-500 text-white" },
   { id: "story",    emoji: "📖", label: "Stories",       colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
   { id: "puzzle",   emoji: "🧩", label: "Daily Puzzle",  colors: "bg-indigo-50 border-indigo-200 text-indigo-800", activeColors: "bg-indigo-500 border-indigo-500 text-white" },
+  { id: "facts",    emoji: "🌟", label: "Facts",         colors: "bg-yellow-50 border-yellow-200 text-yellow-800", activeColors: "bg-yellow-500 border-yellow-500 text-white" },
 ];
 
 const OLDER_CATEGORIES: CategoryDef[] = [
@@ -48,6 +52,7 @@ const OLDER_CATEGORIES: CategoryDef[] = [
   { id: "stories", emoji: "📖", label: "Stories",      colors: "bg-amber-50 border-amber-200 text-amber-800",    activeColors: "bg-amber-500 border-amber-500 text-white" },
   { id: "tasks",   emoji: "💝", label: "Parent Tasks",  colors: "bg-rose-50 border-rose-200 text-rose-800",      activeColors: "bg-rose-500 border-rose-500 text-white" },
   { id: "puzzle",  emoji: "🧩", label: "Daily Puzzle",  colors: "bg-indigo-50 border-indigo-200 text-indigo-800", activeColors: "bg-indigo-500 border-indigo-500 text-white" },
+  { id: "facts",   emoji: "🌟", label: "Facts",         colors: "bg-yellow-50 border-yellow-200 text-yellow-800", activeColors: "bg-yellow-500 border-yellow-500 text-white" },
 ];
 
 // ─── Category Pill Grid ────────────────────────────────────────
@@ -256,7 +261,7 @@ export default function ParentingHub() {
       {effectiveChild && ageGroup && (
         <div className="space-y-5">
 
-          {/* INFANT — Sleep Tracker (shown when sleep selected or no category selected) */}
+          {/* INFANT — Sleep Tracker */}
           {isInfant && (!selectedCategory || selectedCategory === "sleep") && (
             <InfantSleepTracker
               childName={effectiveChild.name}
@@ -264,8 +269,13 @@ export default function ParentingHub() {
             />
           )}
 
+          {/* INFANT — Amazing Facts */}
+          {isInfant && (!selectedCategory || selectedCategory === "facts") && (
+            <AmazingFacts childName={effectiveChild.name} ageGroup={ageGroup} />
+          )}
+
           {/* INFANT — Other categories */}
-          {isInfant && selectedCategory !== "sleep" && (
+          {isInfant && selectedCategory && selectedCategory !== "sleep" && selectedCategory !== "facts" && (
             <InfantMode
               childName={effectiveChild.name}
               ageYears={effectiveChild.age}
@@ -298,6 +308,11 @@ export default function ParentingHub() {
                 ageYears={effectiveChild.age}
               />
             </div>
+          )}
+
+          {/* TODDLER / PRESCHOOL — Amazing Facts */}
+          {isToddlerOrPreschool && (!selectedCategory || selectedCategory === "facts") && (
+            <AmazingFacts childName={effectiveChild.name} ageGroup={ageGroup} />
           )}
 
           {/* OLDER KIDS — accordion sections */}
@@ -352,6 +367,18 @@ export default function ParentingHub() {
                     ageGroup={ageGroup}
                     ageYears={effectiveChild.age}
                   />
+                </div>
+              </OlderSection>
+
+              <OlderSection
+                id="facts"
+                emoji="🌟"
+                label="Amazing Facts"
+                selected={selectedCategory}
+                onToggle={(id) => setSelectedCategory(selectedCategory === id ? null : id)}
+              >
+                <div className="p-4">
+                  <AmazingFacts childName={effectiveChild.name} ageGroup={ageGroup} />
                 </div>
               </OlderSection>
             </div>

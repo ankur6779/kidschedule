@@ -1,0 +1,121 @@
+Upgrade my web app "AmyNest" by adding an “Amazing Facts” section inside Parenting Hub.
+
+IMPORTANT:
+- ZERO API cost
+- Use predefined facts dataset
+- Age-based filtering + daily rotation
+- Show fresh content on every login
+
+--------------------------------
+1. Feature Name
+--------------------------------
+Section Name:
+“🌟 Amazing Facts for Today”
+
+--------------------------------
+2. Show Logic (Core 🔥)
+--------------------------------
+- Show at least 10 facts per login
+
+- Categories:
+  1. Kids Facts
+  2. Animal Facts
+  3. General Knowledge (GK)
+
+--------------------------------
+3. Age-Based Filtering (IMPORTANT 🔥)
+--------------------------------
+Filter facts based on child age:
+
+- Infant (0–1):
+  - Baby development facts
+  - Baby animals
+  - Simple sensory facts
+
+- Toddler (1–3):
+  - Basic learning facts
+  - Fun animals
+  - Easy GK
+
+- Preschool (3–5):
+  - Colors, shapes, animals
+  - Simple world facts
+
+- Kids (5–10):
+  - Science basics
+  - Nature facts
+  - Fun GK
+
+- Pre-Teen (10–15):
+  - Advanced GK
+  - Space, science, world facts
+
+--------------------------------
+4. Data Structure
+--------------------------------
+Create dataset:
+
+{
+  text: "Octopus has 3 hearts",
+  category: "animal",
+  ageGroup: "5-10"
+}
+
+--------------------------------
+5. Daily Rotation System (Core 🔥)
+--------------------------------
+- On each login:
+  - Randomly pick 10 facts
+  - Avoid immediate repetition
+
+- Store:
+  lastShownFacts in localStorage
+
+--------------------------------
+6. Shuffle Logic
+--------------------------------
+- Randomize facts each time
+- Ensure mix:
+  - Kids + Animal + GK
+
+--------------------------------
+7. UI Design
+--------------------------------
+- Card layout
+
+Each fact card:
+- Emoji/icon
+- Fact text
+
+--------------------------------
+8. Interaction (Optional 🔥)
+--------------------------------
+Add buttons:
+- 👍 “Interesting”
+- 🔄 “Show New Facts”
+
+--------------------------------
+9. Language Support
+--------------------------------
+- Support:
+  English + Hindi
+
+--------------------------------
+10. Performance
+--------------------------------
+- Load only required facts
+- Keep dataset lightweight
+
+--------------------------------
+11. Keep it simple
+--------------------------------
+- No backend
+- No API
+- Fast loading
+
+--------------------------------
+Return:
+Working code with:
+- Age-based filtering
+- Daily random facts
+- Clean UI cards
