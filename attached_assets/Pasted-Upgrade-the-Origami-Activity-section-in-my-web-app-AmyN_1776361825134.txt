@@ -1,0 +1,120 @@
+Upgrade the Origami Activity section in my web app "AmyNest" to show clear step-by-step visual folding patterns instead of simple icons.
+
+IMPORTANT:
+- Make it visually instructional
+- Parent should easily understand how to teach the child
+- Add download option
+
+--------------------------------
+1. Replace Current Cards (Core Fix 🔥)
+--------------------------------
+- Remove:
+  - Small icons
+  - Minimal preview
+
+- Add:
+  - Large visual preview
+  - Step-by-step folding images
+
+--------------------------------
+2. Origami Card Design (New 🔥)
+--------------------------------
+
+Each card should include:
+
+(A) Large Preview Image (Top)
+- Show final output (e.g., paper boat)
+
+(B) Title
+- “Learn to make a Paper Boat”
+
+(C) Difficulty Badge
+- Easy / Medium
+
+(D) Steps Indicator
+- “5 Steps”
+
+(E) Buttons:
+- ▶️ View Steps
+- ⬇️ Download Guide
+
+--------------------------------
+3. View Steps Modal (Important 🔥🔥)
+--------------------------------
+On click “View Steps”:
+
+Open modal with:
+
+- Step 1 image
+- Step 2 image
+- Step 3 image
+
+Each step:
+- Image + short instruction
+
+Example:
+Step 1:
+“Fold paper in half”
+
+--------------------------------
+4. Image Source
+--------------------------------
+- Use:
+  - Predefined images (recommended)
+  OR
+  - Static dataset
+
+Structure:
+
+{
+  title: "Paper Boat",
+  steps: [
+    { img: "step1.jpg", text: "Fold in half" },
+    { img: "step2.jpg", text: "Fold corners" }
+  ],
+  finalImage: "boat.jpg"
+}
+
+--------------------------------
+5. Download Option 🔥
+--------------------------------
+- Add button:
+  “Download Full Guide”
+
+- Download:
+  - PDF or image set
+
+--------------------------------
+6. UI Improvements
+--------------------------------
+- Bigger cards
+- Rounded corners
+- Clean spacing
+- Clear visuals
+
+--------------------------------
+7. Parent Guidance
+--------------------------------
+Add text:
+“Sit with your child and follow each step together ❤️”
+
+--------------------------------
+8. Mobile Optimization
+--------------------------------
+- Full width images
+- Scrollable steps
+- Easy tap buttons
+
+--------------------------------
+9. Keep it simple
+--------------------------------
+- No AI API
+- Use static content
+
+--------------------------------
+Return:
+Updated UI with:
+- Visual origami steps
+- Modal viewer
+- Download option
+- Clean modern design
