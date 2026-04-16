@@ -1,0 +1,133 @@
+Upgrade my web app "AmyNest" to add a “Daily Kids Activity” section for children aged 2–8 years.
+
+IMPORTANT:
+- ZERO cost system (no heavy API usage)
+- Use Google Drive content (worksheets + reels)
+- Smart daily rotation
+- Attractive UI
+
+--------------------------------
+1. Feature Name
+--------------------------------
+Section:
+“🎨 Today’s Kids Activity”
+
+Show ONLY if:
+child.age between 2–8 years
+
+--------------------------------
+2. Activity Structure (Core 🔥)
+--------------------------------
+Show 3 sections:
+
+(A) Printable Worksheets  
+(B) Art & Craft Reels  
+(C) Origami Activity  
+
+--------------------------------
+3. Worksheets Section 📄
+--------------------------------
+- Show 3–4 worksheets daily
+
+Each item:
+- Preview image (IMPORTANT 🔥)
+- Title
+- Download button
+
+On click:
+→ Open Google Drive link
+
+--------------------------------
+4. Worksheets Data Source
+--------------------------------
+- Use predefined JSON with:
+  - title
+  - previewImage
+  - fileUrl
+  - ageGroup
+
+--------------------------------
+5. Reels Section 🎥
+--------------------------------
+- Show 3–4 reels daily
+
+Each item:
+- Thumbnail
+- Play button
+
+On click:
+→ Open video (Drive link or embedded)
+
+--------------------------------
+6. Origami Activity Section 🧩 (AI-based 🔥)
+--------------------------------
+- Show 3–4 origami ideas
+
+Use:
+- Lightweight image search or predefined dataset
+
+Each item:
+- Image
+- Title:
+  “Learn to make a paper boat”
+
+--------------------------------
+7. Daily Rotation System (Important 🔥)
+--------------------------------
+- On each login:
+  - Randomly pick:
+    - 3–4 worksheets
+    - 3–4 reels
+    - 3–4 origami ideas
+
+- Avoid repetition using localStorage
+
+--------------------------------
+8. Age-Based Filtering
+--------------------------------
+- Filter content based on:
+  child.age
+
+--------------------------------
+9. UI Design (Very Important 🔥)
+--------------------------------
+- Card-based layout
+- Sections separated
+
+Example:
+[ Worksheets ]
+[ Reels ]
+[ Origami ]
+
+--------------------------------
+10. Engagement Add-ons
+--------------------------------
+Add buttons:
+- “Mark as Done”
+- “Save for Later”
+
+--------------------------------
+11. Parent Guidance
+--------------------------------
+Show line:
+“Spend 20–30 minutes doing this activity with your child ❤️”
+
+--------------------------------
+12. Performance Optimization
+--------------------------------
+- Do NOT load all data at once
+- Load only required items
+
+--------------------------------
+13. Keep it simple
+--------------------------------
+- No backend required
+- Use localStorage
+
+--------------------------------
+Return:
+Working code with:
+- Daily activity system
+- Google Drive integration
+- Preview + download
+- Smart rotation
