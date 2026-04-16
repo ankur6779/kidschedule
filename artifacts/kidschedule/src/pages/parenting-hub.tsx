@@ -9,12 +9,14 @@ import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
 import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
 import { DailyPuzzle } from "@/components/daily-puzzle";
+import { InfantSleepTracker } from "@/components/infant-sleep-tracker";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Category definitions ─────────────────────────────────────
 type CategoryDef = { id: string; emoji: string; label: string; colors: string; activeColors: string };
 
 const INFANT_CATEGORIES: CategoryDef[] = [
+  { id: "sleep",       emoji: "🌙", label: "Sleep",       colors: "bg-indigo-50 border-indigo-200 text-indigo-800",  activeColors: "bg-indigo-500 border-indigo-500 text-white" },
   { id: "feeding",     emoji: "🍼", label: "Feeding",     colors: "bg-orange-50 border-orange-200 text-orange-800",  activeColors: "bg-orange-500 border-orange-500 text-white" },
   { id: "health",      emoji: "🏥", label: "Health",      colors: "bg-red-50 border-red-200 text-red-800",           activeColors: "bg-red-500 border-red-500 text-white" },
   { id: "development", emoji: "🧠", label: "Development", colors: "bg-blue-50 border-blue-200 text-blue-800",        activeColors: "bg-blue-500 border-blue-500 text-white" },
@@ -254,8 +256,16 @@ export default function ParentingHub() {
       {effectiveChild && ageGroup && (
         <div className="space-y-5">
 
-          {/* INFANT */}
-          {isInfant && (
+          {/* INFANT — Sleep Tracker (shown when sleep selected or no category selected) */}
+          {isInfant && (!selectedCategory || selectedCategory === "sleep") && (
+            <InfantSleepTracker
+              childName={effectiveChild.name}
+              ageMonths={(effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)}
+            />
+          )}
+
+          {/* INFANT — Other categories */}
+          {isInfant && selectedCategory !== "sleep" && (
             <InfantMode
               childName={effectiveChild.name}
               ageYears={effectiveChild.age}

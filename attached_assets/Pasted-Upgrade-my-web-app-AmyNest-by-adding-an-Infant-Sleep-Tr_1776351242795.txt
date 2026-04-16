@@ -1,0 +1,136 @@
+Upgrade my web app "AmyNest" by adding an Infant Sleep Tracking & Prediction System for babies aged 0–12 months.
+
+IMPORTANT:
+- Only for infants (0–12 months)
+- No AI API (zero cost)
+- Use rule-based learning from past sleep data
+
+--------------------------------
+1. Feature Name
+--------------------------------
+Section Name:
+“👶 Sleep Tracker & Smart Prediction”
+
+Show ONLY if:
+child.age <= 12 months
+
+--------------------------------
+2. Sleep Data Input (Core 🔥)
+--------------------------------
+- Ask parent to enter last 4–5 days sleep data:
+
+For each day:
+- Wake-up time
+- Nap times (multiple)
+- Night sleep start time
+- Night wake-ups (optional)
+
+--------------------------------
+3. Data Storage
+--------------------------------
+- Store in localStorage:
+  sleepHistory = []
+
+--------------------------------
+4. Pattern Detection Logic (Smart Engine 🔥)
+--------------------------------
+From last 4–5 days:
+
+Calculate:
+- Average wake-up time
+- Average nap intervals
+- Average sleep duration
+- Typical sleep windows
+
+Example:
+- Baby sleeps every 2.5–3 hours
+
+--------------------------------
+5. Sleep Prediction System
+--------------------------------
+- Based on:
+  last wake time + average wake window
+
+Predict:
+- “Next Sleep Time”
+
+Example:
+👉 “Your baby may feel sleepy around 2:30 PM”
+
+--------------------------------
+6. Daily Smart Insight (IMPORTANT 🔥)
+--------------------------------
+Show:
+
+- “Best time to put baby to sleep today”
+- “Expected nap duration”
+
+--------------------------------
+7. Parent Productivity Suggestion
+--------------------------------
+After prediction, show:
+
+- “You may get ~1 hour free time”
+- Suggest:
+  - Rest
+  - Work
+  - Household tasks
+
+--------------------------------
+8. Pre-Sleep Tips (Dynamic 🔥)
+--------------------------------
+Show tips based on age (months):
+
+Examples:
+- 0–3 months:
+  - Swaddling
+  - White noise
+
+- 3–6 months:
+  - Routine building
+
+- 6–12 months:
+  - Sleep training basics
+
+--------------------------------
+9. Sleep Improvement Tips
+--------------------------------
+Based on pattern:
+
+Example:
+- “Sleep timing is inconsistent”
+- Suggest:
+  - Fix bedtime
+  - Reduce late naps
+
+--------------------------------
+10. UI Design
+--------------------------------
+Create:
+
+(A) Sleep Input Form  
+(B) Sleep Pattern Summary  
+(C) Next Sleep Prediction Card  
+(D) Tips Section  
+
+--------------------------------
+11. Update Logic
+--------------------------------
+- Each new day:
+  - Add data
+  - Recalculate pattern
+
+--------------------------------
+12. Keep it simple
+--------------------------------
+- No backend
+- No AI API
+- Fast and lightweight
+
+--------------------------------
+Return:
+Working code with:
+- Sleep tracking input
+- Pattern detection logic
+- Prediction system
+- Age-based tips
