@@ -1,6 +1,16 @@
-import { useState, useMemo, type ReactNode } from "react";
+import { useState, useMemo, useEffect, type ReactNode } from "react";
+
+// ─── Drive embed helper ───────────────────────────────────────────────────────
+function toEmbedUrl(url: string): string {
+  const folderMatch = url.match(/\/folders\/([^?&#]+)/);
+  if (folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`;
+  const fileMatch = url.match(/\/d\/([^/?&#]+)/);
+  if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  return url;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+type ModalItem = { title: string; emoji: string; embedUrl: string; downloadUrl: string; kind: "worksheet" | "reel" };
 type Worksheet = {
   id: string; title: string; emoji: string; bg: string; accent: string;
   fileUrl: string; ageMin: number; ageMax: number; subject: string;
@@ -105,6 +115,80 @@ function todayKey(childName: string) {
   return `amynest_activity_${childName}_${d.getFullYear()}${d.getMonth()}${d.getDate()}`;
 }
 
+// ─── Drive Preview Modal ──────────────────────────────────────────────────────
+function DrivePreviewModal({ item, onClose }: { item: ModalItem; onClose(): void }) {
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      role="dialog" aria-modal="true"
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal card */}
+      <div className="relative z-10 w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300"
+        style={{ maxHeight: "90vh" }}>
+
+        {/* Header */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 bg-muted/30 flex-shrink-0">
+          <span className="text-2xl">{item.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-sm text-foreground truncate">{item.title}</p>
+            <p className="text-[10px] text-muted-foreground">
+              {item.kind === "reel" ? "🎥 Video" : "📄 Worksheet"} · Google Drive
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-sm transition-colors flex-shrink-0"
+            aria-label="Close"
+          >✕</button>
+        </div>
+
+        {/* iframe embed */}
+        <div className="flex-1 bg-muted/10 overflow-hidden" style={{ minHeight: 320 }}>
+          <iframe
+            src={item.embedUrl}
+            title={item.title}
+            className="w-full h-full border-0"
+            style={{ minHeight: 320 }}
+            allow="autoplay; encrypted-media"
+            allowFullScreen
+          />
+        </div>
+
+        {/* Footer actions */}
+        <div className="flex gap-2 p-3 border-t border-border/60 bg-card flex-shrink-0">
+          <a
+            href={item.downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Open in Drive
+          </a>
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-2xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function DailyKidsActivity({ childName, ageMonths }: { childName: string; ageMonths: number }) {
   // Only render for ages 24–95 months (2–7.9 years)
@@ -142,12 +226,13 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
     return { ws, rs, og };
   }, [filtered, key, seed]);
 
-  const [done,  setDone]  = useState<Set<string>>(() => {
+  const [done,      setDone]      = useState<Set<string>>(() => {
     try { const p = JSON.parse(localStorage.getItem(key) || "{}"); return new Set(p.doneIds ?? []); } catch { return new Set(); }
   });
-  const [saved, setSaved] = useState<Set<string>>(() => {
+  const [saved,     setSaved]     = useState<Set<string>>(() => {
     try { const p = JSON.parse(localStorage.getItem(key) || "{}"); return new Set(p.savedIds ?? []); } catch { return new Set(); }
   });
+  const [modalItem, setModalItem] = useState<ModalItem | null>(null);
 
   const persist = (d: Set<string>, s: Set<string>) => {
     try {
@@ -173,8 +258,14 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
     });
   };
 
+  const openModal = (item: ModalItem) => setModalItem(item);
+  const closeModal = () => setModalItem(null);
+
   return (
     <div className="space-y-5 animate-in fade-in duration-500">
+
+      {/* ── Drive Preview Modal ─────────────────────────────────── */}
+      {modalItem && <DrivePreviewModal item={modalItem} onClose={closeModal} />}
 
       {/* ── Section Header ─────────────────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 p-4 text-white shadow-md relative overflow-hidden">
@@ -195,21 +286,23 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
       </div>
 
       {/* ── Worksheets ─────────────────────────────────────────── */}
-      <SectionBlock emoji="📄" title="Printable Worksheets" subtitle="Download, print & practise">
+      <SectionBlock emoji="📄" title="Printable Worksheets" subtitle="Preview inside app · Download & print">
         <div className="grid grid-cols-2 gap-3">
           {daily.ws.map(w => (
             <WorksheetCard key={w.id} item={w} done={done.has(w.id)} saved={saved.has(w.id)}
-              onDone={() => toggleDone(w.id)} onSave={() => toggleSaved(w.id)} />
+              onDone={() => toggleDone(w.id)} onSave={() => toggleSaved(w.id)}
+              onPreview={() => openModal({ title: w.title, emoji: w.emoji, embedUrl: toEmbedUrl(w.fileUrl), downloadUrl: w.fileUrl, kind: "worksheet" })} />
           ))}
         </div>
       </SectionBlock>
 
       {/* ── Art & Craft Reels ──────────────────────────────────── */}
-      <SectionBlock emoji="🎥" title="Art & Craft Reels" subtitle="Watch · Create · Have fun">
+      <SectionBlock emoji="🎥" title="Art & Craft Reels" subtitle="Watch inside app · Create · Have fun">
         <div className="grid grid-cols-2 gap-3">
           {daily.rs.map(r => (
             <ReelCard key={r.id} item={r} done={done.has(r.id)} saved={saved.has(r.id)}
-              onDone={() => toggleDone(r.id)} onSave={() => toggleSaved(r.id)} />
+              onDone={() => toggleDone(r.id)} onSave={() => toggleSaved(r.id)}
+              onPreview={() => openModal({ title: r.title, emoji: r.emoji, embedUrl: toEmbedUrl(r.videoUrl), downloadUrl: r.videoUrl, kind: "reel" })} />
           ))}
         </div>
       </SectionBlock>
@@ -247,23 +340,26 @@ function SectionBlock({ emoji, title, subtitle, children }: {
 }
 
 // ─── Worksheet Card ───────────────────────────────────────────────────────────
-function WorksheetCard({ item, done, saved, onDone, onSave }: {
-  item: Worksheet; done: boolean; saved: boolean; onDone(): void; onSave(): void;
+function WorksheetCard({ item, done, saved, onDone, onSave, onPreview }: {
+  item: Worksheet; done: boolean; saved: boolean; onDone(): void; onSave(): void; onPreview(): void;
 }) {
   return (
     <div className={`rounded-xl border overflow-hidden flex flex-col transition-all ${done ? "opacity-70" : ""}`}>
-      {/* Preview area */}
-      <div className={`relative ${item.bg} flex flex-col items-center justify-center p-3 h-28`}>
-        {/* Done overlay */}
+      {/* Preview area — clickable to open modal */}
+      <div role="button" tabIndex={0} onClick={onPreview} onKeyDown={(e) => e.key === "Enter" && onPreview()}
+        className={`relative ${item.bg} flex flex-col items-center justify-center p-3 h-28 w-full group cursor-pointer`}>
         {done && (
           <div className="absolute inset-0 bg-green-500/20 flex items-center justify-center rounded-t-xl">
             <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">✓</div>
           </div>
         )}
+        {/* Preview hint on hover */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-t-xl flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <span className="text-[10px] font-black text-white bg-black/50 rounded-full px-2 py-0.5">👁 Preview</span>
+        </div>
         <span className="text-3xl mb-1">{item.emoji}</span>
         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/60 text-foreground">{item.subject}</span>
-        {/* Save button */}
-        <button onClick={onSave}
+        <button onClick={(e) => { e.stopPropagation(); onSave(); }}
           className={`absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full transition-all ${saved ? "bg-rose-500 text-white" : "bg-white/60 text-muted-foreground hover:bg-white"}`}
           title={saved ? "Unsave" : "Save for later"}
         >
@@ -274,48 +370,62 @@ function WorksheetCard({ item, done, saved, onDone, onSave }: {
       <div className="p-2 flex-1 flex flex-col justify-between bg-card">
         <p className="text-xs font-bold text-foreground leading-snug mb-2">{item.title}</p>
         <div className="flex gap-1.5">
+          <button onClick={onPreview}
+            className="flex-1 text-center text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-500 hover:text-white transition-colors">
+            👁 Preview
+          </button>
           <a href={item.fileUrl} target="_blank" rel="noopener noreferrer"
             className="flex-1 text-center text-[10px] font-bold py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
-            ⬇ Download
+            ⬇ Drive
           </a>
-          <button onClick={onDone}
-            className={`flex-1 text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700"}`}>
-            {done ? "✓ Done" : "Mark Done"}
-          </button>
         </div>
+        <button onClick={onDone}
+          className={`w-full mt-1.5 text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700"}`}>
+          {done ? "✓ Done" : "Mark Done"}
+        </button>
       </div>
     </div>
   );
 }
 
 // ─── Reel Card ────────────────────────────────────────────────────────────────
-function ReelCard({ item, done, saved, onDone, onSave }: {
-  item: Reel; done: boolean; saved: boolean; onDone(): void; onSave(): void;
+function ReelCard({ item, done, saved, onDone, onSave, onPreview }: {
+  item: Reel; done: boolean; saved: boolean; onDone(): void; onSave(): void; onPreview(): void;
 }) {
   return (
     <div className={`rounded-xl border overflow-hidden flex flex-col transition-all ${done ? "opacity-70" : ""}`}>
-      {/* Thumbnail area */}
-      <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"
-        className={`relative ${item.bg} flex flex-col items-center justify-center h-28 cursor-pointer group`}>
+      {/* Thumbnail area — click to open modal */}
+      <div role="button" tabIndex={0} onClick={onPreview} onKeyDown={(e) => e.key === "Enter" && onPreview()}
+        className={`relative ${item.bg} flex flex-col items-center justify-center h-28 w-full group cursor-pointer`}>
         {/* Play button overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-10 h-10 rounded-full bg-black/25 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/40 transition-colors">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-10 h-10 rounded-full bg-black/25 backdrop-blur-sm flex items-center justify-center group-hover:bg-black/50 transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
           </div>
         </div>
         <span className="text-3xl">{item.emoji}</span>
         <span className="mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/60 text-foreground">{item.duration}</span>
         {done && (
-          <div className="absolute top-2 left-2 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">✓</div>
+          <div className="absolute top-2 left-2 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold pointer-events-none">✓</div>
         )}
-        <button onClick={(e) => { e.preventDefault(); onSave(); }}
+        <button onClick={(e) => { e.stopPropagation(); onSave(); }}
           className={`absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full transition-all ${saved ? "bg-rose-500 text-white" : "bg-white/60 text-muted-foreground hover:bg-white"}`}>
           <span className="text-xs">{saved ? "♥" : "♡"}</span>
         </button>
-      </a>
+      </div>
       {/* Info */}
       <div className="p-2 flex-1 flex flex-col justify-between bg-card">
         <p className="text-xs font-bold text-foreground leading-snug mb-2">{item.title}</p>
+        <div className="flex gap-1.5 mb-1.5">
+          <button onClick={onPreview}
+            className="flex-1 text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-500 hover:text-white transition-colors">
+            ▶ Play
+          </button>
+          <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"
+            className="flex-1 text-center text-[10px] font-bold py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors">
+            ↗ Drive
+          </a>
+        </div>
         <button onClick={onDone}
           className={`w-full text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700"}`}>
           {done ? "✓ Watched" : "Mark Done"}
