@@ -1,0 +1,98 @@
+Upgrade my web app "AmyNest" to include a modern, premium preview modal UI for worksheets and videos.
+
+IMPORTANT:
+- Clean UI
+- Mobile-friendly
+- Smooth animations
+- No page redirect
+
+--------------------------------
+1. Modal Trigger (Core 🔥)
+--------------------------------
+- When user clicks:
+  - Worksheet card OR
+  - Video thumbnail
+
+→ Open modal popup (NOT new page)
+
+--------------------------------
+2. Modal Layout (Netflix Style 🔥)
+--------------------------------
+
+Top Section:
+- Large preview area
+
+For video:
+- Embedded player (iframe)
+
+For worksheet:
+- PDF/image preview
+
+--------------------------------
+3. Bottom Section (Content Info)
+--------------------------------
+- Title
+- Short description
+
+--------------------------------
+4. Action Buttons (Important 🔥)
+--------------------------------
+Add:
+
+- ▶️ Play / Preview
+- ⬇️ Download
+- ❤️ Save
+- ❌ Close (top right)
+
+--------------------------------
+5. Background Effect
+--------------------------------
+- Blur background
+- Dark overlay
+
+--------------------------------
+6. Animation (Premium Feel 🔥)
+--------------------------------
+- Smooth fade-in
+- Slide-up effect
+
+--------------------------------
+7. Mobile Optimization
+--------------------------------
+- Full width modal
+- Scrollable content
+- Large buttons
+
+--------------------------------
+8. Close Behavior
+--------------------------------
+- Close on:
+  - X button
+  - Outside click
+
+--------------------------------
+9. UI Styling
+--------------------------------
+- Rounded corners (16px+)
+- Soft shadow
+- Clean spacing
+- Minimal design
+
+--------------------------------
+10. Add Section Labels
+--------------------------------
+- “Worksheet Preview”
+- “Watch & Learn”
+
+--------------------------------
+11. Keep it simple
+--------------------------------
+- No backend
+- Lightweight code
+
+--------------------------------
+Return:
+Working modal UI with:
+- Embedded preview
+- Buttons
+- Smooth animation

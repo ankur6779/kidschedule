@@ -10,7 +10,10 @@ function toEmbedUrl(url: string): string {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type ModalItem = { title: string; emoji: string; embedUrl: string; downloadUrl: string; kind: "worksheet" | "reel" };
+type ModalItem = {
+  id: string; title: string; emoji: string; desc: string;
+  embedUrl: string; downloadUrl: string; kind: "worksheet" | "reel";
+};
 type Worksheet = {
   id: string; title: string; emoji: string; bg: string; accent: string;
   fileUrl: string; ageMin: number; ageMax: number; subject: string;
@@ -115,75 +118,120 @@ function todayKey(childName: string) {
   return `amynest_activity_${childName}_${d.getFullYear()}${d.getMonth()}${d.getDate()}`;
 }
 
-// ─── Drive Preview Modal ──────────────────────────────────────────────────────
-function DrivePreviewModal({ item, onClose }: { item: ModalItem; onClose(): void }) {
-  // Close on Escape key
+// ─── Netflix-Style Drive Preview Modal ───────────────────────────────────────
+function DrivePreviewModal({ item, onClose, isSaved, onSave }: {
+  item: ModalItem; onClose(): void; isSaved: boolean; onSave(): void;
+}) {
+  const isVideo = item.kind === "reel";
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handler);
+    };
   }, [onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-      role="dialog" aria-modal="true"
-    >
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" role="dialog" aria-modal="true">
 
-      {/* Modal card */}
-      <div className="relative z-10 w-full sm:max-w-lg bg-card rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300"
-        style={{ maxHeight: "90vh" }}>
+      {/* ── Blurred dark backdrop ─────────────────────────────── */}
+      <div
+        className="absolute inset-0 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
+        onClick={onClose}
+      />
 
-        {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60 bg-muted/30 flex-shrink-0">
-          <span className="text-2xl">{item.emoji}</span>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-foreground truncate">{item.title}</p>
-            <p className="text-[10px] text-muted-foreground">
-              {item.kind === "reel" ? "🎥 Video" : "📄 Worksheet"} · Google Drive
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 text-muted-foreground font-bold text-sm transition-colors flex-shrink-0"
-            aria-label="Close"
-          >✕</button>
+      {/* ── Modal panel ──────────────────────────────────────── */}
+      <div
+        className="relative z-10 w-full sm:max-w-lg flex flex-col bg-[#0f0f0f] rounded-t-[28px] sm:rounded-[28px] shadow-[0_32px_80px_rgba(0,0,0,0.8)] overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-350"
+        style={{ maxHeight: "92vh" }}
+      >
+
+        {/* ── Close button (floating top-right) ─────────────── */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/60 backdrop-blur-sm text-white hover:bg-white/20 transition-all font-bold text-sm"
+        >✕</button>
+
+        {/* ── Section label strip ───────────────────────────── */}
+        <div className={`flex items-center gap-2 px-4 pt-4 pb-2 flex-shrink-0 ${isVideo ? "text-rose-400" : "text-sky-400"}`}>
+          <span className="text-base">{isVideo ? "🎥" : "📄"}</span>
+          <span className="text-[11px] font-black uppercase tracking-widest">
+            {isVideo ? "Watch & Learn" : "Worksheet Preview"}
+          </span>
         </div>
 
-        {/* iframe embed */}
-        <div className="flex-1 bg-muted/10 overflow-hidden" style={{ minHeight: 320 }}>
+        {/* ── Embedded iframe ───────────────────────────────── */}
+        <div
+          className="relative flex-shrink-0 bg-black overflow-hidden"
+          style={{ height: "52vw", maxHeight: 320, minHeight: 220 }}
+        >
+          {/* Cinematic gradient overlay at bottom */}
+          <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-[#0f0f0f] to-transparent z-10 pointer-events-none" />
           <iframe
             src={item.embedUrl}
             title={item.title}
             className="w-full h-full border-0"
-            style={{ minHeight: 320 }}
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; fullscreen"
             allowFullScreen
           />
         </div>
 
-        {/* Footer actions */}
-        <div className="flex gap-2 p-3 border-t border-border/60 bg-card flex-shrink-0">
-          <a
-            href={item.downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Open in Drive
-          </a>
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-2xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted transition-colors"
-          >
-            Close
-          </button>
+        {/* ── Content info ──────────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto px-5 pt-3 pb-1">
+          {/* Title */}
+          <h2 className="text-white font-black text-xl leading-snug mb-1.5 pr-8">{item.title}</h2>
+          {/* Description */}
+          <p className="text-gray-400 text-sm leading-relaxed mb-4">{item.desc}</p>
+
+          {/* ── Action buttons ────────────────────────────── */}
+          <div className="flex flex-col gap-2.5 pb-5">
+
+            {/* Primary: Play / Preview */}
+            <a
+              href={item.downloadUrl} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-black text-sm transition-all active:scale-95"
+              style={{ background: isVideo ? "linear-gradient(135deg,#e11d48,#f97316)" : "linear-gradient(135deg,#2563eb,#7c3aed)" }}
+            >
+              <span className="text-white text-base">{isVideo ? "▶️" : "👁"}</span>
+              <span className="text-white">{isVideo ? "Play Video" : "Open Full Preview"}</span>
+            </a>
+
+            {/* Secondary row: Download + Save */}
+            <div className="flex gap-2.5">
+              <a
+                href={item.downloadUrl} target="_blank" rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 transition-all active:scale-95 border border-white/10"
+              >
+                <span className="text-white text-sm">⬇️</span>
+                <span className="text-white font-bold text-sm">Download</span>
+              </a>
+              <button
+                onClick={onSave}
+                className={`flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl transition-all active:scale-95 border font-bold text-sm ${
+                  isSaved
+                    ? "bg-rose-500/20 border-rose-500/40 text-rose-400"
+                    : "bg-white/10 border-white/10 text-white hover:bg-white/20"
+                }`}
+              >
+                <span className="text-base">{isSaved ? "❤️" : "🤍"}</span>
+                {isSaved ? "Saved" : "Save"}
+              </button>
+            </div>
+
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-all active:scale-95 border border-white/10 text-gray-400 font-bold text-sm"
+            >
+              ❌ Close
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   );
@@ -265,7 +313,14 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
     <div className="space-y-5 animate-in fade-in duration-500">
 
       {/* ── Drive Preview Modal ─────────────────────────────────── */}
-      {modalItem && <DrivePreviewModal item={modalItem} onClose={closeModal} />}
+      {modalItem && (
+        <DrivePreviewModal
+          item={modalItem}
+          onClose={closeModal}
+          isSaved={saved.has(modalItem.id)}
+          onSave={() => toggleSaved(modalItem.id)}
+        />
+      )}
 
       {/* ── Section Header ─────────────────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-r from-fuchsia-500 via-pink-500 to-orange-400 p-4 text-white shadow-md relative overflow-hidden">
@@ -291,7 +346,7 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
           {daily.ws.map(w => (
             <WorksheetCard key={w.id} item={w} done={done.has(w.id)} saved={saved.has(w.id)}
               onDone={() => toggleDone(w.id)} onSave={() => toggleSaved(w.id)}
-              onPreview={() => openModal({ title: w.title, emoji: w.emoji, embedUrl: toEmbedUrl(w.fileUrl), downloadUrl: w.fileUrl, kind: "worksheet" })} />
+              onPreview={() => openModal({ id: w.id, title: w.title, emoji: w.emoji, desc: `A fun ${w.subject} worksheet for your child — print it, trace it, and learn together! 📝`, embedUrl: toEmbedUrl(w.fileUrl), downloadUrl: w.fileUrl, kind: "worksheet" })} />
           ))}
         </div>
       </SectionBlock>
@@ -302,7 +357,7 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
           {daily.rs.map(r => (
             <ReelCard key={r.id} item={r} done={done.has(r.id)} saved={saved.has(r.id)}
               onDone={() => toggleDone(r.id)} onSave={() => toggleSaved(r.id)}
-              onPreview={() => openModal({ title: r.title, emoji: r.emoji, embedUrl: toEmbedUrl(r.videoUrl), downloadUrl: r.videoUrl, kind: "reel" })} />
+              onPreview={() => openModal({ id: r.id, title: r.title, emoji: r.emoji, desc: `A creative art & craft video to watch and make together. Duration: ${r.duration} 🎨`, embedUrl: toEmbedUrl(r.videoUrl), downloadUrl: r.videoUrl, kind: "reel" })} />
           ))}
         </div>
       </SectionBlock>
