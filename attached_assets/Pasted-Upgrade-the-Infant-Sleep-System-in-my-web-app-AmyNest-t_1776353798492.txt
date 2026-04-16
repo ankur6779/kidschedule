@@ -1,0 +1,125 @@
+Upgrade the Infant Sleep System in my web app "AmyNest" to provide practical sleep guidance, tips, and soothing sounds to help parents improve their baby's sleep.
+
+IMPORTANT:
+- Only for infants (0–12 months)
+- ZERO API cost
+- Use predefined tips + local audio files
+
+--------------------------------
+1. Section Name
+--------------------------------
+“😴 Baby Sleep Assistant”
+
+--------------------------------
+2. Sleep Tips (Core 🔥)
+--------------------------------
+- Show 3–5 daily sleep tips
+
+- Categorize tips:
+  - Pre-Sleep Routine
+  - Sleep Environment
+  - Soothing Techniques
+
+--------------------------------
+3. Age-Based Tips (Important 🔥)
+--------------------------------
+
+0–3 months:
+- Swaddling
+- White noise
+- Feed before sleep
+
+3–6 months:
+- Fixed sleep routine
+- Dim lights
+
+6–12 months:
+- Sleep training basics
+- Reduce night feeds gradually
+
+--------------------------------
+4. Essential Pre-Sleep Checklist
+--------------------------------
+Show checklist:
+
+- Feed completed
+- Diaper changed
+- Lights dimmed
+- Quiet environment
+
+--------------------------------
+5. Soothing Sounds Section (Core 🔥🔥)
+--------------------------------
+Add section:
+“🎵 Sleep Sounds”
+
+Include 4–6 audio options:
+
+- White noise
+- Rain sound
+- Heartbeat sound
+- Lullaby music
+- Fan noise
+
+--------------------------------
+6. Audio Player
+--------------------------------
+For each sound:
+- Play button
+- Pause button
+- Next sound option
+
+--------------------------------
+7. Smart Suggestion Logic
+--------------------------------
+Based on sleep pattern:
+
+Example:
+- “Try white noise today”
+- “Keep room darker”
+
+--------------------------------
+8. Sleep Routine Guidance
+--------------------------------
+Show:
+
+- “Best sleep window”
+- “Wind-down time”
+
+--------------------------------
+9. UI Design
+--------------------------------
+Create sections:
+
+(A) Sleep Prediction  
+(B) Tips  
+(C) Checklist  
+(D) Sounds  
+
+--------------------------------
+10. Parent-Friendly Language
+--------------------------------
+- Simple, easy to understand
+- Short sentences
+
+--------------------------------
+11. Interaction
+--------------------------------
+Add:
+- “Mark as tried”
+- “Next tip”
+
+--------------------------------
+12. Keep everything simple
+--------------------------------
+- No backend
+- No AI API
+- Use localStorage
+
+--------------------------------
+Return:
+Working code with:
+- Sleep tips
+- Pre-sleep checklist
+- Soothing sounds player
+- Smart suggestions

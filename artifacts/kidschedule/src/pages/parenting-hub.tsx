@@ -10,6 +10,7 @@ import { SkillFocusSection, StorySection, ParentTasksSection } from "@/component
 import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
 import { DailyPuzzle } from "@/components/daily-puzzle";
 import { InfantSleepTracker } from "@/components/infant-sleep-tracker";
+import { BabySleepAssistant } from "@/components/baby-sleep-assistant";
 import { AmazingFacts } from "@/components/amazing-facts";
 import type { AgeGroup } from "@/lib/age-groups";
 
@@ -261,12 +262,18 @@ export default function ParentingHub() {
       {effectiveChild && ageGroup && (
         <div className="space-y-5">
 
-          {/* INFANT — Sleep Tracker */}
+          {/* INFANT — Sleep Tracker + Assistant */}
           {isInfant && (!selectedCategory || selectedCategory === "sleep") && (
-            <InfantSleepTracker
-              childName={effectiveChild.name}
-              ageMonths={(effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)}
-            />
+            <>
+              <InfantSleepTracker
+                childName={effectiveChild.name}
+                ageMonths={(effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)}
+              />
+              <BabySleepAssistant
+                childName={effectiveChild.name}
+                ageMonths={(effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)}
+              />
+            </>
           )}
 
           {/* INFANT — Amazing Facts */}
