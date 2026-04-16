@@ -1,7 +1,7 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Flame, Sparkles, Gift, Trophy, Bot } from "lucide-react";
+import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Flame, Sparkles, Gift, Trophy, Bot, Brain, Heart, Target, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
@@ -353,6 +353,134 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
   );
 }
 
+// ─── Onboarding Screen ───────────────────────────────────────────────────────
+function OnboardingScreen({ displayName }: { displayName: string }) {
+  const features = [
+    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 border-blue-100" },
+    { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50 border-emerald-100" },
+    { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-orange-500 to-amber-500", bg: "bg-orange-50 border-orange-100" },
+    { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-purple-500", bg: "bg-violet-50 border-violet-100" },
+    { icon: <Heart className="h-5 w-5" />, emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", color: "from-rose-500 to-pink-500", bg: "bg-rose-50 border-rose-100" },
+  ];
+
+  return (
+    <div className="min-h-[80vh] flex flex-col items-center justify-start animate-in fade-in duration-700">
+
+      {/* ── Hero gradient card ───────────────────────────────── */}
+      <div className="w-full rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 mb-8 text-white text-center relative overflow-hidden shadow-xl">
+        {/* Decorative circles */}
+        <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-white/10 -translate-y-12 translate-x-12 blur-sm" />
+        <div className="absolute bottom-0 left-0 w-36 h-36 rounded-full bg-white/10 translate-y-10 -translate-x-10 blur-sm" />
+
+        {/* Illustration */}
+        <div className="relative z-10 flex justify-center mb-5">
+          <svg width="160" height="140" viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            {/* Ground */}
+            <ellipse cx="80" cy="128" rx="55" ry="8" fill="white" fillOpacity="0.15" />
+            {/* Parent body */}
+            <rect x="42" y="68" width="26" height="48" rx="13" fill="white" fillOpacity="0.9" />
+            {/* Parent head */}
+            <circle cx="55" cy="55" r="18" fill="white" fillOpacity="0.95" />
+            {/* Parent face — eyes */}
+            <circle cx="49" cy="53" r="2.5" fill="#6366F1" />
+            <circle cx="61" cy="53" r="2.5" fill="#6366F1" />
+            {/* Parent smile */}
+            <path d="M49 60 Q55 65 61 60" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" fill="none" />
+            {/* Parent arm reaching out */}
+            <path d="M68 82 Q88 72 96 78" stroke="white" strokeOpacity="0.9" strokeWidth="10" strokeLinecap="round" />
+            {/* Child body */}
+            <rect x="90" y="88" width="22" height="36" rx="11" fill="white" fillOpacity="0.85" />
+            {/* Child head */}
+            <circle cx="101" cy="76" r="14" fill="white" fillOpacity="0.95" />
+            {/* Child face — eyes */}
+            <circle cx="96.5" cy="74" r="2" fill="#EC4899" />
+            <circle cx="105.5" cy="74" r="2" fill="#EC4899" />
+            {/* Child smile */}
+            <path d="M97 80 Q101 84 105 80" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" fill="none" />
+            {/* Stars */}
+            <text x="22" y="42" fontSize="16" fill="white" fillOpacity="0.7">✨</text>
+            <text x="120" y="50" fontSize="12" fill="white" fillOpacity="0.6">⭐</text>
+            <text x="118" y="100" fontSize="10" fill="white" fillOpacity="0.5">🌟</text>
+          </svg>
+        </div>
+
+        {/* Welcome text */}
+        <div className="relative z-10 space-y-2">
+          <p className="text-blue-200 text-sm font-semibold uppercase tracking-widest">AmyNest AI</p>
+          <h1 className="text-3xl font-black leading-tight">
+            👋 Welcome{displayName ? `, ${displayName}` : ""}!
+          </h1>
+          <p className="text-blue-100 text-lg font-medium">Your smart AI parenting partner</p>
+          <p className="text-blue-200/90 text-sm max-w-xs mx-auto leading-relaxed mt-1">
+            Create personalised routines, track progress, and make parenting easier — one day at a time.
+          </p>
+        </div>
+      </div>
+
+      {/* ── Motivation line ──────────────────────────────────── */}
+      <div className="w-full flex items-center justify-center gap-2 mb-7">
+        <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border" />
+        <p className="text-sm font-bold text-muted-foreground px-3 text-center">
+          Start your child's smart routine today 🚀
+        </p>
+        <div className="h-px flex-1 bg-gradient-to-l from-transparent to-border" />
+      </div>
+
+      {/* ── Feature highlights ───────────────────────────────── */}
+      <div className="w-full grid grid-cols-1 gap-3 mb-8">
+        {features.map((f, i) => (
+          <div
+            key={f.label}
+            className={`flex items-center gap-4 rounded-2xl border p-4 ${f.bg} animate-in slide-in-from-bottom-4 duration-500`}
+            style={{ animationDelay: `${i * 80}ms` }}
+          >
+            <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
+              {f.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-foreground">{f.emoji} {f.label}</p>
+              <p className="text-xs text-muted-foreground leading-snug mt-0.5">{f.desc}</p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Primary CTA ──────────────────────────────────────── */}
+      <div className="w-full space-y-3">
+        <Link href="/children/new">
+          <button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+            <Sparkles className="h-5 w-5" />
+            ✨ Create Your First Child Profile
+          </button>
+        </Link>
+
+        {/* ── Secondary CTA ──────────────────────────────────── */}
+        <Link href="/parenting-hub">
+          <button className="w-full h-12 rounded-2xl border-2 border-border bg-background text-foreground font-bold text-sm hover:bg-muted/50 hover:border-primary/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+            <BookOpenIcon />
+            Explore Parenting Hub
+          </button>
+        </Link>
+      </div>
+
+      {/* ── Bottom note ──────────────────────────────────────── */}
+      <p className="text-xs text-muted-foreground text-center mt-6 pb-4">
+        Takes less than 1 minute to set up · Works for ages 0–15 years
+      </p>
+    </div>
+  );
+}
+
+function BookOpenIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useUser();
   const authFetch = useAuthFetch();
@@ -386,6 +514,26 @@ export default function Dashboard() {
   });
 
   const streak = computeStreak((allRoutines ?? []) as Routine[]);
+
+  // Show onboarding for new users with no child profiles yet
+  const noChildren = !loadingSummary && (summary?.totalChildren ?? 0) === 0;
+  if (noChildren) {
+    return <OnboardingScreen displayName={displayName} />;
+  }
+
+  // Show skeleton while loading for first-time load
+  if (loadingSummary) {
+    return (
+      <div className="flex flex-col gap-6 animate-in fade-in duration-500">
+        <Skeleton className="h-10 w-64 rounded-2xl" />
+        <Skeleton className="h-4 w-48 rounded-xl" />
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+        </div>
+        <Skeleton className="h-48 rounded-2xl" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">

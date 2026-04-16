@@ -1,0 +1,102 @@
+Upgrade my web app "AmyNest" to show a beautiful and engaging onboarding screen for new users who have not yet created a child profile.
+
+IMPORTANT:
+- Show this ONLY if:
+  no child profile exists
+- Replace empty dashboard completely
+
+--------------------------------
+1. Welcome Section (Top 🔥)
+--------------------------------
+Show:
+
+- Title:
+  “👋 Welcome to AmyNest”
+
+- Subtitle:
+  “Your smart AI parenting partner”
+
+- Small description:
+  “Create personalized routines, track progress, and make parenting easier.”
+
+--------------------------------
+2. Hero Section (Visual Attraction 🔥)
+--------------------------------
+- Add:
+  - Cute illustration (parent + child)
+  - Soft gradient background
+  - Friendly UI
+
+--------------------------------
+3. Feature Highlights (Important 🔥)
+--------------------------------
+Show 4–5 cards:
+
+1. 🧠 AI Routine Generator  
+2. 📊 Progress Tracking  
+3. 🎯 Daily Activities  
+4. 🧩 Learning & Puzzles  
+5. ❤️ Parenting Tips  
+
+--------------------------------
+4. Main CTA (Most Important 🔥🔥)
+--------------------------------
+Add big button:
+
+“✨ Create Your First Child Profile”
+
+--------------------------------
+5. Secondary CTA
+--------------------------------
+- “Explore Features”
+
+--------------------------------
+6. Guided Flow
+--------------------------------
+On click:
+→ Open child creation form
+
+--------------------------------
+7. UI Design
+--------------------------------
+- Use:
+  - Rounded cards
+  - Soft shadows
+  - Pastel colors
+  - Clean spacing
+
+--------------------------------
+8. Mobile Optimization
+--------------------------------
+- Centered layout
+- Large buttons
+- Easy tap targets
+
+--------------------------------
+9. Hide Dashboard Data
+--------------------------------
+Do NOT show:
+- Streak
+- Routine stats
+- Empty data
+
+--------------------------------
+10. Add Motivation Line
+--------------------------------
+Example:
+
+“Start your child’s smart routine today 🚀”
+
+--------------------------------
+11. Optional Animation (Premium Feel 🔥)
+--------------------------------
+- Subtle fade-in
+- Button hover animation
+
+--------------------------------
+Return:
+Updated UI with:
+- Beautiful onboarding screen
+- Feature highlights
+- Strong CTA
+- No empty dashboard for new users
