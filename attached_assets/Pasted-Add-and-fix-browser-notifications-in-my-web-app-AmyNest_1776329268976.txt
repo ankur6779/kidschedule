@@ -1,0 +1,112 @@
+Add and fix browser notifications in my web app "AmyNest" so that users receive timely reminders without using any external API.
+
+IMPORTANT:
+- Use native browser Notification API
+- No external services (zero cost)
+- Ensure it works reliably
+
+--------------------------------
+1. Request Notification Permission (Critical 🔥)
+--------------------------------
+- On first app load:
+  - Ask user:
+    “Allow notifications for reminders?”
+
+- Use:
+  Notification.requestPermission()
+
+- Handle:
+  - granted
+  - denied
+  - default
+
+--------------------------------
+2. Permission Handling
+--------------------------------
+IF permission == granted:
+  → Enable notifications
+
+IF denied:
+  → Show message:
+    “Please enable notifications in browser settings”
+
+--------------------------------
+3. Create Notification Function
+--------------------------------
+Create function:
+
+showNotification(title, body)
+
+- Use:
+  new Notification(title, { body })
+
+--------------------------------
+4. Trigger Notifications
+--------------------------------
+
+(A) Routine Reminder:
+- Before task time:
+  “Time to brush 🪥”
+  “Meal time 🍱”
+
+(B) Parenting Hub Reminder:
+- “Check today’s activity”
+
+--------------------------------
+5. Scheduling System (Important 🔥)
+--------------------------------
+- Use:
+  setTimeout or setInterval
+
+- Example:
+  If task at 8:00 AM
+  → Trigger at 7:55 AM
+
+--------------------------------
+6. Handle Background Behavior
+--------------------------------
+- Notifications should work even if tab is inactive
+- Ensure:
+  user has interacted with page at least once
+
+--------------------------------
+7. Fix Common Issues
+--------------------------------
+- Do NOT use notifications before permission granted
+- Ensure:
+  HTTPS environment (required)
+
+--------------------------------
+8. UI Control
+--------------------------------
+Add:
+- Toggle:
+  “Enable Notifications ON/OFF”
+
+--------------------------------
+9. Store Settings
+--------------------------------
+- Save in localStorage:
+  notificationEnabled = true/false
+
+--------------------------------
+10. Debugging
+--------------------------------
+- Log:
+  permission status
+  notification triggers
+
+--------------------------------
+11. Keep it simple
+--------------------------------
+- No backend
+- No API
+- Lightweight
+
+--------------------------------
+Return:
+Working code with:
+- Permission system
+- Notification triggers
+- Reminder scheduling
+- UI toggle
