@@ -1,0 +1,181 @@
+Upgrade my web app "AmyNest" Routine UI by replacing swipe actions with a sliding action bar and fixing text visibility using a zoom-on-click modal.
+
+IMPORTANT:
+
+* Remove swipe gestures completely
+* Add slider-based interaction
+* Fix text cutting permanently
+* Add click-to-expand (zoom modal)
+* Mobile-first design
+
+---
+
+1. Remove Swipe System (Critical 🔥)
+
+---
+
+* Remove all touch swipe logic
+* Remove swipe-related transforms
+
+---
+
+2. Add Sliding Action Bar (Core 🔥🔥)
+
+---
+
+Inside each routine card:
+
+Add a horizontal slider bar:
+
+UI:
+[ Slide to Complete ➡️ ]
+
+Behavior:
+
+* User drags slider knob to right
+* When reaches end:
+  → Mark task COMPLETE
+
+Optional:
+
+* Add reverse slider for skip
+
+---
+
+3. Slider Design
+
+---
+
+* Rounded track
+* Gradient background
+* Movable knob (circle)
+* Smooth drag interaction
+
+---
+
+4. Slider Feedback
+
+---
+
+* While dragging:
+  → Track fills with color
+
+* On complete:
+  → Green success state
+  → Show “Completed ✅”
+
+---
+
+5. Fix Text Visibility (Critical 🔥)
+
+---
+
+DO THIS STRICTLY:
+
+* Remove all height restrictions
+* Ensure:
+
+.text {
+flex: 1;
+min-width: 0;
+}
+
+* Apply:
+
+h4, p {
+white-space: normal;
+word-break: break-word;
+}
+
+* DO NOT use overflow hidden on main content
+
+---
+
+6. Click to Expand (Zoom Modal 🔥🔥)
+
+---
+
+On clicking any routine card:
+
+→ Open modal popup
+
+Modal includes:
+
+* Full title
+* Full description (no truncation)
+* Full instructions
+* Image (large)
+
+---
+
+7. Modal UI (Same as worksheet preview)
+
+---
+
+* Center popup
+* Dark background overlay
+* Rounded card
+* Scrollable content
+
+---
+
+8. Modal Actions
+
+---
+
+Add buttons:
+
+* Complete
+* Delay
+* Skip
+* Close
+
+---
+
+9. Animation (Premium Feel 🔥)
+
+---
+
+* Modal:
+  → Fade + scale animation
+
+* Slider:
+  → Smooth transition
+
+---
+
+10. Mobile Optimization
+
+---
+
+* Large touch areas
+* Full width slider
+* Easy interaction
+
+---
+
+11. Performance
+
+---
+
+* No heavy loops
+* Lightweight slider logic
+
+---
+
+12. Final Output
+
+---
+
+Return:
+
+* Updated UI (no swipe)
+* Slider interaction code
+* Modal zoom system
+* Fixed text rendering
+
+Ensure:
+
+* Text never cuts
+* Smooth UX
+* App-like feel

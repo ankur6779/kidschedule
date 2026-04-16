@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation, Link, useParams } from "wouter";
 import { useGetRoutine, getGetRoutineQueryKey, useDeleteRoutine, getListRoutinesQueryKey, useGetChild, getGetChildQueryKey } from "@workspace/api-client-react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
@@ -183,97 +183,229 @@ function shiftScheduleFromIndex(items: RoutineItem[], fromIndex: number, delayMi
   return smartCascade(items, fromIndex, delayMinutes).items;
 }
 
-// ─── Swipeable Card Wrapper ────────────────────────────────────────────────────
-function SwipeableItem({
-  children, onComplete, onSkip, disabled = false, className = "",
-}: {
-  children: ReactNode; onComplete(): void; onSkip(): void; disabled?: boolean; className?: string;
-}) {
-  const [dx, setDx] = useState(0);
+// ─── Slide-to-Complete ────────────────────────────────────────────────────────
+function SlideToComplete({ onComplete, disabled = false }: { onComplete(): void; disabled?: boolean }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [knobX, setKnobX] = useState(0);
   const [dragging, setDragging] = useState(false);
-  const [snapping, setSnapping] = useState(false);
-  const startX = useRef(0);
+  const [done, setDone] = useState(false);
+  const startClientX = useRef(0);
+  const startKnobX = useRef(0);
   const active = useRef(false);
-  const THRESHOLD = 110;
+  const KNOB = 40;
 
-  const progress = Math.min(Math.abs(dx) / THRESHOLD, 1);
-  const isRight = dx > 20;
-  const isLeft = dx < -20;
+  const maxX = () => Math.max(0, (trackRef.current?.clientWidth ?? 200) - KNOB - 8);
+  const progress = maxX() > 0 ? knobX / maxX() : 0;
 
   const onDown = (e: React.PointerEvent) => {
-    if (disabled) return;
-    startX.current = e.clientX;
+    if (disabled || done) return;
+    e.stopPropagation();
+    startClientX.current = e.clientX;
+    startKnobX.current = knobX;
     active.current = true;
     setDragging(true);
-    setSnapping(false);
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-
   const onMove = (e: React.PointerEvent) => {
     if (!active.current) return;
-    const delta = e.clientX - startX.current;
-    setDx(delta);
+    const nx = Math.max(0, Math.min(startKnobX.current + e.clientX - startClientX.current, maxX()));
+    setKnobX(nx);
   };
-
   const onUp = () => {
     if (!active.current) return;
     active.current = false;
     setDragging(false);
-    if (dx >= THRESHOLD) {
-      setDx(0);
+    if (progress >= 0.85) {
+      setDone(true);
+      setKnobX(maxX());
       if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(50);
-      onComplete();
-    } else if (dx <= -THRESHOLD) {
-      setDx(0);
-      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate([30, 50, 30]);
-      onSkip();
+      setTimeout(onComplete, 260);
     } else {
-      setSnapping(true);
-      setDx(0);
-      setTimeout(() => setSnapping(false), 350);
+      setKnobX(0);
     }
   };
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl flex-1 min-w-0 ${className}`} style={{ touchAction: "pan-y" }}>
-      {/* Swipe background */}
+    <div
+      ref={trackRef}
+      className="relative h-11 rounded-full overflow-hidden select-none border border-border"
+      style={{ background: "linear-gradient(to right, #f1f5f9, #e2e8f0)", touchAction: "none" }}
+    >
+      {/* Green fill as knob moves */}
       <div
-        className="absolute inset-0 rounded-2xl flex items-center justify-between px-5 pointer-events-none"
+        className="absolute inset-y-0 left-0 rounded-full transition-none"
         style={{
-          backgroundColor: isRight
-            ? `rgba(34,197,94,${progress * 0.9})`
-            : isLeft
-            ? `rgba(239,68,68,${progress * 0.9})`
-            : "transparent",
+          width: `${4 + knobX + KNOB / 2}px`,
+          background: `rgba(34,197,94,${0.12 + progress * 0.55})`,
+          transition: dragging ? "none" : "width 0.3s cubic-bezier(0.34,1.56,0.64,1)",
         }}
-      >
-        <div className={`flex items-center gap-1.5 text-white font-black text-sm transition-all ${isRight && progress > 0.2 ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}>
-          <span className="text-2xl">✅</span>
-          <span>Complete</span>
-        </div>
-        <div className={`flex items-center gap-1.5 text-white font-black text-sm transition-all ${isLeft && progress > 0.2 ? "opacity-100 scale-100" : "opacity-0 scale-90"}`}>
-          <span>Skip</span>
-          <span className="text-2xl">⏭️</span>
-        </div>
-      </div>
-
-      {/* Draggable card */}
+      />
+      {/* Track label */}
       <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+        style={{ opacity: Math.max(0, 1 - progress * 2.2) }}
+      >
+        <span className="text-xs font-bold text-slate-500 tracking-wide">
+          {done ? "✅ Completed!" : "Slide to complete  →"}
+        </span>
+      </div>
+      {/* Success label */}
+      {progress > 0.5 && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          style={{ opacity: Math.max(0, progress * 2 - 1) }}
+        >
+          <span className="text-xs font-black text-green-700 tracking-wide">✅ Release to complete!</span>
+        </div>
+      )}
+      {/* Knob */}
+      <div
+        className="absolute top-1 rounded-full bg-white shadow-md flex items-center justify-center cursor-grab active:cursor-grabbing"
         style={{
-          transform: `translateX(${dx}px) scale(${dragging ? 1 - progress * 0.02 : 1})`,
-          transition: snapping
-            ? "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)"
-            : dragging ? "none" : "transform 0.2s ease",
-          willChange: dragging ? "transform" : "auto",
-          touchAction: "pan-y",
-          userSelect: "none",
+          left: `${4 + knobX}px`,
+          width: KNOB,
+          height: KNOB,
+          transition: dragging ? "none" : "left 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+          touchAction: "none",
         }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={onUp}
         onPointerCancel={onUp}
       >
-        {children}
+        <Check className={`h-4 w-4 transition-colors ${done ? "text-green-600" : "text-slate-400"}`} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Routine Item Expand Modal ─────────────────────────────────────────────────
+function RoutineItemModal({
+  item, index, isOpen, onClose, isInteractive, onComplete, onDelay, onSkip, routineId, seed,
+}: {
+  item: RoutineItem | null; index: number; isOpen: boolean; onClose(): void;
+  isInteractive: boolean; onComplete(): void; onDelay(): void; onSkip(): void;
+  routineId: number; seed: number;
+}) {
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !item) return null;
+
+  const img = getActivityImage(item.category, item.activity, seed);
+  const status = item.status ?? "pending";
+  const isPending = status === "pending";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="routine-modal-enter bg-card w-full sm:max-w-md max-h-[92vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Hero image */}
+        <div className="relative h-52 overflow-hidden rounded-t-3xl sm:rounded-t-3xl bg-muted shrink-0">
+          <img src={img.src} alt={item.activity} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="absolute bottom-3 left-4 right-4">
+            <h2 className="text-xl font-black text-white leading-tight" style={{ wordBreak: "break-word" }}>
+              {item.activity}
+            </h2>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-white/80 text-xs font-medium">{item.time} · {item.duration}m</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">{item.category}</span>
+              {status === "completed" && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-500/80 text-white">✓ Done</span>}
+              {status === "skipped" && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-500/80 text-white">Skipped</span>}
+              {status === "delayed" && <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/80 text-white">⏱ Delayed</span>}
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-4">
+          {/* Skip reason */}
+          {item.skipReason && (
+            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-2xl p-3">
+              <span className="text-amber-500 mt-0.5">⚠️</span>
+              <p className="text-sm text-amber-800 font-medium leading-relaxed" style={{ wordBreak: "break-word" }}>{item.skipReason}</p>
+            </div>
+          )}
+
+          {/* Notes / meal options */}
+          {item.notes && item.notes.startsWith("Options:") ? (
+            <div className="space-y-2">
+              <p className="text-sm font-bold text-foreground">🍽️ Meal options</p>
+              <div className="flex flex-wrap gap-2">
+                {item.notes.replace("Options:", "").split("|").map((opt, oi) => (
+                  <span key={oi} className="text-sm font-medium px-3 py-1.5 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                    {opt.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : item.notes ? (
+            <div className="bg-muted/50 rounded-2xl p-4">
+              <p className="text-sm font-bold text-foreground mb-1">📋 Instructions</p>
+              <p className="text-sm text-muted-foreground leading-relaxed" style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+                {item.notes}
+              </p>
+            </div>
+          ) : null}
+
+          {/* Actions */}
+          {isInteractive && isPending && (
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              <button
+                onClick={() => { onComplete(); onClose(); }}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 active:scale-95 transition-all"
+              >
+                <Check className="h-5 w-5" />
+                <span className="text-xs font-bold">Complete</span>
+              </button>
+              <button
+                onClick={() => { onDelay(); onClose(); }}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 active:scale-95 transition-all"
+              >
+                <Clock className="h-5 w-5" />
+                <span className="text-xs font-bold">Delay +15m</span>
+              </button>
+              <button
+                onClick={() => { onSkip(); onClose(); }}
+                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-muted border border-border text-muted-foreground hover:bg-muted/80 active:scale-95 transition-all"
+              >
+                <SkipForward className="h-5 w-5" />
+                <span className="text-xs font-bold">Skip</span>
+              </button>
+            </div>
+          )}
+          {isInteractive && !isPending && (
+            <button
+              onClick={() => { onComplete(); onClose(); }}
+              className="w-full py-3 rounded-2xl bg-muted border border-border text-muted-foreground text-sm font-bold hover:bg-muted/80 transition-colors"
+            >
+              ↩ Mark as pending again
+            </button>
+          )}
+
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-2xl border border-border text-foreground text-sm font-bold hover:bg-muted/50 transition-colors"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -315,6 +447,9 @@ export default function RoutineDetail() {
   // Partial regen
   const [partialRegenLoading, setPartialRegenLoading] = useState(false);
   const [addActivityLoading, setAddActivityLoading] = useState(false);
+
+  // Expanded item modal
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   // Undo state
   const [undoSnapshot, setUndoSnapshot] = useState<RoutineItem[] | null>(null);
@@ -926,14 +1061,11 @@ export default function RoutineDetail() {
                   )}
                 </div>
 
-                {/* Swipeable wrapper */}
-                <SwipeableItem
-                  onComplete={() => updateItemStatus(index, "completed")}
-                  onSkip={() => updateItemStatus(index, "skipped")}
-                  disabled={!isInteractive || status === "completed" || status === "skipped" || editingIndex === index}
+                {/* Activity Card — click to expand */}
+                <Card
+                  className={`flex-1 min-w-0 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}
+                  onClick={() => editingIndex === null && setExpandedIndex(index)}
                 >
-                {/* Activity Card */}
-                <Card className={`rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}>
                   {item.category === "bonding" && (
                     <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-rose-500 text-xs">❤️</span>
@@ -1023,7 +1155,7 @@ export default function RoutineDetail() {
                             </div>
                           ) : (
                           <>
-                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug break-words line-clamp-2 ${status === "skipped" ? "line-through text-muted-foreground" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word" }}>
+                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug ${status === "skipped" ? "line-through text-muted-foreground" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" }}>
                             {item.activity}
                           </h3>
                           {/* Priority badge for high-priority tasks */}
@@ -1084,20 +1216,22 @@ export default function RoutineDetail() {
                         </div>
                       </div>
 
-                      {/* Status action buttons — hidden when editing or non-interactive */}
-                      {isInteractive && editingIndex !== index && status !== "completed" && status !== "skipped" && (
-                        <div className="flex gap-2 flex-wrap">
+                      {/* Slide-to-complete — only for pending interactive tasks */}
+                      {isInteractive && editingIndex !== index && status !== "completed" && status !== "skipped" && status !== "delayed" && (
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <SlideToComplete
+                            onComplete={() => updateItemStatus(index, "completed")}
+                          />
+                        </div>
+                      )}
+                      {/* Quick action row for delayed/non-pending */}
+                      {isInteractive && editingIndex !== index && status === "delayed" && (
+                        <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => updateItemStatus(index, "completed")}
                             className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition-colors border border-green-200"
                           >
                             <Check className="h-3 w-3" /> Complete
-                          </button>
-                          <button
-                            onClick={() => updateItemStatus(index, "delayed")}
-                            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors border border-amber-200"
-                          >
-                            <Clock className="h-3 w-3" /> Delayed (+15m)
                           </button>
                           <button
                             onClick={() => updateItemStatus(index, "skipped")}
@@ -1120,25 +1254,32 @@ export default function RoutineDetail() {
                     </div>
                   </CardContent>
                 </Card>
-                </SwipeableItem>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* ── Swipe hint (only on today's interactive routines) ───────── */}
+      {/* ── Tap hint ───────────────────────────────────────────────── */}
       {dateMode !== "past" && items.some(i => !i.status || i.status === "pending") && (
-        <div className="flex items-center justify-center gap-4 py-2 text-muted-foreground">
-          <span className="flex items-center gap-1.5 text-xs">
-            <span className="text-base">👈</span> Swipe left to skip
-          </span>
-          <span className="text-xs">·</span>
-          <span className="flex items-center gap-1.5 text-xs">
-            Swipe right to complete <span className="text-base">👉</span>
-          </span>
+        <div className="flex items-center justify-center gap-2 py-2 text-muted-foreground">
+          <span className="text-xs">👆 Tap any card to view details &amp; more actions</span>
         </div>
       )}
+
+      {/* ── Item expand modal ───────────────────────────────────────── */}
+      <RoutineItemModal
+        item={expandedIndex !== null ? items[expandedIndex] : null}
+        index={expandedIndex ?? 0}
+        isOpen={expandedIndex !== null}
+        onClose={() => setExpandedIndex(null)}
+        isInteractive={expandedIndex !== null ? dateMode !== "past" : false}
+        onComplete={() => { if (expandedIndex !== null) updateItemStatus(expandedIndex, (items[expandedIndex]?.status === "completed") ? "pending" : "completed"); }}
+        onDelay={() => { if (expandedIndex !== null) updateItemStatus(expandedIndex, "delayed"); }}
+        onSkip={() => { if (expandedIndex !== null) updateItemStatus(expandedIndex, "skipped"); }}
+        routineId={routineId}
+        seed={expandedIndex !== null ? (routineId ?? 0) * 100 + expandedIndex : 0}
+      />
 
       {/* ── Global floating undo chip ───────────────────────────────── */}
       {undoSnapshot && (
