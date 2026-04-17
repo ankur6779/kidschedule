@@ -236,6 +236,8 @@ export default function AICoachPage() {
     if (!plan || !lastPayloadRef.current || extending) return;
     const failedWin = plan.wins.find((w) => w.win === failedWinNumber);
     if (!failedWin) return;
+    // Capture the card the user is currently on — we'll go one step forward from here
+    const nextIdx = activeIdx + 1;
     setExtending(true);
     try {
       const startWinNumber = plan.wins.length + 1;
@@ -256,10 +258,10 @@ export default function AICoachPage() {
         setPlan((p) => p ? { ...p, wins: [...p.wins, ...data.wins] } : p);
         toast({
           title: "3 new strategies added 💛",
-          description: "Different angles — try the next one.",
+          description: "Scroll to the end of your deck to see them.",
         });
-        // Auto-scroll to the first new win after the DOM updates
-        setTimeout(() => goToCard(startWinNumber - 1), 80);
+        // Go to the very next card from where the user tapped — NOT the extension cards
+        setTimeout(() => goToCard(nextIdx), 80);
       }
     } catch {
       toast({
