@@ -13,15 +13,18 @@ interface Win {
   win: number;
   title: string;
   objective: string;
+  deep_explanation: string;
   actions: string[];
-  activity: string;
-  science: string;
+  example: string;
+  mistake_to_avoid: string;
+  micro_task: string;
   duration: string;
   image?: string;
 }
 
 interface CoachPlan {
   title: string;
+  root_cause: string;
   summary: string;
   wins: Win[];
 }
@@ -35,7 +38,7 @@ interface CoachInput {
 }
 
 // ─── Config ──────────────────────────────────────────────────────────────
-const NAMESPACE = "ai_coach_v2";
+const NAMESPACE = "ai_coach_v3";
 const DB_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const MEMORY_TTL_MS = 10 * 60 * 1000;
 const MEMORY_MAX = 200;
@@ -62,34 +65,40 @@ const clip = (s: unknown, max: number): string =>
 
 function buildCacheKey(input: CoachInput): string {
   const triggers = (input.triggers ?? []).map(norm).filter(Boolean).sort().join("-");
-  const raw = `${norm(input.goal)}_${norm(input.ageGroup)}_${norm(input.severity)}_${triggers}_${norm(input.routine)}`;
+  // Namespace is part of the raw key so a version bump (v2 → v3) produces a
+  // completely different cacheKey — old rows can never be served to the new schema.
+  const raw = `${NAMESPACE}_${norm(input.goal)}_${norm(input.ageGroup)}_${norm(input.severity)}_${triggers}_${norm(input.routine)}`;
   return createHash("sha1").update(raw).digest("hex");
 }
+
+const isStr = (v: unknown): v is string =>
+  typeof v === "string" && v.trim().length > 0;
 
 function validateWin(w: unknown): w is Win {
   if (!w || typeof w !== "object") return false;
   const o = w as Record<string, unknown>;
   return (
     typeof o.win === "number" &&
-    typeof o.title === "string" && o.title.trim().length > 0 &&
-    typeof o.objective === "string" && o.objective.trim().length > 0 &&
-    Array.isArray(o.actions) && o.actions.length >= 1 &&
-    o.actions.every((a) => typeof a === "string" && a.trim().length > 0) &&
-    typeof o.activity === "string" && o.activity.trim().length > 0 &&
-    typeof o.science === "string" && o.science.trim().length > 0 &&
-    typeof o.duration === "string" && o.duration.trim().length > 0
+    isStr(o.title) &&
+    isStr(o.objective) &&
+    isStr(o.deep_explanation) &&
+    Array.isArray(o.actions) && o.actions.length >= 3 && o.actions.length <= 6 &&
+    o.actions.every(isStr) &&
+    isStr(o.example) &&
+    isStr(o.mistake_to_avoid) &&
+    isStr(o.micro_task) &&
+    isStr(o.duration)
   );
 }
 
 function validatePlan(p: unknown): p is CoachPlan {
   if (!p || typeof p !== "object") return false;
   const o = p as Record<string, unknown>;
-  return (
-    typeof o.title === "string" && o.title.trim().length > 0 &&
-    typeof o.summary === "string" && o.summary.trim().length > 0 &&
-    Array.isArray(o.wins) && o.wins.length >= 5 && o.wins.length <= 8 &&
-    o.wins.every(validateWin)
-  );
+  if (!isStr(o.title) || !isStr(o.root_cause) || !isStr(o.summary)) return false;
+  if (!Array.isArray(o.wins) || o.wins.length < 10 || o.wins.length > 12) return false;
+  if (!o.wins.every(validateWin)) return false;
+  // Ensure wins are numbered 1..N in order
+  return o.wins.every((w, i) => (w as Win).win === i + 1);
 }
 
 // ─── Goal display labels (used in fallback + prompts) ────────────────────
@@ -106,49 +115,116 @@ const GOAL_LABELS: Record<string, string> = {
 function fallbackPlan(input: CoachInput): CoachPlan {
   const label = GOAL_LABELS[input.goal ?? ""] ?? "Your Parenting Goal";
   const ageGroup = input.ageGroup || "your child's age";
-  const mk = (n: number, t: string, o: string, acts: string[], activity: string, science: string, dur: string): Win => ({
-    win: n, title: t, objective: o, actions: acts, activity, science, duration: dur,
+  const mk = (
+    n: number, title: string, objective: string, deep: string,
+    actions: string[], example: string, mistake: string, micro: string, dur: string
+  ): Win => ({
+    win: n, title, objective, deep_explanation: deep, actions,
+    example, mistake_to_avoid: mistake, micro_task: micro, duration: dur,
   });
   return {
     title: label,
+    root_cause:
+      `At ${ageGroup}, the prefrontal cortex (the brain's brake pedal) is still developing — kids physically cannot self-regulate the way adults can. What looks like 'misbehaviour' is usually a nervous system that's overloaded, an unmet need (sleep, hunger, connection), or a developmental skill that hasn't been built yet.`,
     summary:
-      `At ${ageGroup}, your child's brain is still building self-regulation circuits. The goal isn't compliance — it's slowly building the skill of managing this behaviour through consistent, warm guidance.`,
+      `This is a structured 12-step plan that moves from connection → consistent expectations → skill-building → repair → habit lock-in. Don't rush — each win is a complete module designed to actually shift the underlying pattern, not just paper over it.`,
     wins: [
-      mk(1, "Connect before you correct", "Open communication so your child listens",
-         ["Get on eye level before speaking", "Name what you see ('I see you're upset')", "Wait 10 seconds before giving instruction"],
-         "5-minute 'special time': child picks the activity, you put your phone down, fully present.",
-         "Connection activates the prefrontal cortex (Daniel Siegel) — kids cooperate when they feel safe.",
+      mk(1, "Connect before you correct",
+         "Open communication so your child listens",
+         "Children's brains literally cannot access logic when they feel disconnected or threatened. Connection lowers cortisol, activates the prefrontal cortex, and tells the nervous system 'I'm safe' — only THEN can a child receive guidance. Skip this step and every other strategy will feel like pushing a boulder uphill.",
+         ["Get on eye level before speaking — physically lower yourself", "Name what you see without judgment ('I see you're upset, your body is moving fast')", "Wait 10 full seconds in silence before giving any instruction", "Touch shoulder or offer hand if welcomed"],
+         "Sara's 4-year-old was throwing toys. Instead of 'Stop that!', she knelt down and said 'Looks like something is really frustrating.' He paused, said 'I wanted the red one.' Connection took 30 seconds; the meltdown was avoided.",
+         "Talking to your child from across the room or while distracted by your phone — they read this as 'not safe to listen' even if your words are kind.",
+         "Today: try 5 minutes of 'special time' — child picks the activity, phone away, fully present.",
          "2–3 days"),
-      mk(2, "Set ONE clear expectation", "Reduce confusion and power struggles",
-         ["Pick the single most important rule", "Phrase it positively ('We use gentle hands') not negatively", "Repeat it the same way every day"],
-         "Make a 'house rule' poster together with stickers your child chooses.",
-         "Predictability lowers cortisol and supports executive function.",
+      mk(2, "Identify the real trigger",
+         "Stop guessing — find the actual root",
+         "90% of recurring behaviour has a predictable trigger: hunger, tired, transition, sensory overload, or unmet emotional need. When you can name the trigger, you stop fighting the behaviour and start solving the cause. This is the single biggest shift parents make.",
+         ["Track for 3 days: what time, what happened just before, last meal, last sleep", "Look for patterns (4pm meltdown = hunger; pre-bath = transition)", "Ask your child softly when calm: 'What was hardest today?'"],
+         "Maya tracked her 5-year-old's tantrums for 3 days — every single one happened between 5–6pm. Earlier dinner = problem solved.",
+         "Treating every meltdown as 'bad behaviour' rather than data — the behaviour IS the message.",
+         "Today: keep a 3-line note in your phone every time the behaviour shows up — time, situation, what was happening 30 min before.",
+         "3 days"),
+      mk(3, "Set ONE clear expectation",
+         "Reduce confusion and decision fatigue",
+         `Children at ${ageGroup} can hold 1–2 rules in working memory at a time. When parents juggle 10 expectations, kids freeze, comply randomly, or push back hard. ONE clear, repeated, positively-phrased rule beats 10 vague ones every time.`,
+         ["Pick the single most important rule for this week", "Phrase positively ('We use gentle hands') not negatively ('Don't hit')", "Repeat it the same exact way every time it applies"],
+         "Instead of 'Don't run, don't yell, don't hit your sister' — Anna chose ONE: 'In our home we keep our bodies safe.' Repeated that line for a week.",
+         "Adding a new rule each time something annoys you — kids tune out the noise.",
+         "Write ONE rule on a sticky note. Stick it on the fridge. Use it when needed.",
          "3–4 days"),
-      mk(3, "Offer two good choices", "Give autonomy without losing the limit",
-         ["'Do you want X or Y?' — both must be acceptable to you", "Avoid open-ended questions during conflict", "Let the choice stand"],
-         "Choice game: at one transition today, give two options for everything (shoes, snack, route).",
-         "Autonomy is a core developmental need (self-determination theory) — choices reduce resistance.",
+      mk(4, "Offer two real choices",
+         "Give autonomy without losing the limit",
+         "Autonomy is a core developmental need (self-determination theory). When children feel they have NO control, they create some — by resisting. Two limited choices give them genuine agency while you keep the boundary that matters.",
+         ["'Do you want X or Y?' — both options must be acceptable to you", "Never offer a choice during a full meltdown — wait for calm", "Honour the choice once made"],
+         "Bath fight every night. Dad switched from 'Time for bath' to 'Bath now or in 5 minutes?' — fights stopped in 2 days.",
+         "Offering fake choices ('Do you want to do X or do you want a time-out?') — kids feel tricked.",
+         "At one transition today, swap a command for a choice.",
          "3–4 days"),
-      mk(4, "Hold the limit, kindly", "Stay calm even when your child isn't",
-         ["Lower your voice instead of raising it", "Validate the feeling, hold the limit ('I know — and the answer is no')", "Stay near, don't lecture"],
-         "Practice your own breathing: 4 in, 7 hold, 8 out — twice — before responding to a hard moment.",
-         "Calm parents co-regulate — kids borrow your nervous system to settle theirs (Mona Delahooke).",
+      mk(5, "Co-regulate before correcting",
+         "Lend your calm — borrow theirs later",
+         "Children regulate through their parent's nervous system before they can do it alone. When you're activated, they amplify; when you're calm, they slowly settle. This is biological co-regulation (Stephen Porges' Polyvagal Theory) — not a parenting trick.",
+         ["Lower your voice instead of raising it", "Drop your shoulders, soften your face", "Breathe slowly and visibly — they will mirror you", "Validate first ('This is hard'), correct later"],
+         "Priya started doing 4-7-8 breathing audibly when her son melted down. Within a week he was breathing with her.",
+         "Trying to teach a regulation skill mid-meltdown — the lesson can only land afterward.",
+         "Practice 4-in / 7-hold / 8-out breathing twice today, before any tough moment.",
          "1 week"),
-      mk(5, "Repair after rupture", "Repair > perfection",
-         ["When you lose your cool, come back later", "Take ownership ('I yelled — that wasn't your fault')", "Reconnect physically (hug, sit together)"],
-         "Bedtime check-in: 'Best part of today? Hardest part?' — every night for 7 days.",
-         "Repair builds attachment security and teaches kids that mistakes are recoverable (John Gottman).",
+      mk(6, "Hold the limit kindly",
+         "Stay warm AND firm — they aren't opposites",
+         "Kids feel safer when limits hold even under pressure. A wobbling limit teaches 'if I push hard enough, the rule changes' — which makes future pushes louder. Holding the limit while staying warm is the gentle-discipline gold standard.",
+         ["Validate the feeling, hold the limit: 'I know — and the answer is still no'", "Stay nearby, don't lecture, don't punish in heat", "Repeat the rule once, then stop talking"],
+         "'I see you really want more screen time. Screen time is done for today. I'm right here if you want a hug.' Said calmly, on repeat.",
+         "Caving when the meltdown gets loud — this teaches escalation works.",
+         "Today: pick ONE limit you've been wobbling on. Hold it warmly today.",
          "1 week"),
-      mk(6, "Track tiny wins", "Notice progress so you don't give up",
-         ["Each evening, write down ONE thing that went better", "Look for 5% improvement, not 100%", "Share the win with your child"],
-         "Make a 'wins jar' — drop a paper note in for any small success this week.",
-         "Self-monitoring increases follow-through (Behavioural Activation research).",
+      mk(7, "Build the missing skill",
+         "Don't punish what hasn't been taught",
+         "Most repeated behaviour problems are missing skills, not missing motivation. A child who can't transition needs transition practice; a child who lashes out needs anger-language practice. Skills are built through low-stakes repetition, not consequences.",
+         ["Name the skill out loud ('We're learning how to wait')", "Practice during calm moments, not during crisis", "Praise the attempt, not just the success"],
+         "5-year-old kept hitting when frustrated. Mom made a 'feelings poster' and practiced naming feelings during car rides — hitting dropped in 2 weeks.",
+         "Expecting a child to do something they've never been taught to do.",
+         "Pick ONE skill (waiting, sharing, transitioning) — practice for 3 minutes during calm time today.",
+         "1–2 weeks"),
+      mk(8, "Repair after rupture",
+         "Repair > perfection — every time",
+         "Every parent loses it sometimes. What matters is what happens next. Repair (owning your part, reconnecting) builds attachment security and teaches your child that mistakes are recoverable — one of the most important life skills they'll ever learn.",
+         ["When you lose your cool, return when calm", "Take ownership: 'I yelled. That wasn't your fault. I'm sorry.'", "Reconnect physically — hug, sit together, read a book"],
+         "After yelling at her son, Lina sat next to him 10 minutes later: 'I yelled. That was about my stress, not you. I love you.' He hugged her back.",
+         "Pretending the rupture didn't happen, OR over-apologising in a way that puts the child in a parental role.",
+         "Tonight: bedtime check-in — 'Best part of today? Hardest part?'",
+         "Ongoing"),
+      mk(9, "Track tiny wins daily",
+         "Notice progress so you don't give up",
+         "Behaviour change is invisible day-to-day but obvious week-to-week. Without a tracking system, your brain remembers only the bad moments and concludes 'nothing is working' — when real progress is happening underneath.",
+         ["Each evening, write ONE thing that went 5% better", "Look for partial wins — '20 sec less screaming' is a win", "Share the win with your child the next morning"],
+         "Raj's wins jar: 'Bedtime took 25 min instead of 40.' After 2 weeks, the jar full of small wins kept him going.",
+         "Comparing to other families' kids — your only baseline is YOUR child last week.",
+         "Tonight: text yourself or a partner ONE small win.",
          "1 week"),
-      mk(7, "Stay consistent for 14 days", "Lock in the new pattern",
-         ["Use the same response every time, every day", "Resist switching strategies if it 'isn't working' yet", "Expect a 'burst' of resistance around day 5"],
-         "Mark a calendar each day you held the new approach — visible streak builds momentum.",
-         "Behaviours change after roughly 14–21 days of consistent response (habit-formation research).",
+      mk(10, "Hold consistency for 14 days",
+         "Lock in the new pattern",
+         "Behaviours rewire after 14–21 days of consistent response. Most parents quit at day 5 because that's when kids ESCALATE — testing whether the new boundary is real. Holding through the day-5 burst is when the real change happens.",
+         ["Use the same response every time, every day, even when tired", "Expect a 'protest burst' around day 5 — this means it's working", "Resist switching strategies — give it the full 14 days"],
+         "Asha gave up at day 6 every time. The 7th time she pushed through — by day 12 her daughter was sleeping through the night.",
+         "Switching tactics mid-stream because 'it's not working yet' — change needs runway.",
+         "Mark a calendar each day you held the new approach — visible streak.",
          "2 weeks"),
+      mk(11, "Maintain through setbacks",
+         "Regression is part of the path, not the end of it",
+         "Kids regress before big developmental leaps and during stress (illness, new sibling, school changes). A regression isn't failure — it's a sign your child is reorganising. Return to the basics: connect first, hold the limit, repair.",
+         ["Expect regression around big transitions", "Drop expectations slightly — return to win 1 (connect)", "Don't restart the plan — resume from where you were"],
+         "Two months in, a stomach bug + new school caused a setback. Parents went back to extra connection time for 4 days — pattern returned.",
+         "Treating regression as evidence the plan failed and abandoning it.",
+         "When setback hits: extra 5 min of special time daily for 3 days.",
+         "Ongoing"),
+      mk(12, "Make it a family value",
+         "Move from rules to identity",
+         "The deepest behaviour change happens when 'we don't hit' becomes 'we are a gentle family' — when the behaviour expresses identity, not just compliance. This is what makes change last into the teen years and beyond.",
+         ["Use 'we' language: 'In our home we…'", "Tell stories of family identity: 'We're the family that talks it out'", "Notice and name when your child lives the value"],
+         "Family motto on the fridge: 'We are kind, we are brave, we try again.' Kids quoted it back during arguments.",
+         "Skipping this final step — without identity, behaviour reverts to baseline under stress.",
+         "Tonight at dinner: ask 'What's one thing our family is really good at?'",
+         "Ongoing"),
     ],
   };
 }
@@ -230,11 +306,12 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
   const goalLabel = GOAL_LABELS[input.goal!] ?? input.goal;
   const triggers = (input.triggers ?? []).join(", ") || "not specified";
 
-  const systemPrompt = `You are an expert parenting coach trained in child psychology, behavioural science, and gentle-discipline research (Dan Siegel, Becky Kennedy, Mona Delahooke, Tina Payne Bryson).
-You give parents calm, practical, evidence-based guidance — never generic, never preachy.
-You ALWAYS return valid JSON only. No markdown, no commentary, no code fences.`;
+  const systemPrompt = `You are a child psychologist and parenting expert combining behavioural science, neuroscience, attachment theory, and habit-formation research (Dan Siegel, Becky Kennedy, Mona Delahooke, Tina Payne Bryson, Stephen Porges, BJ Fogg).
+You give parents DEEP, complete, step-by-step solutions — never short generic tips.
+Every win you write must feel like a complete module a parent can implement and see results from.
+You ALWAYS return valid JSON only. No markdown, no commentary, no code fences, no preamble.`;
 
-  const userPrompt = `Create a personalized 6-win action plan for this parenting goal.
+  const userPrompt = `Build a complete 12-win behaviour-change plan for this parenting goal.
 
 Goal: ${goalLabel}
 Child age group: ${input.ageGroup} years
@@ -244,29 +321,34 @@ Current routine/approach: ${input.routine}
 
 Return ONLY valid JSON in this EXACT shape:
 {
-  "title": "Short empathetic title naming the goal",
-  "summary": "2-3 sentence simple-science explanation of WHY this challenge happens at this age (mention developing brain / nervous system / specific developmental need)",
+  "title": "Empathetic title naming the goal in 4-6 words",
+  "root_cause": "3-4 sentence neuroscience/developmental explanation of WHY this challenge happens at this age. Reference brain development, nervous system, or a specific developmental need. Be specific, not generic.",
+  "summary": "2 sentence overview of how the 12 wins progress from connection → diagnosis → skill-building → consistency → identity",
   "wins": [
     {
       "win": 1,
-      "title": "Short imperative win title (3-6 words)",
-      "objective": "ONE sentence: what this step achieves for the parent and child",
-      "actions": ["Action 1 (concrete, today)", "Action 2", "Action 3"],
-      "activity": "ONE specific parent-child activity that takes <10 minutes and reinforces this win",
-      "science": "ONE sentence research-backed reasoning (mention a researcher, study area, or principle)",
-      "duration": "How long to practice before moving on (e.g. '2-3 days', '1 week', '2 weeks')"
+      "title": "Clear imperative step name (3-6 words)",
+      "objective": "ONE sentence: what this step fixes for parent and child",
+      "deep_explanation": "5-6 lines explaining WHY this works (neuroscience, developmental psychology, or behavioural science). Reference a researcher/principle. Make a parent who reads ONLY this section understand the science.",
+      "actions": ["Specific action 1 (concrete, doable today)", "Specific action 2", "Specific action 3", "Specific action 4 (optional)"],
+      "example": "ONE realistic 2-3 sentence story of a parent applying this step and what shifted",
+      "mistake_to_avoid": "ONE sentence naming the most common parenting mistake that undermines this step",
+      "micro_task": "ONE small task the parent can do TODAY in under 5 minutes to start practising this win",
+      "duration": "How long to practice (e.g. '2-3 days', '1 week', '2 weeks', 'Ongoing')"
     }
   ]
 }
 
-RULES:
-- Exactly 6 wins, numbered 1-6
-- Each win builds on the previous (progression: connect → set expectations → practice → consistency → repair → consolidate)
-- Tone: warm, calm, non-judgmental, specific to age ${input.ageGroup} years
-- Each "actions" array MUST have 2-4 items
-- Activities and tips must be immediately doable today
-- Reference behavioural-science principles in "science"
-- Output ONLY the JSON object`;
+STRICT RULES:
+- EXACTLY 12 wins, numbered 1 through 12 in order
+- Progression must follow: (1-2) Connect & diagnose root cause → (3-4) Set expectations & give autonomy → (5-7) Build regulation & skills → (8-9) Repair & track → (10-11) Consistency & setbacks → (12) Family identity
+- Each win is a COMPLETE module — no overlaps, no repetition
+- Tone: warm, calm, non-judgmental, specific to ${input.ageGroup} years
+- Each "actions" array MUST have 3-5 items
+- Examples must feel real, with names and specifics — not abstract
+- Reference at least 5 different researchers/principles across the 12 wins
+- "deep_explanation" must be substantive — not 1 line
+- Output ONLY the JSON object — no other text`;
 
   let plan: CoachPlan;
   let aiOk = true;
@@ -279,7 +361,7 @@ RULES:
         { role: "user", content: userPrompt },
       ],
       response_format: { type: "json_object" },
-      max_completion_tokens: 3500,
+      max_completion_tokens: 8000,
     });
     const rawContent = completion.choices[0]?.message?.content?.trim() ?? "";
     try {

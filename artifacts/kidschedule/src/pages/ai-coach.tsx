@@ -45,13 +45,15 @@ interface Win {
   win: number;
   title: string;
   objective: string;
+  deep_explanation: string;
   actions: string[];
-  activity: string;
-  science: string;
+  example: string;
+  mistake_to_avoid: string;
+  micro_task: string;
   duration: string;
   image?: string;
 }
-interface Plan { title: string; summary: string; wins: Win[]; }
+interface Plan { title: string; root_cause: string; summary: string; wins: Win[]; }
 
 type Phase = "goals" | "questions" | "loading" | "result";
 
@@ -200,7 +202,7 @@ export default function AICoachPage() {
   // ─── Share / Save
   const handleShare = async () => {
     if (!plan) return;
-    const text = `${plan.title}\n\n${plan.summary}\n\nMy 6 wins from AmyNest AI Coach:\n${plan.wins.map((w) => `${w.win}. ${w.title}`).join("\n")}`;
+    const text = `${plan.title}\n\n${plan.summary}\n\nMy ${plan.wins.length} wins from AmyNest Amy Coach:\n${plan.wins.map((w) => `${w.win}. ${w.title}`).join("\n")}`;
     if (navigator.share) {
       try { await navigator.share({ title: plan.title, text }); } catch {}
     } else {
@@ -245,7 +247,7 @@ export default function AICoachPage() {
             AI Coach (Ask AMY)
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Pick a goal — I'll build a personalised, science-backed plan in 6 wins.
+            Pick a goal — I'll build a deep, science-backed plan in 12 step-by-step wins.
           </p>
         </div>
 
@@ -351,7 +353,7 @@ export default function AICoachPage() {
           </div>
           <h2 className="font-quicksand text-2xl font-bold">Building your plan…</h2>
           <p className="text-sm text-white/80 max-w-xs mx-auto">
-            Analysing your answers and crafting 6 research-backed wins for {selectedGoal?.title.toLowerCase()}.
+            Analysing your answers and crafting 12 deep, research-backed wins for {selectedGoal?.title.toLowerCase()}. This takes ~10 seconds.
           </p>
         </div>
       </div>
@@ -419,6 +421,7 @@ export default function AICoachPage() {
               isFirst={i === 0}
               planTitle={i === 0 ? plan.title : undefined}
               planSummary={i === 0 ? plan.summary : undefined}
+              planRootCause={i === 0 ? plan.root_cause : undefined}
               showFeedback={!feedbackPrompted[w.win]}
               onFeedback={(f) => submitFeedback(w.win, f)}
             />
@@ -456,7 +459,7 @@ export default function AICoachPage() {
 // WIN CARD
 // ═══════════════════════════════════════════════════════════════════════════
 function WinCard({
-  win, total, imageError, onImageError, isFirst, planTitle, planSummary,
+  win, total, imageError, onImageError, isFirst, planTitle, planSummary, planRootCause,
   showFeedback, onFeedback,
 }: {
   win: Win;
@@ -466,11 +469,18 @@ function WinCard({
   isFirst: boolean;
   planTitle?: string;
   planSummary?: string;
+  planRootCause?: string;
   showFeedback: boolean;
   onFeedback: (f: "yes" | "somewhat" | "no") => void;
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [lastFeedback, setLastFeedback] = useState<"yes" | "somewhat" | "no" | null>(null);
   const showImage = win.image && !imageError;
+
+  const handleFeedback = (f: "yes" | "somewhat" | "no") => {
+    setLastFeedback(f);
+    onFeedback(f);
+  };
 
   return (
     <div
@@ -480,9 +490,9 @@ function WinCard({
         background: "#000", overflow: "hidden",
       }}
     >
-      {/* Image area (50%) */}
+      {/* Image area (38%) */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "50%",
+        position: "absolute", top: 0, left: 0, right: 0, height: "38%",
         background: "linear-gradient(135deg, #fbcfe8 0%, #ddd6fe 50%, #c7d2fe 100%)",
         overflow: "hidden",
       }}>
@@ -523,24 +533,35 @@ function WinCard({
         </div>
       </div>
 
-      {/* Bottom dark overlay (50%) — scrollable content */}
+      {/* Bottom dark overlay (62%) — scrollable rich content */}
       <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
-        background: "linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.95) 30%, #000 100%)",
+        position: "absolute", bottom: 0, left: 0, right: 0, height: "62%",
+        background: "linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.95) 18%, #000 100%)",
         color: "#fff",
-        padding: "20px 20px 90px",
+        padding: "20px 20px 110px",
         overflowY: "auto",
         WebkitOverflowScrolling: "touch",
       }}>
         {isFirst && planTitle && (
-          <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
+          <div style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
               YOUR PLAN
             </p>
             <h2 style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
               {planTitle}
             </h2>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.45 }}>
+            {planRootCause && (
+              <div style={{
+                background: "rgba(244,114,182,0.12)", border: "1px solid rgba(244,114,182,0.3)",
+                borderRadius: 12, padding: 10, marginTop: 8, marginBottom: 8,
+              }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#fbcfe8", marginBottom: 4 }}>
+                  🧠 ROOT CAUSE
+                </p>
+                <p style={{ fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.9)" }}>{planRootCause}</p>
+              </div>
+            )}
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.45 }}>
               {planSummary}
             </p>
           </div>
@@ -549,65 +570,109 @@ function WinCard({
         <h3 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
           {win.title}
         </h3>
-        <p style={{ fontSize: 13, color: "#fbcfe8", marginBottom: 14, lineHeight: 1.4 }}>
+        <p style={{ fontSize: 13, color: "#fbcfe8", marginBottom: 14, lineHeight: 1.4, fontWeight: 600 }}>
           {win.objective}
         </p>
 
-        <div style={{ marginBottom: 14 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#a78bfa", marginBottom: 6 }}>DO THIS</p>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* WHY THIS WORKS */}
+        {win.deep_explanation && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#93c5fd", marginBottom: 6 }}>
+              🔬 WHY THIS WORKS
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.92)" }}>
+              {win.deep_explanation}
+            </p>
+          </div>
+        )}
+
+        {/* DO THIS */}
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#a78bfa", marginBottom: 8 }}>✅ DO THIS</p>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
             {win.actions.map((a, i) => (
-              <li key={i} style={{ fontSize: 13, lineHeight: 1.4, display: "flex", gap: 8, color: "rgba(255,255,255,0.95)" }}>
-                <span style={{ color: "#a78bfa", fontWeight: 700 }}>›</span>
+              <li key={i} style={{ fontSize: 13, lineHeight: 1.45, display: "flex", gap: 8, color: "rgba(255,255,255,0.95)" }}>
+                <span style={{
+                  flexShrink: 0, width: 20, height: 20, borderRadius: 999,
+                  background: "rgba(167,139,250,0.25)", color: "#c4b5fd",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 800, marginTop: 1,
+                }}>{i + 1}</span>
                 <span>{a}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        <div style={{
-          background: "rgba(167,139,250,0.18)", border: "1px solid rgba(167,139,250,0.4)",
-          borderRadius: 14, padding: 12, marginBottom: 12,
-        }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
-            💡 TRY TODAY
-          </p>
-          <p style={{ fontSize: 13, lineHeight: 1.4, color: "#fff" }}>{win.activity}</p>
-        </div>
+        {/* REAL EXAMPLE */}
+        {win.example && (
+          <div style={{
+            background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)",
+            borderRadius: 14, padding: 12, marginBottom: 12,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#86efac", marginBottom: 4 }}>
+              💬 REAL EXAMPLE
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff", fontStyle: "italic" }}>{win.example}</p>
+          </div>
+        )}
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 999, background: "rgba(255,255,255,0.12)", color: "#fff", fontWeight: 600 }}>
-            ⏱ {win.duration}
+        {/* MISTAKE TO AVOID */}
+        {win.mistake_to_avoid && (
+          <div style={{
+            background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.35)",
+            borderRadius: 14, padding: 12, marginBottom: 12,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#fca5a5", marginBottom: 4 }}>
+              ⚠️ MISTAKE TO AVOID
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff" }}>{win.mistake_to_avoid}</p>
+          </div>
+        )}
+
+        {/* MICRO-TASK FOR TODAY */}
+        {win.micro_task && (
+          <div style={{
+            background: "linear-gradient(135deg, rgba(167,139,250,0.25), rgba(236,72,153,0.2))",
+            border: "1px solid rgba(167,139,250,0.5)",
+            borderRadius: 14, padding: 14, marginBottom: 14,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
+              🎯 DO THIS TODAY (under 5 min)
+            </p>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#fff", fontWeight: 600 }}>{win.micro_task}</p>
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.12)", color: "#fff", fontWeight: 600 }}>
+            ⏱ Practice for {win.duration}
           </span>
         </div>
 
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5, fontStyle: "italic", marginBottom: 16 }}>
-          📚 {win.science}
-        </p>
-
-        {/* Feedback prompt */}
+        {/* Mark as Done + feedback flow */}
         {showFeedback && (
           <div style={{
-            background: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(139,92,246,0.2))",
+            background: "linear-gradient(135deg, rgba(236,72,153,0.18), rgba(139,92,246,0.18))",
             border: "1px solid rgba(236,72,153,0.4)",
-            borderRadius: 14, padding: 14, marginBottom: 8,
+            borderRadius: 16, padding: 14, marginBottom: 8,
           }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
-              Did this work for you?
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
+              How did this win go?
             </p>
             <div style={{ display: "flex", gap: 6 }}>
               {([
-                { v: "yes" as const,      label: "Yes 🎉" },
-                { v: "somewhat" as const, label: "Somewhat" },
-                { v: "no" as const,       label: "Not yet" },
+                { v: "yes" as const,      label: "Worked ✓",    bg: "rgba(34,197,94,0.25)",  border: "rgba(34,197,94,0.5)" },
+                { v: "somewhat" as const, label: "Partially",   bg: "rgba(251,191,36,0.25)", border: "rgba(251,191,36,0.5)" },
+                { v: "no" as const,       label: "Not yet",     bg: "rgba(248,113,113,0.25)",border: "rgba(248,113,113,0.5)" },
               ]).map((b) => (
                 <button
                   key={b.v}
-                  onClick={() => onFeedback(b.v)}
+                  onClick={() => handleFeedback(b.v)}
                   style={{
-                    flex: 1, padding: "8px 6px", borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.3)",
-                    background: "rgba(255,255,255,0.1)", color: "#fff",
+                    flex: 1, padding: "10px 6px", borderRadius: 10,
+                    border: `1px solid ${b.border}`,
+                    background: b.bg, color: "#fff",
                     fontSize: 12, fontWeight: 700, cursor: "pointer",
                   }}
                 >
@@ -615,6 +680,45 @@ function WinCard({
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Inline extra-support card when "Not yet" */}
+        {lastFeedback === "no" && (
+          <div style={{
+            background: "rgba(99,102,241,0.18)", border: "1px solid rgba(99,102,241,0.45)",
+            borderRadius: 16, padding: 14, marginBottom: 8, marginTop: 4,
+          }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: "#a5b4fc", marginBottom: 6 }}>
+              💛 EXTRA SUPPORT
+            </p>
+            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff", marginBottom: 8 }}>
+              That's okay — real change is rarely linear. Two adjustments that often unlock this step:
+            </p>
+            <ul style={{ margin: 0, paddingLeft: 18, color: "rgba(255,255,255,0.92)", fontSize: 12.5, lineHeight: 1.55 }}>
+              <li style={{ marginBottom: 4 }}>
+                <strong>Lower the bar:</strong> try the micro-task once today, not the full step. Tiny reps build the pattern.
+              </li>
+              <li style={{ marginBottom: 4 }}>
+                <strong>Check the trigger first:</strong> hunger, sleep or transition often blocks progress more than the step itself.
+              </li>
+              <li>
+                <strong>Give it 3 more days:</strong> most behaviour shifts show up between days 5–7, not day 1.
+              </li>
+            </ul>
+          </div>
+        )}
+
+        {lastFeedback && lastFeedback !== "no" && (
+          <div style={{
+            background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.4)",
+            borderRadius: 12, padding: 10, marginTop: 4,
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <span style={{ fontSize: 18 }}>🎉</span>
+            <p style={{ fontSize: 12.5, color: "#fff", fontWeight: 600, margin: 0 }}>
+              Logged. Swipe to the next win when you're ready.
+            </p>
           </div>
         )}
       </div>

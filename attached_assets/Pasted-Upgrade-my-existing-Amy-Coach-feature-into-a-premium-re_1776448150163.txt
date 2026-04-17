@@ -1,0 +1,213 @@
+Upgrade my existing "Amy Coach" feature into a premium, research-backed behavior change system with deep solutions, swipeable cards, zero-cost images, and a persistent progress tracker.
+
+---
+
+## GOAL
+
+* Provide COMPLETE problem-solving (not short tips)
+* Generate 10–12 detailed “Wins” (steps)
+* Each win must be actionable, research-backed, and practical
+* Keep showing steps until user reaches 100% completion
+* Premium swipe UI (like TinyPal + Duolingo hybrid)
+
+---
+
+## AI GENERATION (VERY IMPORTANT)
+
+Use OpenAI with STRICT structured output.
+
+Prompt rules:
+
+* Act as child psychologist + parenting expert
+* Base on behavioral science, neuroscience, habit formation
+* Avoid generic advice
+* Give deep, step-by-step solutions
+
+Output JSON format:
+
+{
+"title": "Goal name",
+"root_cause": "Why this issue happens (science explanation)",
+"wins": [
+{
+"win": 1,
+"title": "Clear step name",
+"objective": "What this step fixes",
+"deep_explanation": "5-6 lines explanation (detailed, not short)",
+"actions": [
+"Specific action 1",
+"Specific action 2",
+"Specific action 3"
+],
+"example": "Real-life parenting example",
+"mistake_to_avoid": "Common mistake",
+"micro_task": "Small daily task",
+"duration": "2-3 days"
+}
+]
+}
+
+Rules:
+
+* Minimum 10–12 wins
+* Each win must feel like a complete module
+* No repetition
+* Practical + implementable
+* Research-backed reasoning
+
+---
+
+## ZERO-COST IMAGE SYSTEM
+
+DO NOT generate images dynamically.
+
+Instead:
+
+* Use local static kid cartoon images (/public/images/)
+* Map images based on goal
+
+Example:
+
+const imageMap = {
+"tantrum": ["/images/t1.png","/images/t2.png"],
+"screen_time": ["/images/s1.png"],
+"sleep": ["/images/sl1.png"],
+"default": ["/images/default.png"]
+};
+
+Assign images cyclically:
+win.image = images[i % images.length]
+
+---
+
+## PREMIUM SWIPE UI
+
+* Horizontal swipe cards
+* Each card = 1 win
+* Layout:
+
+  * Top: image (60%)
+  * Bottom: dark overlay (40%)
+  * Title
+  * Objective
+  * Detailed explanation
+  * Actions list
+  * Example
+  * Mistake to avoid
+  * Micro task
+
+---
+
+## ANIMATIONS
+
+* Smooth swipe animation
+* Fade-in text
+* Card scale transition
+* Progress bar animation
+* Button press animation
+
+---
+
+## PROGRESS TRACKER (CORE FEATURE)
+
+Create system:
+
+* Total wins: 12
+* Each win completion = progress %
+
+Progress logic:
+progress = (completedWins / totalWins) * 100
+
+Store in DB:
+table: user_progress
+
+* session_id
+* current_win
+* completed_wins
+* feedback
+* progress_percentage
+
+---
+
+## USER FLOW
+
+1. User selects goal
+2. AI generates full plan (12 wins)
+3. Show Win 1
+
+---
+
+## WIN COMPLETION SYSTEM
+
+After each win:
+
+* Button: "Mark as Done"
+* Ask feedback:
+
+  * Worked
+  * Partially worked
+  * Didn’t work
+
+If NOT worked:
+
+* Show extra support card (fallback solution)
+
+---
+
+## CONTINUOUS LOOP SYSTEM
+
+IMPORTANT:
+
+* Do NOT stop at 1 plan
+
+* If progress < 100%:
+  → Continue showing next wins
+  → Adapt next steps if needed
+
+* If user stuck:
+  → Generate additional corrective steps
+
+---
+
+## PROGRESS SCREEN
+
+Route: /amy-coach/progress
+
+Show:
+
+* Progress bar (animated)
+* Completed wins
+* Pending wins
+* Feedback history
+* Resume button
+
+---
+
+## PERFORMANCE
+
+* Cache AI response (same input = reuse)
+* Lazy load cards
+* Images from local (zero cost)
+
+---
+
+## FILES
+
+* routes/amyCoach.js
+* utils/cache.js
+* utils/imageMap.js
+* public/amy-coach.html
+* public/amy-coach.css
+* public/amy-coach.js
+
+---
+
+## FINAL RESULT
+
+* Deep 10–12 step solutions (not basic tips)
+* Premium swipe UI
+* Zero image cost
+* Continuous improvement loop
+* Parent can actually solve problem fully
+
+---
