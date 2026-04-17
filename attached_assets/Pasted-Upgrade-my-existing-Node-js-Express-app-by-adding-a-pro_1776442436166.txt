@@ -1,0 +1,164 @@
+Upgrade my existing Node.js (Express) app by adding a production-ready caching system, database structure, and zero-cost image mapping for the AI Parenting Coach feature.
+
+GOAL:
+
+* Avoid repeated AI + image generation cost
+* Reuse results for similar inputs
+* Use predefined images instead of generating every time
+
+---
+
+## BACKEND REQUIREMENTS
+
+1. DATABASE SETUP (use low-cost/simple DB)
+
+* Use SQLite (or JSON file if SQLite not available)
+* Create table: ai_cache
+
+Schema:
+
+* id (primary key)
+* cache_key (string, unique)
+* input (JSON)
+* response (JSON)
+* created_at (timestamp)
+
+---
+
+2. CACHE KEY GENERATION
+
+Create a function:
+
+* Normalize inputs (lowercase, trim)
+* Create key:
+
+const cacheKey = `${problem}_${age}_${goal}`.toLowerCase().replace(/\s+/g, "_");
+
+---
+
+3. CACHE LOGIC
+
+Before calling AI:
+
+* Check DB:
+  SELECT * FROM ai_cache WHERE cache_key = ?
+
+IF FOUND:
+
+* Return cached response
+
+IF NOT FOUND:
+
+* Call AI
+* Attach images (from mapping system)
+* Save result in DB
+* Return response
+
+---
+
+4. ZERO-COST IMAGE MAPPING SYSTEM
+
+Create a file:
+/utils/imageMap.js
+
+Structure:
+
+const imageMap = {
+"screen_time": [
+"/images/screen1.png",
+"/images/screen2.png"
+],
+"tantrum": [
+"/images/tantrum1.png",
+"/images/tantrum2.png"
+],
+"sleep": [
+"/images/sleep1.png"
+],
+"default": [
+"/images/default.png"
+]
+};
+
+function getImages(problem) {
+const key = problem.toLowerCase().replace(/\s+/g, "_");
+
+return imageMap[key] || imageMap["default"];
+}
+
+module.exports = { getImages };
+
+---
+
+5. ATTACH IMAGES TO STEPS
+
+When AI returns steps:
+
+* Loop through steps
+* Assign images cyclically:
+
+steps[i].image = images[i % images.length];
+
+---
+
+6. API ROUTE UPDATE
+
+Modify /api/ai-coach:
+
+* Check cache
+* If cache hit → return
+* If miss:
+
+  * Generate AI response
+  * Attach mapped images
+  * Save to DB
+  * Return response
+
+---
+
+## FRONTEND REQUIREMENTS
+
+* Use images from backend (no generation)
+* Lazy load images
+* Fallback image if not loaded
+
+---
+
+## PERFORMANCE
+
+* Cache expiry: optional (e.g., 7 days)
+* Limit DB size if needed
+* Log cache hits/misses
+
+---
+
+## FILES TO CREATE
+
+* /db/database.js (SQLite setup)
+* /utils/cache.js (cache logic)
+* /utils/imageMap.js (image mapping)
+* Update /routes/aiCoach.js
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Full working code for DB setup
+2. Cache functions (get/set)
+3. Image mapping system
+4. Updated API route
+5. Example data insert
+6. Instructions for Replit
+
+---
+
+## FINAL RESULT
+
+* AI called only once per problem
+* Images cost = ZERO
+* Fast response for repeat users
+* Scalable architecture
+
+---

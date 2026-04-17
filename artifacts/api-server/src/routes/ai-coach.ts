@@ -1,6 +1,9 @@
 import { Router, type IRouter } from "express";
 import { createHash } from "crypto";
+import { eq } from "drizzle-orm";
+import { db, aiCacheTable } from "@workspace/db";
 import { logger } from "../lib/logger.js";
+import { attachImagesToSteps } from "../lib/image-map.js";
 
 const router: IRouter = Router();
 
@@ -11,6 +14,7 @@ interface CoachStep {
   explanation: string;
   tip: string;
   image_prompt: string;
+  image?: string; // attached server-side from imageMap
 }
 
 interface CoachPlan {
@@ -27,30 +31,39 @@ interface CoachInput {
   goal?: string;
 }
 
-// ─── In-memory caches (bounded LRU-ish via Map insertion order) ──────────
-const PLAN_TTL_MS = 10 * 60 * 1000;
-const IMAGE_TTL_MS = 60 * 60 * 1000;
-const PLAN_CACHE_MAX = 200;
-const IMAGE_CACHE_MAX = 300;
+// ─── Config ──────────────────────────────────────────────────────────────
+const NAMESPACE = "ai_coach";
+const DB_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MEMORY_TTL_MS = 10 * 60 * 1000; // 10 min hot cache
+const MEMORY_MAX = 200;
 
-const planCache = new Map<string, { plan: CoachPlan; ts: number }>();
-const imageCache = new Map<string, { dataUrl: string; ts: number }>();
+// L1 in-memory hot cache
+const memCache = new Map<string, { plan: CoachPlan; ts: number }>();
+const memStats = { hits: 0, misses: 0, dbHits: 0, aiCalls: 0 };
 
-function hashInput(obj: unknown): string {
-  return createHash("sha1").update(JSON.stringify(obj)).digest("hex").slice(0, 16);
-}
-
-function pruneCache<T>(map: Map<string, { ts: number } & T>, ttl: number, maxEntries: number) {
+function pruneMem() {
   const now = Date.now();
-  for (const [k, v] of map.entries()) if (now - v.ts > ttl) map.delete(k);
-  while (map.size > maxEntries) {
-    const oldestKey = map.keys().next().value;
-    if (!oldestKey) break;
-    map.delete(oldestKey);
+  for (const [k, v] of memCache.entries()) if (now - v.ts > MEMORY_TTL_MS) memCache.delete(k);
+  while (memCache.size > MEMORY_MAX) {
+    const oldest = memCache.keys().next().value;
+    if (!oldest) break;
+    memCache.delete(oldest);
   }
 }
 
-// ─── Input validation helpers ────────────────────────────────────────────
+// ─── Cache key generation (normalized: lowercase, trimmed, separated) ────
+function buildCacheKey(input: CoachInput): string {
+  const norm = (s: unknown): string =>
+    String(s ?? "").toLowerCase().trim().replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "").slice(0, 60);
+  const triggers = Array.isArray(input.triggers)
+    ? input.triggers.map(norm).sort().join(",")
+    : norm(input.triggers);
+  const raw = `${norm(input.problem)}__${norm(input.age)}__${norm(input.goal)}__${triggers}`;
+  // Hash to keep keys uniform-length, while staying deterministic
+  return createHash("sha1").update(raw).digest("hex");
+}
+
+// ─── Validation ──────────────────────────────────────────────────────────
 const clip = (s: unknown, max: number): string =>
   typeof s === "string" ? s.trim().slice(0, max) : "";
 
@@ -82,54 +95,63 @@ function fallbackPlan(input: CoachInput): CoachPlan {
     reason:
       "Young children are still developing emotional regulation. What looks like 'misbehavior' is often a signal that a need (sleep, connection, autonomy, or sensory input) isn't being met.",
     steps: [
-      {
-        heading: "Connect before you correct",
-        subheading: "Connection → Cooperation",
-        explanation: `Get on ${name}'s eye level, name what you see, and acknowledge the feeling before redirecting. This activates the part of the brain that can listen.`,
+      { heading: "Connect before you correct", subheading: "Connection → Cooperation",
+        explanation: `Get on ${name}'s eye level, name what you see, and acknowledge the feeling before redirecting.`,
         tip: `Try: "I see you're really frustrated. That's hard. I'm here."`,
-        image_prompt: "soft pastel illustration of parent kneeling to child eye-level, warm tones",
-      },
-      {
-        heading: "Offer two good choices",
-        subheading: "Autonomy → Less resistance",
-        explanation: `Power struggles fade when ${name} feels in control of small things. Offer two options that both work for you.`,
+        image_prompt: "soft pastel illustration of parent kneeling to child eye-level" },
+      { heading: "Offer two good choices", subheading: "Autonomy → Less resistance",
+        explanation: `Power struggles fade when ${name} feels in control of small things.`,
         tip: `"Do you want to brush teeth before or after pyjamas?"`,
-        image_prompt: "soft illustration child choosing between two options, pastel colors",
-      },
-      {
-        heading: "Hold the limit, kindly",
-        subheading: "Calm + firm = trust",
-        explanation:
-          "It's okay if your child doesn't like the limit. Your job is to hold it warmly, not to make them happy about it.",
+        image_prompt: "soft illustration child choosing between two options" },
+      { heading: "Hold the limit, kindly", subheading: "Calm + firm = trust",
+        explanation: "It's okay if your child doesn't like the limit. Hold it warmly, not harshly.",
         tip: `"You don't have to like it. The answer is still no, and I love you."`,
-        image_prompt: "soft illustration parent holding boundary warmly, pastel watercolor",
-      },
-      {
-        heading: "Repair after rupture",
-        subheading: "Repair > perfection",
-        explanation:
-          "When you lose your cool (we all do), come back and reconnect. Repair teaches your child that relationships can survive hard moments.",
+        image_prompt: "soft illustration parent holding boundary warmly" },
+      { heading: "Repair after rupture", subheading: "Repair > perfection",
+        explanation: "When you lose your cool, come back and reconnect.",
         tip: `"Earlier I yelled. That wasn't your fault. I'm sorry. I love you."`,
-        image_prompt: "warm illustration parent and child hugging after a tough moment, soft tones",
-      },
-      {
-        heading: "Be consistent for 2 weeks",
-        subheading: "Consistency → Predictability",
-        explanation:
-          "New routines feel hard for the first 7–14 days. Stay the course — your child's nervous system is learning what to expect.",
+        image_prompt: "warm illustration parent and child hugging" },
+      { heading: "Be consistent for 2 weeks", subheading: "Consistency → Predictability",
+        explanation: "New routines feel hard for the first 7–14 days. Stay the course.",
         tip: "Pick ONE strategy and use it the same way every time for 14 days.",
-        image_prompt: "soft calendar illustration with hearts, pastel colors, parenting theme",
-      },
+        image_prompt: "soft calendar illustration with hearts" },
     ],
   };
 }
 
-// ─── POST /ai-coach — generate text plan ─────────────────────────────────
-router.post("/ai-coach", async (req, res): Promise<void> => {
-  pruneCache(planCache, PLAN_TTL_MS, PLAN_CACHE_MAX);
-  const raw: CoachInput = req.body ?? {};
+// ─── DB cache helpers (graceful: never throw to caller) ──────────────────
+async function dbGet(cacheKey: string): Promise<CoachPlan | null> {
+  try {
+    const rows = await db.select().from(aiCacheTable).where(eq(aiCacheTable.cacheKey, cacheKey)).limit(1);
+    const row = rows[0];
+    if (!row) return null;
+    const age = Date.now() - new Date(row.createdAt).getTime();
+    if (age > DB_CACHE_TTL_MS) return null;
+    return row.response as CoachPlan;
+  } catch (err) {
+    logger.warn({ err }, "ai-coach DB cache read failed");
+    return null;
+  }
+}
 
-  // Sanitize + cap all input lengths
+async function dbSet(cacheKey: string, input: CoachInput, plan: CoachPlan): Promise<void> {
+  try {
+    await db
+      .insert(aiCacheTable)
+      .values({ cacheKey, namespace: NAMESPACE, input, response: plan })
+      .onConflictDoUpdate({
+        target: aiCacheTable.cacheKey,
+        set: { input, response: plan, createdAt: new Date() },
+      });
+  } catch (err) {
+    logger.warn({ err }, "ai-coach DB cache write failed");
+  }
+}
+
+// ─── POST /ai-coach — text plan + attached predefined images ─────────────
+router.post("/ai-coach", async (req, res): Promise<void> => {
+  pruneMem();
+  const raw: CoachInput = req.body ?? {};
   const input: CoachInput = {
     childName: clip(raw.childName, 60),
     age: clip(raw.age, 30),
@@ -140,25 +162,46 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
     goal: clip(raw.goal, 200),
   };
 
-  if (!input.problem || String(input.problem).length < 3) {
+  if (!input.problem || input.problem.length < 3) {
     res.status(400).json({ error: "problem field required (min 3 chars)" });
     return;
   }
 
-  const triggers = Array.isArray(input.triggers) ? input.triggers.join(", ") : (input.triggers || "");
-  const cacheKey = hashInput({ ...input, triggers });
+  const cacheKey = buildCacheKey(input);
+  const problemForImages = String(input.problem);
 
-  const cached = planCache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < PLAN_TTL_MS) {
-    res.json({ plan: cached.plan, cached: true });
+  // L1: memory cache
+  const mem = memCache.get(cacheKey);
+  if (mem && Date.now() - mem.ts < MEMORY_TTL_MS) {
+    memStats.hits++;
+    logger.info({ cacheKey: cacheKey.slice(0, 8), source: "memory", stats: memStats }, "ai-coach cache hit");
+    res.json({ plan: mem.plan, cached: true, source: "memory" });
     return;
   }
 
+  // L2: DB cache
+  const dbHit = await dbGet(cacheKey);
+  if (dbHit) {
+    // Re-attach images (in case mapping changed) and warm the L1
+    const refreshed: CoachPlan = { ...dbHit, steps: attachImagesToSteps(dbHit.steps, problemForImages) };
+    memCache.set(cacheKey, { plan: refreshed, ts: Date.now() });
+    memStats.dbHits++;
+    logger.info({ cacheKey: cacheKey.slice(0, 8), source: "db", stats: memStats }, "ai-coach cache hit");
+    res.json({ plan: refreshed, cached: true, source: "db" });
+    return;
+  }
+
+  memStats.misses++;
+  memStats.aiCalls++;
+  logger.info({ cacheKey: cacheKey.slice(0, 8), stats: memStats }, "ai-coach cache miss — calling AI");
+
+  // Cache miss → call AI
   const childName = input.childName?.trim() || "the child";
   const age = String(input.age || "").trim() || "unspecified age";
+  const triggers = Array.isArray(input.triggers) ? input.triggers.join(", ") : (input.triggers || "");
 
-  const systemPrompt = `You are an expert parenting coach trained in child psychology, neuroscience, and gentle-discipline research (Dan Siegel, Becky Kennedy, Mona Delahooke style). 
-You give parents calm, practical, science-based guidance with zero judgment. 
+  const systemPrompt = `You are an expert parenting coach trained in child psychology, neuroscience, and gentle-discipline research (Dan Siegel, Becky Kennedy, Mona Delahooke style).
+You give parents calm, practical, science-based guidance with zero judgment.
 You speak warmly and personally. You NEVER use generic advice — every step is specific to the child's age and situation.
 Your output is ALWAYS valid JSON only — no markdown, no commentary, no code fences.`;
 
@@ -190,12 +233,12 @@ Rules:
 - Use ${childName}'s name in at least 3 steps
 - Tone: warm, calm, non-judgmental, specific
 - Each tip must be immediately usable today
-- No generic advice like "be patient" — every line is concrete
 - Output ONLY the JSON object, nothing else`;
 
+  let plan: CoachPlan;
+  let aiOk = true;
   try {
     const { openai } = await import("@workspace/integrations-openai-ai-server");
-
     const completion = await openai.chat.completions.create({
       model: "gpt-5.2",
       messages: [
@@ -207,66 +250,26 @@ Rules:
     });
 
     const rawContent = completion.choices[0]?.message?.content?.trim() ?? "";
-    let plan: CoachPlan;
     try {
       const parsed = JSON.parse(rawContent);
-      if (validatePlan(parsed)) {
-        plan = parsed;
-      } else {
-        logger.warn({ raw: rawContent.slice(0, 200) }, "ai-coach plan failed validation");
-        plan = fallbackPlan(input);
-      }
-    } catch (err) {
-      logger.warn({ err, raw: rawContent.slice(0, 200) }, "ai-coach JSON parse failed");
+      plan = validatePlan(parsed) ? parsed : fallbackPlan(input);
+    } catch {
       plan = fallbackPlan(input);
     }
-
-    planCache.set(cacheKey, { plan, ts: Date.now() });
-    res.json({ plan, cached: false });
   } catch (err) {
     logger.error({ err }, "ai-coach OpenAI error");
-    const plan = fallbackPlan(input);
-    planCache.set(cacheKey, { plan, ts: Date.now() });
-    res.json({ plan, cached: false, fallback: true });
-  }
-});
-
-// ─── POST /ai-coach/image — generate one image, cache by prompt hash ─────
-router.post("/ai-coach/image", async (req, res): Promise<void> => {
-  pruneCache(imageCache, IMAGE_TTL_MS, IMAGE_CACHE_MAX);
-  const prompt = clip(req.body?.prompt, 240);
-  if (!prompt || prompt.length < 5) {
-    res.status(400).json({ error: "prompt required (5-240 chars)" });
-    return;
+    plan = fallbackPlan(input);
+    aiOk = false;
   }
 
-  // Strip any attempt at injection / disallowed terms (keep it kid-safe)
-  const safePrompt = prompt
-    .replace(/[<>{}]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  // Attach predefined images (zero-cost, cyclic from imageMap)
+  plan = { ...plan, steps: attachImagesToSteps(plan.steps, problemForImages) };
 
-  const stylePrompt = `${safePrompt}. Style: soft watercolor parenting illustration, pastel colors (peach, blush, sage, cream), warm lighting, kind faces, kid-friendly, no text, no words, no letters in image.`;
-  const cacheKey = hashInput({ p: stylePrompt });
+  // Cache: memory always; DB only if AI succeeded
+  memCache.set(cacheKey, { plan, ts: Date.now() });
+  if (aiOk) await dbSet(cacheKey, input, plan);
 
-  const cached = imageCache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < IMAGE_TTL_MS) {
-    res.json({ dataUrl: cached.dataUrl, cached: true });
-    return;
-  }
-
-  try {
-    const { generateImageBuffer } = await import(
-      "@workspace/integrations-openai-ai-server/image"
-    );
-    const buffer = await generateImageBuffer(stylePrompt, "1024x1024");
-    const dataUrl = `data:image/png;base64,${buffer.toString("base64")}`;
-    imageCache.set(cacheKey, { dataUrl, ts: Date.now() });
-    res.json({ dataUrl, cached: false });
-  } catch (err) {
-    logger.error({ err, prompt: prompt.slice(0, 80) }, "ai-coach image error");
-    res.status(502).json({ error: "image generation failed" });
-  }
+  res.json({ plan, cached: false, source: "ai", fallback: !aiOk });
 });
 
 export default router;

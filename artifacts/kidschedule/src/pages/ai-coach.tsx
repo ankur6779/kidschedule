@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ interface Step {
   explanation: string;
   tip: string;
   image_prompt: string;
+  image?: string;
 }
 
 interface Plan {
@@ -56,60 +57,15 @@ export default function AICoachPage() {
   // Flow state
   const [step, setStep] = useState<"form" | "loading" | "result">("form");
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [images, setImages] = useState<Record<number, string>>({});
   const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
   const [activeIdx, setActiveIdx] = useState(0);
   const [saved, setSaved] = useState(false);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const fetchAbortRef = useRef<AbortController | null>(null);
 
   const toggleTrigger = (t: string) => {
     setTriggers(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
   };
-
-  // ─── Fetch images with concurrency cap of 2 + 1 retry ──────────────────
-  const fetchImages = useCallback(async (p: Plan) => {
-    fetchAbortRef.current?.abort();
-    const ac = new AbortController();
-    fetchAbortRef.current = ac;
-
-    const CONCURRENCY = 2;
-    const queue = p.steps.map((s, idx) => ({ s, idx, attempts: 0 }));
-
-    const runOne = async (): Promise<void> => {
-      const job = queue.shift();
-      if (!job || ac.signal.aborted) return;
-      try {
-        const res = await authFetch("/api/ai-coach/image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt: job.s.image_prompt }),
-          signal: ac.signal,
-        } as RequestInit);
-        if (res.ok) {
-          const data = (await res.json()) as { dataUrl?: string };
-          if (data.dataUrl) setImages((prev) => ({ ...prev, [job.idx]: data.dataUrl! }));
-          else throw new Error("no image");
-        } else {
-          throw new Error(`status ${res.status}`);
-        }
-      } catch (err) {
-        if (ac.signal.aborted) return;
-        if (job.attempts < 1) {
-          queue.push({ ...job, attempts: job.attempts + 1 });
-        } else {
-          setImgErrors((prev) => ({ ...prev, [job.idx]: true }));
-        }
-      }
-      await runOne();
-    };
-
-    await Promise.all(Array.from({ length: CONCURRENCY }, runOne));
-  }, [authFetch]);
-
-  // Cancel in-flight image fetches when leaving the page
-  useEffect(() => () => fetchAbortRef.current?.abort(), []);
 
   const handleSubmit = async () => {
     if (!problem.trim()) {
@@ -117,7 +73,6 @@ export default function AICoachPage() {
       return;
     }
     setStep("loading");
-    setImages({});
     setImgErrors({});
     setSaved(false);
 
@@ -138,7 +93,6 @@ export default function AICoachPage() {
       setPlan(data.plan);
       setActiveIdx(0);
       setStep("result");
-      fetchImages(data.plan);
     } catch (err) {
       toast({ title: "Something went wrong", description: "Please try again in a moment.", variant: "destructive" });
       setStep("form");
@@ -209,10 +163,8 @@ export default function AICoachPage() {
   };
 
   const handleStartOver = () => {
-    fetchAbortRef.current?.abort();
     setStep("form");
     setPlan(null);
-    setImages({});
     setImgErrors({});
     setActiveIdx(0);
     setSaved(false);
@@ -344,8 +296,9 @@ export default function AICoachPage() {
               step={s}
               index={i}
               total={plan.steps.length}
-              imageUrl={images[i]}
+              imageUrl={s.image}
               imageError={imgErrors[i]}
+              onImageError={() => setImgErrors((prev) => ({ ...prev, [i]: true }))}
               isFirst={i === 0}
               planTitle={i === 0 ? plan.title : undefined}
               planReason={i === 0 ? plan.reason : undefined}
@@ -538,12 +491,15 @@ export default function AICoachPage() {
 
 // ─── Card view (for swipe deck) ────────────────────────────────────────────
 function CardView({
-  step, index, total, imageUrl, imageError, isFirst, planTitle, planReason,
+  step, index, total, imageUrl, imageError, onImageError, isFirst, planTitle, planReason,
 }: {
   step: Step; index: number; total: number; imageUrl?: string; imageError?: boolean;
+  onImageError?: () => void;
   isFirst: boolean; planTitle?: string; planReason?: string;
 }) {
   const [showDetails, setShowDetails] = useState(true);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const showImage = imageUrl && !imageError;
   return (
     <div
       onClick={() => setShowDetails(v => !v)}
@@ -553,31 +509,41 @@ function CardView({
         background: "#000", overflow: "hidden", cursor: "pointer",
       }}
     >
-      {/* Image area (60%) */}
+      {/* Image area (62%) — gradient fallback always behind, image lazy-loads */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: "62%",
-        background: imageUrl
-          ? `url(${imageUrl}) center/cover no-repeat`
-          : "linear-gradient(135deg, #fbcfe8 0%, #ddd6fe 50%, #c7d2fe 100%)",
-        transition: "background-image 0.4s",
+        background: "linear-gradient(135deg, #fbcfe8 0%, #ddd6fe 50%, #c7d2fe 100%)",
+        overflow: "hidden",
       }}>
-        {!imageUrl && (
+        {showImage && (
+          <img
+            src={imageUrl}
+            alt=""
+            loading="lazy"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => onImageError?.()}
+            style={{
+              width: "100%", height: "100%", objectFit: "cover",
+              opacity: imgLoaded ? 1 : 0,
+              transition: "opacity 0.4s ease-in",
+              display: "block",
+            }}
+          />
+        )}
+        {!imgLoaded && (
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600,
+            color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 600,
             flexDirection: "column", gap: 10,
           }}>
             {imageError ? (
               <>
-                <Sparkles style={{ width: 32, height: 32, opacity: 0.6 }} />
-                <span style={{ opacity: 0.85 }}>Step {index + 1}</span>
+                <Sparkles style={{ width: 32, height: 32, opacity: 0.7 }} />
+                <span>Step {index + 1}</span>
               </>
             ) : (
-              <>
-                <Loader2 style={{ width: 28, height: 28, animation: "spin 1.2s linear infinite" }} />
-                Painting your card…
-              </>
+              <Loader2 style={{ width: 24, height: 24, animation: "spin 1.2s linear infinite", opacity: 0.7 }} />
             )}
           </div>
         )}
