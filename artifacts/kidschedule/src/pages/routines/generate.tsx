@@ -268,7 +268,7 @@ function ParentEntryForm({
           </div>
           {entry.isWorking === true && (
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-800">
-              The AI will assign independent or babysitter tasks during work hours.
+              Amy AI will assign independent or babysitter tasks during work hours.
             </div>
           )}
           {entry.isWorking === false && (
@@ -293,14 +293,14 @@ function ParentEntryForm({
               className="bg-transparent border-none outline-none text-sm text-foreground w-full"
             />
           </div>
-          <p className="text-[10px] text-muted-foreground">The AI will use these exact hours to plan tasks correctly.</p>
+          <p className="text-[10px] text-muted-foreground">Amy AI will use these exact hours to plan tasks correctly.</p>
         </div>
       )}
 
       {/* Homemaker info */}
       {entry.workType === "homemaker" && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
-          🏠 As a homemaker, you're free all day — the AI will include more parent-child bonding activities!
+          🏠 As a homemaker, you're free all day — Amy AI will include more parent-child bonding activities!
         </div>
       )}
     </div>
@@ -830,11 +830,11 @@ export default function RoutineGenerate() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("AI generation failed");
+      if (!res.ok) throw new Error("Amy AI generation failed");
       const generatedData = await res.json();
       handlePostGenerate(generatedData as { title: string; items: RoutineItem[] }, shouldOverride, wakeTime);
     } catch {
-      toast({ title: "AI generation failed — try the standard routine instead.", variant: "destructive" });
+      toast({ title: "Amy couldn't generate right now — try the standard routine instead.", variant: "destructive" });
     } finally {
       setIsAiGenerating(false);
     }
@@ -1019,7 +1019,7 @@ export default function RoutineGenerate() {
         </Button>
         <div>
           <h1 className="font-quicksand text-3xl font-bold text-foreground">Generate Routine</h1>
-          <p className="text-muted-foreground mt-1">AI builds a smart daily plan around your schedule.</p>
+          <p className="text-muted-foreground mt-1">Amy builds a smart daily plan around your schedule ❤️</p>
         </div>
       </header>
 
@@ -1059,11 +1059,11 @@ export default function RoutineGenerate() {
                 </div>
                 <div>
                   <h3 className="font-quicksand text-2xl font-bold mb-2">
-                    {isAiGenerating ? "AI is crafting your routine..." : "Crafting the perfect day..."}
+                    {isAiGenerating ? "Amy is crafting your routine…" : "Crafting the perfect day…"}
                   </h3>
                   <p className="text-muted-foreground">
                     {isAiGenerating
-                      ? "Our AI is analyzing your child's profile, school schedule, mood, and parent availability to create a truly personalized routine."
+                      ? "Amy AI is analyzing your child's profile, school schedule, mood, and parent availability to create a truly personalized routine."
                       : "Analyzing school schedule, parent availability, special plans, and behavior history to build a smart routine with family bonding time."}
                   </p>
                 </div>
@@ -1307,12 +1307,12 @@ export default function RoutineGenerate() {
                       />
                       {hasSchool === true && (
                         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
-                          🍱 The AI will suggest a tiffin lunchbox for your child and plan school-day blocks.
+                          🍱 Amy AI will suggest a tiffin lunchbox for your child and plan school-day blocks.
                         </div>
                       )}
                       {hasSchool === false && (
                         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-sm text-amber-800">
-                          The AI will skip school blocks and add outdoor play, hobby activities, and family time instead.
+                          Amy AI will skip school blocks and add outdoor play, hobby activities, and family time instead.
                         </div>
                       )}
                     </>
@@ -1342,7 +1342,7 @@ export default function RoutineGenerate() {
                     onChange={(e) => setSpecialPlans(e.target.value)}
                     className="rounded-2xl h-12 pl-4"
                   />
-                  <p className="text-xs text-muted-foreground">The AI will adjust the entire routine around your special plans.</p>
+                  <p className="text-xs text-muted-foreground">Amy AI will adjust the entire routine around your special plans.</p>
                 </div>
 
                 {/* Step 6 — Fridge Items */}
@@ -1361,7 +1361,7 @@ export default function RoutineGenerate() {
                       rows={2}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">The AI will suggest meals and tiffin using only what you have.</p>
+                  <p className="text-xs text-muted-foreground">Amy AI will suggest meals and tiffin using only what you have.</p>
                 </div>
 
                 {/* Mood Selector */}
@@ -1389,14 +1389,14 @@ export default function RoutineGenerate() {
                   </div>
                   {mood !== "normal" && (
                     <div className="bg-muted/60 border border-border rounded-xl px-3 py-2 text-xs text-foreground/70">
-                      🎯 AI will adapt the routine for a <strong>{mood}</strong> mood day — {MOOD_OPTIONS.find(o => o.value === mood)?.hint?.toLowerCase()}.
+                      🎯 Amy AI will adapt the routine for a <strong>{mood}</strong> mood day — {MOOD_OPTIONS.find(o => o.value === mood)?.hint?.toLowerCase()}.
                     </div>
                   )}
                 </div>
 
                 {/* What the AI uses */}
                 <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 text-sm text-foreground/70 space-y-1">
-                  <p className="font-bold text-foreground text-sm mb-2">✨ What the AI considers:</p>
+                  <p className="font-bold text-foreground text-sm mb-2">✨ What Amy AI considers:</p>
                   <ul className="space-y-1 list-none">
                     <li>🏫 School status — includes or skips school blocks</li>
                     <li>🍱 Tiffin suggestion — 3 options for school-going kids</li>
@@ -1446,18 +1446,18 @@ export default function RoutineGenerate() {
                           className="w-full rounded-full h-12 text-base font-bold border-2 border-violet-300 text-violet-700 hover:bg-violet-50 hover:border-violet-400 transition-all"
                         >
                           {isAiGenerating ? (
-                            <><Brain className="h-5 w-5 mr-2 animate-pulse" />AI is thinking...</>
+                            <><Brain className="h-5 w-5 mr-2 animate-pulse" />Amy is thinking…</>
                           ) : (
-                            <><Zap className="h-5 w-5 mr-2" />Smart AI Routine</>
+                            <><Zap className="h-5 w-5 mr-2" />Smart Amy AI Routine</>
                           )}
                         </Button>
                         <Badge className="absolute -top-2 -right-1 bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-[10px] font-bold border-0 px-1.5 py-0.5">
-                          AI Feature
+                          Amy AI
                         </Badge>
                       </div>
 
                       <p className="text-center text-xs text-muted-foreground">
-                        Standard routine is instant &amp; free · AI routine is smarter but takes ~10s
+                        Standard routine is instant &amp; free · Amy AI routine is smarter but takes ~10s
                       </p>
 
                       {!isFormValid && (

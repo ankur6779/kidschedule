@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Link } from "wouter";
 import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight, MessageCircleHeart } from "lucide-react";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
+import { AmyIcon } from "@/components/amy-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
@@ -282,7 +283,7 @@ function NeedHelpCard() {
           <MessageCircleHeart className="h-5 w-5 text-rose-500" />
           <h3 className="font-quicksand font-black text-base">Need help today?</h3>
         </div>
-        <p className="text-xs text-foreground/60 mb-3">Tap a topic to talk to your AI parenting partner</p>
+        <p className="text-xs text-foreground/60 mb-3">Tap a topic to chat with Amy AI 💬</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {helps.map((h) => (
             <Link key={h.label} href="/assistant">
@@ -432,10 +433,10 @@ function CoParentCard({ routines, streak }: { routines: Routine[]; streak: numbe
     <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
       <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-violet-50/40 to-pink-50/30">
         <CardTitle className="font-quicksand text-base flex items-center gap-2">
-          <Bot className="h-4 w-4 text-violet-600" />
-          AI Co-Parent Suggestions
+          <AmyIcon size={24} bounce />
+          Amy AI Suggests
         </CardTitle>
-        <CardDescription>Personalized nudges based on your day</CardDescription>
+        <CardDescription>Caring nudges from Amy 💜</CardDescription>
       </CardHeader>
       <CardContent className="p-4 space-y-2.5">
         {display.map((s, i) => (
@@ -520,7 +521,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
 function OnboardingScreen({ displayName }: { displayName: string }) {
   const features = [
-    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 border-blue-100" },
+    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 border-blue-100" },
     { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50 border-emerald-100" },
     { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-orange-500 to-amber-500", bg: "bg-orange-50 border-orange-100" },
     { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-purple-500", bg: "bg-violet-50 border-violet-100" },
@@ -570,11 +571,11 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
 
         {/* Welcome text */}
         <div className="relative z-10 space-y-2">
-          <p className="text-blue-200 text-sm font-semibold uppercase tracking-widest">AmyNest AI</p>
+          <p className="text-blue-200 text-sm font-semibold uppercase tracking-widest">Meet Amy AI</p>
           <h1 className="text-3xl font-black leading-tight">
-            👋 Welcome{displayName ? `, ${displayName}` : ""}!
+            👋 Hi{displayName ? `, ${displayName}` : ""} 😊
           </h1>
-          <p className="text-blue-100 text-lg font-medium">Your smart AI parenting partner</p>
+          <p className="text-blue-100 text-lg font-medium">I'm Amy — your smart parenting partner ❤️</p>
           <p className="text-blue-200/90 text-sm max-w-xs mx-auto leading-relaxed mt-1">
             Create personalised routines, track progress, and make parenting easier — one day at a time.
           </p>

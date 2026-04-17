@@ -6,6 +6,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BrandLogo } from "@/components/brand-logo";
+import { AmyFab } from "@/components/amy-fab";
+import { AmyIcon } from "@/components/amy-icon";
 
 const NAV_ITEMS = [
   { href: "/dashboard",     label: "Dashboard",     icon: Home },
@@ -14,7 +16,7 @@ const NAV_ITEMS = [
   { href: "/parenting-hub", label: "Parenting Hub", icon: BookOpen },
   { href: "/progress",      label: "Progress",      icon: TrendingUp },
   { href: "/behavior",      label: "Behavior",      icon: Star },
-  { href: "/assistant",     label: "AI Assistant",  icon: Bot },
+  { href: "/assistant",     label: "Amy AI",        icon: Bot },
   { href: "/babysitters",   label: "Babysitters",   icon: Baby },
   { href: "/parent-profile",label: "My Profile",    icon: UserCircle },
 ];
@@ -23,7 +25,7 @@ const BOTTOM_NAV_ITEMS = [
   { href: "/dashboard",     label: "Dashboard", icon: Home },
   { href: "/routines",      label: "Routines",  icon: Calendar },
   { href: "/parenting-hub", label: "Hub",        icon: BookOpen },
-  { href: "/assistant",     label: "Assistant", icon: Bot },
+  { href: "/assistant",     label: "Amy AI",    icon: Bot },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -47,7 +49,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
-        <BrandLogo size="sm" showTagline={false} />
+        <div className="flex items-center gap-2">
+          <BrandLogo size="sm" showTagline={false} />
+          <AmyIcon size={28} bounce />
+        </div>
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
@@ -101,8 +106,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 flex-col border-r bg-card md:flex">
-          <div className="flex h-20 items-center border-b px-5 shadow-sm">
+          <div className="flex h-20 items-center justify-between border-b px-5 shadow-sm">
             <BrandLogo size="md" showTagline={true} />
+            <AmyIcon size={32} bounce />
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-4">
             {NAV_ITEMS.map((item) => (
@@ -171,6 +177,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           );
         })}
       </nav>
+
+      {/* Floating Amy AI assistant button */}
+      <AmyFab />
     </div>
   );
 }

@@ -959,7 +959,7 @@ export default function RoutineDetail() {
         <div>
           <div className="flex items-center gap-2 text-sm text-primary font-medium mb-2">
             <Sparkles className="h-4 w-4" />
-            AI Generated Schedule
+            Amy AI Generated Schedule
           </div>
           <h1 className="font-quicksand text-3xl sm:text-4xl font-bold text-foreground">{routine.title}</h1>
 

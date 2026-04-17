@@ -132,8 +132,8 @@ export function DailyTips({
   };
 
   const ui = lang === "hi"
-    ? { title: "आज की पेरेंटिंग सलाह", subtitle: `${childName} के लिए`, helpful: "उपयोगी", next: "अगली सलाह", personalize: "व्यक्तिगत बनाएँ", aiLeft: (n: number) => `AI शेष: ${n}` }
-    : { title: "Today's Parenting Cards",   subtitle: `Personalised for ${childName}`, helpful: "Helpful", next: "Next Tip", personalize: "Personalize", aiLeft: (n: number) => `AI left: ${n}` };
+    ? { title: "आज की पेरेंटिंग सलाह", subtitle: `${childName} के लिए`, helpful: "उपयोगी", next: "अगली सलाह", personalize: "व्यक्तिगत बनाएँ", aiLeft: (n: number) => `Amy AI शेष: ${n}` }
+    : { title: "Today's Parenting Cards",   subtitle: `Personalised for ${childName}`, helpful: "Helpful", next: "Next Tip", personalize: "Personalize", aiLeft: (n: number) => `Amy AI left: ${n}` };
 
   return (
     <section className="space-y-3">
@@ -184,7 +184,7 @@ export function DailyTips({
                 {isPersonalized && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-700">
                     <Sparkles className="h-3 w-3" />
-                    AI
+                    Amy AI
                   </span>
                 )}
               </div>

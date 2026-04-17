@@ -8,6 +8,32 @@
 }
 .routine-modal-enter { animation: modalIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both; }
 
+/* ── Amy AI character animations ─────────────────────────────────── */
+@keyframes amyBounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+@keyframes amyBlink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  94%, 98%      { transform: scaleY(0.1); }
+}
+@keyframes amyPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(168, 139, 255, 0.55); }
+  70%  { box-shadow: 0 0 0 14px rgba(168, 139, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(168, 139, 255, 0); }
+}
+@keyframes amyFadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.85); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.amy-bounce { animation: amyBounce 2.4s ease-in-out infinite; }
+.amy-eyes   { transform-origin: center; transform-box: fill-box; animation: amyBlink 5s ease-in-out infinite; }
+.amy-pulse  { animation: amyPulse 2.2s ease-out infinite; }
+.amy-fade-in { animation: amyFadeIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .amy-bounce, .amy-eyes, .amy-pulse, .amy-fade-in { animation: none !important; }
+}
+
 
 @custom-variant dark (&:is(.dark *));
 

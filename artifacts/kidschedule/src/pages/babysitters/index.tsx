@@ -164,7 +164,7 @@ export default function BabysittersPage() {
             <Baby className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <p className="font-medium text-foreground mb-1">No babysitters added yet</p>
             <p className="text-sm text-muted-foreground mb-4">
-              Add a babysitter and assign them to your child's profile. The AI will tailor routines for when they're on duty.
+              Add a babysitter and assign them to your child's profile. Amy AI will tailor routines for when they're on duty.
             </p>
             <Button onClick={() => setOpen(true)} className="rounded-xl">
               <Plus className="h-4 w-4 mr-2" />

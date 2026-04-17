@@ -33,7 +33,7 @@ export default function LandingPage() {
             <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full"
               style={{ background: "linear-gradient(135deg, #EEF2FF, #F0FDF4)", color: "#6366F1", border: "1px solid #C7D2FE" }}>
               <Sparkles className="h-3 w-3" />
-              AI-Powered Parenting
+              Amy AI-Powered Parenting
             </span>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function LandingPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <Calendar className="h-5 w-5" />
               </div>
-              <h3 className="font-quicksand text-lg font-bold">AI Routine Generator</h3>
+              <h3 className="font-quicksand text-lg font-bold">Amy AI Routine Generator</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Enter your child's age, school times, and goals — and get a full structured daily schedule instantly.
               </p>
@@ -98,7 +98,7 @@ export default function LandingPage() {
                 <Bot className="h-5 w-5" />
               </div>
               <div className="flex items-center gap-2">
-                <h3 className="font-quicksand text-lg font-bold">AI Parenting Assistant</h3>
+                <h3 className="font-quicksand text-lg font-bold">Amy AI Parenting Assistant</h3>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "linear-gradient(135deg, #8B5CF6, #6366F1)", color: "#fff" }}>
                   NEW
@@ -114,14 +114,14 @@ export default function LandingPage() {
                 <ImagePlay className="h-5 w-5" />
               </div>
               <div className="flex items-center gap-2">
-                <h3 className="font-quicksand text-lg font-bold">AI Cartoon Routine</h3>
+                <h3 className="font-quicksand text-lg font-bold">Amy AI Cartoon Routine</h3>
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "linear-gradient(135deg, #F59E0B, #EC4899)", color: "#fff" }}>
                   NEW
                 </span>
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                See your child in their daily routine with AI-generated cartoon images — making habits fun and easy to follow.
+                See your child in their daily routine with Amy AI-generated cartoon images — making habits fun and easy to follow.
               </p>
             </div>
           </div>

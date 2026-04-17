@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Send, Loader2, User, Sparkles, RefreshCw, Zap } from "lucide-react";
+import { Send, Loader2, User, Sparkles, RefreshCw, Zap } from "lucide-react";
+import { AmyIcon } from "@/components/amy-icon";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import {
@@ -53,7 +54,7 @@ export default function AssistantPage() {
       setQuestionsUsed(getQuestionsUsed());
       toast({
         title: "Daily limit reached",
-        description: "You've used all 5 AI questions today. Come back tomorrow!",
+        description: "You've used all 5 Amy AI questions today. Come back tomorrow!",
         variant: "destructive",
       });
       return;
@@ -103,14 +104,14 @@ export default function AssistantPage() {
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div>
           <h1 className="font-quicksand text-3xl font-bold text-foreground flex items-center gap-2">
-            <Bot className="h-7 w-7 text-primary" />
-            AI Parenting Assistant
-            <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-xs font-bold border-0 ml-1">
+            <AmyIcon size={32} bounce />
+            Amy AI Assistant
+            <Badge className="bg-gradient-to-r from-violet-500 to-pink-500 text-white text-xs font-bold border-0 ml-1">
               <Zap className="h-3 w-3 mr-1" />
-              AI Feature
+              Amy AI
             </Badge>
           </h1>
-          <p className="text-muted-foreground mt-1">Ask anything about parenting — get warm, practical AI-powered advice.</p>
+          <p className="text-muted-foreground mt-1">Hi 😊 I'm Amy — ask me anything about parenting, I'm here to help ❤️</p>
         </div>
         {!isEmpty && (
           <Button variant="ghost" size="sm" onClick={clearChat} className="rounded-full gap-2 text-muted-foreground">
@@ -134,7 +135,7 @@ export default function AssistantPage() {
             <span className="font-bold">Daily limit reached — try again tomorrow.</span>
           ) : (
             <span>
-              <strong>{remaining}</strong> of {AI_DAILY_QUESTION_LIMIT} AI questions remaining today
+              <strong>{remaining}</strong> of {AI_DAILY_QUESTION_LIMIT} Amy AI questions remaining today
             </span>
           )}
         </div>
@@ -154,13 +155,13 @@ export default function AssistantPage() {
       <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-6 text-center py-8">
-            <div className="bg-primary/10 text-primary w-20 h-20 rounded-full flex items-center justify-center">
-              <Sparkles className="h-10 w-10" />
+            <div className="bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 w-24 h-24 rounded-full flex items-center justify-center shadow-md">
+              <AmyIcon size={68} bounce />
             </div>
             <div>
-              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Your AI Parenting Co-pilot</h2>
+              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Hi 😊 I'm Amy, your parenting co-pilot</h2>
               <p className="text-muted-foreground text-sm max-w-xs">
-                Ask about sleep, food, behavior, school anxiety, screen time, or any parenting challenge.
+                Don't worry, I'm here to help ❤️ Ask me about sleep, food, behavior, school anxiety, screen time — anything.
               </p>
             </div>
 
@@ -183,7 +184,7 @@ export default function AssistantPage() {
             {limitReached && (
               <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700 max-w-sm text-center">
                 <p className="font-bold mb-1">Daily limit reached</p>
-                <p>You've used all {AI_DAILY_QUESTION_LIMIT} AI questions for today. Your limit resets at midnight — come back tomorrow!</p>
+                <p>You've used all {AI_DAILY_QUESTION_LIMIT} Amy AI questions for today. Your limit resets at midnight — come back tomorrow!</p>
               </div>
             )}
           </div>
@@ -191,12 +192,12 @@ export default function AssistantPage() {
           <>
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
                   msg.role === "assistant"
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 shadow-sm"
                     : "bg-secondary/20 text-secondary-foreground"
                 }`}>
-                  {msg.role === "assistant" ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                  {msg.role === "assistant" ? <AmyIcon size={28} /> : <User className="h-4 w-4" />}
                 </div>
                 <div className={`max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
                   <Card className={`rounded-2xl shadow-sm ${
@@ -214,7 +215,7 @@ export default function AssistantPage() {
                   </Card>
                   {msg.role === "assistant" && (
                     <Badge variant="outline" className="text-xs text-muted-foreground border-none px-0 h-auto">
-                      AmyNest AI · always consult a professional for medical concerns
+                      Amy AI · always consult a professional for medical concerns
                     </Badge>
                   )}
                 </div>
@@ -223,14 +224,14 @@ export default function AssistantPage() {
 
             {loading && (
               <div className="flex gap-3">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
+                <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 flex items-center justify-center shadow-sm">
+                  <AmyIcon size={28} bounce />
                 </div>
                 <Card className="rounded-2xl rounded-tl-sm border-border shadow-sm">
                   <CardContent className="p-3.5">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Thinking...
+                      Amy is thinking…
                     </div>
                   </CardContent>
                 </Card>
@@ -246,7 +247,7 @@ export default function AssistantPage() {
         {limitReached ? (
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center text-rose-700">
             <p className="font-bold text-sm mb-0.5">Daily limit reached</p>
-            <p className="text-xs">Your {AI_DAILY_QUESTION_LIMIT} AI questions for today are used up. Resets at midnight.</p>
+            <p className="text-xs">Your {AI_DAILY_QUESTION_LIMIT} Amy AI questions for today are used up. Resets at midnight.</p>
           </div>
         ) : (
           <>

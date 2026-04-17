@@ -179,7 +179,7 @@ export default function ProgressPage() {
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
       <header>
         <h1 className="font-quicksand text-3xl font-bold text-foreground">Progress & Insights</h1>
-        <p className="text-muted-foreground mt-1">Track your family's routine consistency and get AI coaching.</p>
+        <p className="text-muted-foreground mt-1">Track your family's routine consistency and get Amy AI coaching ❤️</p>
       </header>
 
       {/* Streak Card */}
@@ -368,10 +368,10 @@ export default function ProgressPage() {
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-quicksand font-bold text-foreground text-lg flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Parenting Insights
+              Amy AI Parenting Insights
               <Badge className="bg-gradient-to-r from-violet-500 to-indigo-500 text-white text-xs font-bold border-0">
                 <Zap className="h-3 w-3 mr-1" />
-                AI Feature
+                Amy AI
               </Badge>
             </h3>
             <div className="flex items-center gap-2">
@@ -414,7 +414,7 @@ export default function ProgressPage() {
               <div className="bg-primary/10 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Lightbulb className="h-7 w-7 text-primary" />
               </div>
-              <p className="text-muted-foreground text-sm">Click "Generate" to get AI-powered insights based on your family's routine patterns, completion rates, and behavior trends.</p>
+              <p className="text-muted-foreground text-sm">Click "Generate" to get Amy AI insights based on your family's routine patterns, completion rates, and behavior trends.</p>
               <p className="text-xs text-muted-foreground mt-2 opacity-70">Insights are cached for the week — generated once, shown all week.</p>
             </div>
           )}

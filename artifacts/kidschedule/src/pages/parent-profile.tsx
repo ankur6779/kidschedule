@@ -135,7 +135,7 @@ export default function ParentProfilePage() {
         body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast({ title: "Profile saved!", description: "Your schedule will now inform AI routine generation." });
+      toast({ title: "Profile saved!", description: "Your schedule will now inform Amy AI's routine generation." });
     } catch {
       toast({ title: "Error", description: "Could not save profile.", variant: "destructive" });
     } finally {
@@ -159,7 +159,7 @@ export default function ParentProfilePage() {
           My Parent Profile
         </h1>
         <p className="text-muted-foreground mt-1">
-          Your schedule and availability help the AI build smarter routines for your child.
+          Your schedule and availability help Amy AI build smarter routines for your child.
         </p>
       </header>
 
@@ -256,7 +256,7 @@ export default function ParentProfilePage() {
       <Card className="rounded-2xl shadow-sm border-border/50">
         <CardHeader>
           <CardTitle className="font-quicksand text-lg">Work Schedule</CardTitle>
-          <CardDescription>The AI uses this to assign tasks when you're busy or available</CardDescription>
+          <CardDescription>Amy AI uses this to assign tasks when you're busy or available</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -350,7 +350,7 @@ export default function ParentProfilePage() {
             Food Preferences
           </CardTitle>
           <CardDescription>
-            Used by the AI to suggest appropriate meals in routines
+            Used by Amy AI to suggest appropriate meals in routines
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -379,7 +379,7 @@ export default function ParentProfilePage() {
               rows={2}
             />
             <p className="text-xs text-muted-foreground">
-              List any food allergies or ingredients to avoid in AI-generated meal suggestions.
+              List any food allergies or ingredients to avoid in Amy AI-generated meal suggestions.
             </p>
           </div>
         </CardContent>

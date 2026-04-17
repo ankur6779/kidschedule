@@ -36,7 +36,7 @@ export function BrandLogo({ size = "md", showTagline = false }: BrandLogoProps) 
         </div>
         {showTagline && (
           <span className="text-[10px] text-muted-foreground font-medium tracking-wide mt-0.5">
-            Smart Parenting Powered by AI
+            Smart Parenting Powered by Amy AI
           </span>
         )}
       </div>
