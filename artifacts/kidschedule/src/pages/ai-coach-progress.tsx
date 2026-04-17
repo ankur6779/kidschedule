@@ -19,7 +19,7 @@ const FEEDBACK_EMOJI: Record<string, string> = { yes: "🎉", somewhat: "👍", 
 const FEEDBACK_LABEL: Record<string, string> = { yes: "Worked", somewhat: "Some progress", no: "Keep trying" };
 
 export default function AICoachProgressPage() {
-  const { authFetch } = useAuthFetch();
+  const authFetch = useAuthFetch();
   const [, setLocation] = useLocation();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);

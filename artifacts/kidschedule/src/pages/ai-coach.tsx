@@ -60,7 +60,7 @@ type Phase = "goals" | "questions" | "loading" | "result";
 // ═══════════════════════════════════════════════════════════════════════════
 export default function AICoachPage() {
   const [, setLocation] = useLocation();
-  const { authFetch } = useAuthFetch();
+  const authFetch = useAuthFetch();
   const { toast } = useToast();
 
   const [phase, setPhase] = useState<Phase>("goals");
