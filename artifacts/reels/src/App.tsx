@@ -37,11 +37,13 @@ function ReelItem({
   globalMuted,
   onToggleMute,
   isActive,
+  onError: onVideoError,
 }: {
   video: Video;
   globalMuted: boolean;
   onToggleMute: () => void;
   isActive: boolean;
+  onError?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loaded, setLoaded] = useState(false);
@@ -94,6 +96,9 @@ function ReelItem({
         onError={() => {
           setError(true);
           setLoaded(true);
+          if (onVideoError) {
+            setTimeout(onVideoError, 800);
+          }
         }}
         style={{ display: error ? "none" : "block" }}
       />
@@ -147,26 +152,36 @@ export default function App() {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const reelObserverRef = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef(false);
+  const initializedRef = useRef(false);
 
   const loadMore = useCallback(async (currentOffset: number) => {
-    if (loading) return;
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
     try {
       const data = await fetchBatch(currentOffset);
-      setVideos((prev) => [...prev, ...data.videos]);
+      setVideos((prev) => {
+        const existingIds = new Set(prev.map((v) => v.id));
+        const fresh = data.videos.filter((v) => !existingIds.has(v.id));
+        return [...prev, ...fresh];
+      });
       setHasMore(data.nextOffset !== null);
       setOffset(data.nextOffset ?? currentOffset);
     } catch (e) {
       setError((e as Error).message);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading]);
+  }, []);
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
     loadMore(0);
-  }, []);
+  }, [loadMore]);
 
   useEffect(() => {
     if (!hasMore) return;
@@ -175,7 +190,7 @@ export default function App() {
 
     const obs = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && !loading && hasMore) {
+        if (entries[0]?.isIntersecting && !loadingRef.current && hasMore && initializedRef.current) {
           loadMore(offset);
         }
       },
@@ -184,7 +199,7 @@ export default function App() {
     obs.observe(sentinel);
     observerRef.current = obs;
     return () => obs.disconnect();
-  }, [hasMore, loading, offset, loadMore]);
+  }, [hasMore, offset, loadMore]);
 
   useEffect(() => {
     const feed = feedRef.current;
@@ -223,6 +238,15 @@ export default function App() {
 
   const toggleMute = useCallback(() => setMuted((m) => !m), []);
 
+  const advanceFromError = useCallback((idx: number) => {
+    const feed = feedRef.current;
+    if (!feed) return;
+    const reelEl = reelRefs.current[idx + 1];
+    if (reelEl) {
+      reelEl.scrollIntoView({ behavior: "smooth" });
+    }
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -245,6 +269,7 @@ export default function App() {
               globalMuted={muted}
               onToggleMute={toggleMute}
               isActive={i === activeIndex}
+              onError={() => advanceFromError(i)}
             />
           </div>
         ))}

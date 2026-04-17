@@ -50,3 +50,8 @@ externalPort = 4200
 [[ports]]
 localPort = 25261
 externalPort = 3003
+
+[userenv]
+
+[userenv.shared]
+GOOGLE_API_KEY = "AIzaSyA-QhjL9G-WEfqjyAVHl1kaVkz1LTrRJNo"

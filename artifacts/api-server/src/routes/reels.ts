@@ -29,6 +29,17 @@ async function fetchAllVideos(): Promise<DriveFile[]> {
     return cachedVideoIds;
   }
 
+  const PLAYABLE_MIME_TYPES = new Set([
+    "video/mp4",
+    "video/webm",
+    "video/ogg",
+    "video/quicktime",
+    "video/x-m4v",
+    "video/3gpp",
+    "video/3gpp2",
+    "video/mpeg",
+  ]);
+
   const allFiles: DriveFile[] = [];
   let pageToken: string | undefined;
 
@@ -54,7 +65,8 @@ async function fetchAllVideos(): Promise<DriveFile[]> {
       files: DriveFile[];
       nextPageToken?: string;
     };
-    allFiles.push(...(data.files || []));
+    const playable = (data.files || []).filter((f) => PLAYABLE_MIME_TYPES.has(f.mimeType));
+    allFiles.push(...playable);
     pageToken = data.nextPageToken;
   } while (pageToken);
 
@@ -63,7 +75,7 @@ async function fetchAllVideos(): Promise<DriveFile[]> {
   cachedVideoIds = allFiles;
   cacheTimestamp = Date.now();
 
-  logger.info({ count: allFiles.length }, "Google Drive video cache refreshed");
+  logger.info({ count: allFiles.length }, "Google Drive video cache refreshed (playable only)");
   return allFiles;
 }
 
