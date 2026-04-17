@@ -225,9 +225,11 @@ export default function AICoachPage() {
       toast({
         title: feedback === "yes" ? "Win locked in 🎉" : "Progress noted 💜",
         description: feedback === "yes"
-          ? "Marked as complete. Swipe to the next step."
+          ? "Marked as complete. Moving to next step."
           : "Partial progress counted. Keep going.",
       });
+      // Auto-advance to the next card
+      setTimeout(() => goToCard(activeIdx + 1), 300);
     }
   };
 
