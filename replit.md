@@ -90,8 +90,21 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 - `GET /api/dashboard/recent-routines` — recent 5 routines
 - `GET /api/dashboard/behavior-stats` — per-child behavior counts
 
+## Reels App (artifacts/reels)
+
+Standalone YouTube Shorts / Instagram Reels-style vertical video player that streams from a Google Drive folder.
+
+- **Preview path**: `/reels/`
+- **Folder ID**: `1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3`
+- **Backend routes** (added to api-server, no auth required):
+  - `GET /api/reels/videos?offset=0&batch=5` — returns paginated randomized video list
+  - `GET /api/reels/stream/:fileId` — streams video from Google Drive (handles Range requests)
+- **Frontend**: React, full-screen scroll-snap feed, IntersectionObserver autoplay, mute-by-default, lazy loading in batches of 5
+- **Video cache**: In-memory, 10-minute TTL; shuffled once on first load; handles 3000+ videos
+
 ## Environment Variables
 
 - `AI_INTEGRATIONS_OPENAI_BASE_URL` — auto-set by Replit AI Integrations
 - `AI_INTEGRATIONS_OPENAI_API_KEY` — auto-set by Replit AI Integrations
 - `DATABASE_URL` — auto-set by Replit database
+- `GOOGLE_API_KEY` — required for Reels app; Google Drive API key (add via Secrets tab)

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/reels/"
+title = "Reels — Google Drive Video Player"
+version = "1.0.0"
+id = "artifacts/reels"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/reels/" ]
+localPort = 25261
+
+[services.development]
+run = "pnpm --filter @workspace/reels run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/reels", "run", "build" ]
+publicDir = "artifacts/reels/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25261"
+BASE_PATH = "/reels/"

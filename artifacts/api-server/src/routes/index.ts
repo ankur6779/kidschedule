@@ -7,11 +7,13 @@ import dashboardRouter from "./dashboard";
 import parentProfileRouter from "./parent-profile";
 import babysittersRouter from "./babysitters";
 import aiRouter from "./ai";
+import reelsRouter from "./reels";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use("/reels", reelsRouter);
 router.use(requireAuth);
 router.use(childrenRouter);
 router.use(routinesRouter);
