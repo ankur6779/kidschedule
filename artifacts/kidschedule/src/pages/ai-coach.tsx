@@ -201,7 +201,10 @@ export default function AICoachPage() {
   // ─── Feedback (yes / somewhat / no)
   const submitFeedback = async (winNumber: number, feedback: Feedback) => {
     if (!plan || !sessionId) return;
-    setFeedbackByWin((p) => ({ ...p, [winNumber]: feedback }));
+
+    // Build updated feedback map synchronously so we can compute progress now
+    const newFeedbackByWin = { ...feedbackByWin, [winNumber]: feedback };
+    setFeedbackByWin(newFeedbackByWin);
 
     // Save to DB (silent on failure — UI already updated)
     try {
@@ -218,8 +221,17 @@ export default function AICoachPage() {
       });
     } catch { /* silent */ }
 
-    // Adaptive loop — if "Not worked for me", request 3 more wins from the AI
-    if (feedback === "no") {
+    // Compute new progress inline (don't wait for state re-render)
+    const newSum = Object.values(newFeedbackByWin).reduce(
+      (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0),
+      0,
+    );
+    const newPct = Math.round((newSum / plan.wins.length) * 100);
+    const isLastCard = activeIdx === plan.wins.length - 1;
+
+    // Rule: if "not worked" on ANY card → extend
+    //       if on last card AND progress still < 100% → extend (regardless of button)
+    if (feedback === "no" || (isLastCard && newPct < 100)) {
       await requestExtension(winNumber);
     } else {
       toast({
