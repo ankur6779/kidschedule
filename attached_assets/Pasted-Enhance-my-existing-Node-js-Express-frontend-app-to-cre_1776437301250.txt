@@ -1,0 +1,134 @@
+Enhance my existing Node.js + Express + frontend app to create an advanced "Download Printable Worksheets" system inside the Parent Hub.
+
+GOALS:
+
+* Limit downloads to max 5 files per day per user
+* Once a file is downloaded, do NOT show it again to that user
+* Show worksheets only for parents of children aged 2–7 years
+* Add categories (coloring, math, tracing, etc.)
+* Improve UI (download button visibility, preview, fallback logo)
+
+BACKEND:
+
+1. Update /worksheets API:
+
+   * Fetch files recursively from Google Drive (including subfolders)
+   * Return:
+     {
+     id,
+     name,
+     category,
+     downloadUrl,
+     previewUrl
+     }
+
+2. CATEGORY LOGIC:
+
+   * Infer category from file name or folder name:
+
+     * "color" → coloring
+     * "math" → math
+     * "trace" → tracing
+
+3. DAILY LIMIT SYSTEM:
+
+   * Track downloads per user (use localStorage or userId)
+   * Max 5 downloads per day
+   * Reset count every 24 hours
+
+4. HIDE DOWNLOADED FILES:
+
+   * Store downloaded file IDs in localStorage
+   * Filter them out from API response
+
+5. AGE FILTER:
+
+   * Only show this section if user child age is between 2–7
+   * Age can come from user profile or mock variable
+
+---
+
+FRONTEND:
+
+1. SECTION:
+
+   <section id="worksheets">
+     <h2>Download Printable Worksheets</h2>
+     <div id="category-filter"></div>
+     <div id="worksheet-grid"></div>
+   </section>
+
+2. CATEGORY FILTER UI:
+
+   * Buttons: All | Coloring | Math | Tracing
+   * Filter grid dynamically
+
+3. GRID UI:
+
+   * Card layout
+   * Each card shows:
+
+     * Preview image OR fallback AmyNest logo
+     * File name
+     * Download button
+
+4. PREVIEW:
+
+   * Use previewUrl if available
+   * Else show default AmyNest logo image
+
+5. DOWNLOAD BUTTON:
+
+   * Must be clearly visible (dark background + white text)
+   * Fix contrast issue
+   * On click:
+
+     * Trigger download
+     * Store file ID as downloaded
+     * Increase daily count
+
+6. LIMIT MESSAGE:
+
+   * If user hits 5 downloads:
+     Show message: "Daily limit reached. Come back tomorrow."
+
+7. EMPTY STATE:
+
+   * If no files left:
+     Show: "You’ve downloaded all available worksheets."
+
+---
+
+STYLING:
+
+* Dark/contrast buttons (avoid white on white)
+* Mobile-first design
+* Smooth grid layout
+* Card shadow + rounded corners
+
+---
+
+PERFORMANCE:
+
+* Lazy load files (batch of 10)
+* Cache API response (5 min)
+* Avoid re-fetching repeatedly
+
+---
+
+OUTPUT:
+
+* Updated server.js (with category + recursive fetch)
+* Frontend JS (download tracking, filtering, limit logic)
+* CSS (modern UI with visible buttons)
+* Instructions for integration into Parent Hub
+
+GOAL:
+
+A smart worksheet system where:
+
+* Users see only relevant (age 2–7) content
+* Max 5 downloads per day
+* No duplicate downloads
+* Clean UI with preview and categories
+* Fully integrated inside AmyNest Parent Hub

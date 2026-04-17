@@ -7,11 +7,21 @@ const ROOT_FOLDER_ID = "1vT-SG778TlLbgb64aCbZUO1y1hGq1Wyr";
 const DRIVE_API = "https://www.googleapis.com/drive/v3/files";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
+export type WorksheetCategory =
+  | "coloring"
+  | "math"
+  | "tracing"
+  | "alphabet"
+  | "numbers"
+  | "general";
+
 interface WorksheetFile {
+  id: string;
   name: string;
   mimeType: string;
+  category: WorksheetCategory;
   downloadUrl: string;
-  fileId: string;
+  previewUrl: string;
 }
 
 const ALLOWED_MIME = new Set([
@@ -22,6 +32,23 @@ const ALLOWED_MIME = new Set([
 
 let cachedWorksheets: WorksheetFile[] = [];
 let cacheTimestamp = 0;
+
+function inferCategory(name: string, folderPath: string): WorksheetCategory {
+  const text = `${name} ${folderPath}`.toLowerCase();
+  if (/color|colour|colouring|coloring/.test(text)) return "coloring";
+  if (/math|maths|addition|subtract|multiply|count/.test(text)) return "math";
+  if (/trac|handwrit|writing/.test(text)) return "tracing";
+  if (/alphabet|letter|abc|phonics/.test(text)) return "alphabet";
+  if (/number|numeral|1-10|1-20/.test(text)) return "numbers";
+  return "general";
+}
+
+function previewUrl(fileId: string, mimeType: string): string {
+  if (mimeType === "application/pdf") {
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w320`;
+  }
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w320`;
+}
 
 async function listFolderContents(
   folderId: string,
@@ -44,7 +71,7 @@ async function listFolderContents(
       const text = await res.text();
       throw new Error(`Drive API error ${res.status}: ${text}`);
     }
-    const data = await res.json() as {
+    const data = (await res.json()) as {
       files: { id: string; name: string; mimeType: string }[];
       nextPageToken?: string;
     };
@@ -58,6 +85,7 @@ async function listFolderContents(
 async function collectFilesRecursive(
   folderId: string,
   apiKey: string,
+  folderPath = "",
   depth = 0
 ): Promise<WorksheetFile[]> {
   if (depth > 8) return [];
@@ -71,16 +99,21 @@ async function collectFilesRecursive(
   const fileItems = items.filter((i) => ALLOWED_MIME.has(i.mimeType));
 
   for (const file of fileItems) {
+    const path = `${folderPath} ${file.name}`.trim();
     results.push({
+      id: file.id,
       name: file.name,
       mimeType: file.mimeType,
-      fileId: file.id,
+      category: inferCategory(file.name, folderPath),
       downloadUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
+      previewUrl: previewUrl(file.id, file.mimeType),
     });
   }
 
   const subResults = await Promise.all(
-    folderItems.map((f) => collectFilesRecursive(f.id, apiKey, depth + 1))
+    folderItems.map((f) =>
+      collectFilesRecursive(f.id, apiKey, `${folderPath} ${f.name}`.trim(), depth + 1)
+    )
   );
   for (const sub of subResults) results.push(...sub);
 
@@ -96,7 +129,7 @@ async function getWorksheets(apiKey: string): Promise<WorksheetFile[]> {
   files.sort((a, b) => a.name.localeCompare(b.name));
   cachedWorksheets = files;
   cacheTimestamp = Date.now();
-  logger.info({ count: files.length }, "Worksheets cache built");
+  logger.info({ count: files.length }, "Worksheets cache rebuilt");
   return files;
 }
 
@@ -106,9 +139,9 @@ router.get("/worksheets", async (req, res) => {
     res.status(500).json({ error: "GOOGLE_API_KEY not configured" });
     return;
   }
-
   try {
     const worksheets = await getWorksheets(apiKey);
+    res.set("Cache-Control", "public, max-age=300");
     res.json({ worksheets, total: worksheets.length });
   } catch (err) {
     logger.error({ err }, "Failed to fetch worksheets");

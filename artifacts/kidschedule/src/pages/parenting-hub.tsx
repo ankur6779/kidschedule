@@ -433,16 +433,22 @@ export default function ParentingHub() {
           <ArtCraftReels />
         </HubSection>
 
-        {/* 7. Printable Worksheets */}
-        <HubSection
-          id="worksheets"
-          icon={<span style={{ fontSize: 18 }}>📄</span>}
-          title="Printable Worksheets"
-          description="Download PDFs & activity sheets for kids"
-          accentClass="bg-sky-100"
-        >
-          <PrintableWorksheets />
-        </HubSection>
+        {/* 7. Printable Worksheets — visible for children aged 2–7 years (24–84 months) */}
+        {(!effectiveChild || (totalAgeMonths >= 24 && totalAgeMonths <= 84)) && (
+          <HubSection
+            id="worksheets"
+            icon={<span style={{ fontSize: 18 }}>📄</span>}
+            title="Printable Worksheets"
+            description={
+              effectiveChild
+                ? "Coloring, math, tracing & more — for ages 2–7"
+                : "Download PDFs & activity sheets for kids"
+            }
+            accentClass="bg-sky-100"
+          >
+            <PrintableWorksheets childAgeMonths={totalAgeMonths} />
+          </HubSection>
+        )}
 
       </div>
 
