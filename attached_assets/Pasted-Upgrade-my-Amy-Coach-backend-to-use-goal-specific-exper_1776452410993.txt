@@ -1,0 +1,258 @@
+Upgrade my "Amy Coach" backend to use goal-specific, expert-level AI prompts instead of a generic prompt.
+
+---
+
+## GOAL
+
+* Each parenting goal should use a DIFFERENT AI prompt
+* Responses must feel like expert consultation (not generic)
+* Use psychology + neuroscience + behavior science per goal
+* Generate deep 10–12 wins (detailed steps)
+
+---
+
+## IMPLEMENT GOAL-BASED PROMPT SYSTEM
+
+Create a new file:
+/utils/prompts.js
+
+---
+
+## BASE PROMPT FUNCTION
+
+function basePrompt(context) {
+return `
+You are an expert child psychologist and parenting coach.
+
+Child Context:
+
+* Age: ${context.age}
+* Severity: ${context.severity}
+* Triggers: ${context.triggers}
+* Routine: ${context.routine}
+
+Instructions:
+
+* Provide deep, practical, science-based parenting solutions
+* Use neuroscience, behavioral psychology, habit formation
+* Avoid generic advice
+* Give real-life actionable steps
+
+Output JSON:
+{
+"title": "",
+"root_cause": "",
+"wins": [
+{
+"title": "",
+"objective": "",
+"deep_explanation": "",
+"actions": [],
+"example": "",
+"mistake_to_avoid": "",
+"micro_task": "",
+"science_reference": ""
+}
+]
+}
+
+Rules:
+
+* Minimum 10–12 wins
+* Each win must be detailed
+* No repetition
+  `;
+  }
+
+---
+
+## GOAL-SPECIFIC PROMPTS
+
+const goalPrompts = {
+
+tantrum: (context) => basePrompt(context) + `
+Goal: Manage Tantrums
+
+Focus:
+
+* Emotional regulation
+* Co-regulation between parent and child
+* Prevent triggers before escalation
+
+Use concepts:
+
+* Prefrontal cortex development
+* Emotional validation
+* Nervous system calming
+
+Must include:
+
+* What to do BEFORE tantrum
+* What to do DURING tantrum
+* What to do AFTER tantrum
+  `,
+
+  screen_time: (context) => basePrompt(context) + `
+  Goal: Balance Screen Time
+
+Focus:
+
+* Dopamine addiction cycle
+* Habit replacement strategy
+* Reducing instant gratification
+
+Use concepts:
+
+* Dopamine regulation
+* Reward system reset
+* Environment design
+
+Must include:
+
+* How to reduce dependency gradually
+* What alternatives to provide
+* Parent consistency system
+  `,
+
+  sleep: (context) => basePrompt(context) + `
+  Goal: Improve Sleep Patterns
+
+Focus:
+
+* Circadian rhythm
+* Sleep associations
+* Bedtime resistance
+
+Use concepts:
+
+* Melatonin cycle
+* Habit loops
+* Sleep training psychology
+
+Must include:
+
+* Pre-sleep routine
+* Night waking handling
+* Consistency system
+  `,
+
+  eating: (context) => basePrompt(context) + `
+  Goal: Improve Eating Behavior
+
+Focus:
+
+* Food exposure psychology
+* Pressure-free eating
+* Autonomy building
+
+Use concepts:
+
+* Division of responsibility
+* Repeated exposure theory
+
+Must include:
+
+* What NOT to force
+* How to introduce foods
+* Mealtime environment
+  `,
+
+  focus: (context) => basePrompt(context) + `
+  Goal: Improve Focus & Concentration
+
+Focus:
+
+* Attention span building
+* Reducing distractions
+* Deep work habit
+
+Use concepts:
+
+* Attention training
+* Cognitive load theory
+
+Must include:
+
+* Focus-building exercises
+* Environment setup
+* Screen impact
+  `,
+
+  stubborn: (context) => basePrompt(context) + `
+  Goal: Reduce Stubborn Behaviour
+
+Focus:
+
+* Power struggles
+* Autonomy vs control
+* Cooperation building
+
+Use concepts:
+
+* Choice architecture
+* Positive reinforcement
+
+Must include:
+
+* How to avoid conflict
+* Giving controlled choices
+* Building cooperation
+  `,
+
+  default: (context) => basePrompt(context) + `Goal: General Parenting Improvement`
+  };
+
+module.exports = goalPrompts;
+
+---
+
+## API INTEGRATION
+
+In /routes/amyCoach.js:
+
+* Import prompts:
+  const goalPrompts = require("../utils/prompts");
+
+* Select prompt based on goal:
+
+const promptBuilder = goalPrompts[goal] || goalPrompts.default;
+const finalPrompt = promptBuilder(context);
+
+* Send to OpenAI:
+
+const response = await openai.chat.completions.create({
+model: "gpt-4o-mini",
+messages: [{ role: "user", content: finalPrompt }]
+});
+
+---
+
+## IMPORTANT RULES
+
+* Always use goal-specific prompt
+* Never fallback to generic response unless goal missing
+* Ensure structured JSON output
+* Validate response before sending to frontend
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. prompts.js file
+2. Updated API route
+3. Example request/response
+4. Integration instructions
+
+---
+
+## FINAL RESULT
+
+* Each goal behaves differently
+* Responses feel expert-level
+* Deep solutions (10–12 wins)
+* No generic parenting advice
+* Strong differentiation from competitors
+
+---

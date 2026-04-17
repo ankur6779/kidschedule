@@ -565,10 +565,13 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
 
   const goalLabel = GOAL_LABELS[input.goal!] ?? input.goal;
   const triggers = (input.triggers ?? []).join(", ") || "not specified";
+  const { getGoalPromptSection } = await import("../lib/goal-prompts.js");
+  const goalBrief = getGoalPromptSection(input.goal!, goalLabel!);
 
-  const systemPrompt = `You are a child psychologist and parenting expert combining behavioural science, neuroscience, attachment theory, and habit-formation research (Dan Siegel, Becky Kennedy, Mona Delahooke, Tina Payne Bryson, Stephen Porges, BJ Fogg).
+  const systemPrompt = `You are a specialist child psychologist and parenting coach who adapts your expertise to the SPECIFIC parenting goal in front of you.
 You give parents DEEP, complete, step-by-step solutions — never short generic tips.
 Every win you write must feel like a complete module a parent can implement and see results from.
+When the goal is about sleep, write like a paediatric sleep consultant. When it's about tantrums, write like a co-regulation specialist. When it's about screen time, write like a behavioural-addiction expert. Mirror the requested expertise precisely.
 You ALWAYS return valid JSON only. No markdown, no commentary, no code fences, no preamble.`;
 
   const userPrompt = `Build a complete 12-win behaviour-change plan for this parenting goal.
@@ -610,7 +613,8 @@ STRICT RULES:
 - Reference at least 5 different researchers/principles across the 12 wins
 - "deep_explanation" must be 6-8 lines of substantive science, not generic
 - Every win MUST include a "science_reference" naming the underlying concept/theory
-- Output ONLY the JSON object — no other text`;
+- Output ONLY the JSON object — no other text
+${goalBrief}`;
 
   let plan: CoachPlan;
   let aiOk = true;
