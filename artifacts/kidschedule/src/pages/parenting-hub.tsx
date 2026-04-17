@@ -21,8 +21,6 @@ import { DailyKidsActivity } from "@/components/daily-kids-activity";
 import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
-import { ArtCraftReels } from "@/components/art-craft-reels";
-import { PrintableWorksheets } from "@/components/printable-worksheets";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Section Wrapper ─────────────────────────────────────────────────────────
@@ -422,35 +420,25 @@ export default function ParentingHub() {
           </HubSection>
         )}
 
-        {/* 6. Art & Craft Videos */}
-        <HubSection
-          id="art-craft"
-          icon={<span style={{ fontSize: 18 }}>🎨</span>}
-          title="Art & Craft Videos"
-          description="Fun vertical craft reels for kids"
-          accentClass="bg-orange-100"
-        >
-          <ArtCraftReels />
-        </HubSection>
-
-        {/* 7. Printable Worksheets — visible for children aged 2–7 years (24–84 months) */}
-        {(!effectiveChild || (totalAgeMonths >= 24 && totalAgeMonths <= 84)) && (
-          <HubSection
-            id="worksheets"
-            icon={<span style={{ fontSize: 18 }}>📄</span>}
-            title="Printable Worksheets"
-            description={
-              effectiveChild
-                ? "Coloring, math, tracing & more — for ages 2–7"
-                : "Download PDFs & activity sheets for kids"
-            }
-            accentClass="bg-sky-100"
-          >
-            <PrintableWorksheets childAgeMonths={totalAgeMonths} />
-          </HubSection>
-        )}
-
       </div>
+
+      {/* AI Coach (Ask AMY) — prominent feature card */}
+      <Link href="/ai-coach">
+        <div className="mt-2 rounded-3xl bg-gradient-to-br from-violet-600 via-fuchsia-600 to-pink-600 p-5 text-white shadow-lg cursor-pointer hover:shadow-xl active:scale-[0.99] transition-all">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shrink-0">
+              <Sparkles className="h-7 w-7" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-quicksand font-extrabold text-lg leading-tight">AI Coach (Ask AMY)</p>
+              <p className="text-xs text-white/85 mt-0.5">Personalised plans for your child</p>
+            </div>
+            <button className="shrink-0 bg-white text-violet-700 font-bold text-xs px-4 py-2 rounded-full hover:bg-white/95">
+              Start →
+            </button>
+          </div>
+        </div>
+      </Link>
 
       {/* Bottom CTA */}
       <div className="text-center pt-2">

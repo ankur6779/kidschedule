@@ -327,3 +327,7 @@
     inset: -1px;
   }
 }
+/* AI Coach swipe deck utilities */
+.ws-no-scrollbar::-webkit-scrollbar { display: none; }
+.ws-no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

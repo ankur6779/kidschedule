@@ -23,3 +23,4 @@ export * from "./behaviors";
 export * from "./parent_profiles";
 export * from "./babysitters";
 export * from "./ai_cache";
+export * from "./user_progress";

@@ -22,6 +22,7 @@ import AssistantPage from "@/pages/assistant";
 import ProgressPage from "@/pages/progress";
 import ParentingHub from "@/pages/parenting-hub";
 import AICoachPage from "@/pages/ai-coach";
+import AICoachProgressPage from "@/pages/ai-coach-progress";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -182,6 +183,9 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/ai-coach">
               {() => <ProtectedRoute component={AICoachPage} />}
+            </Route>
+            <Route path="/ai-coach/progress">
+              {() => <ProtectedRoute component={AICoachProgressPage} />}
             </Route>
             <Route component={NotFound} />
           </Switch>

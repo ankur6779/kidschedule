@@ -1,0 +1,237 @@
+Refactor my existing Node.js (Express) web app to:
+
+1. Remove old sections (Printable Worksheets, Art & Craft videos from Activity & Learning)
+2. Add a new dedicated feature: "AI Coach (Ask AMY)" with predefined goals, personalized flow, multi-step “wins”, feedback, and progress tracking.
+
+---
+
+## PART 1: CLEANUP (Parent Hub)
+
+* In Parent Hub:
+
+  * Remove sections:
+
+    * "Printable Worksheets"
+    * "Art & Craft Videos"
+  * Keep layout clean and responsive
+* Add a new prominent card/button:
+
+  * Title: "AI Coach (Ask AMY)"
+  * Subtitle: "Personalized plans for your child"
+  * CTA: "Start"
+
+Route:
+
+* Create /ai-coach (main entry page)
+
+---
+
+## PART 2: PREDEFINED GOALS (SELECTION SCREEN)
+
+On /ai-coach show a grid/list of goals:
+
+Goals:
+
+* Balance Screen Time
+* Manage Tantrums
+* Change Stubborn Behaviour
+* Improve Sleep Patterns
+* Encourage Independent Eating
+* Boost Concentration
+* Navigate Fussy Eating
+
+Features:
+
+* Search/filter goals
+* Clean mobile UI (cards with icons)
+* On click → go to questionnaire
+
+---
+
+## PART 3: QUESTION FLOW (PERSONALIZATION)
+
+Route: /ai-coach/questions
+
+Ask 4–5 multiple-choice questions:
+
+* Child age group (2–4, 5–7, 8–10)
+* Severity (mild / moderate / severe)
+* Triggers (multi-select)
+* Current routine (options)
+* Parent goal (confirm or refine)
+
+UI:
+
+* Stepper/progress bar (1/5, 2/5…)
+* Buttons for options (multi-select support)
+* Save answers locally (state)
+
+---
+
+## PART 4: AI GENERATION (RESEARCH-BACKED PLAN)
+
+POST /api/ai-coach
+
+Input:
+{ goal, ageGroup, severity, triggers[], routine }
+
+Use OpenAI to generate STRICT JSON:
+
+{
+"title": "Goal title",
+"summary": "Why this issue happens (simple science explanation)",
+"wins": [
+{
+"win": 1,
+"title": "Win title",
+"objective": "What this step achieves",
+"actions": ["Action 1", "Action 2", "Action 3"],
+"activity": "Practical parent-child activity",
+"science": "Short research-backed reasoning",
+"duration": "e.g., 2-3 days"
+}
+]
+}
+
+Rules:
+
+* 6–7 wins
+* Personalized to inputs
+* Practical + actionable
+* Evidence-based (behavioral science / child psychology)
+* No fluff
+
+---
+
+## PART 5: ZERO-COST IMAGES (MAPPING)
+
+* Do NOT generate images
+* Use static mapped images per goal
+
+Create /utils/imageMap.js:
+
+* Map goal → array of local images (/public/images/*)
+* Assign images to wins cyclically
+
+---
+
+## PART 6: CACHING + DB (SQLite)
+
+* Table: ai_cache
+
+  * id, cache_key (unique), input(JSON), response(JSON), created_at
+
+Cache key:
+const cacheKey = `${goal}_${ageGroup}_${severity}_${triggers.join("-")}`
+
+Flow:
+
+* If cache hit → return saved plan
+* Else → call AI, attach images, save, return
+
+---
+
+## PART 7: RESULTS UI (WINS / CARDS)
+
+Route: /ai-coach/result
+
+UI:
+
+* Horizontal swipe cards (like stories)
+* Each card = 1 “Win”
+* Layout:
+
+  * Top: image
+  * Bottom: dark overlay
+
+    * Title
+    * Objective
+    * Actions (bullets)
+    * Activity
+    * Science (small text)
+
+Features:
+
+* Progress dots (1/7)
+* Swipe navigation
+* Smooth animations
+
+---
+
+## PART 8: FEEDBACK SYSTEM
+
+* After Win 1:
+
+  * Ask: “Did this work?”
+  * Options: Yes / Somewhat / No
+
+Store in DB:
+
+* user_progress table:
+
+  * id, session_id, win_number, feedback, timestamp
+
+---
+
+## PART 9: PROGRESS TRACKING
+
+Route: /ai-coach/progress
+
+Features:
+
+* Show completed wins
+* Feedback history
+* Simple progress bar (e.g., 3/7 wins completed)
+* “Continue plan” button
+
+---
+
+## PART 10: FILE STRUCTURE
+
+* server.js
+* routes/aiCoach.js
+* db/database.js
+* utils/cache.js
+* utils/imageMap.js
+* public/
+
+  * ai-coach.html
+  * questions.html
+  * result.html
+  * progress.html
+  * css/
+  * js/
+
+---
+
+## PART 11: PERFORMANCE
+
+* Cache results (no repeated AI calls)
+* Lazy load images
+* Mobile-first UI
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Full backend code
+2. Frontend pages (HTML/CSS/JS)
+3. SQLite setup
+4. Cache logic
+5. Image mapping
+6. Instructions for Replit deployment
+
+---
+
+## FINAL RESULT
+
+* Clean Parent Hub
+* Dedicated AI Coach (Ask AMY)
+* Predefined goals → questions → personalized plan
+* 6–7 actionable wins
+* Feedback + progress tracking
+* Zero image cost + cached AI responses
+
+---

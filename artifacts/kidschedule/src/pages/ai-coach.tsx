@@ -1,531 +1,501 @@
-import { useState, useRef, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useLocation, Link } from "wouter";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, ArrowLeft, ArrowRight, Loader2, Share2, Bookmark, RotateCcw, Check } from "lucide-react";
+import {
+  Sparkles, ArrowLeft, ArrowRight, Loader2, Search,
+  Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark,
+} from "lucide-react";
 
-interface Step {
-  heading: string;
-  subheading: string;
-  explanation: string;
-  tip: string;
-  image_prompt: string;
+// ─── Goals ─────────────────────────────────────────────────────────────────
+const GOALS = [
+  { id: "balance-screen-time",       title: "Balance Screen Time",        emoji: "📱", gradient: "from-sky-100 to-blue-200" },
+  { id: "manage-tantrums",           title: "Manage Tantrums",            emoji: "😤", gradient: "from-rose-100 to-pink-200" },
+  { id: "change-stubborn-behaviour", title: "Change Stubborn Behaviour",  emoji: "🛑", gradient: "from-amber-100 to-orange-200" },
+  { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",     emoji: "😴", gradient: "from-indigo-100 to-violet-200" },
+  { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 to-green-200" },
+  { id: "boost-concentration",       title: "Boost Concentration",        emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
+  { id: "navigate-fussy-eating",     title: "Navigate Fussy Eating",      emoji: "🥦", gradient: "from-teal-100 to-cyan-200" },
+] as const;
+
+// ─── Question definitions ──────────────────────────────────────────────────
+type QuestionType = "single" | "multi";
+interface Question {
+  id: "ageGroup" | "severity" | "triggers" | "routine" | "goalRefinement";
+  prompt: string;
+  type: QuestionType;
+  options: string[];
+}
+
+const COMMON_TRIGGERS = [
+  "Hunger or tiredness", "Transitions or changes", "Being told 'no'", "Boredom",
+  "Sibling conflict", "School/social stress", "Inconsistent rules", "Sensory overload",
+];
+
+const QUESTIONS: Question[] = [
+  { id: "ageGroup",       prompt: "What's your child's age?",         type: "single", options: ["2–4 years", "5–7 years", "8–10 years"] },
+  { id: "severity",       prompt: "How challenging is it right now?", type: "single", options: ["Mild – occasional", "Moderate – frequent", "Severe – daily struggle"] },
+  { id: "triggers",       prompt: "What triggers it most? (pick any)",type: "multi",  options: COMMON_TRIGGERS },
+  { id: "routine",        prompt: "What's your current approach?",    type: "single", options: ["No clear routine yet", "I try but it's inconsistent", "Strict rules, lots of pushback", "Trying gentle parenting", "Just starting to figure it out"] },
+  { id: "goalRefinement", prompt: "What matters most to you?",        type: "single", options: ["Reduce frequency", "Stay calm myself", "Build my child's skills", "Long-term healthy pattern"] },
+];
+
+// ─── Types ─────────────────────────────────────────────────────────────────
+interface Win {
+  win: number;
+  title: string;
+  objective: string;
+  actions: string[];
+  activity: string;
+  science: string;
+  duration: string;
   image?: string;
 }
+interface Plan { title: string; summary: string; wins: Win[]; }
 
-interface Plan {
-  title: string;
-  reason: string;
-  steps: Step[];
-}
+type Phase = "goals" | "questions" | "loading" | "result";
 
-const TRIGGER_OPTIONS = [
-  "Tiredness", "Hunger", "Overstimulation", "Transitions",
-  "Screen time ending", "Sibling conflict", "Frustration",
-  "Bedtime", "Mealtime", "Going out", "Coming home",
-];
-
-const COMMON_PROBLEMS = [
-  "Tantrums & meltdowns",
-  "Won't sleep / bedtime resistance",
-  "Hitting / biting",
-  "Won't eat",
-  "Whining / nagging",
-  "Defiance / saying no to everything",
-  "Sibling fighting",
-  "Screen time battles",
-  "Separation anxiety",
-  "Won't listen",
-  "Lying",
-  "Big emotions",
-];
-
-const SAVED_KEY = "ai_coach_saved_plans";
-
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════════════════════════════════
 export default function AICoachPage() {
-  const [, navigate] = useLocation();
-  const authFetch = useAuthFetch();
+  const [, setLocation] = useLocation();
+  const { authFetch } = useAuthFetch();
   const { toast } = useToast();
 
-  // Form state
-  const [childName, setChildName] = useState("");
-  const [age, setAge] = useState("");
-  const [problem, setProblem] = useState("");
-  const [triggers, setTriggers] = useState<string[]>([]);
-  const [goal, setGoal] = useState("");
-
-  // Flow state
-  const [step, setStep] = useState<"form" | "loading" | "result">("form");
+  const [phase, setPhase] = useState<Phase>("goals");
+  const [goalSearch, setGoalSearch] = useState("");
+  const [goalId, setGoalId] = useState<string>("");
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
+  const [sessionId, setSessionId] = useState<string>("");
   const [activeIdx, setActiveIdx] = useState(0);
-  const [saved, setSaved] = useState(false);
+  const [feedbackPrompted, setFeedbackPrompted] = useState<Record<number, boolean>>({});
+  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const toggleTrigger = (t: string) => {
-    setTriggers(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
+  const filteredGoals = useMemo(() => {
+    const q = goalSearch.toLowerCase().trim();
+    if (!q) return GOALS;
+    return GOALS.filter((g) => g.title.toLowerCase().includes(q));
+  }, [goalSearch]);
+
+  const selectedGoal = GOALS.find((g) => g.id === goalId);
+
+  // ─── Goals → Questions
+  const handlePickGoal = (id: string) => {
+    setGoalId(id);
+    setQIndex(0);
+    setAnswers({});
+    setPhase("questions");
   };
 
-  const handleSubmit = async () => {
-    if (!problem.trim()) {
-      toast({ title: "Tell me what's happening", description: "Please describe the problem first.", variant: "destructive" });
-      return;
-    }
-    setStep("loading");
-    setImgErrors({});
-    setSaved(false);
+  // ─── Question handlers
+  const currentQ = QUESTIONS[qIndex];
+  const currentAnswer = currentQ ? answers[currentQ.id] : undefined;
+  const isAnswered = currentQ?.type === "multi"
+    ? Array.isArray(currentAnswer) && currentAnswer.length > 0
+    : typeof currentAnswer === "string" && currentAnswer.length > 0;
 
+  const handleSelectOption = (opt: string) => {
+    if (!currentQ) return;
+    if (currentQ.type === "single") {
+      setAnswers((a) => ({ ...a, [currentQ.id]: opt }));
+    } else {
+      const cur = (answers[currentQ.id] as string[]) ?? [];
+      const next = cur.includes(opt) ? cur.filter((x) => x !== opt) : [...cur, opt];
+      setAnswers((a) => ({ ...a, [currentQ.id]: next }));
+    }
+  };
+
+  const handleNextQ = () => {
+    if (qIndex < QUESTIONS.length - 1) {
+      setQIndex((i) => i + 1);
+    } else {
+      submitPlan();
+    }
+  };
+
+  const handleBackQ = () => {
+    if (qIndex > 0) setQIndex((i) => i - 1);
+    else setPhase("goals");
+  };
+
+  // ─── Submit to API
+  const submitPlan = async () => {
+    setPhase("loading");
+    setActiveIdx(0);
+    setFeedbackPrompted({});
+    setImgErrors({});
+    const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10" };
+    const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
+    const payload = {
+      goal: goalId,
+      ageGroup: ageMap[answers.ageGroup as string] ?? answers.ageGroup ?? "5-7",
+      severity: sevMap[answers.severity as string] ?? "moderate",
+      triggers: (answers.triggers as string[]) ?? [],
+      routine: (answers.routine as string) ?? "",
+      goalRefinement: (answers.goalRefinement as string) ?? "",
+    };
     try {
       const res = await authFetch("/api/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          childName: childName.trim() || undefined,
-          age: age.trim() || undefined,
-          problem: problem.trim(),
-          triggers,
-          goal: goal.trim() || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Server ${res.status}`);
-      const data = (await res.json()) as { plan: Plan };
+      const data = (await res.json()) as { plan: Plan; sessionId: string };
       setPlan(data.plan);
-      setActiveIdx(0);
-      setStep("result");
-    } catch (err) {
-      toast({ title: "Something went wrong", description: "Please try again in a moment.", variant: "destructive" });
-      setStep("form");
-    }
-  };
-
-  // ─── Track active card on scroll ───────────────────────────────────────
-  useEffect(() => {
-    if (step !== "result") return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    const handler = () => {
-      const idx = Math.round(el.scrollLeft / el.clientWidth);
-      setActiveIdx(idx);
-    };
-    el.addEventListener("scroll", handler, { passive: true });
-    return () => el.removeEventListener("scroll", handler);
-  }, [step, plan]);
-
-  const scrollTo = (idx: number) => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
-  };
-
-  // ─── Save / Share ──────────────────────────────────────────────────────
-  const handleSave = () => {
-    if (!plan) return;
-    try {
-      const raw = localStorage.getItem(SAVED_KEY);
-      const list = raw ? JSON.parse(raw) : [];
-      list.unshift({
-        savedAt: Date.now(),
-        childName, age, problem, triggers, goal,
-        plan,
-      });
-      localStorage.setItem(SAVED_KEY, JSON.stringify(list.slice(0, 20)));
-      setSaved(true);
-      toast({ title: "Plan saved", description: "Your plan is saved on this device." });
+      setSessionId(data.sessionId);
+      setPhase("result");
     } catch {
-      toast({ title: "Couldn't save", description: "Storage is full or unavailable.", variant: "destructive" });
+      toast({ title: "Something went wrong", description: "Please try again in a moment.", variant: "destructive" });
+      setPhase("questions");
     }
   };
 
+  // ─── Result deck navigation
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el || phase !== "result") return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollLeft / el.clientWidth);
+      if (idx !== activeIdx) setActiveIdx(idx);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [phase, activeIdx]);
+
+  const goToCard = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
+  // ─── Feedback
+  const submitFeedback = async (winNumber: number, feedback: "yes" | "somewhat" | "no") => {
+    if (!plan || !sessionId) return;
+    setFeedbackPrompted((p) => ({ ...p, [winNumber]: true }));
+    try {
+      await authFetch("/api/ai-coach/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          goalId,
+          planTitle: plan.title,
+          winNumber,
+          totalWins: plan.wins.length,
+          feedback,
+        }),
+      });
+      toast({ title: "Saved!", description: "Your progress is tracked. Keep going 💜" });
+    } catch {
+      // silent — already marked prompted to avoid spam
+    }
+  };
+
+  // ─── Share / Save
   const handleShare = async () => {
     if (!plan) return;
-    const text = [
-      plan.title,
-      "",
-      plan.reason,
-      "",
-      ...plan.steps.map((s, i) => `${i + 1}. ${s.heading} — ${s.tip}`),
-      "",
-      "— from AmyNest AI Parenting Coach",
-    ].join("\n");
+    const text = `${plan.title}\n\n${plan.summary}\n\nMy 6 wins from AmyNest AI Coach:\n${plan.wins.map((w) => `${w.win}. ${w.title}`).join("\n")}`;
     if (navigator.share) {
-      try {
-        await navigator.share({ title: plan.title, text });
-      } catch {/* user cancelled */}
+      try { await navigator.share({ title: plan.title, text }); } catch {}
     } else {
       try {
         await navigator.clipboard.writeText(text);
-        toast({ title: "Copied", description: "Plan copied to clipboard." });
-      } catch {
-        toast({ title: "Couldn't copy", description: "Please try again.", variant: "destructive" });
-      }
+        toast({ title: "Copied!", description: "Plan copied to clipboard." });
+      } catch {}
     }
   };
 
   const handleStartOver = () => {
-    setStep("form");
+    setPhase("goals");
+    setGoalId("");
+    setAnswers({});
     setPlan(null);
-    setImgErrors({});
+    setSessionId("");
     setActiveIdx(0);
-    setSaved(false);
   };
 
   // ═══════════════════════════════════════════════════════════════════════
-  // RENDER
+  // RENDER PHASES
   // ═══════════════════════════════════════════════════════════════════════
 
-  if (step === "loading") {
+  // ── PHASE: GOALS ─────────────────────────────────────────────────────
+  if (phase === "goals") {
     return (
-      <div style={{
-        minHeight: "100vh", background: "linear-gradient(180deg,#0f172a 0%,#1e1b4b 100%)",
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 24, color: "#fff",
-      }}>
-        <div style={{ textAlign: "center", maxWidth: 320 }}>
-          <div style={{
-            width: 84, height: 84, margin: "0 auto 24px",
-            borderRadius: "50%", background: "rgba(255,255,255,0.08)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            position: "relative",
-          }}>
-            <Loader2 style={{ width: 40, height: 40, animation: "spin 1.4s linear infinite" }} />
-            <Sparkles style={{
-              position: "absolute", top: -8, right: -8,
-              width: 28, height: 28, color: "#fbbf24",
-              animation: "pulse 1.6s ease-in-out infinite",
-            }} />
-          </div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 12px" }}>
-            Creating a personalized plan{childName ? ` for ${childName}` : ""}…
-          </h2>
-          <p style={{ fontSize: 14, opacity: 0.7, lineHeight: 1.5, margin: 0 }}>
-            Combining child psychology and your specific situation. This usually takes 5-10 seconds.
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+            <ChevronLeft className="h-4 w-4" /> Back
+          </Link>
+          <Link href="/ai-coach/progress">
+            <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+              <BarChart3 className="h-3.5 w-3.5" /> My Progress
+            </button>
+          </Link>
+        </div>
+
+        <div>
+          <h1 className="font-quicksand text-2xl font-bold text-foreground flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-violet-500" />
+            AI Coach (Ask AMY)
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Pick a goal — I'll build a personalised, science-backed plan in 6 wins.
           </p>
-          <style>{`
-            @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-            @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.2);opacity:0.7} }
-          `}</style>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            value={goalSearch}
+            onChange={(e) => setGoalSearch(e.target.value)}
+            placeholder="Search goals…"
+            className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-border bg-card text-sm focus:outline-none focus:border-violet-400"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {filteredGoals.map((g) => (
+            <button
+              key={g.id}
+              onClick={() => handlePickGoal(g.id)}
+              className={`group bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-lg transition-all text-left flex items-center gap-3`}
+            >
+              <span className="text-3xl shrink-0">{g.emoji}</span>
+              <div className="flex-1">
+                <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
+              </div>
+            </button>
+          ))}
+          {filteredGoals.length === 0 && (
+            <div className="col-span-full text-center py-8 text-sm text-muted-foreground">
+              No goals match "{goalSearch}"
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
-  if (step === "result" && plan) {
+  // ── PHASE: QUESTIONS ────────────────────────────────────────────────
+  if (phase === "questions" && currentQ) {
+    const progressPct = ((qIndex + 1) / QUESTIONS.length) * 100;
     return (
-      <div style={{
-        minHeight: "100vh", background: "#000",
-        display: "flex", flexDirection: "column", color: "#fff",
-        position: "relative", overflow: "hidden",
-      }}>
-        {/* Top bar */}
-        <div style={{
-          position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
-          padding: "16px 16px 24px",
-          background: "linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%)",
-          display: "flex", flexDirection: "column", gap: 12,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button
-              onClick={handleStartOver}
-              style={{
-                background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
-                width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Start over"
-            >
-              <ArrowLeft style={{ width: 18, height: 18 }} />
-            </button>
-            <div style={{ flex: 1, fontSize: 12, opacity: 0.7, fontWeight: 600 }}>
-              AI PARENTING COACH
-            </div>
-            <button
-              onClick={handleShare}
-              style={{
-                background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
-                width: 36, height: 36, borderRadius: "50%", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Share plan"
-            >
-              <Share2 style={{ width: 16, height: 16 }} />
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saved}
-              style={{
-                background: saved ? "#10b981" : "rgba(255,255,255,0.12)",
-                border: "none", color: "#fff",
-                width: 36, height: 36, borderRadius: "50%", cursor: saved ? "default" : "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}
-              aria-label="Save plan"
-            >
-              {saved ? <Check style={{ width: 16, height: 16 }} /> : <Bookmark style={{ width: 16, height: 16 }} />}
-            </button>
-          </div>
+      <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
+        <button onClick={handleBackQ} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-4 w-4" /> Back
+        </button>
 
-          {/* Progress dots */}
-          <div style={{ display: "flex", gap: 4, padding: "0 4px" }}>
-            {plan.steps.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => scrollTo(i)}
-                style={{
-                  flex: 1, height: 3, borderRadius: 2, cursor: "pointer",
-                  background: i <= activeIdx ? "#fff" : "rgba(255,255,255,0.25)",
-                  transition: "background 0.3s",
-                }}
-              />
-            ))}
+        <div>
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+            <span className="font-semibold">Question {qIndex + 1} of {QUESTIONS.length}</span>
+            <span>{selectedGoal?.title}</span>
+          </div>
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
 
-        {/* Swipeable cards */}
-        <div
-          ref={scrollerRef}
-          style={{
-            flex: 1, display: "flex", overflowX: "auto", overflowY: "hidden",
-            scrollSnapType: "x mandatory",
-            scrollbarWidth: "none",
-          }}
-          className="ws-no-scrollbar"
+        <h2 className="font-quicksand text-xl font-bold text-foreground">{currentQ.prompt}</h2>
+        {currentQ.type === "multi" && (
+          <p className="text-xs text-muted-foreground -mt-3">Pick any that apply</p>
+        )}
+
+        <div className="space-y-2">
+          {currentQ.options.map((opt) => {
+            const selected = currentQ.type === "multi"
+              ? ((answers[currentQ.id] as string[]) ?? []).includes(opt)
+              : answers[currentQ.id] === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => handleSelectOption(opt)}
+                className={`w-full text-left px-4 py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 ${
+                  selected
+                    ? "bg-violet-50 border-violet-500 text-violet-900"
+                    : "bg-card border-border hover:border-violet-300"
+                }`}
+              >
+                <span className="font-semibold text-sm">{opt}</span>
+                {selected && <Check className="h-5 w-5 text-violet-600 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={handleNextQ}
+          disabled={!isAnswered}
+          className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-violet-600 to-pink-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg transition-all"
         >
-          {plan.steps.map((s, i) => (
-            <CardView
+          {qIndex < QUESTIONS.length - 1 ? "Next" : "Build My Plan ✨"}
+        </button>
+      </div>
+    );
+  }
+
+  // ── PHASE: LOADING ───────────────────────────────────────────────────
+  if (phase === "loading") {
+    return (
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-violet-900 via-purple-900 to-pink-900 flex items-center justify-center">
+        <div className="text-center text-white px-8 space-y-6">
+          <div className="relative w-20 h-20 mx-auto">
+            <Sparkles className="absolute inset-0 w-20 h-20 animate-spin" style={{ animationDuration: "3s" }} />
+          </div>
+          <h2 className="font-quicksand text-2xl font-bold">Building your plan…</h2>
+          <p className="text-sm text-white/80 max-w-xs mx-auto">
+            Analysing your answers and crafting 6 research-backed wins for {selectedGoal?.title.toLowerCase()}.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── PHASE: RESULT ────────────────────────────────────────────────────
+  if (phase === "result" && plan) {
+    return (
+      <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 50, display: "flex", flexDirection: "column" }}>
+        {/* Top bar */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
+          padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)",
+        }}>
+          <button onClick={handleStartOver} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+            <ArrowLeft size={18} />
+          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={handleShare} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+              <Share2 size={16} />
+            </button>
+            <button onClick={() => setLocation("/ai-coach/progress")} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+              <BarChart3 size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Progress dots */}
+        <div style={{
+          position: "absolute", top: 64, left: 16, right: 16, zIndex: 20,
+          display: "flex", gap: 4,
+        }}>
+          {plan.wins.map((_, i) => (
+            <button
               key={i}
-              step={s}
-              index={i}
-              total={plan.steps.length}
-              imageUrl={s.image}
-              imageError={imgErrors[i]}
-              onImageError={() => setImgErrors((prev) => ({ ...prev, [i]: true }))}
-              isFirst={i === 0}
-              planTitle={i === 0 ? plan.title : undefined}
-              planReason={i === 0 ? plan.reason : undefined}
+              onClick={() => goToCard(i)}
+              style={{
+                flex: 1, height: 3, borderRadius: 2, border: "none", cursor: "pointer", padding: 0,
+                background: i <= activeIdx ? "#fff" : "rgba(255,255,255,0.3)",
+                transition: "background 0.3s",
+              }}
             />
           ))}
         </div>
 
-        {/* Bottom nav arrows */}
-        <div style={{
-          position: "absolute", bottom: 20, left: 0, right: 0, zIndex: 20,
-          display: "flex", justifyContent: "center", gap: 12, padding: "0 16px",
-        }}>
-          <button
-            onClick={() => scrollTo(Math.max(0, activeIdx - 1))}
-            disabled={activeIdx === 0}
-            style={{
-              background: "rgba(255,255,255,0.15)", border: "none", color: "#fff",
-              padding: "10px 18px", borderRadius: 999, fontSize: 13, fontWeight: 600,
-              display: "flex", alignItems: "center", gap: 6,
-              opacity: activeIdx === 0 ? 0.4 : 1,
-              cursor: activeIdx === 0 ? "default" : "pointer",
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <ArrowLeft style={{ width: 14, height: 14 }} /> Prev
-          </button>
-          {activeIdx === plan.steps.length - 1 ? (
-            <button
-              onClick={handleStartOver}
-              style={{
-                background: "#fff", border: "none", color: "#000",
-                padding: "10px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-              }}
-            >
-              <RotateCcw style={{ width: 14, height: 14 }} /> New plan
-            </button>
-          ) : (
-            <button
-              onClick={() => scrollTo(Math.min(plan.steps.length - 1, activeIdx + 1))}
-              style={{
-                background: "#fff", border: "none", color: "#000",
-                padding: "10px 18px", borderRadius: 999, fontSize: 13, fontWeight: 700,
-                display: "flex", alignItems: "center", gap: 6, cursor: "pointer",
-              }}
-            >
-              Next <ArrowRight style={{ width: 14, height: 14 }} />
-            </button>
-          )}
+        {/* Scroller */}
+        <div
+          ref={scrollerRef}
+          style={{
+            display: "flex", overflowX: "auto", scrollSnapType: "x mandatory",
+            width: "100%", height: "100%",
+            scrollbarWidth: "none",
+          }}
+          className="ws-no-scrollbar"
+        >
+          {plan.wins.map((w, i) => (
+            <WinCard
+              key={i}
+              win={w}
+              total={plan.wins.length}
+              imageError={imgErrors[i]}
+              onImageError={() => setImgErrors((p) => ({ ...p, [i]: true }))}
+              isFirst={i === 0}
+              planTitle={i === 0 ? plan.title : undefined}
+              planSummary={i === 0 ? plan.summary : undefined}
+              showFeedback={!feedbackPrompted[w.win]}
+              onFeedback={(f) => submitFeedback(w.win, f)}
+            />
+          ))}
         </div>
 
-        <style>{`.ws-no-scrollbar::-webkit-scrollbar{display:none}`}</style>
+        {/* Bottom nav */}
+        <div style={{
+          position: "absolute", bottom: 16, left: 0, right: 0, zIndex: 20,
+          display: "flex", justifyContent: "center", gap: 12,
+        }}>
+          <button
+            onClick={() => goToCard(Math.max(0, activeIdx - 1))}
+            disabled={activeIdx === 0}
+            style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, padding: "10px 16px", border: "none", cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
+          >
+            <ArrowLeft size={14} /> Prev
+          </button>
+          <button
+            onClick={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
+            disabled={activeIdx === plan.wins.length - 1}
+            style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, padding: "10px 16px", border: "none", cursor: activeIdx === plan.wins.length - 1 ? "default" : "pointer", opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
+          >
+            Next <ArrowRight size={14} />
+          </button>
+        </div>
       </div>
     );
   }
 
-  // ─── FORM ──────────────────────────────────────────────────────────────
-  return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #fef3f2 0%, #fef0f9 50%, #f0f4ff 100%)",
-      padding: "20px 16px 60px",
-    }}>
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        {/* Header */}
-        <button
-          onClick={() => navigate("/dashboard")}
-          style={{
-            background: "none", border: "none", color: "#475569",
-            display: "flex", alignItems: "center", gap: 6,
-            fontSize: 14, padding: 0, marginBottom: 20, cursor: "pointer",
-          }}
-        >
-          <ArrowLeft style={{ width: 16, height: 16 }} /> Back
-        </button>
-
-        <div style={{ marginBottom: 28 }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            background: "linear-gradient(135deg,#a855f7,#ec4899)",
-            color: "#fff", padding: "5px 12px", borderRadius: 999,
-            fontSize: 11, fontWeight: 700, letterSpacing: 0.5, marginBottom: 12,
-          }}>
-            <Sparkles style={{ width: 12, height: 12 }} /> AI PARENTING COACH
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: "#0f172a", margin: "0 0 6px", lineHeight: 1.2 }}>
-            What's challenging you today?
-          </h1>
-          <p style={{ fontSize: 14, color: "#64748b", margin: 0, lineHeight: 1.5 }}>
-            Get a personalized, science-based plan in seconds — calm, practical, no judgment.
-          </p>
-        </div>
-
-        {/* Form fields */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          <FormGroup label="Child's name" optional>
-            <input
-              value={childName}
-              onChange={e => setChildName(e.target.value)}
-              placeholder="e.g., Aanya"
-              maxLength={40}
-              style={inputStyle}
-            />
-          </FormGroup>
-
-          <FormGroup label="Age" optional>
-            <input
-              value={age}
-              onChange={e => setAge(e.target.value)}
-              placeholder="e.g., 4 years, 18 months"
-              maxLength={30}
-              style={inputStyle}
-            />
-          </FormGroup>
-
-          <FormGroup label="What's the problem?" required>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              {COMMON_PROBLEMS.map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setProblem(p)}
-                  style={chipStyle(problem === p)}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <textarea
-              value={problem}
-              onChange={e => setProblem(e.target.value)}
-              placeholder="Or describe in your own words…"
-              rows={3}
-              maxLength={400}
-              style={{ ...inputStyle, resize: "vertical", minHeight: 70 }}
-            />
-          </FormGroup>
-
-          <FormGroup label="What seems to trigger it?" optional>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {TRIGGER_OPTIONS.map(t => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => toggleTrigger(t)}
-                  style={chipStyle(triggers.includes(t))}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </FormGroup>
-
-          <FormGroup label="Your goal" optional>
-            <input
-              value={goal}
-              onChange={e => setGoal(e.target.value)}
-              placeholder="e.g., calmer mornings, less yelling"
-              maxLength={120}
-              style={inputStyle}
-            />
-          </FormGroup>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!problem.trim()}
-            style={{
-              marginTop: 8,
-              background: !problem.trim()
-                ? "#cbd5e1"
-                : "linear-gradient(135deg,#a855f7 0%,#ec4899 100%)",
-              color: "#fff", border: "none", borderRadius: 14,
-              padding: "16px 20px", fontSize: 16, fontWeight: 700,
-              cursor: !problem.trim() ? "not-allowed" : "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: !problem.trim() ? "none" : "0 8px 20px rgba(168,85,247,0.35)",
-              transition: "transform 0.1s",
-            }}
-            onMouseDown={e => !(!problem.trim()) && (e.currentTarget.style.transform = "scale(0.98)")}
-            onMouseUp={e => (e.currentTarget.style.transform = "scale(1)")}
-            onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <Sparkles style={{ width: 18, height: 18 }} /> Solve with AI
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }
 
-// ─── Card view (for swipe deck) ────────────────────────────────────────────
-function CardView({
-  step, index, total, imageUrl, imageError, onImageError, isFirst, planTitle, planReason,
+// ═══════════════════════════════════════════════════════════════════════════
+// WIN CARD
+// ═══════════════════════════════════════════════════════════════════════════
+function WinCard({
+  win, total, imageError, onImageError, isFirst, planTitle, planSummary,
+  showFeedback, onFeedback,
 }: {
-  step: Step; index: number; total: number; imageUrl?: string; imageError?: boolean;
+  win: Win;
+  total: number;
+  imageError?: boolean;
   onImageError?: () => void;
-  isFirst: boolean; planTitle?: string; planReason?: string;
+  isFirst: boolean;
+  planTitle?: string;
+  planSummary?: string;
+  showFeedback: boolean;
+  onFeedback: (f: "yes" | "somewhat" | "no") => void;
 }) {
-  const [showDetails, setShowDetails] = useState(true);
   const [imgLoaded, setImgLoaded] = useState(false);
-  const showImage = imageUrl && !imageError;
+  const showImage = win.image && !imageError;
+
   return (
     <div
-      onClick={() => setShowDetails(v => !v)}
       style={{
         flex: "0 0 100%", width: "100%", height: "100vh",
         scrollSnapAlign: "start", position: "relative",
-        background: "#000", overflow: "hidden", cursor: "pointer",
+        background: "#000", overflow: "hidden",
       }}
     >
-      {/* Image area (62%) — gradient fallback always behind, image lazy-loads */}
+      {/* Image area (50%) */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "62%",
+        position: "absolute", top: 0, left: 0, right: 0, height: "50%",
         background: "linear-gradient(135deg, #fbcfe8 0%, #ddd6fe 50%, #c7d2fe 100%)",
         overflow: "hidden",
       }}>
         {showImage && (
           <img
-            src={imageUrl}
+            src={win.image}
             alt=""
             loading="lazy"
             onLoad={() => setImgLoaded(true)}
             onError={() => onImageError?.()}
             style={{
               width: "100%", height: "100%", objectFit: "cover",
-              opacity: imgLoaded ? 1 : 0,
-              transition: "opacity 0.4s ease-in",
+              opacity: imgLoaded ? 1 : 0, transition: "opacity 0.4s ease-in",
               display: "block",
             }}
           />
@@ -534,121 +504,120 @@ function CardView({
           <div style={{
             position: "absolute", inset: 0,
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: 600,
-            flexDirection: "column", gap: 10,
+            color: "rgba(255,255,255,0.85)",
           }}>
-            {imageError ? (
-              <>
-                <Sparkles style={{ width: 32, height: 32, opacity: 0.7 }} />
-                <span>Step {index + 1}</span>
-              </>
-            ) : (
-              <Loader2 style={{ width: 24, height: 24, animation: "spin 1.2s linear infinite", opacity: 0.7 }} />
-            )}
+            {imageError
+              ? <Sparkles style={{ width: 32, height: 32, opacity: 0.7 }} />
+              : <Loader2 style={{ width: 24, height: 24, animation: "spin 1.2s linear infinite", opacity: 0.7 }} />}
           </div>
         )}
-        {/* Step counter */}
+
+        {/* Win counter */}
         <div style={{
-          position: "absolute", top: 80, right: 16,
-          background: "rgba(0,0,0,0.5)", color: "#fff",
-          padding: "4px 10px", borderRadius: 999,
-          fontSize: 11, fontWeight: 700, backdropFilter: "blur(8px)",
+          position: "absolute", top: 90, right: 16,
+          background: "rgba(0,0,0,0.55)", color: "#fff",
+          padding: "6px 12px", borderRadius: 999,
+          fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
         }}>
-          {index + 1} / {total}
+          WIN {win.win} / {total}
         </div>
       </div>
 
-      {/* Bottom overlay (40%) */}
+      {/* Bottom dark overlay (50%) — scrollable content */}
       <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0,
-        minHeight: "44%", maxHeight: "62%",
-        background: "linear-gradient(180deg, rgba(15,23,42,0.0) 0%, rgba(15,23,42,0.95) 18%, rgba(15,23,42,1) 100%)",
-        padding: "60px 22px 90px", color: "#fff",
-        display: "flex", flexDirection: "column", gap: 10,
-        overflow: "auto",
-      }}
-        onClick={e => e.stopPropagation()}
-      >
+        position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
+        background: "linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.95) 30%, #000 100%)",
+        color: "#fff",
+        padding: "20px 20px 90px",
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
+      }}>
         {isFirst && planTitle && (
-          <div style={{
-            fontSize: 11, fontWeight: 700, letterSpacing: 1,
-            color: "#fbbf24", textTransform: "uppercase", marginBottom: -2,
-          }}>
-            {planTitle}
+          <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
+              YOUR PLAN
+            </p>
+            <h2 style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
+              {planTitle}
+            </h2>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", lineHeight: 1.45 }}>
+              {planSummary}
+            </p>
           </div>
         )}
-        <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.6, color: "#a78bfa", textTransform: "uppercase" }}>
-          {step.subheading}
+
+        <h3 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
+          {win.title}
+        </h3>
+        <p style={{ fontSize: 13, color: "#fbcfe8", marginBottom: 14, lineHeight: 1.4 }}>
+          {win.objective}
+        </p>
+
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#a78bfa", marginBottom: 6 }}>DO THIS</p>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 6 }}>
+            {win.actions.map((a, i) => (
+              <li key={i} style={{ fontSize: 13, lineHeight: 1.4, display: "flex", gap: 8, color: "rgba(255,255,255,0.95)" }}>
+                <span style={{ color: "#a78bfa", fontWeight: 700 }}>›</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <h2 style={{ fontSize: 26, fontWeight: 800, margin: 0, lineHeight: 1.2 }}>
-          {step.heading}
-        </h2>
-        {showDetails && (
-          <>
-            {isFirst && planReason && (
-              <p style={{
-                fontSize: 13, opacity: 0.75, lineHeight: 1.55, margin: "4px 0 6px",
-                fontStyle: "italic", borderLeft: "2px solid rgba(251,191,36,0.5)", paddingLeft: 10,
-              }}>
-                {planReason}
-              </p>
-            )}
-            <p style={{ fontSize: 15, lineHeight: 1.55, opacity: 0.92, margin: 0 }}>
-              {step.explanation}
+
+        <div style={{
+          background: "rgba(167,139,250,0.18)", border: "1px solid rgba(167,139,250,0.4)",
+          borderRadius: 14, padding: 12, marginBottom: 12,
+        }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
+            💡 TRY TODAY
+          </p>
+          <p style={{ fontSize: 13, lineHeight: 1.4, color: "#fff" }}>{win.activity}</p>
+        </div>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 10, padding: "3px 8px", borderRadius: 999, background: "rgba(255,255,255,0.12)", color: "#fff", fontWeight: 600 }}>
+            ⏱ {win.duration}
+          </span>
+        </div>
+
+        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.5, fontStyle: "italic", marginBottom: 16 }}>
+          📚 {win.science}
+        </p>
+
+        {/* Feedback prompt */}
+        {showFeedback && (
+          <div style={{
+            background: "linear-gradient(135deg, rgba(236,72,153,0.2), rgba(139,92,246,0.2))",
+            border: "1px solid rgba(236,72,153,0.4)",
+            borderRadius: 14, padding: 14, marginBottom: 8,
+          }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
+              Did this work for you?
             </p>
-            <div style={{
-              marginTop: 4, padding: "12px 14px",
-              background: "rgba(251,191,36,0.12)", borderRadius: 12,
-              borderLeft: "3px solid #fbbf24",
-            }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#fbbf24", letterSpacing: 0.8, marginBottom: 4 }}>
-                💡 TRY THIS
-              </div>
-              <p style={{ fontSize: 14, lineHeight: 1.5, margin: 0, color: "#fff" }}>
-                {step.tip}
-              </p>
+            <div style={{ display: "flex", gap: 6 }}>
+              {([
+                { v: "yes" as const,      label: "Yes 🎉" },
+                { v: "somewhat" as const, label: "Somewhat" },
+                { v: "no" as const,       label: "Not yet" },
+              ]).map((b) => (
+                <button
+                  key={b.v}
+                  onClick={() => onFeedback(b.v)}
+                  style={{
+                    flex: 1, padding: "8px 6px", borderRadius: 10,
+                    border: "1px solid rgba(255,255,255,0.3)",
+                    background: "rgba(255,255,255,0.1)", color: "#fff",
+                    fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  }}
+                >
+                  {b.label}
+                </button>
+              ))}
             </div>
-          </>
+          </div>
         )}
-        <div style={{ fontSize: 11, opacity: 0.4, marginTop: 6, textAlign: "center" }}>
-          {showDetails ? "Tap card to hide details" : "Tap card to show details"}
-        </div>
       </div>
     </div>
   );
 }
-
-// ─── Form helpers ──────────────────────────────────────────────────────────
-function FormGroup({ label, required, optional, children }: {
-  label: string; required?: boolean; optional?: boolean; children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <div style={{
-        fontSize: 13, fontWeight: 700, color: "#0f172a",
-        marginBottom: 8, display: "flex", alignItems: "center", gap: 6,
-      }}>
-        {label}
-        {required && <span style={{ color: "#dc2626", fontSize: 12 }}>*</span>}
-        {optional && <span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 500 }}>(optional)</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "12px 14px", fontSize: 14,
-  border: "1.5px solid #e2e8f0", borderRadius: 12,
-  background: "#fff", color: "#0f172a", outline: "none",
-  fontFamily: "inherit",
-};
-
-const chipStyle = (active: boolean): React.CSSProperties => ({
-  padding: "7px 12px", fontSize: 12, fontWeight: 600,
-  borderRadius: 999, border: "1.5px solid",
-  borderColor: active ? "#a855f7" : "#e2e8f0",
-  background: active ? "linear-gradient(135deg,#a855f7,#ec4899)" : "#fff",
-  color: active ? "#fff" : "#475569",
-  cursor: "pointer", transition: "all 0.15s",
-});
