@@ -1,0 +1,171 @@
+Build a full-stack Node.js web app feature called "AI Parenting Coach" with a TinyPal-style UI (personalized, swipeable cards with images and step-by-step solutions).
+
+GOAL:
+Create a dedicated route /ai-coach that helps parents solve child behavior problems using AI-generated, personalized, science-based guidance presented as swipeable visual cards.
+
+---
+
+## BACKEND (Node.js + Express)
+
+1. Create POST endpoint: /api/ai-coach
+
+2. Input:
+   {
+   age,
+   childName,
+   problem,
+   triggers,
+   goal
+   }
+
+3. Use OpenAI API (chat completion) to generate structured JSON response.
+
+Prompt requirements:
+
+* Act as parenting expert (psychology + neuroscience based)
+* Personalized using child name and context
+* Tone: calm, practical, non-judgmental
+* Output ONLY valid JSON
+
+Expected AI Output Format:
+{
+"title": "Problem title",
+"reason": "Why this behavior happens (simple science explanation)",
+"steps": [
+{
+"heading": "Step title",
+"subheading": "Short formula (example: Consistency → Less resistance)",
+"explanation": "2-3 lines explanation",
+"tip": "Clear actionable tip",
+"image_prompt": "soft parenting illustration, parent and child, warm tones"
+}
+]
+}
+
+Rules:
+
+* 5–7 steps
+* No generic advice
+* Highly personalized
+* Each step should feel like a swipe card
+
+4. Generate images for each step using OpenAI Images API (or any image API):
+
+* Style: soft illustration, kid-friendly, pastel colors
+* Attach image URL to each step
+
+5. Return final JSON with images.
+
+6. Add simple caching (store last result for same input for 5–10 minutes).
+
+---
+
+## FRONTEND (Mobile-first UI)
+
+Create a new page: /ai-coach
+
+UI Flow:
+
+STEP 1: Input Screen
+
+* Ask:
+
+  * Child name
+  * Age
+  * Problem (dropdown or input)
+  * Triggers (multi-select)
+  * Desired outcome
+* Button: "Solve with AI"
+
+STEP 2: Loading Screen
+
+* Show animated loader
+* Text: "Creating a personalized plan for [childName]..."
+
+STEP 3: Result Screen (MAIN FEATURE)
+
+Design:
+
+* Full screen swipeable cards (horizontal swipe)
+* Each card = 1 step
+
+Each card layout:
+
+* Top: AI-generated image (60% height)
+* Bottom: dark rounded overlay (40%)
+
+  * Heading
+  * Subheading (formula style)
+  * Explanation
+  * Tip
+
+Features:
+
+* Horizontal swipe (like Instagram stories)
+* Smooth scroll with snap
+* Progress dots at top
+* Tap to toggle details
+* Optional: auto-swipe
+
+---
+
+## CSS REQUIREMENTS
+
+* Black background
+* Rounded overlay card
+* Soft gradients
+* Mobile-first responsive design
+* Smooth animations
+
+---
+
+## JS FUNCTIONALITY
+
+* Fetch /api/ai-coach
+* Parse JSON
+* Render cards dynamically
+* Lazy load images
+* Handle errors gracefully
+
+---
+
+## EXTRA FEATURES (IMPORTANT)
+
+* "Ask follow-up" button (future chat integration)
+* "Save plan" (store locally or DB)
+* Share button
+
+---
+
+## FILES STRUCTURE
+
+* server.js
+* routes/aiCoach.js
+* public/ai-coach.html
+* public/ai-coach.css
+* public/ai-coach.js
+
+---
+
+## OUTPUT
+
+Provide:
+
+1. Full working backend code
+2. Frontend UI code
+3. OpenAI integration
+4. Instructions for adding API key in Replit
+5. Ready-to-run project
+
+---
+
+## FINAL RESULT
+
+A TinyPal-like AI parenting coach:
+
+* Personalized
+* Visual (images + cards)
+* Swipe-based UX
+* Science-backed solutions
+
+---

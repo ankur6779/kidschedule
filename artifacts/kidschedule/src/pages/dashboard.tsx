@@ -620,6 +620,14 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
           </button>
         </Link>
 
+        {/* ── AI Coach CTA ───────────────────────────────────── */}
+        <Link href="/ai-coach">
+          <button className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            AI Parenting Coach — get a plan now
+          </button>
+        </Link>
+
         {/* ── Secondary CTA ──────────────────────────────────── */}
         <Link href="/parenting-hub">
           <button className="w-full h-12 rounded-2xl border-2 border-border bg-background text-foreground font-bold text-sm hover:bg-muted/50 hover:border-primary/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
