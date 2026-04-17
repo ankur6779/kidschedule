@@ -82,14 +82,20 @@ export default function AICoachPage() {
     goal: string; ageGroup: string; severity: string; triggers: string[]; routine: string;
   } | null>(null);
 
+  // Freeze the denominator at the original plan size (12).
+  // Extension cards are bonus — adding them must never drop the progress %.
+  const originalWinCountRef = useRef<number>(0);
+
   // Progress %: Worked = 100%, Partially = 50%, Not worked = 0%
+  // Denominator = original plan win count (never grows with extensions).
   const progressPct = useMemo(() => {
-    if (!plan || plan.wins.length === 0) return 0;
+    const denom = originalWinCountRef.current;
+    if (!plan || denom === 0) return 0;
     const sum = Object.values(feedbackByWin).reduce(
       (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0),
       0,
     );
-    return Math.round((sum / plan.wins.length) * 100);
+    return Math.min(100, Math.round((sum / denom) * 100));
   }, [feedbackByWin, plan]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -172,6 +178,8 @@ export default function AICoachPage() {
       if (!res.ok) throw new Error(`Server ${res.status}`);
       const data = (await res.json()) as { plan: Plan; sessionId: string };
       setPlan(data.plan);
+      // Freeze denominator at the original win count so extensions never drop progress %
+      originalWinCountRef.current = data.plan.wins.length;
       setSessionId(data.sessionId);
       setPhase("result");
     } catch {
@@ -221,12 +229,13 @@ export default function AICoachPage() {
       });
     } catch { /* silent */ }
 
-    // Compute new progress inline (don't wait for state re-render)
+    // Compute new progress inline using frozen denominator (never drops when extensions added)
     const newSum = Object.values(newFeedbackByWin).reduce(
       (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0),
       0,
     );
-    const newPct = Math.round((newSum / plan.wins.length) * 100);
+    const denom = originalWinCountRef.current || plan.wins.length;
+    const newPct = Math.min(100, Math.round((newSum / denom) * 100));
     const isLastCard = activeIdx === plan.wins.length - 1;
 
     // Rule: if "not worked" on ANY card → extend
@@ -307,6 +316,7 @@ export default function AICoachPage() {
     setGoalId("");
     setAnswers({});
     setPlan(null);
+    originalWinCountRef.current = 0;
     setSessionId("");
     setActiveIdx(0);
     setFeedbackByWin({});
