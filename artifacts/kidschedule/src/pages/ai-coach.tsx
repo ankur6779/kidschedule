@@ -51,11 +51,12 @@ interface Win {
   mistake_to_avoid: string;
   micro_task: string;
   duration: string;
-  image?: string;
+  science_reference: string;
 }
 interface Plan { title: string; root_cause: string; summary: string; wins: Win[]; }
 
 type Phase = "goals" | "questions" | "loading" | "result";
+type Feedback = "yes" | "somewhat" | "no";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -73,8 +74,23 @@ export default function AICoachPage() {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [sessionId, setSessionId] = useState<string>("");
   const [activeIdx, setActiveIdx] = useState(0);
-  const [feedbackPrompted, setFeedbackPrompted] = useState<Record<number, boolean>>({});
-  const [imgErrors, setImgErrors] = useState<Record<number, boolean>>({});
+  const [feedbackByWin, setFeedbackByWin] = useState<Record<number, Feedback>>({});
+  const [extending, setExtending] = useState(false);
+
+  // Keep last submitted answers/payload around so we can call /extend later
+  const lastPayloadRef = useRef<{
+    goal: string; ageGroup: string; severity: string; triggers: string[]; routine: string;
+  } | null>(null);
+
+  // Progress %: Worked = 100%, Partially = 50%, Not worked = 0%
+  const progressPct = useMemo(() => {
+    if (!plan || plan.wins.length === 0) return 0;
+    const sum = Object.values(feedbackByWin).reduce(
+      (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0),
+      0,
+    );
+    return Math.round((sum / plan.wins.length) * 100);
+  }, [feedbackByWin, plan]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -129,17 +145,23 @@ export default function AICoachPage() {
   const submitPlan = async () => {
     setPhase("loading");
     setActiveIdx(0);
-    setFeedbackPrompted({});
-    setImgErrors({});
+    setFeedbackByWin({});
     const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10" };
     const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
     const payload = {
       goal: goalId,
-      ageGroup: ageMap[answers.ageGroup as string] ?? answers.ageGroup ?? "5-7",
+      ageGroup: ageMap[answers.ageGroup as string] ?? (answers.ageGroup as string) ?? "5-7",
       severity: sevMap[answers.severity as string] ?? "moderate",
       triggers: (answers.triggers as string[]) ?? [],
       routine: (answers.routine as string) ?? "",
       goalRefinement: (answers.goalRefinement as string) ?? "",
+    };
+    lastPayloadRef.current = {
+      goal: payload.goal,
+      ageGroup: payload.ageGroup,
+      severity: payload.severity,
+      triggers: payload.triggers,
+      routine: payload.routine,
     };
     try {
       const res = await authFetch("/api/ai-coach", {
@@ -176,26 +198,77 @@ export default function AICoachPage() {
     el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
   };
 
-  // ─── Feedback
-  const submitFeedback = async (winNumber: number, feedback: "yes" | "somewhat" | "no") => {
+  // ─── Feedback (yes / somewhat / no)
+  const submitFeedback = async (winNumber: number, feedback: Feedback) => {
     if (!plan || !sessionId) return;
-    setFeedbackPrompted((p) => ({ ...p, [winNumber]: true }));
+    setFeedbackByWin((p) => ({ ...p, [winNumber]: feedback }));
+
+    // Save to DB (silent on failure — UI already updated)
     try {
       await authFetch("/api/ai-coach/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId,
-          goalId,
+          sessionId, goalId,
           planTitle: plan.title,
           winNumber,
           totalWins: plan.wins.length,
           feedback,
         }),
       });
-      toast({ title: "Saved!", description: "Your progress is tracked. Keep going 💜" });
+    } catch { /* silent */ }
+
+    // Adaptive loop — if "Not worked for me", request 3 more wins from the AI
+    if (feedback === "no") {
+      await requestExtension(winNumber);
+    } else {
+      toast({
+        title: feedback === "yes" ? "Win locked in 🎉" : "Progress noted 💜",
+        description: feedback === "yes"
+          ? "Marked as complete. Swipe to the next step."
+          : "Partial progress counted. Keep going.",
+      });
+    }
+  };
+
+  // ─── Adaptive: ask backend for 3 more wins when a step doesn't work
+  const requestExtension = async (failedWinNumber: number) => {
+    if (!plan || !lastPayloadRef.current || extending) return;
+    const failedWin = plan.wins.find((w) => w.win === failedWinNumber);
+    if (!failedWin) return;
+    setExtending(true);
+    try {
+      const startWinNumber = plan.wins.length + 1;
+      const res = await authFetch("/api/ai-coach/extend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...lastPayloadRef.current,
+          failedWinTitle: failedWin.title,
+          failedWinNumber,
+          startWinNumber,
+          existingWinTitles: plan.wins.map((w) => w.title),
+        }),
+      });
+      if (!res.ok) throw new Error(`Server ${res.status}`);
+      const data = (await res.json()) as { wins: Win[] };
+      if (Array.isArray(data.wins) && data.wins.length > 0) {
+        setPlan((p) => p ? { ...p, wins: [...p.wins, ...data.wins] } : p);
+        toast({
+          title: "3 new strategies added 💛",
+          description: "Different angles — try the next one.",
+        });
+        // Auto-scroll to the first new win after the DOM updates
+        setTimeout(() => goToCard(startWinNumber - 1), 80);
+      }
     } catch {
-      // silent — already marked prompted to avoid spam
+      toast({
+        title: "Couldn't load extras",
+        description: "Please tap 'Not worked for me' again in a moment.",
+        variant: "destructive",
+      });
+    } finally {
+      setExtending(false);
     }
   };
 
@@ -220,6 +293,8 @@ export default function AICoachPage() {
     setPlan(null);
     setSessionId("");
     setActiveIdx(0);
+    setFeedbackByWin({});
+    lastPayloadRef.current = null;
   };
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -363,21 +438,50 @@ export default function AICoachPage() {
   // ── PHASE: RESULT ────────────────────────────────────────────────────
   if (phase === "result" && plan) {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "#000", zIndex: 50, display: "flex", flexDirection: "column" }}>
-        {/* Top bar */}
+      <div style={{
+        position: "fixed", inset: 0,
+        background: "linear-gradient(135deg, #faf5ff 0%, #fdf4ff 50%, #f0f9ff 100%)",
+        zIndex: 50, display: "flex", flexDirection: "column",
+      }}>
+        {/* Top bar — light theme */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
-          padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%)",
+          padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 100%)",
+          backdropFilter: "blur(8px)",
         }}>
-          <button onClick={handleStartOver} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+          <button
+            onClick={handleStartOver}
+            style={{ color: "#6d28d9", background: "rgba(167,139,250,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}
+            aria-label="Back"
+          >
             <ArrowLeft size={18} />
           </button>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={handleShare} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+
+          {/* Progress % pill (TOP-RIGHT) */}
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+            color: "#fff", padding: "7px 14px", borderRadius: 999,
+            fontSize: 12, fontWeight: 800, letterSpacing: 0.3,
+            boxShadow: "0 4px 12px rgba(139,92,246,0.3)",
+          }}>
+            Progress {progressPct}%
+          </div>
+
+          <div style={{ display: "flex", gap: 6 }}>
+            <button
+              onClick={handleShare}
+              style={{ color: "#6d28d9", background: "rgba(167,139,250,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}
+              aria-label="Share"
+            >
               <Share2 size={16} />
             </button>
-            <button onClick={() => setLocation("/amy-coach/progress")} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+            <button
+              onClick={() => setLocation("/amy-coach/progress")}
+              style={{ color: "#6d28d9", background: "rgba(167,139,250,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}
+              aria-label="Progress"
+            >
               <BarChart3 size={16} />
             </button>
           </div>
@@ -385,7 +489,7 @@ export default function AICoachPage() {
 
         {/* Progress dots */}
         <div style={{
-          position: "absolute", top: 64, left: 16, right: 16, zIndex: 20,
+          position: "absolute", top: 60, left: 16, right: 16, zIndex: 20,
           display: "flex", gap: 4,
         }}>
           {plan.wins.map((_, i) => (
@@ -394,7 +498,7 @@ export default function AICoachPage() {
               onClick={() => goToCard(i)}
               style={{
                 flex: 1, height: 3, borderRadius: 2, border: "none", cursor: "pointer", padding: 0,
-                background: i <= activeIdx ? "#fff" : "rgba(255,255,255,0.3)",
+                background: i <= activeIdx ? "#8b5cf6" : "rgba(139,92,246,0.2)",
                 transition: "background 0.3s",
               }}
             />
@@ -413,20 +517,34 @@ export default function AICoachPage() {
         >
           {plan.wins.map((w, i) => (
             <WinCard
-              key={i}
+              key={`${w.win}-${i}`}
               win={w}
               total={plan.wins.length}
-              imageError={imgErrors[i]}
-              onImageError={() => setImgErrors((p) => ({ ...p, [i]: true }))}
               isFirst={i === 0}
               planTitle={i === 0 ? plan.title : undefined}
               planSummary={i === 0 ? plan.summary : undefined}
               planRootCause={i === 0 ? plan.root_cause : undefined}
-              showFeedback={!feedbackPrompted[w.win]}
+              currentFeedback={feedbackByWin[w.win]}
+              extending={extending}
               onFeedback={(f) => submitFeedback(w.win, f)}
             />
           ))}
         </div>
+
+        {/* Extending banner */}
+        {extending && (
+          <div style={{
+            position: "absolute", bottom: 80, left: "50%", transform: "translateX(-50%)",
+            background: "rgba(99,102,241,0.95)", color: "#fff",
+            padding: "10px 18px", borderRadius: 999, fontSize: 12.5, fontWeight: 700,
+            display: "flex", alignItems: "center", gap: 8,
+            boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+            zIndex: 25,
+          }}>
+            <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
+            Loading 3 new strategies for you…
+          </div>
+        )}
 
         {/* Bottom nav */}
         <div style={{
@@ -436,14 +554,29 @@ export default function AICoachPage() {
           <button
             onClick={() => goToCard(Math.max(0, activeIdx - 1))}
             disabled={activeIdx === 0}
-            style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, padding: "10px 16px", border: "none", cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
+            style={{
+              color: "#6d28d9",
+              background: "rgba(255,255,255,0.85)",
+              boxShadow: "0 2px 8px rgba(139,92,246,0.15)",
+              borderRadius: 999, padding: "10px 16px", border: "1px solid rgba(139,92,246,0.2)",
+              cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1,
+              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
+            }}
           >
             <ArrowLeft size={14} /> Prev
           </button>
           <button
             onClick={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
             disabled={activeIdx === plan.wins.length - 1}
-            style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, padding: "10px 16px", border: "none", cursor: activeIdx === plan.wins.length - 1 ? "default" : "pointer", opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600 }}
+            style={{
+              color: "#fff",
+              background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+              boxShadow: "0 4px 12px rgba(139,92,246,0.3)",
+              borderRadius: 999, padding: "10px 16px", border: "none",
+              cursor: activeIdx === plan.wins.length - 1 ? "default" : "pointer",
+              opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1,
+              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700,
+            }}
           >
             Next <ArrowRight size={14} />
           </button>
@@ -456,145 +589,134 @@ export default function AICoachPage() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// WIN CARD
+// WIN CARD — light gradient, no images, science reference, adaptive buttons
 // ═══════════════════════════════════════════════════════════════════════════
 function WinCard({
-  win, total, imageError, onImageError, isFirst, planTitle, planSummary, planRootCause,
-  showFeedback, onFeedback,
+  win, total, isFirst, planTitle, planSummary, planRootCause,
+  currentFeedback, extending, onFeedback,
 }: {
   win: Win;
   total: number;
-  imageError?: boolean;
-  onImageError?: () => void;
   isFirst: boolean;
   planTitle?: string;
   planSummary?: string;
   planRootCause?: string;
-  showFeedback: boolean;
-  onFeedback: (f: "yes" | "somewhat" | "no") => void;
+  currentFeedback?: Feedback;
+  extending: boolean;
+  onFeedback: (f: Feedback) => void;
 }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
-  const [lastFeedback, setLastFeedback] = useState<"yes" | "somewhat" | "no" | null>(null);
-  const showImage = win.image && !imageError;
-
-  const handleFeedback = (f: "yes" | "somewhat" | "no") => {
-    setLastFeedback(f);
-    onFeedback(f);
-  };
+  const isExtension = win.win > 12;
 
   return (
     <div
       style={{
         flex: "0 0 100%", width: "100%", height: "100vh",
         scrollSnapAlign: "start", position: "relative",
-        background: "#000", overflow: "hidden",
+        background: isExtension
+          ? "linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #ede9fe 100%)"
+          : "linear-gradient(135deg, #faf5ff 0%, #fdf4ff 50%, #f0f9ff 100%)",
+        overflow: "hidden",
       }}
     >
-      {/* Image area (38%) */}
+      {/* Scrollable content — full card */}
       <div style={{
-        position: "absolute", top: 0, left: 0, right: 0, height: "38%",
-        background: "linear-gradient(135deg, #fbcfe8 0%, #ddd6fe 50%, #c7d2fe 100%)",
-        overflow: "hidden",
-      }}>
-        {showImage && (
-          <img
-            src={win.image}
-            alt=""
-            loading="lazy"
-            onLoad={() => setImgLoaded(true)}
-            onError={() => onImageError?.()}
-            style={{
-              width: "100%", height: "100%", objectFit: "cover",
-              opacity: imgLoaded ? 1 : 0, transition: "opacity 0.4s ease-in",
-              display: "block",
-            }}
-          />
-        )}
-        {!imgLoaded && (
-          <div style={{
-            position: "absolute", inset: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "rgba(255,255,255,0.85)",
-          }}>
-            {imageError
-              ? <Sparkles style={{ width: 32, height: 32, opacity: 0.7 }} />
-              : <Loader2 style={{ width: 24, height: 24, animation: "spin 1.2s linear infinite", opacity: 0.7 }} />}
-          </div>
-        )}
-
-        {/* Win counter */}
-        <div style={{
-          position: "absolute", top: 90, right: 16,
-          background: "rgba(0,0,0,0.55)", color: "#fff",
-          padding: "6px 12px", borderRadius: 999,
-          fontSize: 12, fontWeight: 700, letterSpacing: 0.3,
-        }}>
-          WIN {win.win} / {total}
-        </div>
-      </div>
-
-      {/* Bottom dark overlay (62%) — scrollable rich content */}
-      <div style={{
-        position: "absolute", bottom: 0, left: 0, right: 0, height: "62%",
-        background: "linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.95) 18%, #000 100%)",
-        color: "#fff",
-        padding: "20px 20px 110px",
+        position: "absolute", inset: 0,
+        padding: "92px 22px 130px",
         overflowY: "auto",
         WebkitOverflowScrolling: "touch",
+        color: "#1f2937",
       }}>
+        {/* Win counter chip */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          background: isExtension
+            ? "linear-gradient(135deg, #f59e0b, #ec4899)"
+            : "linear-gradient(135deg, #8b5cf6, #ec4899)",
+          color: "#fff",
+          padding: "5px 12px", borderRadius: 999,
+          fontSize: 11, fontWeight: 800, letterSpacing: 0.5,
+          marginBottom: 10,
+          boxShadow: "0 2px 8px rgba(139,92,246,0.25)",
+        }}>
+          {isExtension ? "💛 EXTRA STRATEGY" : "WIN"} {win.win} / {total}
+        </div>
+
+        {/* Plan header — only on first card */}
         {isFirst && planTitle && (
-          <div style={{ marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
+          <div style={{
+            marginBottom: 18, paddingBottom: 16,
+            borderBottom: "1px solid rgba(139,92,246,0.18)",
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, color: "#7c3aed", marginBottom: 4 }}>
               YOUR PLAN
             </p>
-            <h2 style={{ fontSize: 18, fontWeight: 800, lineHeight: 1.2, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.2, marginBottom: 8, fontFamily: "Quicksand, sans-serif", color: "#1e1b4b" }}>
               {planTitle}
             </h2>
             {planRootCause && (
               <div style={{
-                background: "rgba(244,114,182,0.12)", border: "1px solid rgba(244,114,182,0.3)",
-                borderRadius: 12, padding: 10, marginTop: 8, marginBottom: 8,
+                background: "rgba(244,114,182,0.1)", border: "1px solid rgba(244,114,182,0.3)",
+                borderRadius: 12, padding: 12, marginTop: 8, marginBottom: 8,
               }}>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#fbcfe8", marginBottom: 4 }}>
+                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#be185d", marginBottom: 4 }}>
                   🧠 ROOT CAUSE
                 </p>
-                <p style={{ fontSize: 12, lineHeight: 1.5, color: "rgba(255,255,255,0.9)" }}>{planRootCause}</p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.55, color: "#4c1d3a" }}>{planRootCause}</p>
               </div>
             )}
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", lineHeight: 1.45 }}>
+            <p style={{ fontSize: 12.5, color: "#4b5563", lineHeight: 1.5 }}>
               {planSummary}
             </p>
           </div>
         )}
 
-        <h3 style={{ fontSize: 22, fontWeight: 800, lineHeight: 1.15, marginBottom: 6, fontFamily: "Quicksand, sans-serif" }}>
+        {/* Title + objective */}
+        <h3 style={{
+          fontSize: 24, fontWeight: 800, lineHeight: 1.15,
+          marginBottom: 6, fontFamily: "Quicksand, sans-serif",
+          color: "#1e1b4b",
+        }}>
           {win.title}
         </h3>
-        <p style={{ fontSize: 13, color: "#fbcfe8", marginBottom: 14, lineHeight: 1.4, fontWeight: 600 }}>
+        <p style={{
+          fontSize: 13.5, color: "#7c3aed",
+          marginBottom: 16, lineHeight: 1.4, fontWeight: 600,
+        }}>
           {win.objective}
         </p>
 
         {/* WHY THIS WORKS */}
         {win.deep_explanation && (
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#93c5fd", marginBottom: 6 }}>
+          <div style={{
+            background: "rgba(255,255,255,0.7)", border: "1px solid rgba(99,102,241,0.18)",
+            borderRadius: 14, padding: 14, marginBottom: 14,
+            boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#4338ca", marginBottom: 6 }}>
               🔬 WHY THIS WORKS
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.92)" }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: "#1f2937" }}>
               {win.deep_explanation}
             </p>
           </div>
         )}
 
         {/* DO THIS */}
-        <div style={{ marginBottom: 16 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#a78bfa", marginBottom: 8 }}>✅ DO THIS</p>
-          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{
+          background: "rgba(255,255,255,0.7)", border: "1px solid rgba(139,92,246,0.18)",
+          borderRadius: 14, padding: 14, marginBottom: 14,
+          boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
+        }}>
+          <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#7c3aed", marginBottom: 10 }}>
+            ✅ DO THIS
+          </p>
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
             {win.actions.map((a, i) => (
-              <li key={i} style={{ fontSize: 13, lineHeight: 1.45, display: "flex", gap: 8, color: "rgba(255,255,255,0.95)" }}>
+              <li key={i} style={{ fontSize: 13.5, lineHeight: 1.5, display: "flex", gap: 10, color: "#1f2937" }}>
                 <span style={{
-                  flexShrink: 0, width: 20, height: 20, borderRadius: 999,
-                  background: "rgba(167,139,250,0.25)", color: "#c4b5fd",
+                  flexShrink: 0, width: 22, height: 22, borderRadius: 999,
+                  background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                  color: "#fff",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: 11, fontWeight: 800, marginTop: 1,
                 }}>{i + 1}</span>
@@ -607,117 +729,137 @@ function WinCard({
         {/* REAL EXAMPLE */}
         {win.example && (
           <div style={{
-            background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.35)",
+            background: "rgba(220,252,231,0.8)", border: "1px solid rgba(34,197,94,0.35)",
             borderRadius: 14, padding: 12, marginBottom: 12,
           }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#86efac", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#15803d", marginBottom: 4 }}>
               💬 REAL EXAMPLE
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff", fontStyle: "italic" }}>{win.example}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "#14532d", fontStyle: "italic" }}>
+              {win.example}
+            </p>
           </div>
         )}
 
         {/* MISTAKE TO AVOID */}
         {win.mistake_to_avoid && (
           <div style={{
-            background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.35)",
+            background: "rgba(254,226,226,0.7)", border: "1px solid rgba(248,113,113,0.4)",
             borderRadius: 14, padding: 12, marginBottom: 12,
           }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#fca5a5", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#b91c1c", marginBottom: 4 }}>
               ⚠️ MISTAKE TO AVOID
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff" }}>{win.mistake_to_avoid}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "#7f1d1d" }}>
+              {win.mistake_to_avoid}
+            </p>
           </div>
         )}
 
-        {/* MICRO-TASK FOR TODAY */}
+        {/* MICRO-TASK */}
         {win.micro_task && (
           <div style={{
-            background: "linear-gradient(135deg, rgba(167,139,250,0.25), rgba(236,72,153,0.2))",
+            background: "linear-gradient(135deg, rgba(167,139,250,0.18), rgba(236,72,153,0.15))",
             border: "1px solid rgba(167,139,250,0.5)",
-            borderRadius: 14, padding: 14, marginBottom: 14,
+            borderRadius: 14, padding: 14, marginBottom: 12,
           }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#6d28d9", marginBottom: 4 }}>
               🎯 DO THIS TODAY (under 5 min)
             </p>
-            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#fff", fontWeight: 600 }}>{win.micro_task}</p>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#1e1b4b", fontWeight: 600 }}>
+              {win.micro_task}
+            </p>
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 18, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, padding: "4px 10px", borderRadius: 999, background: "rgba(255,255,255,0.12)", color: "#fff", fontWeight: 600 }}>
-            ⏱ Practice for {win.duration}
+        {/* DURATION + SCIENCE REFERENCE */}
+        <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
+          <span style={{
+            fontSize: 11, padding: "4px 10px", borderRadius: 999,
+            background: "rgba(139,92,246,0.12)", color: "#6d28d9", fontWeight: 700,
+          }}>
+            ⏱ {win.duration}
           </span>
         </div>
 
-        {/* Mark as Done + feedback flow */}
-        {showFeedback && (
-          <div style={{
-            background: "linear-gradient(135deg, rgba(236,72,153,0.18), rgba(139,92,246,0.18))",
-            border: "1px solid rgba(236,72,153,0.4)",
-            borderRadius: 16, padding: 14, marginBottom: 8,
+        {win.science_reference && (
+          <p style={{
+            fontSize: 11, color: "#6b7280", lineHeight: 1.5,
+            marginBottom: 14, fontStyle: "italic",
+            paddingLeft: 10, borderLeft: "2px solid rgba(139,92,246,0.3)",
           }}>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
-              How did this win go?
-            </p>
-            <div style={{ display: "flex", gap: 6 }}>
-              {([
-                { v: "yes" as const,      label: "Worked ✓",    bg: "rgba(34,197,94,0.25)",  border: "rgba(34,197,94,0.5)" },
-                { v: "somewhat" as const, label: "Partially",   bg: "rgba(251,191,36,0.25)", border: "rgba(251,191,36,0.5)" },
-                { v: "no" as const,       label: "Not yet",     bg: "rgba(248,113,113,0.25)",border: "rgba(248,113,113,0.5)" },
-              ]).map((b) => (
+            📚 Based on: {win.science_reference}
+          </p>
+        )}
+
+        {/* Mark-as-done feedback */}
+        <div style={{
+          background: "rgba(255,255,255,0.85)",
+          border: "1px solid rgba(139,92,246,0.25)",
+          borderRadius: 16, padding: 14, marginBottom: 8,
+          boxShadow: "0 4px 12px rgba(139,92,246,0.08)",
+        }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#1e1b4b", marginBottom: 10 }}>
+            How did this win go?
+          </p>
+          <div style={{ display: "flex", gap: 6 }}>
+            {([
+              { v: "yes" as const,      label: "Worked",            color: "#15803d", bg: "rgba(34,197,94,0.15)",  border: "rgba(34,197,94,0.45)" },
+              { v: "somewhat" as const, label: "Partially worked",  color: "#a16207", bg: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.45)" },
+              { v: "no" as const,       label: "Not worked for me", color: "#b91c1c", bg: "rgba(248,113,113,0.12)",border: "rgba(248,113,113,0.4)" },
+            ]).map((b) => {
+              const selected = currentFeedback === b.v;
+              return (
                 <button
                   key={b.v}
-                  onClick={() => handleFeedback(b.v)}
+                  onClick={() => onFeedback(b.v)}
+                  disabled={extending}
                   style={{
-                    flex: 1, padding: "10px 6px", borderRadius: 10,
-                    border: `1px solid ${b.border}`,
-                    background: b.bg, color: "#fff",
-                    fontSize: 12, fontWeight: 700, cursor: "pointer",
+                    flex: 1, padding: "10px 4px", borderRadius: 10,
+                    border: `1.5px solid ${selected ? b.color : b.border}`,
+                    background: selected ? b.color : b.bg,
+                    color: selected ? "#fff" : b.color,
+                    fontSize: 11.5, fontWeight: 700,
+                    cursor: extending ? "wait" : "pointer",
+                    opacity: extending ? 0.7 : 1,
+                    transition: "all 0.18s",
+                    lineHeight: 1.2,
                   }}
                 >
                   {b.label}
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Inline extra-support card when "Not yet" */}
-        {lastFeedback === "no" && (
+        {/* "Not worked for me" → 3 new strategies are appended automatically */}
+        {currentFeedback === "no" && (
           <div style={{
-            background: "rgba(99,102,241,0.18)", border: "1px solid rgba(99,102,241,0.45)",
-            borderRadius: 16, padding: 14, marginBottom: 8, marginTop: 4,
+            background: "rgba(254,243,199,0.7)", border: "1px solid rgba(245,158,11,0.4)",
+            borderRadius: 14, padding: 14, marginTop: 10,
           }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 1, color: "#a5b4fc", marginBottom: 6 }}>
-              💛 EXTRA SUPPORT
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, color: "#92400e", marginBottom: 6 }}>
+              💛 EXTRA SUPPORT ADDED
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.5, color: "#fff", marginBottom: 8 }}>
-              That's okay — real change is rarely linear. Two adjustments that often unlock this step:
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "#78350f" }}>
+              I've added 3 fresh strategies at the end of your plan — different angles to try:
+              shrink the step, check a hidden blocker, or flip the approach. Tap <strong>Next</strong> to reach them.
             </p>
-            <ul style={{ margin: 0, paddingLeft: 18, color: "rgba(255,255,255,0.92)", fontSize: 12.5, lineHeight: 1.55 }}>
-              <li style={{ marginBottom: 4 }}>
-                <strong>Lower the bar:</strong> try the micro-task once today, not the full step. Tiny reps build the pattern.
-              </li>
-              <li style={{ marginBottom: 4 }}>
-                <strong>Check the trigger first:</strong> hunger, sleep or transition often blocks progress more than the step itself.
-              </li>
-              <li>
-                <strong>Give it 3 more days:</strong> most behaviour shifts show up between days 5–7, not day 1.
-              </li>
-            </ul>
           </div>
         )}
 
-        {lastFeedback && lastFeedback !== "no" && (
+        {(currentFeedback === "yes" || currentFeedback === "somewhat") && (
           <div style={{
-            background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.4)",
-            borderRadius: 12, padding: 10, marginTop: 4,
+            background: "rgba(220,252,231,0.6)", border: "1px solid rgba(34,197,94,0.4)",
+            borderRadius: 12, padding: 10, marginTop: 8,
             display: "flex", alignItems: "center", gap: 8,
           }}>
-            <span style={{ fontSize: 18 }}>🎉</span>
-            <p style={{ fontSize: 12.5, color: "#fff", fontWeight: 600, margin: 0 }}>
-              Logged. Swipe to the next win when you're ready.
+            <span style={{ fontSize: 18 }}>{currentFeedback === "yes" ? "🎉" : "💜"}</span>
+            <p style={{ fontSize: 12.5, color: "#14532d", fontWeight: 600, margin: 0 }}>
+              {currentFeedback === "yes"
+                ? "Logged as a full win. Swipe to the next step."
+                : "Partial progress counted. Keep going — small wins compound."}
             </p>
           </div>
         )}

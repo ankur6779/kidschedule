@@ -4,7 +4,7 @@ import { eq, desc, and } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { db, aiCacheTable, userProgressTable } from "@workspace/db";
 import { logger } from "../lib/logger.js";
-import { attachImagesToWins, GOAL_IDS, type GoalId } from "../lib/image-map.js";
+import { GOAL_IDS, type GoalId } from "../lib/image-map.js";
 
 const router: IRouter = Router();
 
@@ -19,7 +19,7 @@ interface Win {
   mistake_to_avoid: string;
   micro_task: string;
   duration: string;
-  image?: string;
+  science_reference: string;
 }
 
 interface CoachPlan {
@@ -38,7 +38,7 @@ interface CoachInput {
 }
 
 // ─── Config ──────────────────────────────────────────────────────────────
-const NAMESPACE = "ai_coach_v3";
+const NAMESPACE = "ai_coach_v4";
 const DB_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const MEMORY_TTL_MS = 10 * 60 * 1000;
 const MEMORY_MAX = 200;
@@ -87,7 +87,8 @@ function validateWin(w: unknown): w is Win {
     isStr(o.example) &&
     isStr(o.mistake_to_avoid) &&
     isStr(o.micro_task) &&
-    isStr(o.duration)
+    isStr(o.duration) &&
+    isStr(o.science_reference)
   );
 }
 
@@ -95,9 +96,9 @@ function validatePlan(p: unknown): p is CoachPlan {
   if (!p || typeof p !== "object") return false;
   const o = p as Record<string, unknown>;
   if (!isStr(o.title) || !isStr(o.root_cause) || !isStr(o.summary)) return false;
-  if (!Array.isArray(o.wins) || o.wins.length < 10 || o.wins.length > 12) return false;
+  // v4 contract: exactly 12 wins, numbered 1..12
+  if (!Array.isArray(o.wins) || o.wins.length !== 12) return false;
   if (!o.wins.every(validateWin)) return false;
-  // Ensure wins are numbered 1..N in order
   return o.wins.every((w, i) => (w as Win).win === i + 1);
 }
 
@@ -117,10 +118,11 @@ function fallbackPlan(input: CoachInput): CoachPlan {
   const ageGroup = input.ageGroup || "your child's age";
   const mk = (
     n: number, title: string, objective: string, deep: string,
-    actions: string[], example: string, mistake: string, micro: string, dur: string
+    actions: string[], example: string, mistake: string, micro: string, dur: string, sci: string
   ): Win => ({
     win: n, title, objective, deep_explanation: deep, actions,
     example, mistake_to_avoid: mistake, micro_task: micro, duration: dur,
+    science_reference: sci,
   });
   return {
     title: label,
@@ -136,7 +138,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Sara's 4-year-old was throwing toys. Instead of 'Stop that!', she knelt down and said 'Looks like something is really frustrating.' He paused, said 'I wanted the red one.' Connection took 30 seconds; the meltdown was avoided.",
          "Talking to your child from across the room or while distracted by your phone — they read this as 'not safe to listen' even if your words are kind.",
          "Today: try 5 minutes of 'special time' — child picks the activity, phone away, fully present.",
-         "2–3 days"),
+         "2–3 days",
+         "Connection-based discipline (Daniel Siegel & Tina Payne Bryson, 'The Whole-Brain Child')"),
       mk(2, "Identify the real trigger",
          "Stop guessing — find the actual root",
          "90% of recurring behaviour has a predictable trigger: hunger, tired, transition, sensory overload, or unmet emotional need. When you can name the trigger, you stop fighting the behaviour and start solving the cause. This is the single biggest shift parents make.",
@@ -144,7 +147,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Maya tracked her 5-year-old's tantrums for 3 days — every single one happened between 5–6pm. Earlier dinner = problem solved.",
          "Treating every meltdown as 'bad behaviour' rather than data — the behaviour IS the message.",
          "Today: keep a 3-line note in your phone every time the behaviour shows up — time, situation, what was happening 30 min before.",
-         "3 days"),
+         "3 days",
+         "Behavioural ABC analysis (Antecedent–Behaviour–Consequence, applied behaviour science)"),
       mk(3, "Set ONE clear expectation",
          "Reduce confusion and decision fatigue",
          `Children at ${ageGroup} can hold 1–2 rules in working memory at a time. When parents juggle 10 expectations, kids freeze, comply randomly, or push back hard. ONE clear, repeated, positively-phrased rule beats 10 vague ones every time.`,
@@ -152,7 +156,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Instead of 'Don't run, don't yell, don't hit your sister' — Anna chose ONE: 'In our home we keep our bodies safe.' Repeated that line for a week.",
          "Adding a new rule each time something annoys you — kids tune out the noise.",
          "Write ONE rule on a sticky note. Stick it on the fridge. Use it when needed.",
-         "3–4 days"),
+         "3–4 days",
+         "Working-memory limits in early childhood (Cowan's capacity research)"),
       mk(4, "Offer two real choices",
          "Give autonomy without losing the limit",
          "Autonomy is a core developmental need (self-determination theory). When children feel they have NO control, they create some — by resisting. Two limited choices give them genuine agency while you keep the boundary that matters.",
@@ -160,7 +165,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Bath fight every night. Dad switched from 'Time for bath' to 'Bath now or in 5 minutes?' — fights stopped in 2 days.",
          "Offering fake choices ('Do you want to do X or do you want a time-out?') — kids feel tricked.",
          "At one transition today, swap a command for a choice.",
-         "3–4 days"),
+         "3–4 days",
+         "Self-Determination Theory — autonomy as a core need (Deci & Ryan)"),
       mk(5, "Co-regulate before correcting",
          "Lend your calm — borrow theirs later",
          "Children regulate through their parent's nervous system before they can do it alone. When you're activated, they amplify; when you're calm, they slowly settle. This is biological co-regulation (Stephen Porges' Polyvagal Theory) — not a parenting trick.",
@@ -168,7 +174,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Priya started doing 4-7-8 breathing audibly when her son melted down. Within a week he was breathing with her.",
          "Trying to teach a regulation skill mid-meltdown — the lesson can only land afterward.",
          "Practice 4-in / 7-hold / 8-out breathing twice today, before any tough moment.",
-         "1 week"),
+         "1 week",
+         "Polyvagal Theory & co-regulation (Stephen Porges)"),
       mk(6, "Hold the limit kindly",
          "Stay warm AND firm — they aren't opposites",
          "Kids feel safer when limits hold even under pressure. A wobbling limit teaches 'if I push hard enough, the rule changes' — which makes future pushes louder. Holding the limit while staying warm is the gentle-discipline gold standard.",
@@ -176,7 +183,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "'I see you really want more screen time. Screen time is done for today. I'm right here if you want a hug.' Said calmly, on repeat.",
          "Caving when the meltdown gets loud — this teaches escalation works.",
          "Today: pick ONE limit you've been wobbling on. Hold it warmly today.",
-         "1 week"),
+         "1 week",
+         "Authoritative parenting style — high warmth + high structure (Diana Baumrind)"),
       mk(7, "Build the missing skill",
          "Don't punish what hasn't been taught",
          "Most repeated behaviour problems are missing skills, not missing motivation. A child who can't transition needs transition practice; a child who lashes out needs anger-language practice. Skills are built through low-stakes repetition, not consequences.",
@@ -184,7 +192,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "5-year-old kept hitting when frustrated. Mom made a 'feelings poster' and practiced naming feelings during car rides — hitting dropped in 2 weeks.",
          "Expecting a child to do something they've never been taught to do.",
          "Pick ONE skill (waiting, sharing, transitioning) — practice for 3 minutes during calm time today.",
-         "1–2 weeks"),
+         "1–2 weeks",
+         "Collaborative & Proactive Solutions — 'kids do well if they can' (Ross Greene)"),
       mk(8, "Repair after rupture",
          "Repair > perfection — every time",
          "Every parent loses it sometimes. What matters is what happens next. Repair (owning your part, reconnecting) builds attachment security and teaches your child that mistakes are recoverable — one of the most important life skills they'll ever learn.",
@@ -192,7 +201,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "After yelling at her son, Lina sat next to him 10 minutes later: 'I yelled. That was about my stress, not you. I love you.' He hugged her back.",
          "Pretending the rupture didn't happen, OR over-apologising in a way that puts the child in a parental role.",
          "Tonight: bedtime check-in — 'Best part of today? Hardest part?'",
-         "Ongoing"),
+         "Ongoing",
+         "Attachment repair & rupture-and-repair cycles (John Gottman, Edward Tronick)"),
       mk(9, "Track tiny wins daily",
          "Notice progress so you don't give up",
          "Behaviour change is invisible day-to-day but obvious week-to-week. Without a tracking system, your brain remembers only the bad moments and concludes 'nothing is working' — when real progress is happening underneath.",
@@ -200,7 +210,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Raj's wins jar: 'Bedtime took 25 min instead of 40.' After 2 weeks, the jar full of small wins kept him going.",
          "Comparing to other families' kids — your only baseline is YOUR child last week.",
          "Tonight: text yourself or a partner ONE small win.",
-         "1 week"),
+         "1 week",
+         "Behavioural Activation & self-monitoring (cognitive-behavioural research)"),
       mk(10, "Hold consistency for 14 days",
          "Lock in the new pattern",
          "Behaviours rewire after 14–21 days of consistent response. Most parents quit at day 5 because that's when kids ESCALATE — testing whether the new boundary is real. Holding through the day-5 burst is when the real change happens.",
@@ -208,7 +219,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Asha gave up at day 6 every time. The 7th time she pushed through — by day 12 her daughter was sleeping through the night.",
          "Switching tactics mid-stream because 'it's not working yet' — change needs runway.",
          "Mark a calendar each day you held the new approach — visible streak.",
-         "2 weeks"),
+         "2 weeks",
+         "Habit formation & extinction bursts (BJ Fogg, Tiny Habits)"),
       mk(11, "Maintain through setbacks",
          "Regression is part of the path, not the end of it",
          "Kids regress before big developmental leaps and during stress (illness, new sibling, school changes). A regression isn't failure — it's a sign your child is reorganising. Return to the basics: connect first, hold the limit, repair.",
@@ -216,7 +228,8 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Two months in, a stomach bug + new school caused a setback. Parents went back to extra connection time for 4 days — pattern returned.",
          "Treating regression as evidence the plan failed and abandoning it.",
          "When setback hits: extra 5 min of special time daily for 3 days.",
-         "Ongoing"),
+         "Ongoing",
+         "Developmental regression around growth spurts (Brazelton's Touchpoints)"),
       mk(12, "Make it a family value",
          "Move from rules to identity",
          "The deepest behaviour change happens when 'we don't hit' becomes 'we are a gentle family' — when the behaviour expresses identity, not just compliance. This is what makes change last into the teen years and beyond.",
@@ -224,9 +237,49 @@ function fallbackPlan(input: CoachInput): CoachPlan {
          "Family motto on the fridge: 'We are kind, we are brave, we try again.' Kids quoted it back during arguments.",
          "Skipping this final step — without identity, behaviour reverts to baseline under stress.",
          "Tonight at dinner: ask 'What's one thing our family is really good at?'",
-         "Ongoing"),
+         "Ongoing",
+         "Identity-based behaviour change (James Clear, Atomic Habits)"),
     ],
   };
+}
+
+// ─── Adaptive extension wins (when a step doesn't work) ──────────────────
+function fallbackExtensionWins(failedWinTitle: string, startNumber: number): Win[] {
+  const mk = (n: number, title: string, objective: string, deep: string,
+    actions: string[], example: string, mistake: string, micro: string, dur: string, sci: string): Win => ({
+    win: n, title, objective, deep_explanation: deep, actions,
+    example, mistake_to_avoid: mistake, micro_task: micro, duration: dur,
+    science_reference: sci,
+  });
+  return [
+    mk(startNumber, "Lower the bar by 80%",
+       `If "${failedWinTitle}" hasn't landed, the step is too big — shrink it`,
+       "Behaviour change fails when the new action requires more energy than the parent has on hard days. BJ Fogg's research shows that habits stick when they're 'tinier than feels useful' — small enough to do on your worst day. The brain only commits to repeated actions; one heroic attempt teaches nothing, but 30 seconds done daily for 7 days rewires.",
+       ["Take the original step and shrink it to 30 seconds", "Tie it to something you already do (after coffee, before bath)", "Do it even when you don't feel like it — that's the whole point", "Track only whether you did it, not whether it 'worked'"],
+       "A mum couldn't do '5-min special time' daily. She shrank to '60 seconds of eye-contact play before bath' — done every night. Two weeks in, son started asking for it.",
+       "Trying to 'just push through' the original step instead of shrinking it.",
+       "Pick ONE 30-second version of the failed step. Do it once today.",
+       "1 week",
+       "Tiny Habits methodology (BJ Fogg, Stanford Behaviour Design Lab)"),
+    mk(startNumber + 1, "Check the hidden blocker",
+       "Find what's making this step bounce off",
+       "When a research-backed step doesn't work, the issue is almost always a hidden blocker: the child is hungry, exhausted, sensory-overloaded, or the parent is depleted. Strategies cannot override unmet biological needs. This is non-negotiable physiology, not a parenting failure.",
+       ["Audit your child's last 24 hours: sleep, food, screens, transitions", "Audit YOURS: sleep, food, stress, support", "Fix the most-broken biological lever first (usually sleep or hunger)", "Try the step again only after the blocker is addressed for 3 days"],
+       "Dad's 'connection time' kept failing — son was checked-out. Turns out son was getting 9 hrs sleep instead of 11. Bedtime moved 90 min earlier; connection clicked.",
+       "Blaming the strategy when biology is the actual problem.",
+       "Today: write down one biological factor (yours OR child's) that needs fixing first.",
+       "3–5 days",
+       "Maslow's hierarchy of needs applied to behaviour change"),
+    mk(startNumber + 2, "Try the opposite angle",
+       "Switch from gentle to structured (or vice versa)",
+       "Different temperaments respond to different angles. A high-sensitivity child may need MORE structure; a strong-willed child may need MORE autonomy. If your default approach isn't shifting things in 2 weeks, it's not the wrong philosophy — it's the wrong fit for THIS child. Switch the angle, keep the warmth.",
+       ["If you've been gentle: add ONE clear, non-negotiable structure", "If you've been strict: add ONE moment of pure autonomy daily", "Watch what your child does in the first 3 days — that's the data", "Don't apologise for the shift — kids adapt to consistency"],
+       "Mum's gentle approach to bedtime stalled at 4. She added a strict 7:30 lights-out (no negotiation) + 15 min of pre-bed cuddle. Bedtime fights ended in 4 days.",
+       "Switching strategies every 3 days — give the new angle 7 full days.",
+       "Today: identify whether to add MORE structure or MORE autonomy. Pick one.",
+       "1 week",
+       "Goodness-of-fit theory (Stella Chess & Alexander Thomas, temperament research)"),
+  ];
 }
 
 // ─── DB cache helpers ────────────────────────────────────────────────────
@@ -291,11 +344,10 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
   // L2
   const dbHit = await dbGet(cacheKey);
   if (dbHit) {
-    const refreshed: CoachPlan = { ...dbHit, wins: attachImagesToWins(dbHit.wins, input.goal!) };
-    memCache.set(cacheKey, { plan: refreshed, ts: Date.now() });
+    memCache.set(cacheKey, { plan: dbHit, ts: Date.now() });
     memStats.dbHits++;
     logger.info({ cacheKey: cacheKey.slice(0, 8), source: "db", stats: memStats }, "ai-coach cache hit");
-    res.json({ plan: refreshed, sessionId, cached: true, source: "db" });
+    res.json({ plan: dbHit, sessionId, cached: true, source: "db" });
     return;
   }
 
@@ -334,7 +386,8 @@ Return ONLY valid JSON in this EXACT shape:
       "example": "ONE realistic 2-3 sentence story of a parent applying this step and what shifted",
       "mistake_to_avoid": "ONE sentence naming the most common parenting mistake that undermines this step",
       "micro_task": "ONE small task the parent can do TODAY in under 5 minutes to start practising this win",
-      "duration": "How long to practice (e.g. '2-3 days', '1 week', '2 weeks', 'Ongoing')"
+      "duration": "How long to practice (e.g. '2-3 days', '1 week', '2 weeks', 'Ongoing')",
+      "science_reference": "Short reference to the underlying scientific concept, study or theory (e.g. 'Operant conditioning (Skinner)', 'Polyvagal Theory (Porges)', 'Dopamine reward system', 'Sleep-cycle research')"
     }
   ]
 }
@@ -347,7 +400,8 @@ STRICT RULES:
 - Each "actions" array MUST have 3-5 items
 - Examples must feel real, with names and specifics — not abstract
 - Reference at least 5 different researchers/principles across the 12 wins
-- "deep_explanation" must be substantive — not 1 line
+- "deep_explanation" must be 6-8 lines of substantive science, not generic
+- Every win MUST include a "science_reference" naming the underlying concept/theory
 - Output ONLY the JSON object — no other text`;
 
   let plan: CoachPlan;
@@ -376,12 +430,104 @@ STRICT RULES:
     aiOk = false;
   }
 
-  plan = { ...plan, wins: attachImagesToWins(plan.wins, input.goal!) };
-
   memCache.set(cacheKey, { plan, ts: Date.now() });
   if (aiOk) await dbSet(cacheKey, input, plan);
 
   res.json({ plan, sessionId, cached: false, source: "ai", fallback: !aiOk });
+});
+
+// ─── POST /ai-coach/extend ───────────────────────────────────────────────
+// When a parent says "Not worked for me" — generate 3 adaptive wins to append
+router.post("/ai-coach/extend", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "unauthorized" }); return; }
+
+  const raw = req.body ?? {};
+  const goal = clip(raw.goal, 64);
+  if (!goal || !GOAL_IDS.includes(goal as GoalId)) {
+    res.status(400).json({ error: "invalid goal" });
+    return;
+  }
+  const ageGroup = clip(raw.ageGroup, 30) || "5-7";
+  const severity = clip(raw.severity, 30) || "moderate";
+  const routine = clip(raw.routine, 200) || "Inconsistent";
+  const failedWinTitle = clip(raw.failedWinTitle, 200) || "the previous step";
+  const failedWinNumber = Number(raw.failedWinNumber);
+  const startWinNumber = Number(raw.startWinNumber);
+  const existingTitlesRaw = Array.isArray(raw.existingWinTitles) ? raw.existingWinTitles : [];
+  const existingTitles = existingTitlesRaw
+    .filter((t: unknown): t is string => typeof t === "string")
+    .slice(0, 30)
+    .map((t: string) => clip(t, 120));
+
+  if (!Number.isFinite(startWinNumber) || startWinNumber < 1 || startWinNumber > 50) {
+    res.status(400).json({ error: "invalid startWinNumber" });
+    return;
+  }
+
+  const goalLabel = GOAL_LABELS[goal] ?? goal;
+  const start = Math.floor(startWinNumber);
+
+  const systemPrompt = `You are a child psychologist & behaviour-change expert.
+The parent has tried a step in their plan and it did NOT work for their child.
+You will write 3 ADAPTIVE follow-up wins that take a different angle: shrink the bar, check hidden blockers (sleep/hunger/sensory), and try the opposite approach (more structure or more autonomy).
+Return ONLY valid JSON. No markdown.`;
+
+  const userPrompt = `Parenting goal: ${goalLabel}
+Child age: ${ageGroup} years
+Severity: ${severity}
+Current routine: ${routine}
+The step that did NOT work: "${failedWinTitle}" (win #${Number.isFinite(failedWinNumber) ? failedWinNumber : "?"})
+Already tried (DO NOT repeat these titles): ${existingTitles.join(" | ") || "none"}
+
+Return ONLY this JSON shape:
+{
+  "wins": [
+    { "win": ${start}, "title": "...", "objective": "...", "deep_explanation": "5-6 lines of science", "actions": ["...", "...", "...", "..."], "example": "real story", "mistake_to_avoid": "...", "micro_task": "5-min task today", "duration": "...", "science_reference": "concept/researcher" },
+    { "win": ${start + 1}, ... },
+    { "win": ${start + 2}, ... }
+  ]
+}
+
+STRICT:
+- EXACTLY 3 wins, numbered ${start}, ${start + 1}, ${start + 2}
+- Each takes a DIFFERENT angle from the failed step (shrink / blocker / opposite)
+- 3-5 actions each, substantive deep_explanation, real example with names
+- Every win MUST include "science_reference"
+- Output ONLY the JSON object`;
+
+  let wins: Win[] | null = null;
+  let usedFallback = false;
+  try {
+    const { openai } = await import("@workspace/integrations-openai-ai-server");
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 3000,
+    });
+    const rawContent = completion.choices[0]?.message?.content?.trim() ?? "";
+    try {
+      const parsed = JSON.parse(rawContent);
+      const arr = (parsed as { wins?: unknown }).wins;
+      if (Array.isArray(arr) && arr.length === 3 && arr.every(validateWin)
+          && (arr as Win[]).every((w, i) => w.win === start + i)) {
+        wins = arr as Win[];
+      }
+    } catch { /* fall through to fallback */ }
+  } catch (err) {
+    logger.error({ err }, "ai-coach extend OpenAI error");
+  }
+
+  if (!wins) {
+    wins = fallbackExtensionWins(failedWinTitle, start);
+    usedFallback = true;
+  }
+
+  res.json({ wins, source: usedFallback ? "fallback" : "ai" });
 });
 
 // ─── POST /ai-coach/feedback ─────────────────────────────────────────────

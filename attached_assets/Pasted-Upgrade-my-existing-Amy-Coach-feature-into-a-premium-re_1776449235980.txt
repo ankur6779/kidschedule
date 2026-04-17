@@ -1,0 +1,224 @@
+Upgrade my existing "Amy Coach" feature into a premium, research-backed behavior change system with deep solutions, swipeable cards, and an adaptive continuous improvement loop.
+
+---
+
+## GOAL
+
+* Provide COMPLETE problem-solving (not short tips)
+* Generate 10–12 detailed “Wins” initially
+* Each win must be deeply actionable, research-backed, and practical
+* If user selects "Not worked for me", system MUST generate additional wins dynamically
+* Continue until user selects "Partially worked" or "Worked"
+* Maintain a clean, minimal swipe card UI (NO images)
+
+---
+
+## REMOVE IMAGE SYSTEM
+
+* Completely remove image generation and image mapping
+* Use clean light gradient background instead
+* Focus on typography + spacing + readability
+
+---
+
+## AI GENERATION (VERY IMPORTANT)
+
+Use OpenAI with STRICT structured output.
+
+Prompt rules:
+
+* Act as child psychologist + behavioral expert
+* Base on neuroscience, CBT, habit formation, parenting studies
+* Provide deep explanations (NOT one-liners)
+* Include real-world application
+
+Output JSON format:
+
+{
+"title": "Goal name",
+"root_cause": "Detailed scientific explanation of why this behavior occurs",
+"wins": [
+{
+"win": 1,
+"title": "Step name",
+"objective": "What this step solves",
+"deep_explanation": "Minimum 6-8 lines detailed explanation",
+"actions": [
+"Very specific action 1",
+"Very specific action 2",
+"Very specific action 3",
+"Very specific action 4"
+],
+"example": "Detailed real-life parenting example",
+"mistake_to_avoid": "Common parenting mistake explained",
+"micro_task": "Small daily actionable task",
+"duration": "Expected duration",
+"science_reference": "Mention study or theory (e.g., behavioral conditioning, dopamine regulation, etc.)"
+}
+]
+}
+
+Rules:
+
+* Minimum 10–12 wins initially
+* Each win must feel like a full actionable module
+* No generic advice
+* No repetition
+* Must feel like expert consultation
+
+---
+
+## PREMIUM SWIPE UI (NO IMAGES)
+
+* Horizontal swipe cards
+
+* Minimal clean UI with light gradient background
+
+* Each card contains:
+
+  * Title
+  * Objective
+  * Deep explanation (multi-line)
+  * Actions list
+  * Example
+  * Mistake to avoid
+  * Micro task
+  * Science reference (small text)
+
+* Use typography hierarchy (bold titles, readable spacing)
+
+---
+
+## PROGRESS TRACKER (TOP RIGHT)
+
+* Show progress percentage at top-right corner
+* Example: "Progress: 25%"
+
+Progress logic:
+progress = (completedWins / totalWins) * 100
+
+IMPORTANT RULE:
+
+* If user clicks "Not worked for me":
+  → DO NOT increase progress
+  → DO NOT mark win as completed
+
+* If user clicks:
+
+  * "Partially worked" → small progress increase
+  * "Worked" → full completion for that win
+
+---
+
+## CONTINUOUS ADAPTIVE LOOP (CORE FEATURE)
+
+After each win:
+
+Show 3 buttons:
+
+* Worked
+* Partially worked
+* Not worked for me
+
+IF "Not worked for me":
+
+* Generate NEW additional wins (adaptive solution)
+* Append new cards to swipe flow
+* Keep showing content continuously
+* Never stop content flow
+
+IF "Partially worked":
+
+* Slightly adjust next wins
+
+IF "Worked":
+
+* Move to next win normally
+
+System must:
+
+* Keep generating solutions until progress reaches 100%
+* Never leave user without next step
+
+---
+
+## INFINITE SUPPORT SYSTEM
+
+* If user repeatedly selects "Not worked":
+  → escalate solution depth
+  → provide alternative strategies
+  → include stricter or different approaches
+
+---
+
+## RESEARCH REFERENCES
+
+Each win should include:
+
+* Short reference to scientific concept
+  Examples:
+* "Based on operant conditioning"
+* "Supported by sleep cycle research"
+* "Aligned with dopamine reward system"
+
+Optional:
+
+* Add "Learn more" expandable section
+
+---
+
+## PROGRESS SCREEN
+
+Route: /amy-coach/progress
+
+Show:
+
+* Progress percentage
+* Completed wins
+* Pending wins
+* Feedback history
+* Continue button
+
+---
+
+## DATABASE (IMPORTANT)
+
+Table: user_progress
+
+* session_id
+* current_win
+* completed_wins
+* feedback
+* progress_percentage
+
+---
+
+## PERFORMANCE
+
+* Cache initial AI response
+* Cache additional generated wins
+* Lazy load cards
+* Fast UI response
+
+---
+
+## FILES
+
+* routes/amyCoach.js
+* utils/cache.js
+* public/amy-coach.html
+* public/amy-coach.css
+* public/amy-coach.js
+
+---
+
+## FINAL RESULT
+
+* No images (clean UI)
+* Deep expert-level solutions (10–12+ wins)
+* Infinite adaptive solution loop
+* Smart progress tracking
+* Parent gets continuous help until problem is solved
+* Premium app-like experience
+
+---
