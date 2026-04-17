@@ -104,13 +104,42 @@ function validatePlan(p: unknown): p is CoachPlan {
 
 // ─── Goal display labels (used in fallback + prompts) ────────────────────
 const GOAL_LABELS: Record<string, string> = {
-  "balance-screen-time": "Balance Screen Time",
+  // Behavior
   "manage-tantrums": "Manage Tantrums",
+  "handle-aggression": "Handle Aggression (hitting, biting)",
+  "reduce-defiance": "Reduce Defiance (not listening)",
+  "emotional-regulation": "Emotional Regulation",
+  "separation-anxiety": "Separation Anxiety",
   "change-stubborn-behaviour": "Change Stubborn Behaviour",
-  "improve-sleep-patterns": "Improve Sleep Patterns",
+  // Screen & Focus
+  "balance-screen-time": "Balance Screen Time",
+  "reduce-mobile-addiction": "Reduce Mobile Addiction",
+  "improve-focus-span": "Improve Focus Span",
+  "reduce-shorts-overuse": "Reduce YouTube / Shorts Overuse",
+  "reduce-instant-gratification": "Reduce Instant Gratification Habit",
+  // Eating
   "encourage-independent-eating": "Encourage Independent Eating",
-  "boost-concentration": "Boost Concentration",
   "navigate-fussy-eating": "Navigate Fussy Eating",
+  "stop-junk-food-craving": "Stop Junk Food Craving",
+  "healthy-eating-routine": "Build Healthy Eating Routine",
+  "improve-mealtime-behavior": "Improve Mealtime Behavior",
+  // Sleep
+  "improve-sleep-patterns": "Improve Sleep Patterns",
+  "fix-bedtime-resistance": "Fix Bedtime Resistance",
+  "stop-night-waking": "Stop Night Waking",
+  "consistent-sleep-routine": "Build Consistent Sleep Routine",
+  "reduce-late-sleeping": "Reduce Late Sleeping Habit",
+  // Learning
+  "boost-concentration": "Boost Concentration",
+  "build-study-discipline": "Build Study Discipline",
+  "increase-learning-interest": "Increase Learning Interest",
+  "reduce-homework-resistance": "Reduce Homework Resistance",
+  "develop-growth-mindset": "Develop Growth Mindset",
+  // Parenting Challenges
+  "manage-grandparents-interference": "Manage Grandparents' Interference",
+  "align-parenting-between-parents": "Align Parenting Between Parents",
+  "handle-working-parent-guilt": "Handle Working Parent Guilt",
+  "set-consistent-family-rules": "Set Consistent Family Rules",
 };
 
 function fallbackPlan(input: CoachInput): CoachPlan {

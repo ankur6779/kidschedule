@@ -10,13 +10,47 @@ const range = (prefix: string, n = 12): string[] =>
   Array.from({ length: n }, (_, i) => u(`${prefix}-${i + 1}`));
 
 export const GOAL_IDS = [
-  "balance-screen-time",
+  // ── Behavior ───────────────────────────────────────────────
   "manage-tantrums",
-  "change-stubborn-behaviour",
-  "improve-sleep-patterns",
+  "handle-aggression",
+  "reduce-defiance",
+  "emotional-regulation",
+  "separation-anxiety",
+  "change-stubborn-behaviour", // legacy (kept for cache compat)
+
+  // ── Screen & Focus ────────────────────────────────────────
+  "balance-screen-time",
+  "reduce-mobile-addiction",
+  "improve-focus-span",
+  "reduce-shorts-overuse",
+  "reduce-instant-gratification",
+
+  // ── Eating ────────────────────────────────────────────────
   "encourage-independent-eating",
-  "boost-concentration",
   "navigate-fussy-eating",
+  "stop-junk-food-craving",
+  "healthy-eating-routine",
+  "improve-mealtime-behavior",
+
+  // ── Sleep ─────────────────────────────────────────────────
+  "improve-sleep-patterns",
+  "fix-bedtime-resistance",
+  "stop-night-waking",
+  "consistent-sleep-routine",
+  "reduce-late-sleeping",
+
+  // ── Learning ──────────────────────────────────────────────
+  "boost-concentration",
+  "build-study-discipline",
+  "increase-learning-interest",
+  "reduce-homework-resistance",
+  "develop-growth-mindset",
+
+  // ── Parenting Challenges ──────────────────────────────────
+  "manage-grandparents-interference",
+  "align-parenting-between-parents",
+  "handle-working-parent-guilt",
+  "set-consistent-family-rules",
 ] as const;
 
 export type GoalId = (typeof GOAL_IDS)[number];

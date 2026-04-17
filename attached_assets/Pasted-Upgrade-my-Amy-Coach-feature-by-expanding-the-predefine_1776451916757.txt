@@ -1,0 +1,195 @@
+Upgrade my "Amy Coach" feature by expanding the predefined problem system into categorized, scalable, and user-friendly goal selection.
+
+---
+
+## GOAL
+
+* Add more real-life parenting problems
+* Organize them into clean categories
+* Improve UX for faster selection
+* Prepare structure for AI personalization
+
+---
+
+## PROBLEM CATEGORIES (CREATE UI)
+
+Create 6 main categories:
+
+1. Behavior
+2. Screen & Focus
+3. Eating
+4. Sleep
+5. Learning
+6. Parenting Challenges
+
+---
+
+## GOALS UNDER EACH CATEGORY
+
+Behavior:
+
+* Manage Tantrums
+* Handle Aggression (hitting, biting)
+* Reduce Defiance (not listening)
+* Emotional Regulation (crying, frustration)
+* Separation Anxiety
+
+Screen & Focus:
+
+* Balance Screen Time
+* Reduce Mobile Addiction
+* Improve Focus Span
+* Reduce YouTube/Shorts Overuse
+* Reduce Instant Gratification Habit
+
+Eating:
+
+* Encourage Independent Eating
+* Navigate Fussy Eating
+* Stop Junk Food Craving
+* Build Healthy Eating Routine
+* Improve Mealtime Behavior
+
+Sleep:
+
+* Improve Sleep Patterns
+* Fix Bedtime Resistance
+* Stop Night Waking
+* Build Consistent Routine
+* Reduce Late Sleeping Habit
+
+Learning:
+
+* Boost Concentration
+* Build Study Discipline
+* Increase Learning Interest
+* Reduce Homework Resistance
+* Develop Growth Mindset
+
+Parenting Challenges:
+
+* Manage Grandparents Interference
+* Align Parenting Between Parents
+* Handle Working Parent Guilt
+* Set Consistent Family Rules
+
+---
+
+## UI DESIGN (IMPORTANT)
+
+* Show categories as sections (collapsible or tabs)
+
+* Each goal as a clean card
+
+* Card includes:
+
+  * Title
+  * Small subtitle: "Tap to start →"
+
+* Mobile-first layout
+
+* Soft gradient background for cards
+
+* Smooth hover/tap animation
+
+---
+
+## INTERACTION FLOW
+
+1. User opens Amy Coach
+2. Sees categorized goals
+3. Can:
+
+   * Scroll categories
+   * Filter/search goals
+4. On click:
+   → Navigate to question flow (/amy-coach/questions)
+
+---
+
+## SEARCH / FILTER FEATURE
+
+* Add search bar
+* Filter goals by keyword
+* Example:
+  typing "sleep" → show sleep-related goals
+
+---
+
+## DATA STRUCTURE
+
+Create goals config file:
+
+/utils/goals.js
+
+Structure:
+
+const goals = [
+{
+category: "Behavior",
+items: [
+{ id: "tantrum", title: "Manage Tantrums" },
+{ id: "aggression", title: "Handle Aggression" }
+]
+}
+];
+
+module.exports = goals;
+
+---
+
+## FRONTEND RENDERING
+
+* Loop through categories
+* Render category title
+* Render cards inside
+
+---
+
+## ROUTING
+
+On goal click:
+
+* Pass goal id to next page
+* Example:
+  /amy-coach/questions?goal=tantrum
+
+---
+
+## PERFORMANCE
+
+* Static data (fast load)
+* No API call needed here
+* Lazy rendering for long lists
+
+---
+
+## FILES TO UPDATE
+
+* public/amy-coach.html
+* public/amy-coach.css
+* public/amy-coach.js
+* utils/goals.js
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Full goals data structure
+2. UI code for categories + cards
+3. Search/filter functionality
+4. Routing logic
+
+---
+
+## FINAL RESULT
+
+* Clean categorized goals
+* Easy navigation
+* Scalable structure
+* Better user experience
+* Ready for AI personalization
+
+---

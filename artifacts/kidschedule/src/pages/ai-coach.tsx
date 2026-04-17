@@ -7,16 +7,73 @@ import {
   Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark,
 } from "lucide-react";
 
-// ─── Goals ─────────────────────────────────────────────────────────────────
-const GOALS = [
-  { id: "balance-screen-time",       title: "Balance Screen Time",        emoji: "📱", gradient: "from-sky-100 to-blue-200" },
-  { id: "manage-tantrums",           title: "Manage Tantrums",            emoji: "😤", gradient: "from-rose-100 to-pink-200" },
-  { id: "change-stubborn-behaviour", title: "Change Stubborn Behaviour",  emoji: "🛑", gradient: "from-amber-100 to-orange-200" },
-  { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",     emoji: "😴", gradient: "from-indigo-100 to-violet-200" },
-  { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 to-green-200" },
-  { id: "boost-concentration",       title: "Boost Concentration",        emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
-  { id: "navigate-fussy-eating",     title: "Navigate Fussy Eating",      emoji: "🥦", gradient: "from-teal-100 to-cyan-200" },
-] as const;
+// ─── Goals (categorized) ───────────────────────────────────────────────────
+interface GoalItem { id: string; title: string; emoji: string; gradient: string }
+interface GoalCategory { id: string; title: string; emoji: string; items: GoalItem[] }
+
+const GOAL_CATEGORIES: GoalCategory[] = [
+  {
+    id: "behavior", title: "Behavior", emoji: "🎯",
+    items: [
+      { id: "manage-tantrums",       title: "Manage Tantrums",           emoji: "😤", gradient: "from-rose-100 to-pink-200" },
+      { id: "handle-aggression",     title: "Handle Aggression",         emoji: "✋", gradient: "from-red-100 to-rose-200" },
+      { id: "reduce-defiance",       title: "Reduce Defiance",           emoji: "🛑", gradient: "from-amber-100 to-orange-200" },
+      { id: "emotional-regulation",  title: "Emotional Regulation",      emoji: "💗", gradient: "from-pink-100 to-fuchsia-200" },
+      { id: "separation-anxiety",    title: "Separation Anxiety",        emoji: "🫂", gradient: "from-violet-100 to-purple-200" },
+    ],
+  },
+  {
+    id: "screen-focus", title: "Screen & Focus", emoji: "📱",
+    items: [
+      { id: "balance-screen-time",         title: "Balance Screen Time",         emoji: "📱", gradient: "from-sky-100 to-blue-200" },
+      { id: "reduce-mobile-addiction",     title: "Reduce Mobile Addiction",     emoji: "📵", gradient: "from-blue-100 to-indigo-200" },
+      { id: "improve-focus-span",          title: "Improve Focus Span",          emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
+      { id: "reduce-shorts-overuse",       title: "Reduce YouTube / Shorts Overuse", emoji: "🎬", gradient: "from-rose-100 to-red-200" },
+      { id: "reduce-instant-gratification",title: "Reduce Instant Gratification", emoji: "⏳", gradient: "from-amber-100 to-yellow-200" },
+    ],
+  },
+  {
+    id: "eating", title: "Eating", emoji: "🍽️",
+    items: [
+      { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 to-green-200" },
+      { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",        emoji: "🥦", gradient: "from-teal-100 to-cyan-200" },
+      { id: "stop-junk-food-craving",       title: "Stop Junk Food Craving",       emoji: "🍟", gradient: "from-orange-100 to-amber-200" },
+      { id: "healthy-eating-routine",       title: "Build Healthy Eating Routine", emoji: "🍎", gradient: "from-green-100 to-emerald-200" },
+      { id: "improve-mealtime-behavior",    title: "Improve Mealtime Behavior",    emoji: "🍽️", gradient: "from-lime-100 to-green-200" },
+    ],
+  },
+  {
+    id: "sleep", title: "Sleep", emoji: "😴",
+    items: [
+      { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",    emoji: "😴", gradient: "from-indigo-100 to-violet-200" },
+      { id: "fix-bedtime-resistance",    title: "Fix Bedtime Resistance",    emoji: "🛏️", gradient: "from-purple-100 to-indigo-200" },
+      { id: "stop-night-waking",         title: "Stop Night Waking",         emoji: "🌙", gradient: "from-blue-100 to-indigo-200" },
+      { id: "consistent-sleep-routine",  title: "Build Consistent Routine",  emoji: "🕘", gradient: "from-violet-100 to-purple-200" },
+      { id: "reduce-late-sleeping",      title: "Reduce Late Sleeping Habit",emoji: "⏰", gradient: "from-indigo-100 to-blue-200" },
+    ],
+  },
+  {
+    id: "learning", title: "Learning", emoji: "📚",
+    items: [
+      { id: "boost-concentration",        title: "Boost Concentration",       emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
+      { id: "build-study-discipline",     title: "Build Study Discipline",    emoji: "📖", gradient: "from-blue-100 to-sky-200" },
+      { id: "increase-learning-interest", title: "Increase Learning Interest",emoji: "💡", gradient: "from-yellow-100 to-amber-200" },
+      { id: "reduce-homework-resistance", title: "Reduce Homework Resistance",emoji: "✏️", gradient: "from-teal-100 to-emerald-200" },
+      { id: "develop-growth-mindset",     title: "Develop Growth Mindset",    emoji: "🌱", gradient: "from-green-100 to-lime-200" },
+    ],
+  },
+  {
+    id: "parenting-challenges", title: "Parenting Challenges", emoji: "💝",
+    items: [
+      { id: "manage-grandparents-interference", title: "Manage Grandparents' Interference", emoji: "👵", gradient: "from-rose-100 to-pink-200" },
+      { id: "align-parenting-between-parents",  title: "Align Parenting Between Parents",   emoji: "🤝", gradient: "from-violet-100 to-purple-200" },
+      { id: "handle-working-parent-guilt",      title: "Handle Working Parent Guilt",       emoji: "💼", gradient: "from-sky-100 to-blue-200" },
+      { id: "set-consistent-family-rules",      title: "Set Consistent Family Rules",       emoji: "📋", gradient: "from-amber-100 to-orange-200" },
+    ],
+  },
+];
+
+const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
 
 // ─── Question definitions ──────────────────────────────────────────────────
 type QuestionType = "single" | "multi";
@@ -100,13 +157,21 @@ export default function AICoachPage() {
 
   const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const filteredGoals = useMemo(() => {
-    const q = goalSearch.toLowerCase().trim();
-    if (!q) return GOALS;
-    return GOALS.filter((g) => g.title.toLowerCase().includes(q));
-  }, [goalSearch]);
+  const searchQuery = goalSearch.toLowerCase().trim();
 
-  const selectedGoal = GOALS.find((g) => g.id === goalId);
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery) return GOAL_CATEGORIES;
+    return GOAL_CATEGORIES
+      .map((c) => ({ ...c, items: c.items.filter((g) => g.title.toLowerCase().includes(searchQuery)) }))
+      .filter((c) => c.items.length > 0);
+  }, [searchQuery]);
+
+  const totalMatches = useMemo(
+    () => filteredCategories.reduce((n, c) => n + c.items.length, 0),
+    [filteredCategories]
+  );
+
+  const selectedGoal = ALL_GOALS.find((g) => g.id === goalId);
 
   // ─── Goals → Questions
   const handlePickGoal = (id: string) => {
@@ -365,22 +430,33 @@ export default function AICoachPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {filteredGoals.map((g) => (
-            <button
-              key={g.id}
-              onClick={() => handlePickGoal(g.id)}
-              className={`group bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-lg transition-all text-left flex items-center gap-3`}
-            >
-              <span className="text-3xl shrink-0">{g.emoji}</span>
-              <div className="flex-1">
-                <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
+        <div className="space-y-6">
+          {filteredCategories.map((cat) => (
+            <section key={cat.id}>
+              <h2 className="font-quicksand font-bold text-sm uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2 px-1">
+                <span className="text-base">{cat.emoji}</span>
+                {cat.title}
+                <span className="text-[10px] font-normal text-muted-foreground/70">({cat.items.length})</span>
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {cat.items.map((g) => (
+                  <button
+                    key={g.id}
+                    onClick={() => handlePickGoal(g.id)}
+                    className={`group bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.98] transition-all text-left flex items-center gap-3`}
+                  >
+                    <span className="text-3xl shrink-0">{g.emoji}</span>
+                    <div className="flex-1">
+                      <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
+                    </div>
+                  </button>
+                ))}
               </div>
-            </button>
+            </section>
           ))}
-          {filteredGoals.length === 0 && (
-            <div className="col-span-full text-center py-8 text-sm text-muted-foreground">
+          {totalMatches === 0 && (
+            <div className="text-center py-8 text-sm text-muted-foreground">
               No goals match "{goalSearch}"
             </div>
           )}
