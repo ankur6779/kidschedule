@@ -23,9 +23,10 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_NAV_ITEMS = [
-  { href: "/parenting-hub", label: "Home",      icon: Home },
-  { href: "/amy-coach",     label: "Amy Coach", icon: Brain },
-  { href: "/routines",      label: "Activities", icon: Calendar },
+  { href: "/dashboard",     label: "Dashboard", icon: Home,     center: false },
+  { href: "/routines",      label: "Routine",   icon: Calendar, center: false },
+  { href: "/amy-coach",     label: "Amy Coach", icon: Brain,    center: true  },
+  { href: "/parenting-hub", label: "Hub",       icon: BookOpen, center: false },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -159,23 +160,52 @@ export function Layout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 z-40 flex h-16 w-full items-center justify-around border-t bg-background/80 backdrop-blur-md md:hidden pb-safe">
-        {BOTTOM_NAV_ITEMS.map((item) => {
-          const isActive = location === item.href || location.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center justify-center gap-1 px-2 py-1 ${
-                isActive ? "text-primary" : "text-muted-foreground"
-              }`}
-            >
-              <item.icon className={`h-5 w-5 ${isActive ? "fill-primary/20" : ""}`} />
-              <span className="text-[10px] font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
+      {/* Mobile Bottom Nav — premium 4-tab with center-raised Amy Coach */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 h-[78px] bg-slate-900/95 backdrop-blur-xl border-t border-white/10 md:hidden pb-safe">
+        <div className="relative flex h-full w-full items-end justify-around px-2 pb-2">
+          {BOTTOM_NAV_ITEMS.map((item) => {
+            const isActive = location === item.href || location.startsWith(item.href + "/");
+
+            if (item.center) {
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="relative flex flex-col items-center justify-end -translate-y-5"
+                >
+                  <div
+                    className={`flex h-[60px] w-[60px] items-center justify-center rounded-full text-white transition-transform active:scale-90 ${
+                      isActive
+                        ? "bg-gradient-to-br from-indigo-500 to-violet-500 shadow-[0_10px_25px_rgba(99,102,241,0.55)] ring-2 ring-white/20"
+                        : "bg-gradient-to-br from-indigo-500 to-violet-500 shadow-[0_8px_20px_rgba(99,102,241,0.45)]"
+                    }`}
+                  >
+                    <item.icon className="h-7 w-7" />
+                  </div>
+                  <span className={`mt-1 text-[10px] font-semibold ${isActive ? "text-indigo-300" : "text-slate-300"}`}>
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative flex flex-1 flex-col items-center justify-center gap-1 px-1 py-2 transition-colors ${
+                  isActive ? "text-indigo-400" : "text-slate-400"
+                }`}
+              >
+                <item.icon className={`h-5 w-5 ${isActive ? "fill-indigo-400/15" : ""}`} />
+                <span className="text-[11px] font-medium leading-none">{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
       {/* Floating Amy AI assistant button */}

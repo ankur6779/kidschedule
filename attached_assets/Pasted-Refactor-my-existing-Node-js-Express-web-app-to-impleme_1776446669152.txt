@@ -1,0 +1,187 @@
+Refactor my existing Node.js (Express) web app to implement a premium mobile-style bottom navigation bar with a highlighted center button for "Amy Coach".
+
+---
+
+## GOAL
+
+* Move AI Coach out of Parent Hub
+* Rename route: /ai-coach → /amy-coach
+* Add a fixed bottom navigation (visible on all pages)
+* Make "Amy Coach" the center floating primary action button
+* Achieve a premium app-like UI (glass effect, animations)
+
+---
+
+## ROUTING UPDATES
+
+* Rename all routes:
+  /ai-coach → /amy-coach
+* Update all links and redirects accordingly
+* Ensure navigation works across all pages
+
+---
+
+## GLOBAL BOTTOM NAVBAR
+
+Create a reusable bottom navigation component and include it in all pages.
+
+HTML:
+
+<div id="bottom-nav">
+
+  <a href="/" class="nav-item" data-route="/">
+    <span>🏠</span>
+    <p>Home</p>
+  </a>
+
+  <a href="/activities" class="nav-item" data-route="/activities">
+    <span>🎯</span>
+    <p>Activities</p>
+  </a>
+
+  <a href="/amy-coach" class="nav-item center" data-route="/amy-coach">
+    <div class="center-btn">🧠</div>
+    <p>Amy Coach</p>
+  </a>
+
+  <a href="/progress" class="nav-item" data-route="/progress">
+    <span>📊</span>
+    <p>Progress</p>
+  </a>
+
+  <a href="/profile" class="nav-item" data-route="/profile">
+    <span>👤</span>
+    <p>Profile</p>
+  </a>
+
+</div>
+
+---
+
+## CSS (PREMIUM DESIGN)
+
+* Fixed bottom bar
+* Glass effect (blur + transparency)
+* Center floating button
+* Smooth animations
+
+#bottom-nav {
+position: fixed;
+bottom: 0;
+width: 100%;
+height: 75px;
+background: rgba(15, 23, 42, 0.85);
+backdrop-filter: blur(12px);
+display: flex;
+justify-content: space-around;
+align-items: center;
+border-top: 1px solid rgba(255,255,255,0.1);
+z-index: 999;
+}
+
+.nav-item {
+color: #aaa;
+text-align: center;
+font-size: 11px;
+text-decoration: none;
+position: relative;
+}
+
+.nav-item span {
+font-size: 20px;
+display: block;
+}
+
+.nav-item.active {
+color: #6366f1;
+}
+
+.nav-item.active::after {
+content: "";
+position: absolute;
+bottom: 5px;
+left: 50%;
+transform: translateX(-50%);
+width: 6px;
+height: 6px;
+background: #6366f1;
+border-radius: 50%;
+}
+
+.center {
+transform: translateY(-20px);
+}
+
+.center-btn {
+width: 60px;
+height: 60px;
+background: linear-gradient(135deg, #6366f1, #8b5cf6);
+border-radius: 50%;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 26px;
+color: white;
+box-shadow: 0 10px 25px rgba(99,102,241,0.5);
+transition: transform 0.2s ease;
+}
+
+.center-btn:active {
+transform: scale(0.9);
+}
+
+body {
+padding-bottom: 90px;
+}
+
+---
+
+## JS (ACTIVE TAB SYSTEM)
+
+* Detect current route using window.location.pathname
+* Add "active" class to matching nav item
+
+const navItems = document.querySelectorAll(".nav-item");
+const currentPath = window.location.pathname;
+
+navItems.forEach(item => {
+if (item.dataset.route === currentPath) {
+item.classList.add("active");
+}
+});
+
+---
+
+## INTEGRATION
+
+* Include navbar in all HTML pages (use partial/template if possible)
+* Ensure no UI overlap with content
+* Test responsiveness on mobile
+
+---
+
+## CLEANUP
+
+* Remove AI Coach section from Parent Hub
+* Avoid duplicate navigation links
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Updated layout files
+2. Navbar HTML/CSS/JS
+3. Updated routing code
+4. Instructions to apply globally
+
+---
+
+## FINAL RESULT
+
+* Amy Coach becomes the primary feature (center highlight)
+* Smooth, premium app-like navigation
+* Clean Parent Hub
+
+---
