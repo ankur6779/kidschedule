@@ -252,9 +252,9 @@ function fallbackExtensionWins(failedWinTitle: string, startNumber: number): Win
     science_reference: sci,
   });
 
-  // Pool of 12 unique strategies across 4 batches of 3.
+  // Pool of 18 unique strategies across 6 batches of 3.
   // batchIndex rotates so the SAME 3 cards never appear twice in a row.
-  const batchIndex = Math.floor((startNumber - 13) / 3) % 4;
+  const batchIndex = Math.floor((startNumber - 13) / 3) % 6;
 
   const batches: (() => [Win, Win, Win])[] = [
     // ── BATCH 0 ────────────────────────────────────────────────────────
@@ -388,6 +388,72 @@ function fallbackExtensionWins(failedWinTitle: string, startNumber: number): Win
         "Identify one natural consequence you've been shielding your child from. Let it land today.",
         "Situation-dependent",
         "Natural consequences theory (Alfred Adler); Positive Discipline (Jane Nelsen, 1981)"),
+    ],
+    // ── BATCH 4 ────────────────────────────────────────────────────────
+    () => [
+      mk(startNumber,
+        "Problem-solve together at a calm moment",
+        "Invite your child to co-create the solution — their buy-in is the strategy",
+        "Ross Greene's Collaborative Problem Solving model (used in clinical settings worldwide) shows that children who help design the solution follow through at 3× the rate of those who receive solutions. The child's prefrontal cortex must be engaged, which is only possible when both parent and child are calm. The magic is in the question: 'I've noticed X is hard — what do you think we could try?'",
+        ["Wait for a genuinely calm moment — never raise the topic during or just after a conflict", "Start with curiosity, not a solution: 'I've noticed X — what's making it hard for you?'", "Listen fully without correcting. Then share your concern (not your solution)", "Ask together: 'What could work for both of us?' and pick ONE thing to try for 5 days"],
+        "A dad and his 7-year-old co-designed a 'homework deal': 20-min work, then 10-min Lego. Son's follow-through went from 30% to 85% in 2 weeks because he'd built the plan himself.",
+        "Doing collaborative problem-solving during a conflict or within 20 minutes after one — timing is everything.",
+        "Tonight at a calm moment, ask your child: 'What makes [this] hard for you?' Just listen.",
+        "Ongoing",
+        "Collaborative Problem Solving (Ross Greene, The Explosive Child, 2014)"),
+      mk(startNumber + 1,
+        "Narrate the positive out loud",
+        "Catching and naming good behaviour cements it faster than any correction",
+        "Behavioural science consistently shows a 5:1 positive-to-negative feedback ratio predicts healthy family dynamics (Gottman) and child compliance. Yet most parents narrate problems and stay silent during good moments. Specific, immediate narration ('You stayed calm when your sister took your toy — that took real control') activates the dopamine-reward loop and makes the behaviour more likely to repeat.",
+        ["For 3 days, commit to narrating every positive behaviour you notice — out loud, immediately", "Be specific: name the behaviour AND the quality it shows ('You shared without being asked — that's generosity')", "Don't add 'but' or a correction after the narration — just let it land", "Aim for 5 positive narrations for every 1 correction across the day"],
+        "A mum shifted from mostly correcting to narrating positives for 1 week. Her son's cooperative behaviour increased and he started narrating his own good choices aloud.",
+        "Saying 'good job' — it's too vague to reinforce anything. Specificity is the entire mechanism.",
+        "Set a phone reminder for 3 times today to narrate something specific your child did well.",
+        "14 days",
+        "5:1 ratio research (John Gottman, 1994); positive reinforcement science (Skinner; Bandura)"),
+      mk(startNumber + 2,
+        "Shrink the transition, not the task",
+        "Most resistance happens in the gap between activities — target that gap",
+        "Transitions (stopping one thing, starting another) are neurologically expensive. The prefrontal cortex must inhibit one activity while orienting to another — this costs energy that young children and dysregulated older ones simply don't have. Research on transition warnings, countdown rituals, and 'bridging' (naming what comes after the transition) reduces resistance by up to 60% without changing the task itself.",
+        ["Give a 5-minute verbal warning before every major transition ('5 more minutes, then bath')", "Add a 1-minute warning immediately before the switch ('1 minute, then we go')", "Use a consistent bridging phrase: 'After bath, then story time' — make the next good thing visible", "Create one transition ritual that stays the same every day (a song, a countdown, a handshake)"],
+        "A mum added '5-min warning + song' to every transition for her 5-year-old. Screen-time tantrums dropped from daily to once a week within 10 days.",
+        "Giving warnings but not following through — the child learns the warning means nothing.",
+        "Pick one daily transition that's always hard. Add a 5-min warning starting tonight.",
+        "10 days",
+        "Executive function & transition research (Zelazo, 2006); Siegel & Bryson, The Whole-Brain Child (2011)"),
+    ],
+    // ── BATCH 5 ────────────────────────────────────────────────────────
+    () => [
+      mk(startNumber,
+        "Match the strategy to the child's developmental stage",
+        "A strategy for a 9-year-old won't work on a 4-year-old — stage-match everything",
+        "Jean Piaget's developmental stages and modern neuroscience confirm that children's brains operate in qualitatively different modes at different ages. Abstract reasoning, impulse control, and empathy are NOT available to a 4-year-old — they're not choosing to be difficult, they're being 4. Every strategy in this plan was designed for your child's age group, but if it's not landing, a mismatch in expectation is almost always involved.",
+        ["Write down your child's age and revisit what's developmentally normal for that stage", "For under-5s: reduce words, increase physical cues and play", "For 6-9: use concrete rules, predictable structure, and natural consequences", "For 10+: include them in problem-solving, explain the 'why', give more autonomy"],
+        "A dad kept explaining 'why we don't hit' to his 3-year-old using paragraphs. Switched to a one-word redirect ('kind hands') + physical demonstration. Hitting stopped within 5 days.",
+        "Using logic-heavy explanations with children under 7 — they need concrete, physical, short.",
+        "Look up ONE developmental fact about your child's age group today. Adjust one expectation.",
+        "Ongoing",
+        "Piaget's developmental stages (1952); neurodevelopmental research (Zelazo & Carlson, 2012)"),
+      mk(startNumber + 1,
+        "Reduce cognitive load for both of you",
+        "Too many rules and too many decisions are the silent killers of consistency",
+        "Decision fatigue is real. Roy Baumeister's research shows willpower and decision-making share the same finite daily resource. Parents who are managing multiple behaviour strategies simultaneously burn through that resource by 3pm. Children whose environments have too many rules experience the same depletion. Simplifying to ONE rule, ONE consequence, ONE routine at a time restores capacity for both.",
+        ["Count how many behaviour strategies you are currently running simultaneously", "Pick the ONE that matters most this week — put the others on hold", "Reduce household rules to 3 maximum, stated positively ('We use kind words')", "Reduce the child's daily decisions to 2–3 max — too much choice creates anxiety, not confidence"],
+        "A mum running 6 strategies at once dropped to 1 (morning routine only). Consistency jumped because she had the energy to follow through every single time.",
+        "Adding a new strategy before the current one has had 10 days — stack one at a time.",
+        "List every behaviour goal you're currently working on. Cross out all but ONE. Focus there.",
+        "10 days per strategy",
+        "Ego depletion & decision fatigue (Roy Baumeister, 1998); choice overload (Barry Schwartz, 2004)"),
+      mk(startNumber + 2,
+        "Change the environment, not the child",
+        "Redesigning the space removes the trigger — no willpower required",
+        "Kurt Lewin's field theory and modern behavioural economics (Thaler & Sunstein) show that environment shapes behaviour more powerfully than intention. If your child always melts down in the kitchen after school, the kitchen at 4pm IS the trigger. Changing the environment (different room, snack first, outdoor time) removes the cue entirely — no willpower, no negotiation, no strategy required.",
+        ["Map the last 3 difficult moments: where were you, what time, what just happened before?", "Identify the consistent environmental pattern (location, time, hunger, transition)", "Change ONE environmental variable: move the activity, change the time, add a buffer", "Run the new environment for 7 days and observe — environment changes work faster than behaviour interventions"],
+        "A family noticed meltdowns happened every day at the dinner table. Moved to eating outside twice a week. Dinner-time stress halved — same food, same family, different environment.",
+        "Trying to change the child's behaviour without changing the trigger environment first.",
+        "Find the common environmental thread in your last 3 hard moments. Change one variable tonight.",
+        "7 days",
+        "Field theory (Kurt Lewin, 1936); Nudge theory (Thaler & Sunstein, 2008); behavioural design"),
     ],
   ];
 
