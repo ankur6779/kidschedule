@@ -40,7 +40,7 @@ export default function AICoachProgressPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
-      <Link href="/ai-coach" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/amy-coach" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ChevronLeft className="h-4 w-4" /> Back to AI Coach
       </Link>
 
@@ -68,7 +68,7 @@ export default function AICoachProgressPage() {
             Pick a goal and complete your first plan — your wins will show up here.
           </p>
           <button
-            onClick={() => setLocation("/ai-coach")}
+            onClick={() => setLocation("/amy-coach")}
             className="mt-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-white font-bold text-sm"
           >
             Start a plan
@@ -134,7 +134,7 @@ export default function AICoachProgressPage() {
                       Last updated {new Date(s.lastUpdated).toLocaleDateString()}
                     </p>
                     <button
-                      onClick={() => setLocation("/ai-coach")}
+                      onClick={() => setLocation("/amy-coach")}
                       className="flex items-center gap-1 text-xs font-bold text-violet-700 hover:text-violet-900"
                     >
                       Continue plan <ArrowRight className="h-3 w-3" />

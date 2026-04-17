@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -11,9 +11,10 @@ import { AmyIcon } from "@/components/amy-icon";
 
 const NAV_ITEMS = [
   { href: "/dashboard",     label: "Dashboard",     icon: Home },
+  { href: "/parenting-hub", label: "Parenting Hub", icon: BookOpen },
+  { href: "/amy-coach",     label: "Amy Coach",     icon: Brain },
   { href: "/children",      label: "Children",      icon: Users },
   { href: "/routines",      label: "Routines",      icon: Calendar },
-  { href: "/parenting-hub", label: "Parenting Hub", icon: BookOpen },
   { href: "/progress",      label: "Progress",      icon: TrendingUp },
   { href: "/behavior",      label: "Behavior",      icon: Star },
   { href: "/assistant",     label: "Amy AI",        icon: Bot },
@@ -22,10 +23,9 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_NAV_ITEMS = [
-  { href: "/dashboard",     label: "Dashboard", icon: Home },
-  { href: "/routines",      label: "Routines",  icon: Calendar },
-  { href: "/parenting-hub", label: "Hub",        icon: BookOpen },
-  { href: "/assistant",     label: "Amy AI",    icon: Bot },
+  { href: "/parenting-hub", label: "Home",      icon: Home },
+  { href: "/amy-coach",     label: "Amy Coach", icon: Brain },
+  { href: "/routines",      label: "Activities", icon: Calendar },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

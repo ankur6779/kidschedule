@@ -232,7 +232,7 @@ export default function AICoachPage() {
           <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
             <ChevronLeft className="h-4 w-4" /> Back
           </Link>
-          <Link href="/ai-coach/progress">
+          <Link href="/amy-coach/progress">
             <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
               <BarChart3 className="h-3.5 w-3.5" /> My Progress
             </button>
@@ -375,7 +375,7 @@ export default function AICoachPage() {
             <button onClick={handleShare} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
               <Share2 size={16} />
             </button>
-            <button onClick={() => setLocation("/ai-coach/progress")} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
+            <button onClick={() => setLocation("/amy-coach/progress")} style={{ color: "#fff", background: "rgba(255,255,255,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}>
               <BarChart3 size={16} />
             </button>
           </div>

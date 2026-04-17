@@ -1,0 +1,140 @@
+Refactor my existing Node.js (Express) web app UI to move the AI Coach feature out of Parent Hub and add it as a fixed bottom navigation item named "Amy Coach".
+
+---
+
+## GOAL
+
+* Remove AI Coach card/section from Parent Hub
+* Add a persistent bottom taskbar (mobile-first)
+* Add "Amy Coach" as a primary tab in the taskbar
+* Route: /amy-coach (rename from /ai-coach)
+
+---
+
+## ROUTES
+
+* Rename existing route:
+  /ai-coach → /amy-coach
+
+* Ensure all links, redirects, and API calls are updated accordingly
+
+---
+
+## BOTTOM TASKBAR (GLOBAL COMPONENT)
+
+Create a fixed bottom navigation bar visible on all pages.
+
+Structure:
+
+* Home (Parent Hub)
+* Amy Coach (NEW)
+* Activities
+* Profile (optional)
+
+HTML:
+
+<div id="bottom-nav">
+  <a href="/" class="nav-item" id="nav-home">
+    <span>🏠</span>
+    <p>Home</p>
+  </a>
+  <a href="/amy-coach" class="nav-item" id="nav-amy">
+    <span>🧠</span>
+    <p>Amy Coach</p>
+  </a>
+  <a href="/activities" class="nav-item">
+    <span>🎯</span>
+    <p>Activities</p>
+  </a>
+</div>
+
+---
+
+## CSS (MOBILE-FIRST, MODERN)
+
+#bottom-nav {
+position: fixed;
+bottom: 0;
+width: 100%;
+height: 65px;
+background: #0f172a;
+display: flex;
+justify-content: space-around;
+align-items: center;
+border-top: 1px solid rgba(255,255,255,0.1);
+z-index: 999;
+}
+
+.nav-item {
+color: #aaa;
+text-align: center;
+text-decoration: none;
+font-size: 12px;
+}
+
+.nav-item span {
+display: block;
+font-size: 20px;
+}
+
+.nav-item.active {
+color: #4f46e5;
+}
+
+---
+
+## JS (ACTIVE TAB HIGHLIGHT)
+
+* Detect current route
+* Add "active" class to matching nav item
+
+---
+
+## LAYOUT FIX
+
+* Add bottom padding to all pages:
+  body {
+  padding-bottom: 70px;
+  }
+
+---
+
+## AMY COACH PAGE
+
+* Keep existing functionality:
+
+  * Goals selection
+  * Questions flow
+  * AI plan (wins/cards)
+  * Progress tracking
+
+* Only update route + UI entry point
+
+---
+
+## CLEANUP
+
+* Remove AI Coach section from Parent Hub page
+* Ensure no duplicate navigation links exist
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Updated HTML layout with bottom nav
+2. CSS for taskbar
+3. JS for active state
+4. Updated routing (/amy-coach)
+5. Instructions to integrate across all pages
+
+---
+
+## FINAL RESULT
+
+* Amy Coach accessible from fixed bottom taskbar
+* Clean Parent Hub (no duplicate section)
+* App feels like a real mobile app (native-like navigation)
+
+---
