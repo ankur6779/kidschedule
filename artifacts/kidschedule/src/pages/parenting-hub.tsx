@@ -22,6 +22,7 @@ import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
 import { ArtCraftReels } from "@/components/art-craft-reels";
+import { PrintableWorksheets } from "@/components/printable-worksheets";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Section Wrapper ─────────────────────────────────────────────────────────
@@ -430,6 +431,17 @@ export default function ParentingHub() {
           accentClass="bg-orange-100"
         >
           <ArtCraftReels />
+        </HubSection>
+
+        {/* 7. Printable Worksheets */}
+        <HubSection
+          id="worksheets"
+          icon={<span style={{ fontSize: 18 }}>📄</span>}
+          title="Printable Worksheets"
+          description="Download PDFs & activity sheets for kids"
+          accentClass="bg-sky-100"
+        >
+          <PrintableWorksheets />
         </HubSection>
 
       </div>
