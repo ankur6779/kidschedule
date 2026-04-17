@@ -1,7 +1,8 @@
-import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey } from "@workspace/api-client-react";
+import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey, useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Flame, Sparkles, Gift, Trophy, Bot, Brain, Heart, Target, ChevronRight } from "lucide-react";
+import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight, MessageCircleHeart } from "lucide-react";
+import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
@@ -60,48 +61,138 @@ function computeStreak(routines: Routine[]): number {
   return streak;
 }
 
-function TodayScheduleCard({ routines }: { routines: Routine[] }) {
+// ─── Hero Greeting (soft gradient) ─────────────────────────────────────────
+function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
+  const greeting = getGreeting();
+  return (
+    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 via-rose-100 to-violet-100 p-6 sm:p-7 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+      <div aria-hidden className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/40 blur-2xl" />
+      <div aria-hidden className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-white/30 blur-2xl" />
+      <div className="relative">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-amber-800/80">{greeting}</p>
+        <h1 className="font-quicksand text-[22px] sm:text-3xl font-black text-foreground mt-1.5 leading-tight">
+          👋 Hi{displayName ? `, ${displayName}` : ""}, let's make today easier
+        </h1>
+        <p className="text-sm text-foreground/70 mt-2 leading-relaxed">
+          {hasChildren
+            ? "We've planned your child's day for you ❤️"
+            : "Let's set up your child's first routine 🌟"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Children Profile Strip (horizontal scroll) ────────────────────────────
+function ChildrenStrip({ children }: { children: any[] }) {
+  if (children.length === 0) return null;
+  return (
+    <div className="-mx-1">
+      <div className="flex items-center justify-between px-1 mb-2">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Your little ones</p>
+        <Link href="/children" className="text-xs font-semibold text-primary hover:underline">Manage</Link>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
+        {children.map((c: any, i: number) => {
+          const ageMonths = c.ageMonths ?? 0;
+          const group = getAgeGroup(c.age, ageMonths);
+          const info = getAgeGroupInfo(group);
+          return (
+            <Link key={c.id} href={`/children/${c.id}`}>
+              <div
+                className={`shrink-0 snap-start min-w-[180px] sm:min-w-[200px] rounded-3xl border-2 ${info.bgColor} p-4 transition-all hover:scale-[1.02] hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-left-3 duration-500`}
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-2xl shrink-0">
+                    {info.emoji}
+                  </div>
+                  <div className="min-w-0">
+                    <p className={`font-black text-sm leading-tight truncate ${info.color}`}>{c.name}</p>
+                    <p className="text-[11px] text-foreground/60 mt-0.5">{formatAge(c.age, ageMonths)}</p>
+                  </div>
+                </div>
+                <p className="text-[11px] text-foreground/60 mt-2.5 italic">
+                  Personalised for {c.name}
+                </p>
+              </div>
+            </Link>
+          );
+        })}
+        <Link href="/children/new">
+          <div className="shrink-0 snap-start min-w-[140px] rounded-3xl border-2 border-dashed border-border bg-muted/20 p-4 flex items-center justify-center text-center hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+            <div>
+              <div className="text-2xl mb-1">➕</div>
+              <p className="text-xs font-bold text-foreground/70">Add child</p>
+            </div>
+          </div>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── Now / Next Timeline ───────────────────────────────────────────────────
+function NowNextTimeline({ routines }: { routines: Routine[] }) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
 
-  if (todayRoutines.length === 0) return null;
+  if (todayRoutines.length === 0) {
+    return (
+      <Card className="rounded-3xl shadow-sm border-2 border-dashed bg-gradient-to-br from-sky-50 to-blue-50 overflow-hidden">
+        <CardContent className="p-6 text-center space-y-3">
+          <div className="text-4xl">🗓️</div>
+          <p className="font-bold text-foreground">No plan for today yet</p>
+          <p className="text-xs text-muted-foreground">Tap below to create today's routine in one tap.</p>
+          <Link href="/routines/generate">
+            <button className="mt-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 text-white font-bold text-sm px-5 py-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all">
+              <Sparkles className="h-4 w-4" />
+              Plan My Child's Day
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // Get current time in minutes
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-  // Merge all today's items and find current/upcoming
   const allItems = todayRoutines.flatMap((r) =>
     r.items.map((item) => ({ ...item, childName: r.childName, routineId: r.id }))
   ).sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
 
-  // Find current item (the one whose time has passed but next one hasn't started)
   let currentIdx = -1;
   for (let i = 0; i < allItems.length; i++) {
     const itemMinutes = parseTimeToMinutes(allItems[i].time);
     const nextMinutes = i + 1 < allItems.length ? parseTimeToMinutes(allItems[i + 1].time) : 24 * 60;
-    if (itemMinutes <= nowMinutes && nowMinutes < nextMinutes) {
-      currentIdx = i;
-      break;
-    }
+    if (itemMinutes <= nowMinutes && nowMinutes < nextMinutes) { currentIdx = i; break; }
   }
 
-  // Show: current + next 2 upcoming
   const displayItems = currentIdx >= 0
     ? allItems.slice(currentIdx, currentIdx + 3)
     : allItems.filter((item) => parseTimeToMinutes(item.time) > nowMinutes).slice(0, 3);
 
-  if (displayItems.length === 0) return null;
+  if (displayItems.length === 0) {
+    return (
+      <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+        <CardContent className="p-5 text-center space-y-1">
+          <div className="text-3xl">🌙</div>
+          <p className="font-bold text-emerald-800">Day complete!</p>
+          <p className="text-xs text-emerald-700/70">Time to relax and recharge</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
-      <CardHeader className="bg-primary/5 pb-3 border-b border-border/50">
+    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-white">
+      <CardHeader className="pb-3 bg-gradient-to-r from-violet-50 to-pink-50">
         <div className="flex items-center justify-between">
           <CardTitle className="font-quicksand text-base flex items-center gap-2">
-            <Clock className="h-4 w-4 text-primary" />
-            Today's Schedule
+            <Clock className="h-4 w-4 text-violet-600" />
+            Today's Timeline
           </CardTitle>
-          <Link href="/routines" className="text-xs font-medium text-primary hover:underline flex items-center">
+          <Link href="/routines" className="text-xs font-bold text-violet-600 hover:underline flex items-center">
             View all <ArrowRight className="h-3 w-3 ml-1" />
           </Link>
         </div>
@@ -109,26 +200,99 @@ function TodayScheduleCard({ routines }: { routines: Routine[] }) {
       <CardContent className="p-3 space-y-2">
         {displayItems.map((item, idx) => {
           const isCurrent = currentIdx >= 0 && idx === 0;
+          const isNext = idx === (currentIdx >= 0 ? 1 : 0);
+          const completed = item.status === "completed";
           return (
             <Link key={`${item.routineId}-${idx}`} href={`/routines/${item.routineId}`}>
-              <div className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${isCurrent ? "bg-primary text-primary-foreground" : "bg-muted/30 hover:bg-muted/60"}`}>
-                <div className="text-xs font-bold w-12 shrink-0 text-right opacity-80">{item.time}</div>
+              <div
+                className={`flex items-center gap-3 p-3 rounded-2xl transition-all hover:scale-[1.01] ${
+                  isCurrent
+                    ? "bg-gradient-to-r from-violet-500 to-pink-500 text-white shadow-md"
+                    : "bg-muted/30 hover:bg-muted/60"
+                }`}
+              >
+                <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-foreground/70"}`}>
+                  <div className="text-xs font-bold">{item.time}</div>
+                  {isCurrent && <span className="mt-1 text-[9px] font-black uppercase bg-white/25 px-1.5 py-0.5 rounded-full">Now</span>}
+                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">Next</span>}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`font-bold text-sm truncate ${item.status === "completed" ? "line-through opacity-60" : ""}`}>{item.activity}</div>
-                  <div className={`text-[10px] ${isCurrent ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                  <div className={`font-bold text-sm ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+                    {item.activity}
+                  </div>
+                  <div className={`text-[11px] mt-0.5 ${isCurrent ? "text-white/80" : "text-muted-foreground"}`}>
                     {item.childName} · {item.duration}m
                   </div>
                 </div>
-                {isCurrent && (
-                  <div className="shrink-0 bg-white/20 text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full">NOW</div>
-                )}
-                {item.status === "completed" && !isCurrent && (
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                )}
+                {completed && !isCurrent && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
               </div>
             </Link>
           );
         })}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Goal-Based Cards (TinyPal style) ──────────────────────────────────────
+function GoalCards() {
+  const goals = [
+    { id: "sleep",    emoji: "😴", title: "Better Sleep",      desc: "Bedtime routines & calm rituals", grad: "from-indigo-100 to-blue-100",  ring: "border-indigo-200",  text: "text-indigo-900" },
+    { id: "screen",   emoji: "📱", title: "Less Screen Time",  desc: "Healthy limits without battles",  grad: "from-emerald-100 to-teal-100", ring: "border-emerald-200", text: "text-emerald-900" },
+    { id: "eating",   emoji: "🍽️", title: "Better Eating",     desc: "Picky-eater wins & nutrition",    grad: "from-orange-100 to-amber-100", ring: "border-orange-200",  text: "text-orange-900" },
+    { id: "emotions", emoji: "❤️", title: "Emotional Control", desc: "Tantrum-free, calmer days",       grad: "from-rose-100 to-pink-100",    ring: "border-rose-200",    text: "text-rose-900" },
+  ];
+  return (
+    <div className="-mx-1">
+      <div className="flex items-center justify-between px-1 mb-2">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Goals you can work on</p>
+      </div>
+      <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
+        {goals.map((g, i) => (
+          <Link key={g.id} href="/parenting-hub">
+            <div
+              className={`shrink-0 snap-start w-[200px] sm:w-[220px] rounded-3xl border-2 ${g.ring} bg-gradient-to-br ${g.grad} p-4 transition-all hover:scale-[1.03] hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500`}
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <div className="text-3xl mb-2">{g.emoji}</div>
+              <p className={`font-black text-sm leading-tight ${g.text}`}>{g.title}</p>
+              <p className="text-[11px] text-foreground/60 mt-1 leading-snug">{g.desc}</p>
+              <div className={`mt-3 inline-flex items-center gap-1 text-[11px] font-bold ${g.text}`}>
+                Explore <ArrowRight className="h-3 w-3" />
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Need Help Today? (Emotional Support) ──────────────────────────────────
+function NeedHelpCard() {
+  const helps = [
+    { emoji: "😫", label: "Not listening",  bg: "bg-rose-100 border-rose-200 text-rose-900 hover:bg-rose-200" },
+    { emoji: "😴", label: "Sleep issue",    bg: "bg-indigo-100 border-indigo-200 text-indigo-900 hover:bg-indigo-200" },
+    { emoji: "🍽️", label: "Eating problem", bg: "bg-orange-100 border-orange-200 text-orange-900 hover:bg-orange-200" },
+  ];
+  return (
+    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
+      <CardContent className="p-5">
+        <div className="flex items-center gap-2 mb-3">
+          <MessageCircleHeart className="h-5 w-5 text-rose-500" />
+          <h3 className="font-quicksand font-black text-base">Need help today?</h3>
+        </div>
+        <p className="text-xs text-foreground/60 mb-3">Tap a topic to talk to your AI parenting partner</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {helps.map((h) => (
+            <Link key={h.label} href="/assistant">
+              <button className={`w-full text-left rounded-2xl border-2 ${h.bg} px-3 py-3 font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2`}>
+                <span className="text-xl">{h.emoji}</span>
+                <span className="leading-tight">{h.label}</span>
+              </button>
+            </Link>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
@@ -509,6 +673,10 @@ export default function Dashboard() {
     query: { queryKey: getListRoutinesQueryKey() }
   });
 
+  const { data: childrenList } = useListChildren({
+    query: { queryKey: getListChildrenQueryKey() }
+  });
+
   const { data: stats, isLoading: loadingStats } = useGetBehaviorStats({
     query: { queryKey: getGetBehaviorStatsQueryKey() }
   });
@@ -536,32 +704,32 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-      <header>
-        <h1 className="font-quicksand text-3xl font-bold text-foreground">
-          {getGreeting()}{displayName ? `, ${displayName}` : ""}! 👋
-        </h1>
-        <p className="text-muted-foreground mt-1">Here's a look at how things are going today.</p>
-      </header>
+    <div className="flex flex-col gap-5 animate-in fade-in duration-500 pb-8">
 
-      {/* Today's Schedule + Streak row */}
+      {/* ── Hero greeting (TinyPal-style soft gradient) ─────────── */}
+      <HeroGreeting displayName={displayName} hasChildren={(childrenList?.length ?? 0) > 0} />
+
+      {/* ── Children profile strip (horizontal scroll) ──────────── */}
+      <ChildrenStrip children={childrenList ?? []} />
+
+      {/* ── Now / Next timeline + Streak ────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
-          <TodayScheduleCard routines={(allRoutines ?? []) as Routine[]} />
+          <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
         </div>
 
-        {/* Streak mini-card */}
+        {/* Streak mini-card — softer pastel */}
         <Link href="/progress">
-          <Card className={`rounded-2xl border-none shadow-sm cursor-pointer hover:shadow-md transition-all h-full ${streak >= 3 ? "bg-gradient-to-br from-orange-400 to-rose-500" : streak > 0 ? "bg-gradient-to-br from-orange-100 to-amber-100" : "bg-muted/30 border border-dashed border-border"}`}>
-            <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center min-h-[80px]">
+          <Card className={`rounded-3xl border-none shadow-sm cursor-pointer hover:shadow-md transition-all h-full ${streak >= 3 ? "bg-gradient-to-br from-orange-300 to-rose-400" : streak > 0 ? "bg-gradient-to-br from-amber-100 to-orange-100" : "bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border"}`}>
+            <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center min-h-[100px]">
               <div className={`text-3xl mb-1 ${streak === 0 ? "grayscale opacity-40" : ""}`}>🔥</div>
               <div className={`font-black text-2xl ${streak >= 3 ? "text-white" : streak > 0 ? "text-orange-700" : "text-muted-foreground"}`}>
                 {streak}
               </div>
-              <div className={`text-xs font-bold ${streak >= 3 ? "text-white/80" : streak > 0 ? "text-orange-600" : "text-muted-foreground"}`}>
-                {streak === 1 ? "Day Streak" : "Day Streak"}
+              <div className={`text-xs font-bold ${streak >= 3 ? "text-white/85" : streak > 0 ? "text-orange-600" : "text-muted-foreground"}`}>
+                Day Streak
               </div>
-              <div className={`text-[10px] mt-1 ${streak >= 3 ? "text-white/60" : "text-muted-foreground"}`}>
+              <div className={`text-[10px] mt-1 ${streak >= 3 ? "text-white/70" : "text-muted-foreground"}`}>
                 {streak === 0 ? "Start today!" : "Tap for progress"}
               </div>
             </CardContent>
@@ -569,60 +737,66 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      {/* ── Goal-Based Cards (TinyPal style) ────────────────────── */}
+      <GoalCards />
+
+      {/* ── Need Help Today? (Emotional Support) ────────────────── */}
+      <NeedHelpCard />
+
+      {/* ── Summary Stats — softer pastel ───────────────────────── */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {loadingSummary ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
         ) : (
           <>
-            <Card className="rounded-2xl border-none shadow-sm bg-primary/10">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-violet-50 to-purple-50">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-primary font-medium text-sm">Routines</span>
-                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="text-violet-700 font-bold text-xs">Routines</span>
+                  <Calendar className="h-4 w-4 text-violet-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-primary">{summary?.routinesGeneratedThisWeek || 0}</span>
-                  <span className="text-xs text-primary/70">this week</span>
+                  <span className="text-3xl font-black text-violet-700">{summary?.routinesGeneratedThisWeek || 0}</span>
+                  <span className="text-[10px] text-violet-500/80">this week</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl border-none shadow-sm bg-accent/10">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-accent font-medium text-sm">Great Job</span>
-                  <TrendingUp className="h-4 w-4 text-accent" />
+                  <span className="text-emerald-700 font-bold text-xs">Great Job</span>
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-accent">{summary?.positiveBehaviorsToday || 0}</span>
-                  <span className="text-xs text-accent/70">today</span>
+                  <span className="text-3xl font-black text-emerald-700">{summary?.positiveBehaviorsToday || 0}</span>
+                  <span className="text-[10px] text-emerald-500/80">today</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl border-none shadow-sm bg-destructive/10">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-rose-50 to-pink-50">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-destructive font-medium text-sm">Challenging</span>
-                  <TrendingDown className="h-4 w-4 text-destructive" />
+                  <span className="text-rose-700 font-bold text-xs">Challenging</span>
+                  <TrendingDown className="h-4 w-4 text-rose-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-destructive">{summary?.negativeBehaviorsToday || 0}</span>
-                  <span className="text-xs text-destructive/70">today</span>
+                  <span className="text-3xl font-black text-rose-700">{summary?.negativeBehaviorsToday || 0}</span>
+                  <span className="text-[10px] text-rose-500/80">today</span>
                 </div>
               </CardContent>
             </Card>
-            
-            <Card className="rounded-2xl border-none shadow-sm bg-secondary/20">
+
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-foreground/70 font-medium text-sm">Children</span>
-                  <Users className="h-4 w-4 text-foreground/50" />
+                  <span className="text-amber-700 font-bold text-xs">Children</span>
+                  <Users className="h-4 w-4 text-amber-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-foreground">{summary?.totalChildren || 0}</span>
-                  <span className="text-xs text-foreground/50">total</span>
+                  <span className="text-3xl font-black text-amber-700">{summary?.totalChildren || 0}</span>
+                  <span className="text-[10px] text-amber-500/80">total</span>
                 </div>
               </CardContent>
             </Card>
@@ -630,7 +804,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* AI Co-Parent + Parent Score */}
+      {/* Today's Suggestion + Parent Score */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <CoParentCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
         <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
@@ -768,6 +942,14 @@ export default function Dashboard() {
 
       {/* Rewards Card */}
       <RewardsCard streak={streak} />
+
+      {/* ── Friendly Primary CTA ────────────────────────────────── */}
+      <Link href="/routines/generate">
+        <button className="w-full h-14 rounded-3xl bg-gradient-to-r from-violet-500 via-pink-500 to-rose-500 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+          <Sparkles className="h-5 w-5" />
+          ✨ Plan My Child's Day
+        </button>
+      </Link>
     </div>
   );
 }
