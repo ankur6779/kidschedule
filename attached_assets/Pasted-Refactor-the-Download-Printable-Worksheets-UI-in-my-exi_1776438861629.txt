@@ -1,0 +1,129 @@
+Refactor the "Download Printable Worksheets" UI in my existing app to improve visual quality and remove categories.
+
+GOALS:
+
+* Remove category filters completely
+* Replace broken/empty previews with a clean AmyNest logo
+* Make UI modern, clean, and mobile-friendly
+* Improve card design and spacing
+
+FRONTEND CHANGES:
+
+1. REMOVE CATEGORY SYSTEM:
+
+* Remove all category buttons (All, Coloring, Math, Tracing)
+* Remove category logic from JS
+
+---
+
+2. CLEAN WORKSHEET CARD UI:
+
+Each worksheet should be displayed as a clean card:
+
+Structure:
+
+<div class="worksheet-card">
+  <div class="preview">
+    <img src="/logo.png" alt="AmyNest Logo">
+  </div>
+  <div class="info">
+    <p class="title">Worksheet Name</p>
+    <button class="download-btn">Download</button>
+  </div>
+</div>
+
+---
+
+3. PREVIEW DESIGN:
+
+* Always show AmyNest logo instead of file preview
+* Center logo
+* Light background (soft gray or gradient)
+* Rounded corners
+
+---
+
+4. BUTTON FIX:
+
+* Dark background button (#1e293b or similar)
+* White text
+* Full width
+* Rounded corners
+* Add hover/press effect
+
+---
+
+5. STYLING (IMPORTANT):
+
+Use modern card UI:
+
+.worksheet-card {
+background: #ffffff;
+border-radius: 16px;
+padding: 12px;
+margin-bottom: 12px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.preview {
+height: 120px;
+background: #f1f5f9;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 12px;
+}
+
+.preview img {
+width: 60px;
+opacity: 0.8;
+}
+
+.title {
+font-size: 14px;
+margin: 10px 0;
+}
+
+.download-btn {
+width: 100%;
+background: #1e293b;
+color: white;
+padding: 10px;
+border-radius: 10px;
+border: none;
+font-weight: 500;
+}
+
+---
+
+6. GRID LAYOUT:
+
+* Use 1 column for mobile
+* Proper spacing
+* Smooth scrolling
+
+---
+
+7. EMPTY STATE:
+   If no worksheets:
+   "All worksheets downloaded 🎉"
+
+---
+
+8. KEEP EXISTING LOGIC:
+
+* Keep daily limit (5 downloads)
+* Keep hide downloaded files logic
+* Keep age filter
+
+---
+
+OUTPUT:
+
+* Clean UI
+* No broken preview
+* Professional app-like design
+* Ready for mobile users
+
+GOAL:
+A premium-looking worksheet download section with AmyNest branding instead of messy previews.
