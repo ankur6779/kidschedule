@@ -1,0 +1,149 @@
+Upgrade my web app "AmyNest" UI to a modern, emotional, and parent-friendly design inspired by top parenting apps like TinyPal.
+
+IMPORTANT:
+- Focus on emotional connection with parents
+- Clean, minimal, and soft UI
+- Mobile-first design
+- Premium app-like feel
+
+--------------------------------
+1. Overall Design Theme (Core 🔥)
+--------------------------------
+- Use soft gradient backgrounds:
+  - Light yellow, purple, peach tones
+- Avoid harsh colors
+- Keep UI calm and friendly
+
+--------------------------------
+2. Welcome Experience (Emotional 🔥)
+--------------------------------
+At top show:
+
+- Greeting:
+  “👋 Hi Ankur, let’s make today easier”
+
+- Subtext:
+  “We’ve planned your child’s day for you ❤️”
+
+--------------------------------
+3. Child Personalization Section
+--------------------------------
+Show:
+
+- Child profile card:
+  - Name
+  - Age
+  - Avatar (cute illustration)
+
+- Add line:
+  “Personalized for Yuhira”
+
+--------------------------------
+4. Goal-Based Cards (TinyPal Style 🔥)
+--------------------------------
+Create horizontal scroll cards:
+
+Examples:
+- Improve Sleep 😴
+- Reduce Screen Time 📱
+- Better Eating 🍽
+- Emotional Control ❤️
+
+Each card:
+- Image (illustration)
+- Title
+- Short description
+
+--------------------------------
+5. Parenting Insight Cards (Important 🔥)
+--------------------------------
+Show cards like:
+
+- “Today’s Suggestion”
+- “Based on your child behavior”
+
+Example:
+“Yuhira may feel tired today, keep routine light”
+
+--------------------------------
+6. Visual Story Cards (TinyPal Style 🔥🔥)
+--------------------------------
+- Use cartoon-style images
+- Show real-life parenting scenarios
+
+Example:
+- Child eating happily
+- Parent calming child
+
+--------------------------------
+7. Routine Section Upgrade
+--------------------------------
+- Show as:
+  - Timeline cards
+  - With icons/images
+
+- Add:
+  “Now”
+  “Next”
+
+--------------------------------
+8. Emotional Support Section ❤️
+--------------------------------
+Add section:
+
+“Need help today?”
+
+Buttons:
+- 😫 Child not listening
+- 😴 Sleep issue
+- 🍽 Eating problem
+
+--------------------------------
+9. UI Components
+--------------------------------
+- Rounded cards (16–20px)
+- Soft shadows
+- Spacing between sections
+- Smooth scroll
+
+--------------------------------
+10. Typography
+--------------------------------
+- Use clean fonts
+- Bold headings
+- Short readable text
+
+--------------------------------
+11. Micro Animations (Premium Feel 🔥)
+--------------------------------
+- Fade-in cards
+- Smooth transitions
+
+--------------------------------
+12. CTA Buttons (Important)
+--------------------------------
+Use friendly text:
+
+❌ Generate Routine  
+✔️ “✨ Plan My Child’s Day”
+
+--------------------------------
+13. Colors Strategy
+--------------------------------
+- Background: soft gradient
+- Cards: white
+- Accent: pastel
+
+--------------------------------
+14. Keep it simple
+--------------------------------
+- No clutter
+- Focus on clarity
+
+--------------------------------
+Return:
+Updated UI with:
+- Emotional design
+- Personalized feel
+- Card-based layout
+- Modern mobile UX
