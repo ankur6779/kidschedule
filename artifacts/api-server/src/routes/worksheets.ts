@@ -121,21 +121,44 @@ async function collectFilesRecursive(
   return results;
 }
 
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\.[^.]+$/, "")   // strip extension
+    .replace(/[_\-\s]+/g, " ") // normalize separators
+    .trim();
+}
+
 async function getWorksheets(apiKey: string): Promise<WorksheetFile[]> {
   const now = Date.now();
   if (cachedWorksheets.length > 0 && now - cacheTimestamp < CACHE_TTL_MS) {
     return cachedWorksheets;
   }
   const files = await collectFilesRecursive(ROOT_FOLDER_ID, apiKey);
+
+  // Deduplicate: prefer PDFs over images when names collide; keep first seen otherwise
+  const seen = new Map<string, WorksheetFile>();
+  for (const f of files) {
+    const key = normalizeName(f.name);
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, f);
+    } else if (f.fileType === "pdf" && existing.fileType !== "pdf") {
+      // Upgrade to PDF version
+      seen.set(key, f);
+    }
+  }
+  const unique = Array.from(seen.values());
+
   // PDFs first, then images — alphabetical within each group
-  files.sort((a, b) => {
+  unique.sort((a, b) => {
     if (a.fileType !== b.fileType) return a.fileType === "pdf" ? -1 : 1;
     return a.name.localeCompare(b.name);
   });
-  cachedWorksheets = files;
+  cachedWorksheets = unique;
   cacheTimestamp = Date.now();
-  logger.info({ count: files.length }, "Worksheets cache rebuilt");
-  return files;
+  logger.info({ total: files.length, unique: unique.length }, "Worksheets cache rebuilt");
+  return unique;
 }
 
 router.get("/worksheets", async (req, res) => {
