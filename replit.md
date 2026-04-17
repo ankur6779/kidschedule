@@ -21,11 +21,13 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
 
 ## Features
 
+- **Amy AI Brand** — cute SVG character (AmyIcon), floating assistant button (AmyFab), Amy avatars in chat, Amy AI copy throughout all pages
 - **Auth** — Clerk login with email + Google OAuth; landing page for signed-out users, protected routes for signed-in users
 - **Dashboard** — time-based personalized greeting, summary stats, recent routines, behavior highlights by child
 - **Children** — add/edit/delete child profiles with DOB-based age detection, smart school logic, conditional school/travel fields, wake/sleep times, goals, and babysitter assignment; new columns: `dob` (text), `isSchoolGoing` (boolean)
 - **Parent Profile** — role (Mother/Father), work type (WFH/WFO/Homemaker), work hours, free availability slots, food preferences (veg/non-veg) and allergies
 - **Babysitter Management** — add/remove babysitters with name, mobile number, and notes; assign to children
+- **Parenting Hub** — 5-section collapsible layout: (1) Ask Amy AI quick prompts, (2) Research-based Parenting Articles (15 in-app articles with modal reader, category filter, age matching, save/helpful, continue-reading, all localStorage), (3) Daily Tips (Amy AI personalization), (4) Emotional Support cards → /assistant, (5) Activities & Learning (existing infant/toddler/preschool/older content)
 - **Routine Generator** — rule-based full-day schedule engine (`routine-templates.ts`); age-appropriate templates for 5 groups; handles school/no-school, mood, parent availability, food type — zero API cost
 - **Smart Nutrition** — 5 veg + 5 non-veg options per meal type (breakfast/lunch/snack/dinner/tiffin) with seeded rotation for daily variety; each option is tappable to view a static recipe
 - **Recipe Viewer** — static recipe database (`recipe-database.ts`) with keyword matching; 8 veg + 5 non-veg full recipes with ingredients, steps, prep/cook times, tips
