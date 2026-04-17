@@ -1,0 +1,80 @@
+Refactor my existing Replit Node.js web app to integrate the Google Drive reels feature directly inside the "Parent Hub → Art & Craft" section instead of a separate /reels page.
+
+Goals:
+
+- Remove the standalone /reels route/page.
+- Render reels inside the existing Parent Hub page under the "Art & Craft" section.
+- Keep using the existing backend endpoint /videos (Google Drive API).
+
+BACKEND (server.js):
+
+1. Keep /videos endpoint as is (fetch video files from Google Drive, randomized).
+2. Ensure it returns an array: [{ name, url }].
+3. Add simple in-memory caching (e.g., cache for 5 minutes) to reduce API calls.
+
+FRONTEND (integrate into existing page):
+
+1. In the Parent Hub HTML, inside the "Art & Craft" section, add:
+   
+   <section id="art-craft">
+  <h2>Art & Craft</h2>
+  <div id="reels-container"></div>
+</section>
+
+2. Create a module/script that:
+   
+   - Fetches /videos
+   - Renders videos vertically (full height cards)
+   - Loads only 5 videos initially (lazy loading)
+   - Loads more when user scrolls near bottom
+
+3. Each video:
+   
+   - <video> full width, ~80–100vh height
+   - autoplay when visible, pause when not visible (IntersectionObserver)
+   - muted by default, toggle mute on tap
+   - loop enabled
+   - playsInline + webkit-playsinline
+
+4. Scrolling:
+   
+   - Vertical scroll with CSS scroll-snap for a reels feel
+   - Smooth snap between videos
+
+5. Loader:
+   
+   - Show a centered spinner while fetching
+   - Hide when first batch is ready
+
+6. Error handling:
+   
+   - If a video fails to load, remove it and load next
+
+7. Styling:
+   
+   - Black background for reels container
+   - Minimal UI (no heavy controls)
+   - Optional overlay: video name at bottom
+
+PERFORMANCE:
+
+- Do NOT render all videos at once (3000+ files)
+- Batch size: 5–7
+- Preload next video for smooth playback
+
+CLEANUP:
+
+- Remove /reels route and its HTML/CSS/JS files
+- Avoid duplicate code
+- Keep code modular and readable
+
+OUTPUT:
+
+- Updated server.js (with caching)
+- Updated Parent Hub HTML with integrated reels section
+- CSS for reels container
+- JS module for reels logic
+- Instructions to run on Replit
+
+Result:
+A seamless Parent Hub page where "Art & Craft" contains a vertical swipeable reels experience using Google Drive videos.

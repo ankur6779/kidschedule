@@ -21,6 +21,7 @@ import { DailyKidsActivity } from "@/components/daily-kids-activity";
 import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
+import { ArtCraftReels } from "@/components/art-craft-reels";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Section Wrapper ─────────────────────────────────────────────────────────
@@ -419,6 +420,17 @@ export default function ParentingHub() {
             />
           </HubSection>
         )}
+
+        {/* 6. Art & Craft Videos */}
+        <HubSection
+          id="art-craft"
+          icon={<span style={{ fontSize: 18 }}>🎨</span>}
+          title="Art & Craft Videos"
+          description="Fun vertical craft reels for kids"
+          accentClass="bg-orange-100"
+        >
+          <ArtCraftReels />
+        </HubSection>
 
       </div>
 
