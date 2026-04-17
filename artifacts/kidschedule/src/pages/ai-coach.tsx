@@ -238,9 +238,11 @@ export default function AICoachPage() {
     const newPct = Math.min(100, Math.round((newSum / denom) * 100));
     const isLastCard = activeIdx === plan.wins.length - 1;
 
-    // Rule: if "not worked" on ANY card → extend
-    //       if on last card AND progress still < 100% → extend (regardless of button)
-    if (feedback === "no" || (isLastCard && newPct < 100)) {
+    // Rule: extend ONLY when progress < 100%
+    //   - "Not worked for me" on any card → extend (adaptive help)
+    //   - Any button on the LAST card while still below 100% → extend (keep going)
+    // At 100% — no more extensions, ever.
+    if (newPct < 100 && (feedback === "no" || isLastCard)) {
       await requestExtension(winNumber);
     } else {
       toast({
