@@ -5,6 +5,7 @@ interface Worksheet {
   id: string;
   name: string;
   mimeType: string;
+  fileType: "pdf" | "image";
   category: string;
   downloadUrl: string;
   previewUrl: string;
@@ -297,8 +298,9 @@ function WorksheetCard({
   onDownload: () => void;
 }) {
   const displayName = worksheet.name.replace(/\.[^.]+$/, "").replace(/_/g, " ");
-  const ext = worksheet.mimeType === "application/pdf" ? "PDF"
-    : worksheet.mimeType === "image/png" ? "PNG" : "JPG";
+  const isPdf = worksheet.fileType === "pdf";
+  const ext = isPdf ? "PDF" : worksheet.mimeType === "image/png" ? "PNG" : "JPG";
+  const pdfEmbedUrl = `https://drive.google.com/file/d/${worksheet.id}/preview`;
 
   return (
     <div
@@ -312,29 +314,45 @@ function WorksheetCard({
         flexDirection: "column",
       }}
     >
-      {/* Preview — always AmyNest logo on soft background */}
+      {/* Preview */}
       <div style={{
-        height: 120,
-        background: "linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        height: 140,
+        borderRadius: "12px 12px 0 0",
+        overflow: "hidden",
+        background: "#f1f5f9",
         position: "relative",
         flexShrink: 0,
       }}>
-        <img
-          src={amyLogo}
-          alt="AmyNest"
-          style={{ width: 60, height: 60, objectFit: "contain", opacity: 0.82 }}
-        />
+        {isPdf ? (
+          <iframe
+            src={pdfEmbedUrl}
+            title={displayName}
+            style={{ width: "100%", height: "100%", border: "none", display: "block" }}
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          />
+        ) : (
+          <div style={{
+            width: "100%", height: "100%",
+            background: "linear-gradient(135deg, #f0f4ff 0%, #fdf2f8 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <img
+              src={amyLogo}
+              alt="AmyNest"
+              style={{ width: 60, height: 60, objectFit: "contain", opacity: 0.82 }}
+            />
+          </div>
+        )}
         {/* File type badge */}
         <span style={{
           position: "absolute", top: 8, right: 8,
-          background: "rgba(255,255,255,0.88)",
-          color: ext === "PDF" ? "#dc2626" : "#2563eb",
+          background: "rgba(255,255,255,0.92)",
+          color: isPdf ? "#dc2626" : "#2563eb",
           fontSize: 10, fontWeight: 800, padding: "2px 7px",
           borderRadius: 20, letterSpacing: 0.3,
-          boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
+          pointerEvents: "none",
         }}>
           {ext}
         </span>

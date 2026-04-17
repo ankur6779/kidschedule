@@ -19,6 +19,7 @@ interface WorksheetFile {
   id: string;
   name: string;
   mimeType: string;
+  fileType: "pdf" | "image";
   category: WorksheetCategory;
   downloadUrl: string;
   previewUrl: string;
@@ -99,11 +100,11 @@ async function collectFilesRecursive(
   const fileItems = items.filter((i) => ALLOWED_MIME.has(i.mimeType));
 
   for (const file of fileItems) {
-    const path = `${folderPath} ${file.name}`.trim();
     results.push({
       id: file.id,
       name: file.name,
       mimeType: file.mimeType,
+      fileType: file.mimeType === "application/pdf" ? "pdf" : "image",
       category: inferCategory(file.name, folderPath),
       downloadUrl: `https://drive.google.com/uc?export=download&id=${file.id}`,
       previewUrl: previewUrl(file.id, file.mimeType),
@@ -126,7 +127,11 @@ async function getWorksheets(apiKey: string): Promise<WorksheetFile[]> {
     return cachedWorksheets;
   }
   const files = await collectFilesRecursive(ROOT_FOLDER_ID, apiKey);
-  files.sort((a, b) => a.name.localeCompare(b.name));
+  // PDFs first, then images — alphabetical within each group
+  files.sort((a, b) => {
+    if (a.fileType !== b.fileType) return a.fileType === "pdf" ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
   cachedWorksheets = files;
   cacheTimestamp = Date.now();
   logger.info({ count: files.length }, "Worksheets cache rebuilt");
