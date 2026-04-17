@@ -9,11 +9,12 @@ import {
 
 // ─── Goals (categorized) ───────────────────────────────────────────────────
 interface GoalItem { id: string; title: string; emoji: string; gradient: string }
-interface GoalCategory { id: string; title: string; emoji: string; items: GoalItem[] }
+interface GoalCategory { id: string; title: string; emoji: string; gradient: string; items: GoalItem[] }
 
 const GOAL_CATEGORIES: GoalCategory[] = [
   {
     id: "behavior", title: "Behavior", emoji: "🎯",
+    gradient: "from-rose-100 via-pink-50 to-orange-100",
     items: [
       { id: "manage-tantrums",       title: "Manage Tantrums",           emoji: "😤", gradient: "from-rose-100 to-pink-200" },
       { id: "handle-aggression",     title: "Handle Aggression",         emoji: "✋", gradient: "from-red-100 to-rose-200" },
@@ -24,6 +25,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   },
   {
     id: "screen-focus", title: "Screen & Focus", emoji: "📱",
+    gradient: "from-sky-100 via-blue-50 to-indigo-100",
     items: [
       { id: "balance-screen-time",         title: "Balance Screen Time",         emoji: "📱", gradient: "from-sky-100 to-blue-200" },
       { id: "reduce-mobile-addiction",     title: "Reduce Mobile Addiction",     emoji: "📵", gradient: "from-blue-100 to-indigo-200" },
@@ -34,6 +36,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   },
   {
     id: "eating", title: "Eating", emoji: "🍽️",
+    gradient: "from-emerald-100 via-green-50 to-teal-100",
     items: [
       { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 to-green-200" },
       { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",        emoji: "🥦", gradient: "from-teal-100 to-cyan-200" },
@@ -44,6 +47,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   },
   {
     id: "sleep", title: "Sleep", emoji: "😴",
+    gradient: "from-indigo-100 via-violet-50 to-purple-100",
     items: [
       { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",    emoji: "😴", gradient: "from-indigo-100 to-violet-200" },
       { id: "fix-bedtime-resistance",    title: "Fix Bedtime Resistance",    emoji: "🛏️", gradient: "from-purple-100 to-indigo-200" },
@@ -54,6 +58,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   },
   {
     id: "learning", title: "Learning", emoji: "📚",
+    gradient: "from-purple-100 via-fuchsia-50 to-pink-100",
     items: [
       { id: "boost-concentration",        title: "Boost Concentration",       emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
       { id: "build-study-discipline",     title: "Build Study Discipline",    emoji: "📖", gradient: "from-blue-100 to-sky-200" },
@@ -64,6 +69,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   },
   {
     id: "parenting-challenges", title: "Parenting Challenges", emoji: "💝",
+    gradient: "from-amber-100 via-orange-50 to-yellow-100",
     items: [
       { id: "manage-grandparents-interference", title: "Manage Grandparents' Interference", emoji: "👵", gradient: "from-rose-100 to-pink-200" },
       { id: "align-parenting-between-parents",  title: "Align Parenting Between Parents",   emoji: "🤝", gradient: "from-violet-100 to-purple-200" },
@@ -125,6 +131,7 @@ export default function AICoachPage() {
 
   const [phase, setPhase] = useState<Phase>("goals");
   const [goalSearch, setGoalSearch] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [goalId, setGoalId] = useState<string>("");
   const [qIndex, setQIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
@@ -396,6 +403,112 @@ export default function AICoachPage() {
 
   // ── PHASE: GOALS ─────────────────────────────────────────────────────
   if (phase === "goals") {
+    const activeCat = selectedCategoryId
+      ? GOAL_CATEGORIES.find((c) => c.id === selectedCategoryId) ?? null
+      : null;
+
+    // ── Search mode: flat results across all categories ──────────────
+    if (searchQuery) {
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <Link href="/dashboard" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <ChevronLeft className="h-4 w-4" /> Back
+            </Link>
+            <Link href="/amy-coach/progress">
+              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+                <BarChart3 className="h-3.5 w-3.5" /> My Progress
+              </button>
+            </Link>
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input autoFocus type="text" value={goalSearch} onChange={(e) => setGoalSearch(e.target.value)}
+              placeholder="Search goals…"
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-border bg-card text-sm focus:outline-none focus:border-violet-400"
+            />
+          </div>
+          <div className="space-y-6">
+            {filteredCategories.map((cat) => (
+              <section key={cat.id}>
+                <h2 className="font-quicksand font-bold text-xs uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5 px-1">
+                  <span>{cat.emoji}</span> {cat.title}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {cat.items.map((g) => (
+                    <button key={g.id} onClick={() => handlePickGoal(g.id)}
+                      className={`bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-md active:scale-[0.98] transition-all text-left flex items-center gap-3`}
+                    >
+                      <span className="text-2xl shrink-0">{g.emoji}</span>
+                      <div>
+                        <p className="font-quicksand font-bold text-sm text-foreground leading-tight">{g.title}</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
+            {totalMatches === 0 && (
+              <p className="text-center py-8 text-sm text-muted-foreground">No goals match "{goalSearch}"</p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Sub-goal view: goals inside selected category ─────────────────
+    if (activeCat) {
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <button onClick={() => setSelectedCategoryId(null)}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+              <ChevronLeft className="h-4 w-4" /> Categories
+            </button>
+            <Link href="/amy-coach/progress">
+              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+                <BarChart3 className="h-3.5 w-3.5" /> My Progress
+              </button>
+            </Link>
+          </div>
+
+          <div className={`bg-gradient-to-br ${activeCat.gradient} rounded-2xl p-4`}>
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">{activeCat.emoji}</span>
+              <div>
+                <h1 className="font-quicksand text-xl font-bold text-foreground">{activeCat.title}</h1>
+                <p className="text-xs text-muted-foreground">{activeCat.items.length} goals — pick one to start</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input type="text" value={goalSearch} onChange={(e) => setGoalSearch(e.target.value)}
+              placeholder={`Search in ${activeCat.title}…`}
+              className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-border bg-card text-sm focus:outline-none focus:border-violet-400"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {activeCat.items.map((g) => (
+              <button key={g.id} onClick={() => handlePickGoal(g.id)}
+                className={`bg-gradient-to-br ${g.gradient} rounded-2xl p-5 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.98] transition-all text-left flex items-center gap-4`}
+              >
+                <span className="text-3xl shrink-0">{g.emoji}</span>
+                <div className="flex-1">
+                  <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">Tap to start →</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // ── Category grid: default view ───────────────────────────────────
     return (
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         <div className="flex items-center justify-between">
@@ -415,51 +528,28 @@ export default function AICoachPage() {
             AI Coach (Ask AMY)
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Pick a goal — I'll build a deep, science-backed plan in 12 step-by-step wins.
+            Choose a category to see goals — I'll build a science-backed 12-step plan.
           </p>
         </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={goalSearch}
-            onChange={(e) => setGoalSearch(e.target.value)}
-            placeholder="Search goals…"
+          <input type="text" value={goalSearch} onChange={(e) => setGoalSearch(e.target.value)}
+            placeholder="Search all goals…"
             className="w-full pl-10 pr-4 py-3 rounded-2xl border-2 border-border bg-card text-sm focus:outline-none focus:border-violet-400"
           />
         </div>
 
-        <div className="space-y-6">
-          {filteredCategories.map((cat) => (
-            <section key={cat.id}>
-              <h2 className="font-quicksand font-bold text-sm uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-2 px-1">
-                <span className="text-base">{cat.emoji}</span>
-                {cat.title}
-                <span className="text-[10px] font-normal text-muted-foreground/70">({cat.items.length})</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cat.items.map((g) => (
-                  <button
-                    key={g.id}
-                    onClick={() => handlePickGoal(g.id)}
-                    className={`group bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.98] transition-all text-left flex items-center gap-3`}
-                  >
-                    <span className="text-3xl shrink-0">{g.emoji}</span>
-                    <div className="flex-1">
-                      <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
+        <div className="grid grid-cols-2 gap-3">
+          {GOAL_CATEGORIES.map((cat) => (
+            <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
+              className={`bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.97] transition-all text-left`}
+            >
+              <span className="text-4xl block mb-3">{cat.emoji}</span>
+              <p className="font-quicksand font-bold text-base text-foreground leading-tight">{cat.title}</p>
+              <p className="text-[11px] text-muted-foreground mt-1">{cat.items.length} goals →</p>
+            </button>
           ))}
-          {totalMatches === 0 && (
-            <div className="text-center py-8 text-sm text-muted-foreground">
-              No goals match "{goalSearch}"
-            </div>
-          )}
         </div>
       </div>
     );
