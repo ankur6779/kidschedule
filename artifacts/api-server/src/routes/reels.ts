@@ -11,34 +11,38 @@ interface DriveFile {
   id: string;
   name: string;
   mimeType: string;
-  size?: string;
 }
 
 let cachedVideoIds: DriveFile[] = [];
 let cacheTimestamp = 0;
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
+const PLAYABLE_MIME_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
+  "video/x-m4v",
+  "video/3gpp",
+  "video/3gpp2",
+  "video/mpeg",
+]);
+
+function shuffle<T>(arr: T[]): void {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
+  }
+}
+
 async function fetchAllVideos(): Promise<DriveFile[]> {
   const apiKey = process.env["GOOGLE_API_KEY"];
-  if (!apiKey) {
-    throw new Error("GOOGLE_API_KEY environment variable is not set");
-  }
+  if (!apiKey) throw new Error("GOOGLE_API_KEY environment variable is not set");
 
   const now = Date.now();
   if (cachedVideoIds.length > 0 && now - cacheTimestamp < CACHE_TTL_MS) {
     return cachedVideoIds;
   }
-
-  const PLAYABLE_MIME_TYPES = new Set([
-    "video/mp4",
-    "video/webm",
-    "video/ogg",
-    "video/quicktime",
-    "video/x-m4v",
-    "video/3gpp",
-    "video/3gpp2",
-    "video/mpeg",
-  ]);
 
   const allFiles: DriveFile[] = [];
   let pageToken: string | undefined;
@@ -46,14 +50,11 @@ async function fetchAllVideos(): Promise<DriveFile[]> {
   do {
     const params = new URLSearchParams({
       q: `'${FOLDER_ID}' in parents and mimeType contains 'video' and trashed = false`,
-      fields: "nextPageToken,files(id,name,mimeType,size)",
+      fields: "nextPageToken,files(id,name,mimeType)",
       key: apiKey,
       pageSize: "1000",
-      orderBy: "name",
     });
-    if (pageToken) {
-      params.set("pageToken", pageToken);
-    }
+    if (pageToken) params.set("pageToken", pageToken);
 
     const res = await fetch(`${DRIVE_API}?${params.toString()}`);
     if (!res.ok) {
@@ -61,29 +62,17 @@ async function fetchAllVideos(): Promise<DriveFile[]> {
       throw new Error(`Google Drive API error ${res.status}: ${text}`);
     }
 
-    const data = (await res.json()) as {
-      files: DriveFile[];
-      nextPageToken?: string;
-    };
+    const data = (await res.json()) as { files: DriveFile[]; nextPageToken?: string };
     const playable = (data.files || []).filter((f) => PLAYABLE_MIME_TYPES.has(f.mimeType));
     allFiles.push(...playable);
     pageToken = data.nextPageToken;
   } while (pageToken);
 
   shuffle(allFiles);
-
   cachedVideoIds = allFiles;
   cacheTimestamp = Date.now();
-
-  logger.info({ count: allFiles.length }, "Google Drive video cache refreshed (playable only)");
+  logger.info({ count: allFiles.length }, "Drive video cache built");
   return allFiles;
-}
-
-function shuffle<T>(arr: T[]): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-  }
 }
 
 router.get("/videos", async (req, res) => {
@@ -106,18 +95,54 @@ router.get("/videos", async (req, res) => {
       nextOffset: offset + slice.length < videos.length ? offset + slice.length : null,
     });
   } catch (err) {
-    logger.error({ err }, "Failed to list Drive videos");
+    logger.error({ err }, "Failed to list videos");
     res.status(500).json({ error: (err as Error).message });
   }
 });
 
-router.get("/stream/:fileId", async (req, res) => {
-  const apiKey = process.env["GOOGLE_API_KEY"];
-  if (!apiKey) {
-    res.status(500).json({ error: "GOOGLE_API_KEY not configured" });
-    return;
+/**
+ * Fetch from Google Drive using the web download URL.
+ * This works for files shared as "Anyone with link can view"
+ * without requiring individual file-level public access.
+ */
+async function fetchDriveStream(fileId: string, rangeHeader?: string): Promise<Response> {
+  const headers: Record<string, string> = {
+    "User-Agent": "Mozilla/5.0 (compatible; VideoProxy/1.0)",
+  };
+  if (rangeHeader) headers["Range"] = rangeHeader;
+
+  // Use drive.usercontent.google.com — the CDN endpoint used by Google Drive web UI
+  // Works for "Anyone with link" shared files without OAuth
+  const url = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&authuser=0&confirm=t`;
+  const res = await fetch(url, { headers });
+
+  // If we get HTML back (virus scan warning for large files), parse the confirm token
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("text/html")) {
+    const html = await res.text();
+
+    // Try extracting uuid token (newer Google Drive confirmation flow)
+    const uuidMatch = html.match(/name="uuid"\s+value="([^"]+)"/);
+    if (uuidMatch) {
+      const confirmUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download&authuser=0&confirm=t&uuid=${uuidMatch[1]}`;
+      return fetch(confirmUrl, { headers });
+    }
+
+    // Fallback: extract any confirm token from the page
+    const confirmMatch = html.match(/confirm=([^&"]+)/);
+    if (confirmMatch) {
+      const confirmUrl = `https://drive.google.com/uc?id=${fileId}&export=download&confirm=${confirmMatch[1]}`;
+      return fetch(confirmUrl, { headers });
+    }
+
+    // Can't resolve confirmation — return a synthetic 403
+    return new Response("Confirmation required", { status: 403 });
   }
 
+  return res;
+}
+
+router.get("/stream/:fileId", async (req, res) => {
   const { fileId } = req.params;
   if (!fileId || !/^[a-zA-Z0-9_-]+$/.test(fileId)) {
     res.status(400).json({ error: "Invalid file ID" });
@@ -126,21 +151,11 @@ router.get("/stream/:fileId", async (req, res) => {
 
   try {
     const rangeHeader = req.headers["range"];
-    const driveUrl = `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media&key=${apiKey}`;
-
-    const headers: Record<string, string> = {};
-    if (rangeHeader) {
-      headers["Range"] = rangeHeader;
-    }
-
-    const driveRes = await fetch(driveUrl, { headers });
+    const driveRes = await fetchDriveStream(fileId, rangeHeader);
 
     if (!driveRes.ok && driveRes.status !== 206) {
-      if (driveRes.status === 403 || driveRes.status === 404) {
-        res.status(driveRes.status).json({ error: "File not accessible" });
-        return;
-      }
-      res.status(driveRes.status).end();
+      logger.warn({ fileId, status: driveRes.status }, "Drive stream failed");
+      res.status(driveRes.status === 404 ? 404 : 403).json({ error: "File not accessible" });
       return;
     }
 
@@ -156,10 +171,7 @@ router.get("/stream/:fileId", async (req, res) => {
     if (contentRange) res.set("Content-Range", contentRange);
     res.set("Cache-Control", "public, max-age=3600");
 
-    if (!driveRes.body) {
-      res.end();
-      return;
-    }
+    if (!driveRes.body) { res.end(); return; }
 
     const reader = driveRes.body.getReader();
     const pump = async () => {
@@ -180,9 +192,7 @@ router.get("/stream/:fileId", async (req, res) => {
     pump();
   } catch (err) {
     logger.error({ err }, "Stream error");
-    if (!res.headersSent) {
-      res.status(500).json({ error: "Stream failed" });
-    }
+    if (!res.headersSent) res.status(500).json({ error: "Stream failed" });
   }
 });
 
