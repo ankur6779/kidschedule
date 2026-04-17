@@ -1,7 +1,7 @@
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey, useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight, MessageCircleHeart } from "lucide-react";
+import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight } from "lucide-react";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { AmyIcon } from "@/components/amy-icon";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -235,69 +235,6 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
   );
 }
 
-// ─── Goal-Based Cards (TinyPal style) ──────────────────────────────────────
-function GoalCards() {
-  const goals = [
-    { id: "sleep",    emoji: "😴", title: "Better Sleep",      desc: "Bedtime routines & calm rituals", grad: "from-indigo-100 to-blue-100",  ring: "border-indigo-200",  text: "text-indigo-900" },
-    { id: "screen",   emoji: "📱", title: "Less Screen Time",  desc: "Healthy limits without battles",  grad: "from-emerald-100 to-teal-100", ring: "border-emerald-200", text: "text-emerald-900" },
-    { id: "eating",   emoji: "🍽️", title: "Better Eating",     desc: "Picky-eater wins & nutrition",    grad: "from-orange-100 to-amber-100", ring: "border-orange-200",  text: "text-orange-900" },
-    { id: "emotions", emoji: "❤️", title: "Emotional Control", desc: "Tantrum-free, calmer days",       grad: "from-rose-100 to-pink-100",    ring: "border-rose-200",    text: "text-rose-900" },
-  ];
-  return (
-    <div className="-mx-1">
-      <div className="flex items-center justify-between px-1 mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Goals you can work on</p>
-      </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
-        {goals.map((g, i) => (
-          <Link key={g.id} href="/parenting-hub">
-            <div
-              className={`shrink-0 snap-start w-[200px] sm:w-[220px] rounded-3xl border-2 ${g.ring} bg-gradient-to-br ${g.grad} p-4 transition-all hover:scale-[1.03] hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-bottom-2 duration-500`}
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <div className="text-3xl mb-2">{g.emoji}</div>
-              <p className={`font-black text-sm leading-tight ${g.text}`}>{g.title}</p>
-              <p className="text-[11px] text-foreground/60 mt-1 leading-snug">{g.desc}</p>
-              <div className={`mt-3 inline-flex items-center gap-1 text-[11px] font-bold ${g.text}`}>
-                Explore <ArrowRight className="h-3 w-3" />
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Need Help Today? (Emotional Support) ──────────────────────────────────
-function NeedHelpCard() {
-  const helps = [
-    { emoji: "😫", label: "Not listening",  bg: "bg-rose-100 border-rose-200 text-rose-900 hover:bg-rose-200" },
-    { emoji: "😴", label: "Sleep issue",    bg: "bg-indigo-100 border-indigo-200 text-indigo-900 hover:bg-indigo-200" },
-    { emoji: "🍽️", label: "Eating problem", bg: "bg-orange-100 border-orange-200 text-orange-900 hover:bg-orange-200" },
-  ];
-  return (
-    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
-      <CardContent className="p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <MessageCircleHeart className="h-5 w-5 text-rose-500" />
-          <h3 className="font-quicksand font-black text-base">Need help today?</h3>
-        </div>
-        <p className="text-xs text-foreground/60 mb-3">Tap a topic to chat with Amy AI 💬</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {helps.map((h) => (
-            <Link key={h.label} href="/assistant">
-              <button className={`w-full text-left rounded-2xl border-2 ${h.bg} px-3 py-3 font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2`}>
-                <span className="text-xl">{h.emoji}</span>
-                <span className="leading-tight">{h.label}</span>
-              </button>
-            </Link>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
 
 // ─── Rewards Card ───────────────────────────────────────────────────────────
 function RewardsCard({ streak }: { streak: number }) {
@@ -745,12 +682,6 @@ export default function Dashboard() {
           </Card>
         </Link>
       </div>
-
-      {/* ── Goal-Based Cards (TinyPal style) ────────────────────── */}
-      <GoalCards />
-
-      {/* ── Need Help Today? (Emotional Support) ────────────────── */}
-      <NeedHelpCard />
 
       {/* ── Summary Stats — softer pastel ───────────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
