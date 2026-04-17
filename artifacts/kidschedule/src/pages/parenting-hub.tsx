@@ -18,6 +18,8 @@ import { InfantSleepTracker } from "@/components/infant-sleep-tracker";
 import { BabySleepAssistant } from "@/components/baby-sleep-assistant";
 import { AmazingFacts } from "@/components/amazing-facts";
 import { DailyKidsActivity } from "@/components/daily-kids-activity";
+import { ArtCraftReels } from "@/components/art-craft-reels";
+import { PrintableWorksheets } from "@/components/printable-worksheets";
 import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
@@ -240,6 +242,12 @@ function ActivitiesSection({ ageGroup, effectiveChild, totalAgeMonths }: Activit
           <AmazingFacts childName={effectiveChild.name} ageGroup={ageGroup} />
         </>
       )}
+
+      {/* ── Google Drive: Art & Craft Reels ───────────────────── */}
+      <ArtCraftReels />
+
+      {/* ── Google Drive: Printable Worksheets ────────────────── */}
+      <PrintableWorksheets childAgeMonths={totalAgeMonths} />
     </div>
   );
 }

@@ -508,28 +508,6 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
         </p>
       </div>
 
-      {/* ── Worksheets ─────────────────────────────────────────── */}
-      <SectionBlock emoji="📄" title="Printable Worksheets" subtitle="Preview inside app · Download & print">
-        <div className="grid grid-cols-2 gap-3">
-          {daily.ws.map(w => (
-            <WorksheetCard key={w.id} item={w} done={done.has(w.id)} saved={saved.has(w.id)}
-              onDone={() => toggleDone(w.id)} onSave={() => toggleSaved(w.id)}
-              onPreview={() => openModal({ id: w.id, title: w.title, emoji: w.emoji, desc: `A fun ${w.subject} worksheet for your child — print it, trace it, and learn together! 📝`, embedUrl: toEmbedUrl(w.fileUrl), downloadUrl: w.fileUrl, kind: "worksheet" })} />
-          ))}
-        </div>
-      </SectionBlock>
-
-      {/* ── Art & Craft Reels ──────────────────────────────────── */}
-      <SectionBlock emoji="🎥" title="Art & Craft Reels" subtitle="Watch inside app · Create · Have fun">
-        <div className="grid grid-cols-2 gap-3">
-          {daily.rs.map(r => (
-            <ReelCard key={r.id} item={r} done={done.has(r.id)} saved={saved.has(r.id)}
-              onDone={() => toggleDone(r.id)} onSave={() => toggleSaved(r.id)}
-              onPreview={() => openModal({ id: r.id, title: r.title, emoji: r.emoji, desc: `A creative art & craft video to watch and make together. Duration: ${r.duration} 🎨`, embedUrl: toEmbedUrl(r.videoUrl), downloadUrl: r.videoUrl, kind: "reel" })} />
-          ))}
-        </div>
-      </SectionBlock>
-
       {/* ── Origami ────────────────────────────────────────────── */}
       <SectionBlock emoji="🧩" title="Origami Activity" subtitle="Paper folding — zero mess, max fun!">
         <div className="grid grid-cols-2 gap-3">
