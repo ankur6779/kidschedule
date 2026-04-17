@@ -77,4 +77,53 @@ Always acknowledge the parent's feelings first before giving advice.`;
   }
 });
 
+// Short-form parenting tip rewrite — strict 30-word output, low cost
+router.post("/ai/rewrite-tip", async (req, res): Promise<void> => {
+  const text = typeof req.body?.text === "string" ? req.body.text.slice(0, 400) : "";
+  const childName = typeof req.body?.childName === "string" ? req.body.childName.slice(0, 60) : "";
+  const language = req.body?.language === "hi" ? "hi" : "en";
+
+  if (!text) {
+    res.status(400).json({ error: "text required" });
+    return;
+  }
+
+  // Hard cap helper — never return more than 30 words
+  const cap = (s: string): string => {
+    const words = s.replace(/\s+/g, " ").trim().split(" ");
+    return words.length <= 30 ? words.join(" ") : words.slice(0, 30).join(" ") + "…";
+  };
+
+  try {
+    const { openai } = await import("@workspace/integrations-openai-ai-server");
+
+    const systemPrompt = language === "hi"
+      ? `आप एक गर्मजोशी भरे पेरेंटिंग कोच हैं। दी गई सलाह को बच्चे के नाम के साथ व्यक्तिगत बनाकर एक छोटे, गर्म वाक्य में बदलें। अधिकतम 30 शब्द। केवल वाक्य लौटाएँ — कोई उद्धरण, कोई व्याख्या नहीं।`
+      : `You are a warm parenting coach. Rewrite the given tip as one short, warm sentence personalized with the child's name. Maximum 30 words. Return only the sentence — no quotes, no explanation.`;
+
+    const userPrompt = childName
+      ? `Child name: ${childName}\nTip: ${text}`
+      : `Tip: ${text}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5.2",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      max_tokens: 80,
+    });
+
+    const raw = completion.choices[0]?.message?.content?.trim() ?? text;
+    const cleaned = raw.replace(/^["'""]|["'""]$/g, "").trim();
+    res.json({ rewritten: cap(cleaned || text) });
+  } catch {
+    // Graceful fallback — return original tip prefixed with name
+    const fallback = childName
+      ? (language === "hi" ? `${childName} के लिए — ${text}` : `For ${childName} — ${text}`)
+      : text;
+    res.json({ rewritten: cap(fallback) });
+  }
+});
+
 export default router;

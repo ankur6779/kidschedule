@@ -13,6 +13,7 @@ import { InfantSleepTracker } from "@/components/infant-sleep-tracker";
 import { BabySleepAssistant } from "@/components/baby-sleep-assistant";
 import { AmazingFacts } from "@/components/amazing-facts";
 import { DailyKidsActivity } from "@/components/daily-kids-activity";
+import { DailyTips } from "@/components/daily-tips";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Category definitions ─────────────────────────────────────
@@ -252,6 +253,11 @@ export default function ParentingHub() {
             Personalised for {effectiveChild.name}
           </span>
         </div>
+      )}
+
+      {/* ── Daily AI-Powered Tips (always at top) ──────────── */}
+      {effectiveChild && ageGroup && (
+        <DailyTips ageGroup={ageGroup} childName={effectiveChild.name} />
       )}
 
       {/* ── Category selector ──────────────────────────────── */}
