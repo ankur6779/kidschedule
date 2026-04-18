@@ -1,0 +1,183 @@
+Implement a complete multilingual system (English, Hindi, Hinglish) across both the website and mobile app.
+
+IMPORTANT:
+- Apply to ALL screens and components
+- Do NOT break UI layout
+- Maintain premium design and readability
+
+----------------------------------------
+
+1. LANGUAGE SUPPORT
+
+Add 3 languages:
+
+- English (default)
+- Hindi (Devanagari script)
+- Hinglish (Roman Hindi)
+
+----------------------------------------
+
+2. SETUP (GLOBAL I18N SYSTEM)
+
+For Web (React):
+- Use i18next + react-i18next
+
+For Mobile (Expo):
+- Use expo-localization + i18next
+
+Create language files:
+
+/locales/en.json
+/locales/hi.json
+/locales/hinglish.json
+
+----------------------------------------
+
+3. TRANSLATION STRUCTURE
+
+Example:
+
+en.json
+{
+  "welcome": "Welcome",
+  "routine": "Routine",
+  "parenting_hub": "Parenting Hub"
+}
+
+hi.json
+{
+  "welcome": "स्वागत है",
+  "routine": "दिनचर्या",
+  "parenting_hub": "पेरेंटिंग हब"
+}
+
+hinglish.json
+{
+  "welcome": "Welcome",
+  "routine": "Routine",
+  "parenting_hub": "Parenting Hub"
+}
+
+----------------------------------------
+
+4. APPLY TO ALL UI
+
+Convert ALL static text into translation keys:
+
+- Headers
+- Buttons
+- Labels
+- Navigation tabs
+- Forms
+- Error messages
+- Empty states
+
+----------------------------------------
+
+5. LANGUAGE SWITCHER UI
+
+Add language selector:
+
+OPTIONS:
+
+- Dropdown OR toggle
+- Place in header or settings
+
+Options:
+- English
+- हिंदी
+- Hinglish
+
+----------------------------------------
+
+6. AUTO LANGUAGE DETECTION
+
+- Detect device language on first launch
+- Set default language automatically
+- Allow manual override
+
+----------------------------------------
+
+7. PERSIST USER PREFERENCE
+
+- Store selected language:
+  - Web → localStorage
+  - App → AsyncStorage
+
+----------------------------------------
+
+8. HINGLISH UX (IMPORTANT)
+
+- Use simple conversational tone
+
+Example:
+- "Start Routine" → "Routine start karo"
+- "Add Child" → "Child add karo"
+
+----------------------------------------
+
+9. FONT SUPPORT
+
+Ensure proper fonts:
+
+- Hindi: Noto Sans Devanagari
+- English/Hinglish: Inter / System font
+
+----------------------------------------
+
+10. UI ADAPTATION
+
+Handle text expansion:
+
+- Flexible layouts
+- No text clipping
+- Proper line height
+
+----------------------------------------
+
+11. CONTENT TRANSLATION
+
+For Parenting Hub & Articles:
+
+- Translate all content
+- Maintain meaning (not literal translation)
+
+----------------------------------------
+
+12. AI RESPONSE LANGUAGE
+
+Amy AI should respond in selected language:
+
+- English → English
+- Hindi → Hindi
+- Hinglish → Hinglish
+
+----------------------------------------
+
+13. PERFORMANCE
+
+- Lazy load translation files
+- Avoid unnecessary re-renders
+
+----------------------------------------
+
+14. CONSISTENCY
+
+- Same keys across web + app
+- Same wording everywhere
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT hardcode text
+- Do NOT mix languages randomly
+- Keep UX clean and readable
+
+----------------------------------------
+
+OUTPUT:
+
+- i18n setup (web + app)
+- Translation files
+- Updated components

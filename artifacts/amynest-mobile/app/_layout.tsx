@@ -13,6 +13,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
 

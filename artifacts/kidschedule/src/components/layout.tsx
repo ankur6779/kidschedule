@@ -9,9 +9,12 @@ import { BrandLogo } from "@/components/brand-logo";
 import { AmyFab } from "@/components/amy-fab";
 import { AmyIcon } from "@/components/amy-icon";
 import { useTheme } from "@/contexts/theme-context";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
   const { mode, toggleTheme } = useTheme();
+  const { t } = useTranslation();
   const isDark = mode === "dark";
   return (
     <button
@@ -24,7 +27,7 @@ function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
         {isDark
           ? <Moon className="h-5 w-5 text-violet-400" />
           : <Sun className="h-5 w-5 text-amber-500" />}
-        <span>{isDark ? "Dark mode" : "Light mode"}</span>
+        <span>{isDark ? t("nav.dark_mode") : t("nav.light_mode")}</span>
       </span>
       <span
         className={`relative h-6 w-11 rounded-full border transition-colors ${
@@ -44,29 +47,30 @@ function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
 }
 
 const NAV_ITEMS = [
-  { href: "/dashboard",     label: "Dashboard",     icon: Home },
-  { href: "/parenting-hub", label: "Parenting Hub", icon: BookOpen },
-  { href: "/amy-coach",     label: "Amy Coach",     icon: Brain },
-  { href: "/children",      label: "Children",      icon: Users },
-  { href: "/routines",      label: "Routines",      icon: Calendar },
-  { href: "/progress",      label: "Progress",      icon: TrendingUp },
-  { href: "/behavior",      label: "Behavior",      icon: Star },
-  { href: "/assistant",     label: "Amy AI",        icon: Bot },
-  { href: "/babysitters",   label: "Babysitters",   icon: Baby },
-  { href: "/parent-profile",label: "My Profile",    icon: UserCircle },
+  { href: "/dashboard",     labelKey: "nav.dashboard",     icon: Home },
+  { href: "/parenting-hub", labelKey: "nav.parenting_hub", icon: BookOpen },
+  { href: "/amy-coach",     labelKey: "nav.amy_coach",     icon: Brain },
+  { href: "/children",      labelKey: "nav.children",      icon: Users },
+  { href: "/routines",      labelKey: "nav.routines",      icon: Calendar },
+  { href: "/progress",      labelKey: "nav.progress",      icon: TrendingUp },
+  { href: "/behavior",      labelKey: "nav.behavior",      icon: Star },
+  { href: "/assistant",     labelKey: "nav.amy_ai",        icon: Bot },
+  { href: "/babysitters",   labelKey: "nav.babysitters",   icon: Baby },
+  { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
 ];
 
 const BOTTOM_NAV_ITEMS = [
-  { href: "/dashboard",     label: "Dashboard", icon: Home,     center: false },
-  { href: "/routines",      label: "Routine",   icon: Calendar, center: false },
-  { href: "/amy-coach",     label: "Amy Coach", icon: Brain,    center: true  },
-  { href: "/parenting-hub", label: "Hub",       icon: BookOpen, center: false },
+  { href: "/dashboard",     labelKey: "nav.dashboard",     icon: Home,     center: false },
+  { href: "/routines",      labelKey: "nav.routines",      icon: Calendar, center: false },
+  { href: "/amy-coach",     labelKey: "nav.amy_coach",     icon: Brain,    center: true  },
+  { href: "/parenting-hub", labelKey: "nav.parenting_hub", icon: BookOpen, center: false },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const initials = user
@@ -88,6 +92,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <BrandLogo size="sm" showTagline={false} />
           <AmyIcon size={28} bounce />
         </div>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher compact />
         <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsSidebarOpen(true)}>
@@ -123,7 +129,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               ))}
               <div className="mt-2 pt-2 border-t">
@@ -135,10 +141,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 mt-4 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <LogOut className="h-5 w-5" />
-              Sign out
+              {t("nav.sign_out")}
             </button>
           </SheetContent>
         </Sheet>
+        </div>
       </header>
 
       <div className="flex flex-1">
@@ -147,6 +154,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex h-20 items-center justify-between border-b px-5 shadow-sm">
             <BrandLogo size="md" showTagline={true} />
             <AmyIcon size={32} bounce />
+          </div>
+          <div className="px-4 pt-3">
+            <LanguageSwitcher />
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-4">
             {NAV_ITEMS.map((item) => (
@@ -160,7 +170,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             ))}
             <div className="mt-2 pt-2 border-t">
@@ -189,7 +199,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
             >
               <LogOut className="h-4 w-4" />
-              Sign out
+              {t("nav.sign_out")}
             </button>
           </div>
         </aside>
@@ -223,7 +233,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <item.icon className="h-7 w-7" />
                   </div>
                   <span className={`mt-1 text-[10px] font-semibold ${isActive ? "text-indigo-300" : "text-slate-300"}`}>
-                    {item.label}
+                    {t(item.labelKey)}
                   </span>
                 </Link>
               );
@@ -238,7 +248,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <item.icon className={`h-5 w-5 ${isActive ? "fill-indigo-400/15" : ""}`} />
-                <span className="text-[11px] font-medium leading-none">{item.label}</span>
+                <span className="text-[11px] font-medium leading-none">{t(item.labelKey)}</span>
                 {isActive && (
                   <span className="absolute bottom-1 h-1.5 w-1.5 rounded-full bg-indigo-400" />
                 )}
