@@ -145,16 +145,23 @@ function useOnboardingStatus() {
   return useQuery({
     queryKey: ["onboarding-status"],
     queryFn: async () => {
-      if (localDone) return { onboardingComplete: true };
       const res = await authFetch("/api/onboarding");
-      if (!res.ok) return { onboardingComplete: false };
+      if (!res.ok) {
+        localStorage.removeItem("onboardingComplete");
+        return { onboardingComplete: false };
+      }
       const data = await res.json() as { onboardingComplete: boolean };
-      if (data.onboardingComplete) localStorage.setItem("onboardingComplete", "true");
+      if (data.onboardingComplete) {
+        localStorage.setItem("onboardingComplete", "true");
+      } else {
+        localStorage.removeItem("onboardingComplete");
+      }
       return data;
     },
     enabled: !!isSignedIn,
-    staleTime: localDone ? Infinity : 0,
+    staleTime: 0,
     initialData: localDone ? { onboardingComplete: true } : undefined,
+    initialDataUpdatedAt: 0,
   });
 }
 
