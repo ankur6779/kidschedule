@@ -6,7 +6,7 @@ import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { AmyIcon } from "@/components/amy-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getTotalPoints, getBadges, getRewards, redeemReward, type Reward } from "@/lib/rewards";
 
@@ -331,6 +331,45 @@ function RewardsCard({ streak }: { streak: number }) {
 }
 
 // ─── AI Co-Parent Suggestions ────────────────────────────────────────────────
+// ─── Premium Stat Card ───────────────────────────────────────────────────────
+function PremiumStatCard({
+  label, value, sublabel, icon, gradient, borderColor, textColor, glowShadow, delay = 0,
+}: {
+  label: string; value: number | string; sublabel: string;
+  icon: React.ReactNode; gradient: string; borderColor: string;
+  textColor: string; glowShadow: string; delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.opacity = "0";
+    el.style.transform = "translateY(12px)";
+    const t = setTimeout(() => {
+      el.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+      el.style.opacity = "1";
+      el.style.transform = "translateY(0)";
+    }, delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  return (
+    <div ref={ref} className={`relative rounded-3xl p-4 backdrop-blur-md border overflow-hidden flex flex-col justify-between min-h-[110px] ${gradient} ${borderColor}`}
+      style={{ boxShadow: glowShadow }}>
+      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/3 blur-xl pointer-events-none" />
+      <div className="flex items-center justify-between mb-3">
+        <span className={`text-xs font-bold tracking-wide uppercase ${textColor} opacity-80`}>{label}</span>
+        <span className={`${textColor} opacity-60`}>{icon}</span>
+      </div>
+      <div>
+        <div className={`text-4xl font-black leading-none mb-1 ${textColor}`}>{value}</div>
+        <div className={`text-[10px] font-semibold uppercase tracking-wide ${textColor} opacity-50`}>{sublabel}</div>
+      </div>
+    </div>
+  );
+}
+
 function CoParentCard({ routines, streak }: { routines: Routine[]; streak: number }) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
@@ -367,23 +406,26 @@ function CoParentCard({ routines, streak }: { routines: Routine[]; streak: numbe
   const display = suggestions.slice(0, 3);
 
   return (
-    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
-      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-violet-50/40 to-pink-50/30">
-        <CardTitle className="font-quicksand text-base flex items-center gap-2">
-          <AmyIcon size={24} bounce />
-          Amy AI Suggests
-        </CardTitle>
-        <CardDescription>Caring nudges from Amy 💜</CardDescription>
-      </CardHeader>
-      <CardContent className="p-4 space-y-2.5">
+    <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/20"
+      style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.18) 0%,rgba(236,72,153,0.08) 100%)", boxShadow: "0 0 40px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
+      <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl pointer-events-none"
+        style={{ background: "rgba(139,92,246,0.2)" }} />
+      <div className="p-4 border-b border-white/8">
+        <div className="flex items-center gap-2 mb-0.5">
+          <AmyIcon size={22} bounce />
+          <span className="font-quicksand font-bold text-base text-white">Amy AI Suggests</span>
+        </div>
+        <p className="text-xs text-white/50">Caring nudges from Amy 💜</p>
+      </div>
+      <div className="p-4 space-y-2.5">
         {display.map((s, i) => (
-          <div key={i} className={`flex items-start gap-2.5 p-3 rounded-xl border text-sm ${s.color}`}>
+          <div key={i} className="flex items-start gap-2.5 p-3 rounded-2xl bg-white/5 border border-white/8 text-sm text-white/85">
             <span className="text-base shrink-0 mt-0.5">{s.emoji}</span>
             <p className="leading-snug">{s.text}</p>
           </div>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -401,57 +443,63 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
   const grade = score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
   const gradeColor = score >= 80 ? "text-green-600" : score >= 60 ? "text-blue-600" : score >= 40 ? "text-amber-600" : "text-red-600";
 
+  const ringColor = score >= 80 ? "#22c55e" : score >= 60 ? "#3b82f6" : score >= 40 ? "#f59e0b" : "#ef4444";
+
   return (
-    <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
-      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-green-50/50 to-emerald-50/30">
-        <CardTitle className="font-quicksand text-base flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-green-600" />
-          Your Parent Score
-        </CardTitle>
-        <CardDescription>Based on last 7 days of activity</CardDescription>
-      </CardHeader>
-      <CardContent className="p-4">
+    <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-emerald-400/20"
+      style={{ background: "linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(5,150,105,0.06) 100%)", boxShadow: "0 0 40px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
+      <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full blur-3xl pointer-events-none"
+        style={{ background: "rgba(16,185,129,0.2)" }} />
+      <div className="p-4 border-b border-white/8">
+        <div className="flex items-center gap-2 mb-0.5">
+          <Sparkles className="h-4 w-4 text-emerald-400" />
+          <span className="font-quicksand font-bold text-base text-white">Your Parent Score</span>
+        </div>
+        <p className="text-xs text-white/50">Based on last 7 days of activity</p>
+      </div>
+      <div className="p-4">
         <div className="flex items-center gap-4 mb-4">
           <div className="relative w-20 h-20 shrink-0">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" />
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke={score >= 80 ? "#22c55e" : score >= 60 ? "#3b82f6" : score >= 40 ? "#f59e0b" : "#ef4444"}
-                strokeWidth="3" strokeDasharray={`${score} ${100 - score}`} strokeLinecap="round" />
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke={ringColor}
+                strokeWidth="3" strokeDasharray={`${score} ${100 - score}`} strokeLinecap="round"
+                style={{ filter: `drop-shadow(0 0 6px ${ringColor})` }} />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className={`text-xl font-black ${gradeColor}`}>{grade}</span>
-              <span className="text-[9px] text-muted-foreground font-medium">{score}/100</span>
+              <span className="text-xl font-black text-white">{grade}</span>
+              <span className="text-[9px] text-white/50 font-medium">{score}/100</span>
             </div>
           </div>
           <div className="flex-1 space-y-2">
-            <p className="text-sm font-semibold text-foreground">
-              You're doing better than <span className="text-primary font-black">{percentile}%</span> of parents!
+            <p className="text-sm font-semibold text-white/80">
+              Better than <span className="text-emerald-300 font-black">{percentile}%</span> of parents!
             </p>
             <div className="space-y-1.5">
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-xs text-white/50">
                 <span>Task completion</span>
-                <span className="font-bold text-foreground">{completionRate}%</span>
+                <span className="font-bold text-white/80">{completionRate}%</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-1.5">
-                <div className="bg-primary h-1.5 rounded-full transition-all" style={{ width: `${completionRate}%` }} />
+              <div className="w-full bg-white/10 rounded-full h-1.5">
+                <div className="bg-emerald-400 h-1.5 rounded-full transition-all" style={{ width: `${completionRate}%`, boxShadow: "0 0 6px rgba(52,211,153,0.6)" }} />
               </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="flex justify-between text-xs text-white/50">
                 <span>Days active</span>
-                <span className="font-bold text-foreground">{daysActive}/7</span>
+                <span className="font-bold text-white/80">{daysActive}/7</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-1.5">
-                <div className="bg-accent h-1.5 rounded-full transition-all" style={{ width: `${(daysActive / 7) * 100}%` }} />
+              <div className="w-full bg-white/10 rounded-full h-1.5">
+                <div className="bg-violet-400 h-1.5 rounded-full transition-all" style={{ width: `${(daysActive / 7) * 100}%`, boxShadow: "0 0 6px rgba(167,139,250,0.6)" }} />
               </div>
             </div>
           </div>
         </div>
         {score < 60 && (
-          <p className="text-xs text-muted-foreground bg-muted/50 rounded-xl p-2.5">
-            💡 Tip: Complete at least 5 tasks per day to boost your score this week!
+          <p className="text-xs text-white/50 bg-white/5 rounded-2xl p-2.5 border border-white/8">
+            💡 Complete 5+ tasks per day to boost your score!
           </p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -656,82 +704,67 @@ export default function Dashboard() {
           <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
         </div>
 
-        {/* Streak mini-card — softer pastel */}
+        {/* Streak mini-card — premium glow */}
         <Link href="/progress">
-          <Card className={`rounded-3xl border-none shadow-sm cursor-pointer hover:shadow-md transition-all h-full ${streak >= 3 ? "bg-gradient-to-br from-orange-300 to-rose-400" : streak > 0 ? "bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-orange-100 dark:to-orange-500/20" : "bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border"}`}>
-            <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center min-h-[100px]">
-              <div className={`text-3xl mb-1 ${streak === 0 ? "grayscale opacity-40" : ""}`}>🔥</div>
-              <div className={`font-black text-2xl ${streak >= 3 ? "text-white" : streak > 0 ? "text-orange-700 dark:text-orange-200" : "text-muted-foreground"}`}>
-                {streak}
-              </div>
-              <div className={`text-xs font-bold ${streak >= 3 ? "text-white/85" : streak > 0 ? "text-orange-600" : "text-muted-foreground"}`}>
-                Day Streak
-              </div>
-              <div className={`text-[10px] mt-1 ${streak >= 3 ? "text-white/70" : "text-muted-foreground"}`}>
-                {streak === 0 ? "Start today!" : "Tap for progress"}
-              </div>
-            </CardContent>
-          </Card>
+          <div className={`relative rounded-3xl border overflow-hidden flex flex-col items-center justify-center text-center min-h-[100px] p-4 cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]
+            ${streak >= 3
+              ? "bg-gradient-to-br from-orange-500/30 to-rose-500/20 border-orange-400/30"
+              : streak > 0
+              ? "bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-400/25"
+              : "bg-white/5 border-white/10"}`}
+            style={{ boxShadow: streak >= 3 ? "0 0 40px rgba(251,146,60,0.4), 0 0 80px rgba(251,146,60,0.15)" : streak > 0 ? "0 0 25px rgba(251,191,36,0.25)" : "none" }}>
+            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl pointer-events-none"
+              style={{ background: streak >= 3 ? "rgba(251,146,60,0.3)" : "transparent" }} />
+            <div className={`text-3xl mb-1 ${streak === 0 ? "grayscale opacity-30" : streak >= 3 ? "animate-bounce" : ""}`}>🔥</div>
+            <div className="font-black text-3xl text-white mb-0.5">{streak}</div>
+            <div className="text-xs font-bold text-white/70 uppercase tracking-wide">Day Streak</div>
+            <div className="text-[10px] mt-1 text-white/40">{streak === 0 ? "Start today!" : "Tap for progress"}</div>
+          </div>
         </Link>
       </div>
 
-      {/* ── Summary Stats — softer pastel ───────────────────────── */}
+      {/* ── Summary Stats — premium glass glow ───────────────────── */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         {loadingSummary ? (
-          Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
+          Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-3xl" />)
         ) : (
           <>
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-violet-50 dark:from-violet-500/15 to-purple-50 dark:to-purple-500/15">
-              <CardContent className="p-4 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-violet-700 dark:text-violet-200 font-bold text-xs">Routines</span>
-                  <Calendar className="h-4 w-4 text-violet-500" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-violet-700 dark:text-violet-200">{summary?.routinesGeneratedThisWeek || 0}</span>
-                  <span className="text-[10px] text-violet-500/80">this week</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-emerald-50 dark:from-emerald-500/15 to-teal-50 dark:to-teal-500/15">
-              <CardContent className="p-4 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-700 dark:text-emerald-200 font-bold text-xs">Great Job</span>
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-emerald-700 dark:text-emerald-200">{summary?.positiveBehaviorsToday || 0}</span>
-                  <span className="text-[10px] text-emerald-500/80">today</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-rose-50 dark:from-rose-500/15 to-pink-50 dark:to-pink-500/15">
-              <CardContent className="p-4 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-rose-700 dark:text-rose-200 font-bold text-xs">Challenging</span>
-                  <TrendingDown className="h-4 w-4 text-rose-500" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-rose-700 dark:text-rose-200">{summary?.negativeBehaviorsToday || 0}</span>
-                  <span className="text-[10px] text-rose-500/80">today</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-amber-50 dark:from-amber-500/15 to-orange-50 dark:to-orange-500/15">
-              <CardContent className="p-4 flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-amber-700 dark:text-amber-200 font-bold text-xs">Children</span>
-                  <Users className="h-4 w-4 text-amber-500" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-amber-700 dark:text-amber-200">{summary?.totalChildren || 0}</span>
-                  <span className="text-[10px] text-amber-500/80">total</span>
-                </div>
-              </CardContent>
-            </Card>
+            <PremiumStatCard
+              label="Routines" value={summary?.routinesGeneratedThisWeek || 0} sublabel="this week"
+              icon={<Calendar className="h-4 w-4" />}
+              gradient="bg-gradient-to-br from-violet-500/20 to-purple-500/8"
+              borderColor="border-violet-400/25"
+              textColor="text-violet-200"
+              glowShadow="0 0 30px rgba(167,139,250,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
+              delay={0}
+            />
+            <PremiumStatCard
+              label="Great Job" value={summary?.positiveBehaviorsToday || 0} sublabel="today"
+              icon={<TrendingUp className="h-4 w-4" />}
+              gradient="bg-gradient-to-br from-emerald-500/20 to-teal-500/8"
+              borderColor="border-emerald-400/25"
+              textColor="text-emerald-200"
+              glowShadow="0 0 30px rgba(52,211,153,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
+              delay={80}
+            />
+            <PremiumStatCard
+              label="Challenging" value={summary?.negativeBehaviorsToday || 0} sublabel="today"
+              icon={<TrendingDown className="h-4 w-4" />}
+              gradient="bg-gradient-to-br from-rose-500/20 to-pink-500/8"
+              borderColor="border-rose-400/25"
+              textColor="text-rose-200"
+              glowShadow="0 0 30px rgba(251,113,133,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
+              delay={160}
+            />
+            <PremiumStatCard
+              label="Children" value={summary?.totalChildren || 0} sublabel="total"
+              icon={<Users className="h-4 w-4" />}
+              gradient="bg-gradient-to-br from-amber-500/20 to-orange-500/8"
+              borderColor="border-amber-400/25"
+              textColor="text-amber-200"
+              glowShadow="0 0 30px rgba(251,191,36,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
+              delay={240}
+            />
           </>
         )}
       </div>
