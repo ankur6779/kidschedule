@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(168,85,247,0.45)",
     opacity: 0.7,
   },
-  bigLogoImg: { width: 144, height: 144, borderRadius: 28 },
+  bigLogoImg: { width: 144, height: 144, borderRadius: 999 },
 
   /* Headline */
   title: {
