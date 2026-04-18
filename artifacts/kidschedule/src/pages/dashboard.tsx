@@ -105,7 +105,7 @@ function ChildrenStrip({ children }: { children: any[] }) {
                 style={{ animationDelay: `${i * 80}ms` }}
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-white shadow-sm flex items-center justify-center text-2xl shrink-0">
+                  <div className="h-12 w-12 rounded-2xl bg-white dark:bg-white/10 shadow-sm flex items-center justify-center text-2xl shrink-0">
                     {info.emoji}
                   </div>
                   <div className="min-w-0">
@@ -186,7 +186,7 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
   }
 
   return (
-    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-white">
+    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-white dark:bg-white/5">
       <CardHeader className="pb-3 bg-gradient-to-r from-violet-50 dark:from-violet-500/15 to-pink-50 dark:to-pink-500/15">
         <div className="flex items-center justify-between">
           <CardTitle className="font-quicksand text-base flex items-center gap-2">

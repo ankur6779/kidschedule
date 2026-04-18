@@ -463,7 +463,7 @@ function TiffinSummaryCard({ familyResults }: { familyResults: FamilyResult[] })
       </div>
       <div className="space-y-4">
         {tiffinData.map(({ child, time, options }) => (
-          <div key={child.id} className="bg-white rounded-2xl p-4 border border-amber-100">
+          <div key={child.id} className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30">
             <div className="flex items-center gap-2 mb-3">
               <div className="bg-amber-100 text-amber-700 rounded-full px-3 py-0.5 text-xs font-bold flex items-center gap-1">
                 <User className="h-3 w-3" />

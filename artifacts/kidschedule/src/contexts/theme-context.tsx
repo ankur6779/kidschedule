@@ -13,14 +13,14 @@ const STORAGE_KEY = "amynest:theme";
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function readInitialMode(): ThemeMode {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored === "light" || stored === "dark") return stored;
   } catch {
     /* ignore */
   }
-  return "light";
+  return "dark";
 }
 
 function applyMode(mode: ThemeMode) {

@@ -175,7 +175,7 @@ const PRESCHOOL_STORIES: Story[] = [
 function DoneExplosion({ visible, message }: { visible: boolean; message: string }) {
   if (!visible) return null;
   return (
-    <div className="absolute inset-0 rounded-3xl flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 pointer-events-none animate-in fade-in duration-200">
+    <div className="absolute inset-0 rounded-3xl flex items-center justify-center bg-white/80 dark:bg-slate-900/70 backdrop-blur-sm z-10 pointer-events-none animate-in fade-in duration-200">
       <div className="text-center animate-in zoom-in-75 duration-300">
         <div className="text-5xl mb-2 animate-bounce">⭐</div>
         <p className="font-quicksand text-xl font-bold text-yellow-600">{message}</p>
@@ -310,7 +310,7 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
         </div>
 
         {/* Story card */}
-        <div className="bg-white rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30 mb-3">
+        <div className="bg-white dark:bg-white/5 rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30 mb-3">
           <div className="flex items-start justify-between mb-3 gap-2">
             <h4 className="font-quicksand font-bold text-lg text-amber-900 dark:text-amber-100">
               {story.emoji} {story.title}
