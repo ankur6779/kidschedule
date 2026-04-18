@@ -8,7 +8,6 @@ import {
   Easing,
   Platform,
   ScrollView,
-  Pressable,
   Image,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
@@ -18,44 +17,25 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LOGO = require("../assets/images/amynest-logo.png");
-const AVATAR = require("../assets/images/amynest-logo-face.png");
 
 const FEATURES = [
   {
-    icon: "sparkles" as const,
+    icon: "bulb" as const,
     title: "AI Coach",
-    tagline: "Your personal parenting expert",
-    color: "#A855F7",
-    bullets: [
-      "10–12 step deep coaching plans for 29+ parenting challenges",
-      "Built on real child psychology & behavioural science",
-      "Personalized for your child's age, temperament & situation",
-      "Continuous guidance until your problem is fully resolved",
-    ],
+    desc: "Deep, personalized step-by-step parenting plans rooted in child psychology — built just for your child.",
+    gradient: ["#A855F7", "#6366F1"] as const,
   },
   {
     icon: "calendar" as const,
     title: "Smart Routines",
-    tagline: "Build lasting habits, effortlessly",
-    color: "#06B6D4",
-    bullets: [
-      "Custom daily routines designed around your family",
-      "Wake-up, study, screen time, sleep — all balanced",
-      "Visual schedules kids actually love to follow",
-      "Track progress & celebrate small wins together",
-    ],
+    desc: "Structured daily routines that help your child build strong, lasting habits effortlessly.",
+    gradient: ["#06B6D4", "#3B82F6"] as const,
   },
   {
     icon: "grid" as const,
     title: "Parent Hub",
-    tagline: "Everything in one beautiful place",
-    color: "#EC4899",
-    bullets: [
-      "Curated activities & expert parenting guides",
-      "Quick AI help — ask anything, anytime",
-      "Behaviour insights & weekly progress reports",
-      "Tips backed by Dr. Becky, Dr. Karp & decades of research",
-    ],
+    desc: "Activities, insights, and curated parenting guidance — everything you need in one place.",
+    gradient: ["#EC4899", "#F97316"] as const,
   },
 ];
 
@@ -68,7 +48,7 @@ export default function WelcomeScreen() {
   const pulseScale = useRef(new Animated.Value(1)).current;
   const pulseOpacity = useRef(new Animated.Value(0.6)).current;
   const fadeIn = useRef(new Animated.Value(0)).current;
-  const slideUp = useRef(new Animated.Value(30)).current;
+  const slideUp = useRef(new Animated.Value(24)).current;
 
   useEffect(() => {
     Animated.loop(
@@ -79,14 +59,14 @@ export default function WelcomeScreen() {
     ).start();
     Animated.loop(
       Animated.sequence([
-        Animated.timing(bounceY, { toValue: -8, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(bounceY, { toValue: -6, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         Animated.timing(bounceY, { toValue: 0, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ]),
     ).start();
     Animated.loop(
       Animated.parallel([
         Animated.sequence([
-          Animated.timing(pulseScale, { toValue: 1.5, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(pulseScale, { toValue: 1.6, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
           Animated.timing(pulseScale, { toValue: 1, duration: 0, useNativeDriver: true }),
         ]),
         Animated.sequence([
@@ -96,8 +76,8 @@ export default function WelcomeScreen() {
       ]),
     ).start();
     Animated.parallel([
-      Animated.timing(fadeIn, { toValue: 1, duration: 700, useNativeDriver: true }),
-      Animated.timing(slideUp, { toValue: 0, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(fadeIn, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.timing(slideUp, { toValue: 0, duration: 800, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -119,9 +99,10 @@ export default function WelcomeScreen() {
     <View style={{ flex: 1 }}>
       <LinearGradient
         colors={["#0f0c29", "#302b63", "#24243e"]}
+        locations={[0, 0.55, 1]}
         style={styles.container}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        start={{ x: 0.1, y: 0 }}
+        end={{ x: 0.9, y: 1 }}
       >
         {/* Glow blobs */}
         <View pointerEvents="none" style={styles.blobsContainer}>
@@ -133,94 +114,81 @@ export default function WelcomeScreen() {
         <ScrollView
           contentContainerStyle={[
             styles.scroll,
-            { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 },
+            { paddingTop: insets.top + 8, paddingBottom: insets.bottom + 32 },
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top nav — ULTRA premium brand */}
+          {/* NAV — minimal (matches web) */}
           <View style={styles.nav}>
             <View style={styles.navBrand}>
-              <View style={styles.navLogoWrap}>
-                <View style={styles.navLogoOuterGlow} />
-                <LinearGradient
-                  colors={["#F472B6", "#A855F7", "#6366F1"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.navLogoGradientRing}
-                >
-                  <View style={styles.navLogoInner}>
-                    <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
-                  </View>
-                </LinearGradient>
-              </View>
-
-              <View style={styles.navWordStack}>
-                <View style={styles.navTextRow}>
-                  <Text style={styles.navAmy}>Amy</Text>
-                  <Text style={styles.navNest}>Nest</Text>
-                </View>
-                <LinearGradient
-                  colors={["#F472B6", "#A855F7", "#6366F1"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.navAiBadge}
-                >
-                  <Ionicons name="sparkles" size={9} color="#fff" style={{ marginRight: 3 }} />
-                  <Text style={styles.navBrandAccent}>AI</Text>
-                </LinearGradient>
-              </View>
+              <Image source={LOGO} style={styles.navLogo} resizeMode="contain" />
+              <Text style={styles.navBrandText}>
+                AmyNest <Text style={styles.navBrandAi}>AI</Text>
+              </Text>
             </View>
-
             <Link href="/sign-in" asChild>
-              <TouchableOpacity testID="link-sign-in" activeOpacity={0.8}>
-                <LinearGradient
-                  colors={["rgba(168,85,247,0.25)", "rgba(99,102,241,0.18)"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.navSignInBtn}
-                >
-                  <Text style={styles.navSignIn}>Sign in</Text>
-                  <Ionicons name="arrow-forward" size={12} color="#E9E7FF" style={{ marginLeft: 4 }} />
-                </LinearGradient>
+              <TouchableOpacity testID="link-sign-in" activeOpacity={0.7}>
+                <Text style={styles.navSignIn}>Sign in</Text>
               </TouchableOpacity>
             </Link>
           </View>
-          {/* gradient separator */}
-          <LinearGradient
-            colors={["transparent", "rgba(168,85,247,0.4)", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.navSeparator}
-          />
 
+          {/* HERO */}
           <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
-            {/* Badge */}
+            {/* Glass badge */}
             <View style={styles.badge}>
               <Ionicons name="sparkles" size={12} color="#C4B5FD" />
               <Text style={styles.badgeText}>AI-Powered Parenting Coach</Text>
             </View>
 
-            {/* BIG round logo in center */}
-            <Animated.View style={[styles.bigLogoWrap, { transform: [{ translateY: floatY }] }]}>
-              <View style={styles.bigLogoGlow} />
-              <View style={styles.bigLogoCircle}>
-                <Image source={LOGO} style={styles.bigLogoImg} resizeMode="cover" />
-              </View>
-            </Animated.View>
+            {/* Logo + Mascot row */}
+            <View style={styles.logoMascotRow}>
+              {/* Big floating logo */}
+              <Animated.View style={[styles.bigLogoWrap, { transform: [{ translateY: floatY }] }]}>
+                <View style={styles.bigLogoGlow} />
+                <Image source={LOGO} style={styles.bigLogoImg} resizeMode="contain" />
+              </Animated.View>
+
+              {/* Amy mascot — clickable */}
+              <TouchableOpacity onPress={handleMascot} activeOpacity={0.85} testID="link-amy-mascot">
+                <View style={styles.mascotWrap}>
+                  <Animated.View
+                    pointerEvents="none"
+                    style={[
+                      styles.mascotPulse,
+                      { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
+                    ]}
+                  />
+                  <Animated.View style={[{ transform: [{ translateY: bounceY }] }]}>
+                    <LinearGradient
+                      colors={["#FFFFFF", "#E0E7FF"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.mascotCircle}
+                    >
+                      <Text style={styles.mascotEmoji}>🤖</Text>
+                    </LinearGradient>
+                  </Animated.View>
+                  <View style={styles.mascotTooltip}>
+                    <Text style={styles.mascotTooltipText}>💬 Talk to Amy AI</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </View>
 
             {/* Headline */}
             <Text style={styles.title}>
-              Where Smart{"\n"}
+              Where Smart {""}
               <Text style={styles.titleAccent}>Parenting</Text> Begins
             </Text>
 
             {/* Subtext */}
             <Text style={styles.subtitle}>
-              Step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
+              Get step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
             </Text>
 
             {/* Primary CTA */}
-            <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-hero-cta">
+            <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-hero-cta" style={styles.ctaWrap}>
               <LinearGradient
                 colors={["#A855F7", "#EC4899"]}
                 start={{ x: 0, y: 0 }}
@@ -235,370 +203,349 @@ export default function WelcomeScreen() {
             <Text style={styles.smallNote}>✨ Free to start · No credit card required</Text>
           </Animated.View>
 
-          {/* Features — detailed */}
+          {/* FEATURES */}
           <View style={styles.featuresWrap}>
-            <Text style={styles.sectionTitle}>Everything you need to{"\n"}parent smarter</Text>
+            <Text style={styles.sectionTitle}>Everything you need to parent smarter</Text>
             <Text style={styles.sectionSub}>
-              Three powerful tools, built around real child psychology — designed to make your parenting journey easier, calmer, and more confident.
+              Three powerful tools, one beautifully simple app — built around your family.
             </Text>
 
             {FEATURES.map((f) => (
-              <View key={f.title} style={[styles.featureCard, { borderColor: `${f.color}40` }]}>
-                <View style={styles.featureHeader}>
-                  <View style={[styles.featureIcon, { backgroundColor: `${f.color}25` }]}>
-                    <Ionicons name={f.icon} size={24} color={f.color} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.featureTitle}>{f.title}</Text>
-                    <Text style={[styles.featureTagline, { color: f.color }]}>{f.tagline}</Text>
-                  </View>
-                </View>
-                <View style={styles.bulletList}>
-                  {f.bullets.map((b) => (
-                    <View key={b} style={styles.bulletRow}>
-                      <View style={[styles.bulletDot, { backgroundColor: f.color }]} />
-                      <Text style={styles.bulletText}>{b}</Text>
-                    </View>
-                  ))}
-                </View>
+              <View key={f.title} style={styles.featureCard}>
+                <LinearGradient
+                  colors={f.gradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.featureIcon}
+                >
+                  <Ionicons name={f.icon} size={24} color="#fff" />
+                </LinearGradient>
+                <Text style={styles.featureTitle}>{f.title}</Text>
+                <Text style={styles.featureDesc}>{f.desc}</Text>
               </View>
             ))}
           </View>
 
-          {/* Final CTA */}
+          {/* FINAL CTA */}
           <View style={styles.finalCtaCard}>
-            <View style={styles.finalIconBox}>
-              <Ionicons name="rocket" size={28} color="#fff" />
-            </View>
-            <Text style={styles.finalTitle}>
-              Ready to be a more{"\n"}confident parent?
+            <LinearGradient
+              colors={["#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.finalCtaIcon}
+            >
+              <Ionicons name="chatbubble-ellipses" size={28} color="#fff" />
+            </LinearGradient>
+            <Text style={styles.finalCtaTitle}>Ready to start your parenting journey?</Text>
+            <Text style={styles.finalCtaSub}>
+              Join AmyNest AI and get a personalized parenting plan in minutes — completely free.
             </Text>
-            <Text style={styles.finalSub}>
-              Join AmyNest AI today — get your first personalized plan in under 2 minutes. Completely free, no credit card.
-            </Text>
-            <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-final-cta">
+            <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-final-cta" style={styles.ctaWrap}>
               <LinearGradient
                 colors={["#A855F7", "#EC4899"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={[styles.cta, { paddingHorizontal: 36 }]}
+                style={styles.cta}
               >
                 <Text style={styles.ctaText}>Start Parenting Smarter</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
-            <View style={styles.trustRow}>
-              <View style={styles.trustItem}>
-                <Ionicons name="shield-checkmark" size={14} color="#10B981" />
-                <Text style={styles.trustText}>Privacy-first</Text>
-              </View>
-              <View style={styles.trustItem}>
-                <Ionicons name="flash" size={14} color="#F59E0B" />
-                <Text style={styles.trustText}>Instant plans</Text>
-              </View>
-              <View style={styles.trustItem}>
-                <Ionicons name="heart" size={14} color="#EC4899" />
-                <Text style={styles.trustText}>Loved by parents</Text>
-              </View>
-            </View>
           </View>
 
-          {/* Footer */}
+          {/* FOOTER */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Where Smart Parenting Begins</Text>
+            <View style={styles.footerBrand}>
+              <Image source={LOGO} style={styles.footerLogo} resizeMode="contain" />
+              <Text style={styles.footerBrandText}>
+                AmyNest <Text style={styles.navBrandAi}>AI</Text>
+              </Text>
+            </View>
+            <Text style={styles.footerTag}>Where Smart Parenting Begins</Text>
           </View>
         </ScrollView>
       </LinearGradient>
-
-      {/* Floating Amy Mascot — bottom right, fixed */}
-      <View
-        pointerEvents="box-none"
-        style={[styles.mascotFloater, { bottom: insets.bottom + 20 }]}
-      >
-        <Pressable onPress={handleMascot} testID="link-mascot">
-          <View style={styles.mascotWrap}>
-            <Animated.View
-              pointerEvents="none"
-              style={[
-                styles.mascotPulse,
-                { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
-              ]}
-            />
-            <Animated.View style={{ transform: [{ translateY: bounceY }] }}>
-              <LinearGradient
-                colors={["#A855F7", "#EC4899"]}
-                style={styles.mascotBox}
-              >
-                <Image source={AVATAR} style={styles.mascotAvatar} resizeMode="cover" />
-                <View style={styles.mascotBadge}>
-                  <Text style={styles.mascotBadgeText}>AI</Text>
-                </View>
-              </LinearGradient>
-            </Animated.View>
-            <View style={styles.tooltip}>
-              <Text style={styles.tooltipText}>💬 Talk to Amy</Text>
-            </View>
-          </View>
-        </Pressable>
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  /* Glow blobs */
   blobsContainer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
   blob: { position: "absolute", borderRadius: 9999 },
-  blob1: { width: 400, height: 400, top: -100, left: -120, backgroundColor: "rgba(168,85,247,0.25)" },
-  blob2: { width: 380, height: 380, top: 280, right: -140, backgroundColor: "rgba(59,130,246,0.22)" },
-  blob3: { width: 320, height: 320, bottom: -80, left: 40, backgroundColor: "rgba(236,72,153,0.18)" },
+  blob1: { width: 420, height: 420, top: -120, left: -120, backgroundColor: "rgba(168,85,247,0.30)" },
+  blob2: { width: 480, height: 480, top: 280, right: -160, backgroundColor: "rgba(59,130,246,0.25)" },
+  blob3: { width: 360, height: 360, bottom: -60, left: 40, backgroundColor: "rgba(236,72,153,0.20)" },
 
   scroll: { paddingHorizontal: 20 },
 
-  /* nav */
-  nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 0 },
-  navBrand: { flexDirection: "row", alignItems: "center", gap: 12 },
-  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 2 },
-  navTextRow: { flexDirection: "row", alignItems: "center", gap: 1 },
-  navAmy: {
-    color: "#FFFFFF",
-    fontSize: 22,
-    fontFamily: "Inter_800ExtraBold",
-    letterSpacing: -0.5,
-  },
-  navNest: {
-    fontSize: 22,
-    fontFamily: "Inter_800ExtraBold",
-    letterSpacing: -0.5,
-    color: "#34D399",
-  },
-  navTagline: {
-    color: "rgba(196,181,253,0.75)",
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    marginTop: 1,
-  },
-
-  /* gradient ring logo */
-  navLogoWrap: {
-    width: 52, height: 52,
-    alignItems: "center", justifyContent: "center",
-  },
-  navLogoOuterGlow: {
-    position: "absolute",
-    width: 64, height: 64, borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.35)",
-    opacity: 0.9,
-  },
-  navLogoGradientRing: {
-    width: 52, height: 52, borderRadius: 999,
-    padding: 2.5,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#A855F7",
-    shadowOpacity: 0.7,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 10,
-  },
-  navLogoInner: {
-    width: 47, height: 47, borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "#0f0c29",
-    borderWidth: 1.5,
-    borderColor: "#0f0c29",
-  },
-  navLogoImg: { width: 47, height: 47 },
-
-  /* premium AI pill */
-  navAiBadge: {
+  /* NAV (matches web) */
+  nav: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    marginLeft: 6,
-    shadowColor: "#A855F7",
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 5,
+    justifyContent: "space-between",
+    paddingVertical: 12,
   },
-  navBrandAccent: {
+  navBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
+  navLogo: { width: 32, height: 32, borderRadius: 8 },
+  navBrandText: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
     color: "#fff",
-    fontSize: 10,
-    fontFamily: "Inter_800ExtraBold",
-    letterSpacing: 1.6,
+    letterSpacing: -0.3,
+  },
+  navBrandAi: {
+    color: "#A855F7",
+    fontFamily: "Inter_700Bold",
+  },
+  navSignIn: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.7)",
+    fontFamily: "Inter_600SemiBold",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
 
-  /* sign in gradient btn */
-  navSignInBtn: {
+  /* HERO */
+  hero: { alignItems: "center", paddingTop: 32, paddingBottom: 40 },
+  badge: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 999,
+    gap: 6,
     paddingHorizontal: 16,
-    paddingVertical: 9,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: "rgba(196,181,253,0.35)",
-    shadowColor: "#A855F7",
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 5,
+    borderColor: "rgba(255,255,255,0.10)",
+    marginBottom: 28,
   },
-  navSignIn: { color: "#E9E7FF", fontSize: 13, fontFamily: "Inter_700Bold", letterSpacing: 0.3 },
-
-  /* gradient separator under nav */
-  navSeparator: {
-    height: 1,
-    width: "100%",
-    marginTop: 14,
-    marginBottom: 8,
-    opacity: 0.6,
+  badgeText: {
+    color: "rgba(255,255,255,0.80)",
+    fontSize: 11,
+    fontFamily: "Inter_600SemiBold",
   },
 
-  /* hero */
-  hero: { alignItems: "center", marginTop: 16, marginBottom: 32 },
-  badge: {
-    flexDirection: "row", alignItems: "center", gap: 6,
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
-    marginBottom: 24,
+  /* Logo + Mascot row */
+  logoMascotRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 16,
+    marginBottom: 28,
   },
-  badgeText: { color: "rgba(255,255,255,0.85)", fontSize: 11, fontFamily: "Inter_600SemiBold" },
-
-  /* big middle logo */
-  bigLogoWrap: { alignItems: "center", justifyContent: "center", marginBottom: 26 },
+  bigLogoWrap: { width: 144, height: 144, alignItems: "center", justifyContent: "center" },
   bigLogoGlow: {
     position: "absolute",
-    width: 200, height: 200, borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.35)",
-    top: -10,
+    width: 170,
+    height: 170,
+    borderRadius: 999,
+    backgroundColor: "rgba(168,85,247,0.45)",
+    opacity: 0.7,
   },
-  bigLogoCircle: {
-    width: 170, height: 170, borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "#fff",
-    borderWidth: 3, borderColor: "rgba(255,255,255,0.3)",
-    shadowColor: "#A855F7", shadowOpacity: 0.7, shadowRadius: 30, shadowOffset: { width: 0, height: 12 },
-    elevation: 14,
-  },
-  bigLogoImg: { width: 170, height: 170 },
+  bigLogoImg: { width: 144, height: 144, borderRadius: 28 },
 
+  /* Mascot */
+  mascotWrap: { width: 88, height: 88, alignItems: "center", justifyContent: "center" },
+  mascotPulse: {
+    position: "absolute",
+    width: 80,
+    height: 80,
+    borderRadius: 999,
+    backgroundColor: "rgba(168,85,247,0.55)",
+  },
+  mascotCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+  },
+  mascotEmoji: { fontSize: 38 },
+  mascotTooltip: {
+    position: "absolute",
+    bottom: -32,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.95)",
+  },
+  mascotTooltipText: {
+    color: "#0f0c29",
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+  },
+
+  /* Headline */
   title: {
-    fontSize: 34, lineHeight: 40, color: "#fff",
-    fontFamily: "Inter_700Bold", textAlign: "center", marginBottom: 14,
-    letterSpacing: -0.5,
+    color: "#fff",
+    fontSize: 40,
+    lineHeight: 44,
+    fontFamily: "Inter_700Bold",
+    textAlign: "center",
+    letterSpacing: -1,
+    marginBottom: 14,
+    paddingHorizontal: 8,
   },
   titleAccent: { color: "#C4B5FD" },
   subtitle: {
-    fontSize: 15, lineHeight: 22, color: "rgba(255,255,255,0.7)",
-    fontFamily: "Inter_400Regular", textAlign: "center",
-    paddingHorizontal: 8, marginBottom: 28,
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: "center",
+    fontFamily: "Inter_400Regular",
+    paddingHorizontal: 12,
+    marginBottom: 28,
   },
 
+  /* CTA */
+  ctaWrap: { width: "100%", alignItems: "center" },
   cta: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
-    paddingHorizontal: 30, paddingVertical: 16, borderRadius: 18,
-    shadowColor: "#A855F7", shadowOpacity: 0.5, shadowRadius: 20, shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 18,
+    minWidth: 280,
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.5,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 12,
   },
   ctaText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
-  smallNote: { color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 16 },
+  smallNote: {
+    color: "rgba(255,255,255,0.50)",
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+    marginTop: 18,
+    textAlign: "center",
+  },
 
-  /* features */
-  featuresWrap: { marginBottom: 32 },
+  /* FEATURES */
+  featuresWrap: { paddingTop: 12, paddingBottom: 32 },
   sectionTitle: {
-    fontSize: 24, lineHeight: 30, color: "#fff", fontFamily: "Inter_700Bold",
-    textAlign: "center", marginBottom: 10, letterSpacing: -0.3,
+    color: "#fff",
+    fontSize: 26,
+    lineHeight: 32,
+    fontFamily: "Inter_700Bold",
+    textAlign: "center",
+    letterSpacing: -0.5,
+    marginBottom: 10,
   },
   sectionSub: {
-    fontSize: 14, lineHeight: 20, color: "rgba(255,255,255,0.65)", fontFamily: "Inter_400Regular",
-    textAlign: "center", marginBottom: 22, paddingHorizontal: 6,
+    color: "rgba(255,255,255,0.60)",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    fontFamily: "Inter_400Regular",
+    marginBottom: 24,
+    paddingHorizontal: 10,
   },
   featureCard: {
-    padding: 18, borderRadius: 22, marginBottom: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 14,
+    gap: 14,
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  featureTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 6,
+  },
+  featureDesc: {
+    color: "rgba(255,255,255,0.65)",
+    fontSize: 13,
+    lineHeight: 20,
+    fontFamily: "Inter_400Regular",
+  },
+
+  /* FINAL CTA */
+  finalCtaCard: {
     backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-  },
-  featureHeader: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 },
-  featureIcon: {
-    width: 48, height: 48, borderRadius: 14,
-    alignItems: "center", justifyContent: "center",
-  },
-  featureTitle: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 2 },
-  featureTagline: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
-  bulletList: { gap: 9, paddingLeft: 4 },
-  bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  bulletDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
-  bulletText: { flex: 1, color: "rgba(255,255,255,0.78)", fontSize: 13, lineHeight: 19, fontFamily: "Inter_400Regular" },
-
-  /* final cta */
-  finalCtaCard: {
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 28,
+    padding: 28,
     alignItems: "center",
-    padding: 28, borderRadius: 28, marginBottom: 24,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    marginTop: 8,
+    marginBottom: 32,
   },
-  finalIconBox: {
-    width: 60, height: 60, borderRadius: 18,
-    backgroundColor: "#A855F7",
-    alignItems: "center", justifyContent: "center",
+  finalCtaIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 18,
-    shadowColor: "#EC4899", shadowOpacity: 0.5, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
-  },
-  finalTitle: {
-    fontSize: 24, lineHeight: 30, color: "#fff", fontFamily: "Inter_700Bold",
-    textAlign: "center", marginBottom: 12, letterSpacing: -0.3,
-  },
-  finalSub: {
-    fontSize: 14, lineHeight: 21, color: "rgba(255,255,255,0.7)",
-    fontFamily: "Inter_400Regular", textAlign: "center", marginBottom: 22, paddingHorizontal: 4,
-  },
-  trustRow: { flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 18, flexWrap: "wrap" },
-  trustItem: { flexDirection: "row", alignItems: "center", gap: 5 },
-  trustText: { color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontFamily: "Inter_600SemiBold" },
-
-  /* footer */
-  footer: { alignItems: "center", paddingTop: 12, paddingBottom: 8, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
-  footerText: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Inter_400Regular" },
-
-  /* floating mascot bottom-right */
-  mascotFloater: {
-    position: "absolute",
-    right: 18,
-    alignItems: "center",
-  },
-  mascotWrap: { alignItems: "center", justifyContent: "center" },
-  mascotPulse: {
-    position: "absolute",
-    width: 80, height: 80, borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.5)",
-  },
-  mascotBox: {
-    width: 64, height: 64, borderRadius: 999,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#A855F7", shadowOpacity: 0.7, shadowRadius: 18, shadowOffset: { width: 0, height: 8 },
+    shadowColor: "#EC4899",
+    shadowOpacity: 0.45,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
     elevation: 10,
-    borderWidth: 2, borderColor: "rgba(255,255,255,0.3)",
   },
-  mascotAvatar: { width: 58, height: 58, borderRadius: 999 },
-  mascotBadge: {
-    position: "absolute",
-    bottom: -4, right: -4,
-    backgroundColor: "#fff",
-    paddingHorizontal: 6, paddingVertical: 2,
-    borderRadius: 8,
-    borderWidth: 2, borderColor: "#A855F7",
+  finalCtaTitle: {
+    color: "#fff",
+    fontSize: 24,
+    lineHeight: 30,
+    fontFamily: "Inter_700Bold",
+    textAlign: "center",
+    letterSpacing: -0.5,
+    marginBottom: 12,
   },
-  mascotBadgeText: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#A855F7" },
-  tooltip: {
-    position: "absolute", bottom: -28,
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.95)",
+  finalCtaSub: {
+    color: "rgba(255,255,255,0.70)",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    fontFamily: "Inter_400Regular",
+    marginBottom: 22,
   },
-  tooltipText: { fontSize: 10, color: "#0f0c29", fontFamily: "Inter_600SemiBold" },
+
+  /* FOOTER */
+  footer: {
+    paddingTop: 22,
+    paddingBottom: 8,
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255,255,255,0.10)",
+    gap: 6,
+  },
+  footerBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
+  footerLogo: { width: 24, height: 24, borderRadius: 6 },
+  footerBrandText: {
+    fontSize: 13,
+    fontFamily: "Inter_700Bold",
+    color: "rgba(255,255,255,0.80)",
+  },
+  footerTag: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.40)",
+    fontFamily: "Inter_500Medium",
+  },
 });

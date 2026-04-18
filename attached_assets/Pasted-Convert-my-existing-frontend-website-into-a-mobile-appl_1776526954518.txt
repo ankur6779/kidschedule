@@ -1,0 +1,112 @@
+Convert my existing frontend website into a mobile application with EXACT SAME UI, UX, colors, spacing, and animations.
+
+IMPORTANT:
+- Do NOT redesign anything
+- Do NOT simplify UI
+- Maintain pixel-perfect consistency
+
+----------------------------------------
+
+TECH STACK:
+
+- Expo (React Native)
+- React Native Reanimated (for animations)
+- React Navigation
+- Optional: React Native Web compatibility
+
+----------------------------------------
+
+GOAL:
+
+Recreate the entire website UI inside a mobile app with:
+
+- Same layout structure
+- Same typography
+- Same color system
+- Same gradients and glow effects
+- Same animations and interactions
+
+----------------------------------------
+
+UI CONVERSION RULES:
+
+1. Convert all Tailwind / CSS styles into React Native styles
+2. Replace div → View, img → Image, button → Pressable
+3. Maintain exact spacing, padding, margins
+4. Recreate gradients using expo-linear-gradient
+5. Recreate blur/glass using expo-blur
+6. Recreate shadows using platform-specific styles
+
+----------------------------------------
+
+ANIMATIONS:
+
+- Convert Framer Motion → React Native Reanimated
+- Maintain:
+  - Fade-in on load
+  - Floating effects
+  - Hover → convert to press feedback
+  - Smooth transitions
+
+----------------------------------------
+
+COMPONENT STRUCTURE:
+
+Create reusable components:
+
+- Header (Amy Nest brand)
+- Hero Section
+- Feature Cards
+- Testimonials
+- CTA Sections
+- Floating "Amy AI" chatbot button
+
+----------------------------------------
+
+CHATBOT BUTTON:
+
+- Floating bottom-right
+- Same avatar design
+- Same glow + pulse animation
+- On press → open chat screen
+
+----------------------------------------
+
+NAVIGATION:
+
+- Convert website sections into screens:
+  - HomeScreen
+  - OnboardingScreen
+  - ChatScreen
+
+----------------------------------------
+
+RESPONSIVENESS:
+
+- Optimize for mobile screens
+- Maintain proportions visually identical
+
+----------------------------------------
+
+DESIGN CONSISTENCY:
+
+- Dark theme (#0B0B1A)
+- Purple/pink gradients
+- Glassmorphism effects
+- Soft glow shadows
+
+----------------------------------------
+
+EXTRA:
+
+- Use absolute positioning where required to match web layout
+- Ensure smooth performance
+- Keep code clean and modular
+
+----------------------------------------
+
+OUTPUT:
+
+- Full working Expo project structure
+- All components separated
+- Clean and production-ready code
