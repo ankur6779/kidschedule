@@ -3,6 +3,7 @@ import {
   ArrowRight, Sparkles, Brain, CheckCircle2, Target,
   TrendingUp, MessageSquareHeart, Zap, Moon, Utensils,
   Tv2, Frown, Ear, Lightbulb, FlaskConical, BookOpen,
+  Calendar, LayoutGrid, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
@@ -57,6 +58,57 @@ const SCIENCE_PILLARS = [
     title: "Real-World Parenting Frameworks",
     desc: "Techniques validated by experts like Dr. Harvey Karp, Dr. Becky Kennedy, and decades of peer-reviewed research.",
     color: "#EC4899",
+  },
+];
+
+const FEATURES = [
+  {
+    icon: Zap,
+    label: "Core Feature",
+    title: "Amy Coach",
+    desc: "Deep, personalized step-by-step plans to solve real parenting challenges. Built on child psychology.",
+    gradient: "linear-gradient(135deg,#6366F1,#A855F7)",
+    bg: "linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 60%,#FDF2F8 100%)",
+    border: "#E0E7FF",
+    color: "#6366F1",
+    highlight: true,
+    href: "/sign-up",
+  },
+  {
+    icon: Calendar,
+    label: null,
+    title: "Smart Daily Routine",
+    desc: "Create structured, personalized routines that help your child build strong, lasting habits.",
+    gradient: "linear-gradient(135deg,#10B981,#059669)",
+    bg: "#F0FDF4",
+    border: "#BBF7D0",
+    color: "#10B981",
+    highlight: false,
+    href: "/sign-up",
+  },
+  {
+    icon: LayoutGrid,
+    label: null,
+    title: "Parent Hub",
+    desc: "Access activities, insights, and curated parenting guidance — everything in one place.",
+    gradient: "linear-gradient(135deg,#F59E0B,#EF4444)",
+    bg: "#FFFBEB",
+    border: "#FDE68A",
+    color: "#F59E0B",
+    highlight: false,
+    href: "/sign-up",
+  },
+  {
+    icon: MessageCircle,
+    label: null,
+    title: "Quick AI Help",
+    desc: "Ask anything about your child and get instant, smart parenting advice — anytime you need it.",
+    gradient: "linear-gradient(135deg,#EC4899,#8B5CF6)",
+    bg: "#FDF2F8",
+    border: "#FBCFE8",
+    color: "#EC4899",
+    highlight: false,
+    href: "/sign-up",
   },
 ];
 
@@ -249,6 +301,93 @@ export default function LandingPage() {
           <p className="text-slate-500 text-base font-medium">
             You're not alone — and you don't have to figure it out yourself.
           </p>
+        </div>
+      </section>
+
+      {/* ── FEATURES OVERVIEW ── */}
+      <section className="px-5 py-16 md:py-20 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 mb-3">
+              Everything You Need for Smarter Parenting
+            </h2>
+            <p className="text-slate-400 text-base max-w-lg mx-auto">
+              One platform. Multiple powerful tools designed for your child.
+            </p>
+          </div>
+
+          {/* Amy Coach — highlighted full-width card */}
+          {(() => {
+            const f = FEATURES[0];
+            const Icon = f.icon;
+            return (
+              <Link href={f.href}>
+                <div
+                  className="rounded-3xl p-7 md:p-9 mb-4 border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-xl group"
+                  style={{ background: f.bg as string, borderColor: f.border }}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-5">
+                    <div className="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-2xl shadow-lg"
+                      style={{ background: f.gradient }}>
+                      <Icon className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h3 className="font-quicksand font-bold text-xl md:text-2xl text-slate-900">{f.title}</h3>
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white"
+                          style={{ background: f.gradient }}>
+                          {f.label}
+                        </span>
+                      </div>
+                      <p className="text-slate-500 text-sm md:text-base leading-relaxed max-w-xl">{f.desc}</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-indigo-400 hidden md:block transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })()}
+
+          {/* Other 3 features — 3-column grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {FEATURES.slice(1).map((f) => {
+              const Icon = f.icon;
+              return (
+                <Link key={f.title} href={f.href}>
+                  <div
+                    className="flex flex-col gap-4 rounded-2xl p-6 border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md h-full"
+                    style={{ background: f.bg as string, borderColor: f.border }}
+                  >
+                    <div className="flex items-center justify-center h-11 w-11 rounded-xl shadow-sm"
+                      style={{ background: f.gradient }}>
+                      <Icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-quicksand font-bold text-base text-slate-900 mb-1.5">{f.title}</h3>
+                      <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Section CTA */}
+          <div className="text-center mt-10">
+            <p className="text-slate-400 text-sm mb-4">
+              Start with Amy Coach and explore more as you grow
+            </p>
+            <Link href="/sign-up">
+              <Button
+                size="lg"
+                className="gap-2 font-semibold px-8"
+                style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
+              >
+                Get Started Free
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
