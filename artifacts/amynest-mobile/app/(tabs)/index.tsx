@@ -14,6 +14,7 @@ import Svg, { Circle } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -565,6 +566,39 @@ const DRAWER_ITEMS: { key: string; label: string; icon: keyof typeof Ionicons.gl
   { key: "profile",     label: "Profile",       icon: "person-outline",        route: "/(tabs)/profile" },
 ];
 
+function ThemeToggleRow() {
+  const { mode, toggleTheme } = useTheme();
+  const isDark = mode === "dark";
+  return (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={toggleTheme}
+      style={{ marginTop: 12, marginBottom: 6 }}
+    >
+      <View style={[styles.drawerItem, { justifyContent: "space-between", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 14, marginTop: 4 }]}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? "#A78BFA" : "#F59E0B"} />
+          <Text style={styles.drawerItemLabel}>{isDark ? "Dark mode" : "Light mode"}</Text>
+        </View>
+        <View style={{
+          width: 42, height: 24, borderRadius: 12,
+          backgroundColor: isDark ? "rgba(123,63,242,0.35)" : "rgba(255,255,255,0.18)",
+          borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
+          padding: 2, justifyContent: "center",
+        }}>
+          <View style={{
+            width: 18, height: 18, borderRadius: 9,
+            backgroundColor: isDark ? "#7B3FF2" : "#F59E0B",
+            transform: [{ translateX: isDark ? 18 : 0 }],
+            shadowColor: isDark ? "#7B3FF2" : "#F59E0B",
+            shadowOpacity: 0.6, shadowRadius: 6,
+          }} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 function SideDrawer({
   open, onClose, activeKey, onNavigate,
 }: { open: boolean; onClose: () => void; activeKey: string; onNavigate: (route: string) => void }) {
@@ -636,6 +670,7 @@ function SideDrawer({
                 </TouchableOpacity>
               );
             })}
+            <ThemeToggleRow />
           </ScrollView>
         </LinearGradient>
       </Animated.View>

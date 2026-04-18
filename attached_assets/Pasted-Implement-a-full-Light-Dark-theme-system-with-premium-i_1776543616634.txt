@@ -1,0 +1,163 @@
+Implement a full Light/Dark theme system with premium interaction effects across the entire app.
+
+IMPORTANT:
+- Light mode = keep current UI unchanged
+- Dark mode = premium purple-based UI
+- Apply glow + animation to ALL interactive elements
+
+----------------------------------------
+
+1. THEME SYSTEM (GLOBAL)
+
+- Create ThemeContext (light / dark)
+- Add toggle function
+- Store preference using AsyncStorage
+- Load saved theme on app start
+
+----------------------------------------
+
+2. LIGHT MODE
+
+- Keep EXACT current UI
+- No changes in colors or layout
+
+----------------------------------------
+
+3. DARK MODE (PREMIUM)
+
+BACKGROUND:
+- Primary: #0B0B1A
+- Secondary: #14142B
+
+CARDS / BLOCKS:
+- Background:
+  rgba(255,255,255,0.05)
+- Border:
+  rgba(255,255,255,0.08)
+
+COLORS:
+- Primary: #7B3FF2 (purple)
+- Accent: #FF4ECD (pink)
+
+TEXT:
+- Primary: #FFFFFF
+- Secondary: rgba(255,255,255,0.6)
+
+----------------------------------------
+
+4. GLOBAL GLOW SYSTEM (VERY IMPORTANT)
+
+Apply to ALL blocks:
+
+- Cards
+- Buttons
+- Navigation tabs
+- List items
+- Inputs
+
+----------------------------------------
+
+5. INTERACTION EFFECT (TOUCH / HOVER)
+
+ON TOUCH (mobile):
+
+- Scale: 0.96
+- Add glow:
+
+  shadowColor: #7B3FF2
+  shadowOpacity: 0.5
+  shadowRadius: 15
+
+- Slight brightness increase
+
+ON RELEASE:
+
+- Smooth return (150–200ms)
+
+----------------------------------------
+
+6. HOVER EFFECT (WEB SUPPORT)
+
+- Soft glow appears
+- Scale: 1.02
+- Smooth transition
+
+----------------------------------------
+
+7. FADE COLOR ANIMATION (PREMIUM FEEL)
+
+When user interacts with a block:
+
+- Background color slightly fades into accent:
+
+  Example:
+  rgba(123,63,242,0.1)
+
+- Smooth transition (200ms)
+
+----------------------------------------
+
+8. LIFT ANIMATION
+
+On touch / hover:
+
+- Slight upward movement:
+
+  transform: translateY(-3px)
+
+- Shadow increases
+
+----------------------------------------
+
+9. CARD BEHAVIOR
+
+- Default: subtle shadow
+- On interaction:
+  - Glow + lift
+  - Slight scale
+
+----------------------------------------
+
+10. CONSISTENCY RULE
+
+- Same glow color across app
+- Same animation timing
+- No harsh or flashy effects
+
+----------------------------------------
+
+11. THEME TOGGLE UI
+
+- Add toggle (Light / Dark)
+- Place in header or settings
+
+----------------------------------------
+
+12. TRANSITION BETWEEN THEMES
+
+- Smooth fade animation (200–300ms)
+- No flicker
+
+----------------------------------------
+
+13. PERFORMANCE
+
+- Use React Native Reanimated
+- Keep 60fps smooth animations
+- Avoid heavy blur on all elements
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT redesign layout
+- Do NOT overuse glow
+- Keep UI clean and premium
+
+----------------------------------------
+
+OUTPUT:
+
+- ThemeContext setup
+- Updated components
+- Reusable GlowWrapper component
