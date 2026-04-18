@@ -4,7 +4,7 @@ import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { useToast } from "@/hooks/use-toast";
 import {
   Sparkles, ArrowLeft, ArrowRight, Loader2, Search,
-  Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark,
+  Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark, Brain,
 } from "lucide-react";
 
 // ─── Goals (categorized) ───────────────────────────────────────────────────
