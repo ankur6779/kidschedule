@@ -240,10 +240,10 @@ function InteractiveCard({ emoji, sectionLabel, title, desc, meta, extra, accent
         </div>
 
         {/* Content */}
-        <div className="bg-white/70 rounded-2xl p-4 border border-white mb-4 min-h-[80px]">
-          <p className={`font-quicksand text-base font-bold ${accent.title} mb-1`}>{title}</p>
-          <p className="text-sm text-foreground/80 leading-relaxed">{desc}</p>
-          {meta && <p className={`text-xs mt-2 font-medium ${accent.badge}`}>{meta}</p>}
+        <div className="bg-white/70 dark:bg-white/5 rounded-2xl p-4 border border-white dark:border-white/10 mb-4 min-h-[80px]">
+          <p className={`font-quicksand text-base font-bold ${accent.title} dark:text-white mb-1`}>{title}</p>
+          <p className="text-sm text-foreground/80 dark:text-white/85 leading-relaxed">{desc}</p>
+          {meta && <p className={`text-xs mt-2 font-medium ${accent.badge} dark:text-white/70`}>{meta}</p>}
           {extra}
         </div>
 
