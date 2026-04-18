@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, FlatList, Platform, ActivityIndicator,
@@ -7,6 +7,8 @@ import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import Svg, { Circle } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
@@ -21,25 +23,42 @@ type DashboardSummary = {
   routinesGeneratedThisWeek: number;
 };
 
-type RoutineItem = { status?: string };
+type RoutineItem = {
+  time: string;
+  activity: string;
+  duration: number;
+  category: string;
+  notes?: string;
+  status?: string;
+};
 
-type RecentRoutine = {
+type Routine = {
   id: number;
   title: string;
   date: string;
   childId: number;
   childName: string;
   items: RoutineItem[];
-  createdAt: string;
 };
 
 type Child = { id: number; name: string; age: number; ageMonths?: number };
 
+type BehaviorStat = {
+  childId: number;
+  childName: string;
+  positive: number;
+  negative: number;
+  neutral: number;
+};
+
+type ParentProfile = { name?: string };
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
 function getGreeting(): string {
   const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h >= 5 && h < 12) return "Good Morning";
+  if (h >= 12 && h < 17) return "Good Afternoon";
+  return "Good Evening";
 }
 
 function formatDate(dateStr: string): string {
@@ -52,278 +71,1004 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-function pct(done: number, total: number): number {
-  return total > 0 ? Math.round(done / total * 100) : 0;
+function formatAge(age: number, ageMonths?: number): string {
+  if (age === 0 && ageMonths) return `${ageMonths} month${ageMonths !== 1 ? "s" : ""}`;
+  return `${age} year${age !== 1 ? "s" : ""}${ageMonths ? ` ${ageMonths}m` : ""}`;
 }
 
+function getAgeGroupInfo(age: number): { emoji: string; bg: string; color: string } {
+  if (age <= 1) return { emoji: "👶", bg: "#FFF1F2", color: "#BE185D" };
+  if (age <= 3) return { emoji: "🧒", bg: "#FEF3C7", color: "#B45309" };
+  if (age <= 6) return { emoji: "🧒", bg: "#DCFCE7", color: "#15803D" };
+  if (age <= 10) return { emoji: "🧑", bg: "#DBEAFE", color: "#1D4ED8" };
+  return { emoji: "🧑‍🎓", bg: "#EDE9FE", color: "#6D28D9" };
+}
+
+function pct(done: number, total: number): number {
+  return total > 0 ? Math.round((done / total) * 100) : 0;
+}
+
+function parseTimeToMinutes(t: string): number {
+  const [timePart, period] = (t ?? "").split(" ");
+  const [hours, minutes] = timePart.split(":").map(Number);
+  let h = hours;
+  if (period === "PM" && hours !== 12) h += 12;
+  if (period === "AM" && hours === 12) h = 0;
+  return h * 60 + (minutes || 0);
+}
+
+function computeStreak(routines: Routine[]): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dateSet = new Set(routines.map((r) => r.date.slice(0, 10)));
+  let streak = 0;
+  while (true) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - streak);
+    const key = d.toISOString().slice(0, 10);
+    if (dateSet.has(key)) streak++;
+    else break;
+  }
+  return streak;
+}
+
+// ─── Hero Greeting ────────────────────────────────────────────────────────
+function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
+  return (
+    <LinearGradient
+      colors={["#FEF3C7", "#FCE7F3", "#EDE9FE"] as const}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.heroGreeting}
+    >
+      <Text style={styles.heroEyebrow}>{getGreeting().toUpperCase()}</Text>
+      <Text style={styles.heroTitle}>
+        👋 Hi{displayName ? `, ${displayName}` : ""}, let's make today easier
+      </Text>
+      <Text style={styles.heroSub}>
+        {hasChildren
+          ? "We've planned your child's day for you ❤️"
+          : "Let's set up your child's first routine 🌟"}
+      </Text>
+    </LinearGradient>
+  );
+}
+
+// ─── Children Strip ───────────────────────────────────────────────────────
+function ChildrenStrip({ children, onPressChild, onAdd }: {
+  children: Child[];
+  onPressChild: (id: number) => void;
+  onAdd: () => void;
+}) {
+  if (children.length === 0) return null;
+  return (
+    <View style={{ marginBottom: 18 }}>
+      <View style={styles.stripHeader}>
+        <Text style={styles.stripEyebrow}>YOUR LITTLE ONES</Text>
+      </View>
+      <FlatList
+        horizontal
+        data={[...children, { id: -1, name: "Add", age: -1 } as Child]}
+        keyExtractor={(c) => String(c.id)}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 10, paddingHorizontal: 2 }}
+        renderItem={({ item: c }) => {
+          if (c.id === -1) {
+            return (
+              <TouchableOpacity style={styles.childAddCard} onPress={onAdd} testID="add-child-chip">
+                <Text style={styles.childAddPlus}>➕</Text>
+                <Text style={styles.childAddText}>Add child</Text>
+              </TouchableOpacity>
+            );
+          }
+          const info = getAgeGroupInfo(c.age);
+          return (
+            <TouchableOpacity
+              style={[styles.childCard, { backgroundColor: info.bg }]}
+              onPress={() => onPressChild(c.id)}
+              testID={`child-card-${c.id}`}
+              activeOpacity={0.85}
+            >
+              <View style={styles.childCardRow}>
+                <View style={styles.childEmojiBubble}>
+                  <Text style={styles.childEmojiText}>{info.emoji}</Text>
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={[styles.childName, { color: info.color }]} numberOfLines={1}>{c.name}</Text>
+                  <Text style={styles.childAge}>{formatAge(c.age, c.ageMonths)}</Text>
+                </View>
+              </View>
+              <Text style={styles.childTagline} numberOfLines={1}>Personalised for {c.name}</Text>
+            </TouchableOpacity>
+          );
+        }}
+      />
+    </View>
+  );
+}
+
+// ─── Now / Next Timeline ──────────────────────────────────────────────────
+function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
+  routines: Routine[];
+  onGenerate: () => void;
+  onOpen: (id: number) => void;
+  onSeeAll: () => void;
+}) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
+
+  if (todayRoutines.length === 0) {
+    return (
+      <LinearGradient colors={["#F0F9FF", "#DBEAFE"] as const} style={styles.timelineEmpty}>
+        <Text style={{ fontSize: 32 }}>🗓️</Text>
+        <Text style={styles.timelineEmptyTitle}>No plan for today yet</Text>
+        <Text style={styles.timelineEmptySub}>Tap below to create today's routine in one tap.</Text>
+        <TouchableOpacity onPress={onGenerate} activeOpacity={0.9}>
+          <LinearGradient
+            colors={["#A855F7", "#EC4899"] as const}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.timelineEmptyBtn}
+          >
+            <Ionicons name="sparkles" size={16} color="#fff" />
+            <Text style={styles.timelineEmptyBtnText}>Plan My Child's Day</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </LinearGradient>
+    );
+  }
+
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const allItems = todayRoutines.flatMap((r) =>
+    r.items.map((item) => ({ ...item, childName: r.childName, routineId: r.id }))
+  ).sort((a, b) => parseTimeToMinutes(a.time) - parseTimeToMinutes(b.time));
+
+  let currentIdx = -1;
+  for (let i = 0; i < allItems.length; i++) {
+    const itemMinutes = parseTimeToMinutes(allItems[i].time);
+    const nextMinutes = i + 1 < allItems.length ? parseTimeToMinutes(allItems[i + 1].time) : 24 * 60;
+    if (itemMinutes <= nowMinutes && nowMinutes < nextMinutes) { currentIdx = i; break; }
+  }
+
+  const displayItems = currentIdx >= 0
+    ? allItems.slice(currentIdx, currentIdx + 3)
+    : allItems.filter((item) => parseTimeToMinutes(item.time) > nowMinutes).slice(0, 3);
+
+  if (displayItems.length === 0) {
+    return (
+      <LinearGradient colors={["#ECFDF5", "#D1FAE5"] as const} style={styles.timelineDone}>
+        <Text style={{ fontSize: 28 }}>🌙</Text>
+        <Text style={styles.timelineDoneTitle}>Day complete!</Text>
+        <Text style={styles.timelineDoneSub}>Time to relax and recharge</Text>
+      </LinearGradient>
+    );
+  }
+
+  return (
+    <View style={styles.timelineCard}>
+      <LinearGradient
+        colors={["#FAF5FF", "#FCE7F3"] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.timelineHeader}
+      >
+        <View style={styles.timelineHeaderLeft}>
+          <Ionicons name="time-outline" size={16} color="#7C3AED" />
+          <Text style={styles.timelineHeaderTitle}>Today's Timeline</Text>
+        </View>
+        <TouchableOpacity onPress={onSeeAll} style={styles.timelineHeaderRight}>
+          <Text style={styles.timelineHeaderLink}>View all</Text>
+          <Ionicons name="arrow-forward" size={12} color="#7C3AED" />
+        </TouchableOpacity>
+      </LinearGradient>
+      <View style={{ padding: 10, gap: 8 }}>
+        {displayItems.map((item, idx) => {
+          const isCurrent = currentIdx >= 0 && idx === 0;
+          const isNext = idx === (currentIdx >= 0 ? 1 : 0);
+          const completed = item.status === "completed";
+          const Wrapper: any = isCurrent ? LinearGradient : View;
+          const wrapperProps = isCurrent
+            ? { colors: ["#A855F7", "#EC4899"] as const, start: { x: 0, y: 0 }, end: { x: 1, y: 0 }, style: [styles.timelineRow, styles.timelineRowCurrent] }
+            : { style: styles.timelineRow };
+          return (
+            <TouchableOpacity
+              key={`${item.routineId}-${idx}`}
+              activeOpacity={0.85}
+              onPress={() => onOpen(item.routineId)}
+            >
+              <Wrapper {...wrapperProps}>
+                <View style={styles.timelineTime}>
+                  <Text style={[styles.timelineTimeText, isCurrent && { color: "#fff" }]}>{item.time}</Text>
+                  {isCurrent && (
+                    <View style={styles.timelineNowBadge}>
+                      <Text style={styles.timelineNowText}>NOW</Text>
+                    </View>
+                  )}
+                  {!isCurrent && isNext && (
+                    <View style={styles.timelineNextBadge}>
+                      <Text style={styles.timelineNextText}>NEXT</Text>
+                    </View>
+                  )}
+                </View>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    style={[
+                      styles.timelineActivity,
+                      isCurrent && { color: "#fff" },
+                      completed && { textDecorationLine: "line-through", opacity: 0.6 },
+                    ]}
+                    numberOfLines={2}
+                  >
+                    {item.activity}
+                  </Text>
+                  <Text style={[styles.timelineMeta, isCurrent && { color: "rgba(255,255,255,0.85)" }]}>
+                    {item.childName} · {item.duration}m
+                  </Text>
+                </View>
+                {completed && !isCurrent && (
+                  <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                )}
+              </Wrapper>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// ─── Streak Card ──────────────────────────────────────────────────────────
+function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }) {
+  const colors = streak >= 3
+    ? ["#FB923C", "#FB7185"] as const
+    : streak > 0
+    ? ["#FEF3C7", "#FED7AA"] as const
+    : ["#F4F4F5", "#E4E4E7"] as const;
+  const isHot = streak >= 3;
+  const isWarm = streak > 0 && streak < 3;
+  const numColor = isHot ? "#fff" : isWarm ? "#C2410C" : "#71717A";
+  const labelColor = isHot ? "rgba(255,255,255,0.9)" : isWarm ? "#EA580C" : "#71717A";
+  const subColor = isHot ? "rgba(255,255,255,0.75)" : "#71717A";
+
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+      <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.streakCard}>
+        <Text style={[styles.streakEmoji, streak === 0 && { opacity: 0.4 }]}>🔥</Text>
+        <Text style={[styles.streakNum, { color: numColor }]}>{streak}</Text>
+        <Text style={[styles.streakLabel, { color: labelColor }]}>Day Streak</Text>
+        <Text style={[styles.streakSub, { color: subColor }]}>
+          {streak === 0 ? "Start today!" : "Tap for progress"}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Stat Card (pastel) ───────────────────────────────────────────────────
+function StatCard({ label, value, sub, icon, gradient, accent, onPress }: {
+  label: string;
+  value: string | number;
+  sub: string;
+  icon: React.ComponentProps<typeof Ionicons>["name"];
+  gradient: readonly [string, string];
+  accent: string;
+  onPress?: () => void;
+}) {
+  return (
+    <TouchableOpacity activeOpacity={onPress ? 0.85 : 1} onPress={onPress} style={styles.statCardWrap}>
+      <LinearGradient colors={gradient} style={styles.statCard}>
+        <View style={styles.statTopRow}>
+          <Text style={[styles.statLabel, { color: accent }]}>{label}</Text>
+          <Ionicons name={icon} size={14} color={accent} />
+        </View>
+        <View style={styles.statBottom}>
+          <Text style={[styles.statValue, { color: accent }]}>{value}</Text>
+          <Text style={[styles.statSub, { color: accent + "BB" }]}>{sub}</Text>
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Amy AI Suggests ──────────────────────────────────────────────────────
+function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
+  const allItems = todayRoutines.flatMap((r) => r.items);
+  const total = allItems.length;
+  const completed = allItems.filter((i) => i.status === "completed").length;
+  const p = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const hour = new Date().getHours();
+
+  const suggestions: { emoji: string; text: string; bg: string; border: string; color: string }[] = [];
+
+  if (total === 0) {
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", bg: "#EFF6FF", border: "#BFDBFE", color: "#1E40AF" });
+  } else if (p < 30 && hour >= 14) {
+    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", bg: "#FFFBEB", border: "#FDE68A", color: "#92400E" });
+  } else if (p >= 80) {
+    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", bg: "#F0FDF4", border: "#BBF7D0", color: "#166534" });
+  }
+  if (hour >= 15 && hour <= 17) {
+    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", bg: "#FFF1F2", border: "#FECDD3", color: "#9F1239" });
+  }
+  if (streak >= 3) {
+    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, bg: "#FFF7ED", border: "#FED7AA", color: "#9A3412" });
+  } else if (streak === 0 && hour < 10) {
+    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", bg: "#F0F9FF", border: "#BAE6FD", color: "#075985" });
+  }
+  if (hour >= 19) {
+    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", bg: "#EEF2FF", border: "#C7D2FE", color: "#3730A3" });
+  }
+
+  const display = suggestions.slice(0, 3);
+
+  return (
+    <View style={styles.amyCard}>
+      <LinearGradient
+        colors={["#FAF5FF", "#FCE7F3"] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.amyHeader}
+      >
+        <View style={styles.amyHeaderLeft}>
+          <View style={styles.amyAvatar}>
+            <Ionicons name="heart" size={14} color="#fff" />
+          </View>
+          <View>
+            <Text style={styles.amyTitle}>Amy AI Suggests</Text>
+            <Text style={styles.amySub}>Caring nudges from Amy 💜</Text>
+          </View>
+        </View>
+      </LinearGradient>
+      <View style={{ padding: 12, gap: 8 }}>
+        {display.length === 0 ? (
+          <View style={[styles.amyTip, { backgroundColor: "#F9FAFB", borderColor: "#E5E7EB" }]}>
+            <Text style={{ fontSize: 16 }}>💜</Text>
+            <Text style={[styles.amyTipText, { color: "#374151" }]}>Looking good — keep it going!</Text>
+          </View>
+        ) : (
+          display.map((s, i) => (
+            <View key={i} style={[styles.amyTip, { backgroundColor: s.bg, borderColor: s.border }]}>
+              <Text style={{ fontSize: 16 }}>{s.emoji}</Text>
+              <Text style={[styles.amyTipText, { color: s.color }]}>{s.text}</Text>
+            </View>
+          ))
+        )}
+      </View>
+    </View>
+  );
+}
+
+// ─── Parent Score Card ────────────────────────────────────────────────────
+function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const last7 = routines.slice(0, 7);
+  const items = last7.flatMap((r) => r.items);
+  const total = items.length;
+  const done = items.filter((i) => i.status === "completed").length;
+  const completionRate = total > 0 ? Math.round((done / total) * 100) : 0;
+  const daysActive = last7.length;
+  const streakBonus = Math.min(streak * 5, 30);
+  const score = Math.min(Math.round(completionRate * 0.5 + daysActive * 5 + streakBonus), 100);
+  const percentile = score >= 80 ? 90 : score >= 60 ? 70 : score >= 40 ? 50 : score >= 20 ? 30 : 15;
+  const grade = score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
+  const ringColor = score >= 80 ? "#22C55E" : score >= 60 ? "#3B82F6" : score >= 40 ? "#F59E0B" : "#EF4444";
+
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const dash = (score / 100) * circumference;
+
+  return (
+    <View style={styles.scoreCard}>
+      <LinearGradient
+        colors={["#F0FDF4", "#ECFDF5"] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.scoreHeader}
+      >
+        <Ionicons name="sparkles" size={14} color="#16A34A" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.scoreTitle}>Your Parent Score</Text>
+          <Text style={styles.scoreSub}>Based on last 7 days</Text>
+        </View>
+      </LinearGradient>
+      <View style={styles.scoreBody}>
+        <View style={styles.scoreRingWrap}>
+          <Svg width={70} height={70} viewBox="0 0 70 70">
+            <Circle cx={35} cy={35} r={radius} stroke="#E5E7EB" strokeWidth={5} fill="none" />
+            <Circle
+              cx={35}
+              cy={35}
+              r={radius}
+              stroke={ringColor}
+              strokeWidth={5}
+              fill="none"
+              strokeDasharray={`${dash} ${circumference - dash}`}
+              strokeLinecap="round"
+              transform="rotate(-90 35 35)"
+            />
+          </Svg>
+          <View style={styles.scoreRingCenter}>
+            <Text style={[styles.scoreGrade, { color: ringColor }]}>{grade}</Text>
+            <Text style={styles.scoreOf}>{score}/100</Text>
+          </View>
+        </View>
+        <View style={{ flex: 1, gap: 8 }}>
+          <Text style={styles.scoreBetter}>
+            Better than <Text style={{ color: "#A855F7", fontFamily: "Inter_700Bold" }}>{percentile}%</Text> of parents!
+          </Text>
+          <View>
+            <View style={styles.scoreRow}>
+              <Text style={styles.scoreRowLabel}>Task completion</Text>
+              <Text style={styles.scoreRowValue}>{completionRate}%</Text>
+            </View>
+            <View style={styles.scoreBar}>
+              <View style={[styles.scoreBarFill, { width: `${completionRate}%`, backgroundColor: "#A855F7" }]} />
+            </View>
+          </View>
+          <View>
+            <View style={styles.scoreRow}>
+              <Text style={styles.scoreRowLabel}>Days active</Text>
+              <Text style={styles.scoreRowValue}>{daysActive}/7</Text>
+            </View>
+            <View style={styles.scoreBar}>
+              <View style={[styles.scoreBarFill, { width: `${(daysActive / 7) * 100}%`, backgroundColor: "#EC4899" }]} />
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─── Onboarding Screen ────────────────────────────────────────────────────
+function OnboardingScreen({ displayName, onAddChild, onCoach }: {
+  displayName: string;
+  onAddChild: () => void;
+  onCoach: () => void;
+}) {
+  const features = [
+    { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: "#EFF6FF", border: "#DBEAFE", grad: ["#3B82F6", "#6366F1"] as const },
+    { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "#ECFDF5", border: "#D1FAE5", grad: ["#10B981", "#14B8A6"] as const },
+    { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", bg: "#FFF7ED", border: "#FED7AA", grad: ["#F97316", "#F59E0B"] as const },
+    { emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", bg: "#FAF5FF", border: "#E9D5FF", grad: ["#A855F7", "#9333EA"] as const },
+    { emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", bg: "#FFF1F2", border: "#FECDD3", grad: ["#F43F5E", "#EC4899"] as const },
+  ];
+
+  return (
+    <View style={{ paddingHorizontal: 4 }}>
+      <LinearGradient
+        colors={["#2563EB", "#6366F1", "#7C3AED"] as const}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.onbHero}
+      >
+        <View style={styles.onbHeroEmoji}>
+          <Text style={{ fontSize: 64 }}>👨‍👧✨</Text>
+        </View>
+        <Text style={styles.onbHeroEyebrow}>MEET AMY AI</Text>
+        <Text style={styles.onbHeroTitle}>
+          👋 Hi{displayName ? `, ${displayName}` : ""} 😊
+        </Text>
+        <Text style={styles.onbHeroSub}>I'm Amy — your smart parenting partner ❤️</Text>
+        <Text style={styles.onbHeroBody}>
+          Create personalised routines, track progress, and make parenting easier — one day at a time.
+        </Text>
+      </LinearGradient>
+
+      <View style={styles.onbDivider}>
+        <View style={styles.onbDividerLine} />
+        <Text style={styles.onbDividerText}>Start your child's smart routine today 🚀</Text>
+        <View style={styles.onbDividerLine} />
+      </View>
+
+      <View style={{ gap: 10, marginBottom: 20 }}>
+        {features.map((f) => (
+          <View key={f.label} style={[styles.onbFeature, { backgroundColor: f.bg, borderColor: f.border }]}>
+            <LinearGradient colors={f.grad} style={styles.onbFeatureIcon}>
+              <Text style={{ fontSize: 18 }}>{f.emoji}</Text>
+            </LinearGradient>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={styles.onbFeatureLabel}>{f.emoji} {f.label}</Text>
+              <Text style={styles.onbFeatureDesc}>{f.desc}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </View>
+        ))}
+      </View>
+
+      <TouchableOpacity onPress={onCoach} activeOpacity={0.9}>
+        <LinearGradient
+          colors={["#6366F1", "#A855F7"] as const}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.onbPrimary}
+        >
+          <Ionicons name="sparkles" size={18} color="#fff" />
+          <Text style={styles.onbPrimaryText}>✨ Experience Now</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={onAddChild} activeOpacity={0.85} style={styles.onbSecondary}>
+        <Ionicons name="person-add-outline" size={16} color="#374151" />
+        <Text style={styles.onbSecondaryText}>Add your first child</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.onbFooter}>Works for ages 0–15 years · Science-backed parenting plans</Text>
+    </View>
+  );
+}
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────
 export default function HomeScreen() {
   const { user } = useUser();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const [profileName, setProfileName] = useState<string | null>(null);
 
-  const {
-    data: summary,
-    isLoading: summaryLoading,
-    refetch: refetchSummary,
-  } = useQuery<DashboardSummary>({
+  useEffect(() => {
+    authFetch("/api/parent-profile")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: ParentProfile | null) => { if (d?.name) setProfileName(d.name); })
+      .catch(() => {});
+  }, [authFetch]);
+
+  const { data: summary, isLoading: summaryLoading, refetch: refetchSummary } = useQuery<DashboardSummary>({
     queryKey: ["dashboard-summary"],
-    queryFn: () => authFetch("/api/dashboard/summary").then(r => r.json()) as Promise<DashboardSummary>,
+    queryFn: () => authFetch("/api/dashboard/summary").then((r) => r.json()),
   });
 
-  const {
-    data: recentRoutines = [],
-    isLoading: routinesLoading,
-    refetch: refetchRoutines,
-  } = useQuery<RecentRoutine[]>({
+  const { data: recentRoutines = [], refetch: refetchRecent } = useQuery<Routine[]>({
     queryKey: ["dashboard-recent-routines"],
-    queryFn: () => authFetch("/api/dashboard/recent-routines").then(r => r.json()) as Promise<RecentRoutine[]>,
+    queryFn: () => authFetch("/api/dashboard/recent-routines").then((r) => r.json()),
   });
 
-  const {
-    data: children = [],
-    isLoading: childrenLoading,
-    refetch: refetchChildren,
-  } = useQuery<Child[]>({
+  const { data: allRoutines = [], refetch: refetchAll } = useQuery<Routine[]>({
+    queryKey: ["routines-all"],
+    queryFn: () => authFetch("/api/routines").then((r) => r.json()),
+  });
+
+  const { data: childrenList = [], refetch: refetchChildren } = useQuery<Child[]>({
     queryKey: ["children"],
-    queryFn: () => authFetch("/api/children").then(r => r.json()) as Promise<Child[]>,
+    queryFn: () => authFetch("/api/children").then((r) => r.json()),
   });
 
-  const isLoading = summaryLoading || routinesLoading || childrenLoading;
+  const { data: behaviorStats = [], refetch: refetchStats } = useQuery<BehaviorStat[]>({
+    queryKey: ["behavior-stats"],
+    queryFn: () => authFetch("/api/dashboard/behavior-stats").then((r) => r.json()),
+  });
 
   const onRefresh = useCallback(() => {
-    refetchSummary();
-    refetchRoutines();
-    refetchChildren();
-  }, [refetchSummary, refetchRoutines, refetchChildren]);
+    refetchSummary(); refetchRecent(); refetchAll(); refetchChildren(); refetchStats();
+  }, [refetchSummary, refetchRecent, refetchAll, refetchChildren, refetchStats]);
+
+  const displayName = useMemo(
+    () => profileName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "",
+    [profileName, user]
+  );
+
+  const streak = useMemo(() => computeStreak(allRoutines), [allRoutines]);
+  const noChildren = !summaryLoading && (summary?.totalChildren ?? 0) === 0;
 
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
-  const firstName = user?.firstName ?? "there";
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayRoutines = recentRoutines.filter(r => r.date?.slice(0, 10) === todayStr);
-  const allTodayItems = todayRoutines.flatMap(r => r.items ?? []);
-  const completedToday = allTodayItems.filter(i => i.status === "completed").length;
-  const totalToday = allTodayItems.length;
-  const donePct = pct(completedToday, totalToday);
+  if (summaryLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={{ paddingTop: topPad + 16, paddingBottom: botPad + 100, paddingHorizontal: 20 }}
+      contentContainerStyle={{ paddingTop: topPad + 12, paddingBottom: botPad + 110, paddingHorizontal: 16 }}
       refreshControl={<RefreshControl refreshing={false} onRefresh={onRefresh} tintColor={colors.primary} />}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.topRow}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground }]}>{getGreeting()},</Text>
-          <Text style={[styles.name, { color: colors.foreground }]}>{firstName}</Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.coachBtn, { backgroundColor: colors.primary }]}
-          onPress={() => router.push("/(tabs)/coach")}
-          testID="home-coach-btn"
-        >
-          <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      {isLoading ? (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+      {noChildren ? (
+        <OnboardingScreen
+          displayName={displayName}
+          onAddChild={() => router.push("/children/new")}
+          onCoach={() => router.push("/(tabs)/coach")}
+        />
       ) : (
         <>
-          <View style={styles.statsGrid}>
-            <StatCard title="Children" value={String(summary?.totalChildren ?? 0)} icon="people" color="#6366F1" bg="#EEF2FF" colors={colors} onPress={() => router.push("/(tabs)/children")} />
-            <StatCard title="Routines" value={String(summary?.totalRoutines ?? 0)} icon="calendar" color="#A855F7" bg="#FAF5FF" colors={colors} onPress={() => router.push("/(tabs)/routines")} />
-            <StatCard title="Done Today" value={String(completedToday)} icon="checkmark-circle" color="#10B981" bg="#F0FDF4" colors={colors} />
-            <StatCard title="This Week" value={String(summary?.routinesGeneratedThisWeek ?? 0)} icon="trending-up" color="#F59E0B" bg="#FFFBEB" colors={colors} />
+          <HeroGreeting displayName={displayName} hasChildren={(childrenList.length ?? 0) > 0} />
+
+          <View style={{ height: 16 }} />
+          <ChildrenStrip
+            children={childrenList}
+            onPressChild={(id) => router.push(`/children/${id}`)}
+            onAdd={() => router.push("/children/new")}
+          />
+
+          {/* Timeline + Streak */}
+          <View style={styles.timelineRowWrap}>
+            <View style={{ flex: 1 }}>
+              <NowNextTimeline
+                routines={allRoutines}
+                onGenerate={() => router.push("/(tabs)/coach")}
+                onOpen={(id) => router.push(`/routines/${id}`)}
+                onSeeAll={() => router.push("/(tabs)/routines")}
+              />
+            </View>
+            <View style={{ width: 120 }}>
+              <StreakCard streak={streak} onPress={() => router.push("/(tabs)/routines")} />
+            </View>
           </View>
 
-          {totalToday > 0 && (
-            <View style={[styles.progressCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={styles.progressTop}>
-                <Text style={[styles.progressTitle, { color: colors.foreground }]}>Today's Progress</Text>
-                <Text style={[styles.progressPct, { color: "#10B981" }]}>{donePct}%</Text>
-              </View>
-              <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
-                <View style={[styles.progressFill, { width: `${donePct}%`, backgroundColor: "#10B981" }]} />
-              </View>
-              <Text style={[styles.progressSub, { color: colors.mutedForeground }]}>
-                {completedToday} of {totalToday} activities completed
-              </Text>
-            </View>
-          )}
+          {/* Stats Grid */}
+          <View style={styles.statsGrid}>
+            <StatCard
+              label="Routines"
+              value={summary?.routinesGeneratedThisWeek ?? 0}
+              sub="this week"
+              icon="calendar-outline"
+              gradient={["#FAF5FF", "#F3E8FF"]}
+              accent="#6D28D9"
+              onPress={() => router.push("/(tabs)/routines")}
+            />
+            <StatCard
+              label="Great Job"
+              value={summary?.positiveBehaviorsToday ?? 0}
+              sub="today"
+              icon="trending-up-outline"
+              gradient={["#ECFDF5", "#D1FAE5"]}
+              accent="#047857"
+            />
+            <StatCard
+              label="Challenging"
+              value={summary?.negativeBehaviorsToday ?? 0}
+              sub="today"
+              icon="trending-down-outline"
+              gradient={["#FFF1F2", "#FCE7F3"]}
+              accent="#BE123C"
+            />
+            <StatCard
+              label="Children"
+              value={summary?.totalChildren ?? 0}
+              sub="total"
+              icon="people-outline"
+              gradient={["#FFFBEB", "#FEF3C7"]}
+              accent="#B45309"
+              onPress={() => router.push("/(tabs)/children")}
+            />
+          </View>
 
-          <View style={styles.section}>
-            <SectionHeader title="Your Children" onSeeAll={() => router.push("/(tabs)/children")} colors={colors} />
-            {children.length === 0 ? (
-              <TouchableOpacity
-                style={[styles.childAddChip, { backgroundColor: colors.card, borderColor: colors.primary }]}
-                onPress={() => router.push("/children/new")}
-                testID="add-child-chip"
-              >
-                <Ionicons name="add-circle" size={22} color={colors.primary} />
-                <Text style={[styles.childChipName, { color: colors.primary }]}>Add your first child</Text>
+          {/* Amy Suggests */}
+          <AmySuggestsCard routines={allRoutines} streak={streak} />
+
+          {/* Parent Score */}
+          <ParentScoreCard routines={allRoutines} streak={streak} />
+
+          {/* Recent Routines */}
+          <View style={styles.listCard}>
+            <View style={styles.listHeader}>
+              <View style={styles.listHeaderLeft}>
+                <Ionicons name="calendar" size={16} color="#A855F7" />
+                <View>
+                  <Text style={styles.listTitle}>Recent Routines</Text>
+                  <Text style={styles.listSub}>Latest generated schedules</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => router.push("/(tabs)/routines")} style={styles.listLink}>
+                <Text style={styles.listLinkText}>View all</Text>
+                <Ionicons name="arrow-forward" size={12} color="#A855F7" />
               </TouchableOpacity>
+            </View>
+            {recentRoutines.length === 0 ? (
+              <View style={styles.listEmpty}>
+                <Ionicons name="calendar-outline" size={36} color="#D4D4D8" />
+                <Text style={styles.listEmptyText}>No routines created yet.</Text>
+                <TouchableOpacity onPress={() => router.push("/(tabs)/coach")}>
+                  <Text style={styles.listEmptyLink}>Create your first routine</Text>
+                </TouchableOpacity>
+              </View>
             ) : (
-              <FlatList
-                horizontal
-                data={[...children, { id: -1, name: "Add", age: -1 }]}
-                keyExtractor={c => String(c.id)}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 12 }}
-                scrollEnabled
-                renderItem={({ item: c }) => {
-                  if (c.id === -1) {
-                    return (
-                      <TouchableOpacity
-                        style={[styles.childAddChip, { backgroundColor: colors.card, borderColor: colors.primary }]}
-                        onPress={() => router.push("/children/new")}
-                        testID="add-child-chip"
-                      >
-                        <Ionicons name="add-circle" size={22} color={colors.primary} />
-                        <Text style={[styles.childChipName, { color: colors.primary }]}>Add</Text>
-                      </TouchableOpacity>
-                    );
-                  }
+              <View>
+                {recentRoutines.slice(0, 4).map((r) => {
+                  const items = r.items ?? [];
+                  const done = items.filter((i) => i.status === "completed").length;
+                  const p = pct(done, items.length);
                   return (
                     <TouchableOpacity
-                      key={c.id}
-                      style={[styles.childChip, { backgroundColor: colors.secondary, borderColor: colors.border }]}
-                      onPress={() => router.push(`/children/${c.id}`)}
-                      testID={`child-card-${c.id}`}
+                      key={r.id}
+                      style={styles.listRow}
+                      onPress={() => router.push(`/routines/${r.id}`)}
+                      activeOpacity={0.85}
+                      testID={`recent-routine-${r.id}`}
                     >
-                      <Text style={styles.childEmoji}>{c.age < 5 ? "🧒" : "🧑"}</Text>
-                      <View>
-                        <Text style={[styles.childChipName, { color: colors.foreground }]}>{c.name}</Text>
-                        <Text style={[styles.childChipAge, { color: colors.mutedForeground }]}>{c.age} yr{c.age !== 1 ? "s" : ""}</Text>
+                      <View style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={styles.listRowTitle} numberOfLines={1}>{r.title}</Text>
+                        <View style={styles.listRowMeta}>
+                          <View style={styles.listChildPill}>
+                            <Text style={styles.listChildPillText}>{r.childName}</Text>
+                          </View>
+                          <Text style={styles.listRowDate}>{formatDate(r.date)}</Text>
+                        </View>
                       </View>
+                      {items.length > 0 && (
+                        <View style={{ alignItems: "flex-end" }}>
+                          <Text style={styles.listRowPct}>{p}%</Text>
+                          <Text style={styles.listRowDone}>{done}/{items.length}</Text>
+                        </View>
+                      )}
+                      <Ionicons name="chevron-forward" size={16} color="#A1A1AA" />
                     </TouchableOpacity>
                   );
-                }}
-              />
+                })}
+              </View>
             )}
           </View>
 
-          {recentRoutines.length > 0 && (
-            <View style={styles.section}>
-              <SectionHeader title="Recent Routines" onSeeAll={() => router.push("/(tabs)/routines")} colors={colors} />
-              {recentRoutines.slice(0, 3).map(r => {
-                const itemCount = r.items?.length ?? 0;
-                const completedCount = r.items?.filter(i => i.status === "completed").length ?? 0;
-                const p = pct(completedCount, itemCount);
-                return (
-                  <TouchableOpacity
-                    key={r.id}
-                    style={[styles.routineCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                    onPress={() => router.push(`/routines/${r.id}`)}
-                    testID={`recent-routine-${r.id}`}
-                  >
-                    <View style={styles.routineCardTop}>
-                      <Text style={[styles.routineTitle, { color: colors.foreground }]} numberOfLines={2}>{r.title}</Text>
-                      <Text style={[styles.routineDate, { color: colors.mutedForeground }]}>{formatDate(r.date)}</Text>
-                    </View>
-                    <Text style={[styles.routineChild, { color: colors.mutedForeground }]}>{r.childName}</Text>
-                    {itemCount > 0 && (
-                      <View style={styles.routineProgress}>
-                        <View style={[styles.miniBar, { backgroundColor: colors.muted }]}>
-                          <View style={[styles.miniFill, { width: `${p}%`, backgroundColor: "#10B981" }]} />
-                        </View>
-                        <Text style={[styles.miniPct, { color: colors.mutedForeground }]}>{completedCount}/{itemCount}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-
-          {children.length === 0 && !childrenLoading && (
-            <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}>
-                <Ionicons name="leaf" size={28} color={colors.primary} />
+          {/* Behavior Highlights */}
+          <View style={styles.listCard}>
+            <View style={styles.listHeader}>
+              <View style={styles.listHeaderLeft}>
+                <Ionicons name="pulse" size={16} color="#EC4899" />
+                <View>
+                  <Text style={styles.listTitle}>Behavior Highlights</Text>
+                  <Text style={styles.listSub}>Overall stats by child</Text>
+                </View>
               </View>
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>Welcome to AmyNest!</Text>
-              <Text style={[styles.emptyBody, { color: colors.mutedForeground }]}>Add your first child to get started with personalized routines.</Text>
-              <TouchableOpacity style={[styles.emptyAction, { backgroundColor: colors.primary }]} onPress={() => router.push("/children/new")}>
-                <Text style={styles.emptyActionText}>Add Child</Text>
-              </TouchableOpacity>
             </View>
-          )}
+            {behaviorStats.length === 0 ? (
+              <View style={styles.listEmpty}>
+                <Ionicons name="star-outline" size={36} color="#D4D4D8" />
+                <Text style={styles.listEmptyText}>No behavior logged yet.</Text>
+              </View>
+            ) : (
+              <View>
+                {behaviorStats.map((stat) => (
+                  <View key={stat.childId} style={styles.behaviorRow}>
+                    <Text style={styles.behaviorChild}>{stat.childName}</Text>
+                    <View style={styles.behaviorStats}>
+                      <View style={[styles.behaviorChip, { backgroundColor: "#ECFDF5" }]}>
+                        <Ionicons name="trending-up" size={12} color="#10B981" />
+                        <Text style={[styles.behaviorChipText, { color: "#047857" }]}>{stat.positive}</Text>
+                      </View>
+                      <View style={[styles.behaviorChip, { backgroundColor: "#FEF2F2" }]}>
+                        <Ionicons name="trending-down" size={12} color="#EF4444" />
+                        <Text style={[styles.behaviorChipText, { color: "#B91C1C" }]}>{stat.negative}</Text>
+                      </View>
+                      <View style={[styles.behaviorChip, { backgroundColor: "#F4F4F5" }]}>
+                        <Ionicons name="remove" size={12} color="#71717A" />
+                        <Text style={[styles.behaviorChipText, { color: "#52525B" }]}>{stat.neutral}</Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Big primary CTA */}
+          <TouchableOpacity onPress={() => router.push("/(tabs)/coach")} activeOpacity={0.9} style={{ marginTop: 4 }}>
+            <LinearGradient
+              colors={["#A855F7", "#EC4899", "#F43F5E"] as const}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.bigCta}
+            >
+              <Ionicons name="sparkles" size={18} color="#fff" />
+              <Text style={styles.bigCtaText}>✨ Plan My Child's Day</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </>
       )}
     </ScrollView>
   );
 }
 
-type StatCardProps = { title: string; value: string; icon: React.ComponentProps<typeof Ionicons>["name"]; color: string; bg: string; colors: Colors; onPress?: () => void };
-function StatCard({ title, value, icon, color, bg, colors, onPress }: StatCardProps) {
-  return (
-    <TouchableOpacity onPress={onPress} activeOpacity={onPress ? 0.75 : 1} style={[styles.statCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <View style={[styles.statIconBox, { backgroundColor: bg }]}>
-        <Ionicons name={icon} size={20} color={color} />
-      </View>
-      <Text style={[styles.statValue, { color: colors.foreground }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>{title}</Text>
-    </TouchableOpacity>
-  );
-}
-
-type SectionHeaderProps = { title: string; onSeeAll?: () => void; colors: Colors };
-function SectionHeader({ title, onSeeAll, colors }: SectionHeaderProps) {
-  return (
-    <View style={styles.sectionHeader}>
-      <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
-      {onSeeAll && <TouchableOpacity onPress={onSeeAll}><Text style={[styles.seeAll, { color: colors.primary }]}>See all</Text></TouchableOpacity>}
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 24 },
-  greeting: { fontSize: 14, fontFamily: "Inter_400Regular" },
-  name: { fontSize: 26, fontFamily: "Inter_700Bold" },
-  coachBtn: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  loadingRow: { alignItems: "center", paddingTop: 60 },
-  statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 20 },
-  statCard: { width: "47%", borderRadius: 18, borderWidth: 1, padding: 14, gap: 6 },
-  statIconBox: { width: 38, height: 38, borderRadius: 11, alignItems: "center", justifyContent: "center" },
-  statValue: { fontSize: 24, fontFamily: "Inter_700Bold" },
-  statLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
-  progressCard: { borderRadius: 18, borderWidth: 1, padding: 18, marginBottom: 20, gap: 10 },
-  progressTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  progressTitle: { fontSize: 15, fontFamily: "Inter_700Bold" },
-  progressPct: { fontSize: 15, fontFamily: "Inter_700Bold" },
-  progressBar: { height: 8, borderRadius: 4, overflow: "hidden" },
-  progressFill: { height: "100%", borderRadius: 4 },
-  progressSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  section: { gap: 12, marginBottom: 24 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  sectionTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
-  seeAll: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
-  childChip: { flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 16, borderWidth: 1, padding: 12 },
-  childAddChip: { flexDirection: "row", alignItems: "center", gap: 8, borderRadius: 16, borderWidth: 1.5, borderStyle: "dashed", padding: 12 },
-  childEmoji: { fontSize: 22 },
-  childChipName: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
-  childChipAge: { fontSize: 11, fontFamily: "Inter_400Regular" },
-  routineCard: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 8 },
-  routineCardTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 8 },
-  routineTitle: { flex: 1, fontSize: 15, fontFamily: "Inter_600SemiBold", lineHeight: 21 },
-  routineDate: { fontSize: 12, fontFamily: "Inter_500Medium" },
-  routineChild: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  routineProgress: { flexDirection: "row", alignItems: "center", gap: 8 },
-  miniBar: { flex: 1, height: 4, borderRadius: 2, overflow: "hidden" },
-  miniFill: { height: "100%", borderRadius: 2 },
-  miniPct: { fontSize: 11, fontFamily: "Inter_500Medium", width: 36, textAlign: "right" },
-  emptyCard: { borderRadius: 20, borderWidth: 1, padding: 24, alignItems: "center", gap: 12, marginTop: 8 },
-  emptyIcon: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  emptyTitle: { fontSize: 18, fontFamily: "Inter_700Bold", textAlign: "center" },
-  emptyBody: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 21 },
-  emptyAction: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14 },
-  emptyActionText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 15 },
+
+  /* HERO */
+  heroGreeting: {
+    borderRadius: 24,
+    padding: 22,
+  },
+  heroEyebrow: {
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1.4,
+    color: "rgba(146,64,14,0.85)",
+    marginBottom: 6,
+  },
+  heroTitle: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Inter_700Bold",
+    color: "#1F2937",
+    marginBottom: 8,
+  },
+  heroSub: {
+    fontSize: 13,
+    lineHeight: 19,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(31,41,55,0.75)",
+  },
+
+  /* CHILDREN STRIP */
+  stripHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4, marginBottom: 8 },
+  stripEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "#71717A" },
+  childCard: {
+    minWidth: 180,
+    borderRadius: 22,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: "rgba(0,0,0,0.04)",
+  },
+  childCardRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  childEmojiBubble: {
+    width: 42, height: 42, borderRadius: 14, backgroundColor: "#fff",
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { width: 0, height: 1 },
+  },
+  childEmojiText: { fontSize: 22 },
+  childName: { fontSize: 14, fontFamily: "Inter_700Bold" },
+  childAge: { fontSize: 11, color: "rgba(31,41,55,0.6)", fontFamily: "Inter_400Regular", marginTop: 2 },
+  childTagline: { fontSize: 11, color: "rgba(31,41,55,0.6)", fontFamily: "Inter_400Regular", fontStyle: "italic", marginTop: 8 },
+  childAddCard: {
+    minWidth: 130, borderRadius: 22, padding: 14, borderWidth: 1.5, borderStyle: "dashed",
+    borderColor: "#D4D4D8", backgroundColor: "rgba(244,244,245,0.4)",
+    alignItems: "center", justifyContent: "center",
+  },
+  childAddPlus: { fontSize: 22, marginBottom: 4 },
+  childAddText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "rgba(31,41,55,0.7)" },
+
+  /* TIMELINE */
+  timelineRowWrap: { flexDirection: "row", gap: 10, marginBottom: 16 },
+  timelineCard: {
+    backgroundColor: "#fff", borderRadius: 22, overflow: "hidden",
+    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
+  },
+  timelineHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 12, paddingHorizontal: 14 },
+  timelineHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
+  timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  timelineHeaderRight: { flexDirection: "row", alignItems: "center", gap: 4 },
+  timelineHeaderLink: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  timelineRow: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    backgroundColor: "rgba(244,244,245,0.5)", borderRadius: 16, padding: 10,
+  },
+  timelineRowCurrent: { backgroundColor: "transparent", shadowColor: "#A855F7", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
+  timelineTime: { width: 56, alignItems: "center", gap: 4 },
+  timelineTimeText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(31,41,55,0.7)" },
+  timelineNowBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
+  timelineNowText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#fff", letterSpacing: 0.5 },
+  timelineNextBadge: { backgroundColor: "#EDE9FE", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
+  timelineNextText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#6D28D9", letterSpacing: 0.5 },
+  timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(113,113,122,0.9)", marginTop: 2 },
+  timelineEmpty: {
+    borderRadius: 22, padding: 20, alignItems: "center", gap: 8,
+    borderWidth: 1.5, borderStyle: "dashed", borderColor: "#BFDBFE",
+  },
+  timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  timelineEmptySub: { fontSize: 11, color: "#71717A", textAlign: "center", fontFamily: "Inter_400Regular" },
+  timelineEmptyBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
+  timelineEmptyBtnText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 13 },
+  timelineDone: { borderRadius: 22, padding: 18, alignItems: "center", gap: 4 },
+  timelineDoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#065F46" },
+  timelineDoneSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(6,95,70,0.7)" },
+
+  /* STREAK */
+  streakCard: { borderRadius: 22, padding: 14, alignItems: "center", justifyContent: "center", minHeight: 130 },
+  streakEmoji: { fontSize: 26, marginBottom: 2 },
+  streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30 },
+  streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2 },
+  streakSub: { fontSize: 9, fontFamily: "Inter_500Medium", marginTop: 4, textAlign: "center" },
+
+  /* STATS */
+  statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
+  statCardWrap: { width: "47.8%", flexGrow: 1 },
+  statCard: { borderRadius: 22, padding: 14, minHeight: 92, justifyContent: "space-between" },
+  statTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  statLabel: { fontSize: 11, fontFamily: "Inter_700Bold" },
+  statBottom: { flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 6 },
+  statValue: { fontSize: 26, fontFamily: "Inter_700Bold" },
+  statSub: { fontSize: 10, fontFamily: "Inter_500Medium" },
+
+  /* AMY CARD */
+  amyCard: {
+    backgroundColor: "#fff", borderRadius: 18, overflow: "hidden", marginBottom: 16,
+    borderWidth: 1, borderColor: "rgba(0,0,0,0.06)",
+  },
+  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  amyHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#A855F7", alignItems: "center", justifyContent: "center" },
+  amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  amySub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  amyTip: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
+  amyTipText: { flex: 1, fontSize: 12, lineHeight: 17, fontFamily: "Inter_500Medium" },
+
+  /* SCORE */
+  scoreCard: { backgroundColor: "#fff", borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  scoreSub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  scoreBody: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
+  scoreRingWrap: { width: 70, height: 70, alignItems: "center", justifyContent: "center" },
+  scoreRingCenter: { position: "absolute", alignItems: "center", justifyContent: "center" },
+  scoreGrade: { fontSize: 20, fontFamily: "Inter_700Bold", lineHeight: 22 },
+  scoreOf: { fontSize: 9, color: "#71717A", fontFamily: "Inter_500Medium" },
+  scoreBetter: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#1F2937" },
+  scoreRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+  scoreRowLabel: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular" },
+  scoreRowValue: { fontSize: 11, color: "#1F2937", fontFamily: "Inter_700Bold" },
+  scoreBar: { height: 5, backgroundColor: "#F4F4F5", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  scoreBarFill: { height: "100%", borderRadius: 3 },
+
+  /* LIST CARDS */
+  listCard: { backgroundColor: "#fff", borderRadius: 18, marginBottom: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.06)", overflow: "hidden" },
+  listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "rgba(244,244,245,0.4)", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  listHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
+  listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  listSub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  listLink: { flexDirection: "row", alignItems: "center", gap: 4 },
+  listLinkText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#A855F7" },
+  listEmpty: { alignItems: "center", padding: 24, gap: 8 },
+  listEmptyText: { fontSize: 13, color: "#71717A", fontFamily: "Inter_500Medium" },
+  listEmptyLink: { fontSize: 13, color: "#A855F7", fontFamily: "Inter_700Bold", marginTop: 4 },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
+  listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  listRowMeta: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
+  listChildPill: { backgroundColor: "rgba(168,85,247,0.10)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
+  listChildPillText: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  listRowDate: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular" },
+  listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  listRowDone: { fontSize: 9, color: "#71717A", fontFamily: "Inter_400Regular" },
+
+  /* BEHAVIOR */
+  behaviorRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
+  behaviorChild: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937", marginBottom: 8 },
+  behaviorStats: { flexDirection: "row", gap: 8 },
+  behaviorChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 8, borderRadius: 10 },
+  behaviorChipText: { fontSize: 13, fontFamily: "Inter_700Bold" },
+
+  /* BIG CTA */
+  bigCta: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    paddingVertical: 16, borderRadius: 22,
+    shadowColor: "#EC4899", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+  },
+  bigCtaText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
+
+  /* ONBOARDING */
+  onbHero: {
+    borderRadius: 26, padding: 26, alignItems: "center", marginBottom: 22,
+    shadowColor: "#6366F1", shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 10,
+  },
+  onbHeroEmoji: { marginBottom: 12 },
+  onbHeroEyebrow: { fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2, color: "#BFDBFE", marginBottom: 6 },
+  onbHeroTitle: { fontSize: 26, fontFamily: "Inter_700Bold", color: "#fff", textAlign: "center", marginBottom: 8 },
+  onbHeroSub: { fontSize: 15, fontFamily: "Inter_500Medium", color: "#DBEAFE", textAlign: "center", marginBottom: 8 },
+  onbHeroBody: { fontSize: 13, lineHeight: 19, fontFamily: "Inter_400Regular", color: "rgba(219,234,254,0.85)", textAlign: "center" },
+  onbDivider: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 18 },
+  onbDividerLine: { flex: 1, height: 1, backgroundColor: "#E4E4E7" },
+  onbDividerText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#71717A" },
+  onbFeature: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 },
+  onbFeatureIcon: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  onbFeatureLabel: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  onbFeatureDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#52525B", marginTop: 2 },
+  onbPrimary: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    paddingVertical: 16, borderRadius: 18, marginBottom: 10,
+    shadowColor: "#A855F7", shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+  },
+  onbPrimaryText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
+  onbSecondary: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: "#E4E4E7",
+    backgroundColor: "#fff", marginBottom: 14,
+  },
+  onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#374151" },
+  onbFooter: { fontSize: 11, color: "#71717A", textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
 });

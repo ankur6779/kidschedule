@@ -118,9 +118,9 @@ Expo React Native app (iOS + Android) mirroring the web product.
   - `app/onboarding.tsx` — Amy chat-style onboarding (child profiles + parent info)
   - `app/(tabs)/index.tsx` — Home dashboard with today's timeline + quick actions
   - `app/(tabs)/children.tsx` — Children list + `app/children/[id].tsx` detail/edit + `app/children/new.tsx` add
-  - `app/(tabs)/routines.tsx` — Routine list + `app/routines/[id].tsx` detail with checkable items
-  - `app/(tabs)/coach.tsx` — Amy Coach: goal selection → AI-generated parenting plan
-  - `app/(tabs)/profile.tsx` — Parent profile view/edit + sign out
+  - `app/(tabs)/routines.tsx` — Calendar/List view toggle, week-grid navigator with day cells (today/has-routine/weekend states + completion bars), child filter chips, gradient Generate CTA, "This Week's Routines" inline list, full list view with progress bars (mirrors web `routines/index.tsx` pixel-parity) + `app/routines/[id].tsx` detail
+  - `app/(tabs)/coach.tsx` — Full 4-phase Amy Coach (mirrors web `ai-coach.tsx`): 6 categorized goal grid + search + sub-category goal picker (29 goals w/ gradient cards), 5-question flow with gradient progress bar, violet→pink loading screen, horizontal swipeable Win-card pager (12 wins) with progress dots, plan header + ROOT CAUSE + WHY THIS WORKS + DO THIS + REAL EXAMPLE + MISTAKE TO AVOID + MICRO-TASK + duration chip + science reference, yes/somewhat/no feedback with frozen-denominator progress %, adaptive extension (3 fresh wins on "no"), Share API, haptics throughout
+  - `app/(tabs)/profile.tsx` — Full parent profile (mirrors web `parent-profile.tsx`): avatar with camera upload (expo-image-picker → Clerk `setProfileImage`), Personal Info (name/role/gender/mobile), Work Schedule (work type + start/end times), Free/Available Slots (add/remove HH:MM ranges), Food Preferences (diet type + allergies textarea), Save + Sign Out
 - **Key hooks**: `hooks/useAuthFetch.ts`, `hooks/useColors.ts`
 - **Constants**: `constants/colors.ts` — AmyNest design tokens
 

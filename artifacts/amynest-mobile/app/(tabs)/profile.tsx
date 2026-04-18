@@ -10,22 +10,45 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 
 type Colors = ReturnType<typeof useColors>;
 
+type FreeSlot = { start: string; end: string };
+
 type ParentProfile = {
-  id: number; name?: string; role: string; workType: string;
-  gender?: string; mobileNumber?: string;
+  id?: number;
+  name?: string;
+  role: string;
+  workType: string;
+  gender?: string;
+  mobileNumber?: string;
+  workStartTime?: string;
+  workEndTime?: string;
+  freeSlots?: FreeSlot[];
+  foodType?: string;
+  allergies?: string;
 };
 
 type Child = { id: number };
 
-const ROLES: string[] = ["mother", "father", "both", "grandparent"];
+const ROLES: { label: string; value: string }[] = [
+  { label: "Mother", value: "mother" },
+  { label: "Father", value: "father" },
+];
+const GENDERS: { label: string; value: string }[] = [
+  { label: "Female", value: "female" },
+  { label: "Male", value: "male" },
+  { label: "Prefer not to say", value: "" },
+];
 const WORK_TYPES: { label: string; value: string }[] = [
   { label: "Work from Home", value: "work_from_home" },
-  { label: "Office Job", value: "office" },
-  { label: "Not Working", value: "not_working" },
-  { label: "Homemaker", value: "homemaker" },
+  { label: "Work from Office", value: "work_from_office" },
+  { label: "Housewife / Homemaker", value: "homemaker" },
+];
+const FOOD_TYPES: { label: string; value: string }[] = [
+  { label: "Non-Vegetarian", value: "non_veg" },
+  { label: "Vegetarian", value: "veg" },
 ];
 
 export default function ProfileScreen() {
@@ -35,11 +58,21 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const authFetch = useAuthFetch();
   const qc = useQueryClient();
-  const [editing, setEditing] = useState(false);
+
   const [saving, setSaving] = useState(false);
+  const [uploadingPic, setUploadingPic] = useState(false);
+
+  // Profile state
   const [name, setName] = useState("");
   const [role, setRole] = useState("mother");
+  const [gender, setGender] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [workType, setWorkType] = useState("work_from_home");
+  const [workStartTime, setWorkStartTime] = useState("");
+  const [workEndTime, setWorkEndTime] = useState("");
+  const [freeSlots, setFreeSlots] = useState<FreeSlot[]>([]);
+  const [foodType, setFoodType] = useState("non_veg");
+  const [allergies, setAllergies] = useState("");
 
   const { data: profile, isLoading } = useQuery<ParentProfile | null>({
     queryKey: ["parent-profile"],
@@ -60,22 +93,86 @@ export default function ProfileScreen() {
     if (profile) {
       setName(profile.name ?? user?.firstName ?? "");
       setRole(profile.role ?? "mother");
+      setGender(profile.gender ?? "");
+      setMobileNumber(profile.mobileNumber ?? "");
       setWorkType(profile.workType ?? "work_from_home");
+      setWorkStartTime(profile.workStartTime ?? "");
+      setWorkEndTime(profile.workEndTime ?? "");
+      setFreeSlots(profile.freeSlots ?? []);
+      setFoodType(profile.foodType ?? "non_veg");
+      setAllergies(profile.allergies ?? "");
     }
   }, [profile, user?.firstName]);
+
+  const addFreeSlot = () => {
+    Haptics.selectionAsync();
+    setFreeSlots(s => [...s, { start: "12:00", end: "13:00" }]);
+  };
+  const removeFreeSlot = (i: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setFreeSlots(s => s.filter((_, idx) => idx !== i));
+  };
+  const updateFreeSlot = (i: number, field: "start" | "end", value: string) => {
+    setFreeSlots(s => {
+      const next = [...s];
+      next[i] = { ...next[i], [field]: value };
+      return next;
+    });
+  };
+
+  const handleProfilePicUpload = async () => {
+    if (!user) return;
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert("Permission needed", "Please allow photo access to update your picture.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+        base64: true,
+      });
+      if (result.canceled || !result.assets[0]?.base64) return;
+      setUploadingPic(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      const a = result.assets[0];
+      const dataUri = `data:${a.mimeType ?? "image/jpeg"};base64,${a.base64}`;
+      await user.setProfileImage({ file: dataUri });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      Alert.alert("Upload failed", "Could not update profile picture.");
+    } finally {
+      setUploadingPic(false);
+    }
+  };
 
   const handleSave = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSaving(true);
     try {
-      await authFetch("/api/parent-profile", {
+      const body: any = { role, workType, foodType };
+      if (name) body.name = name;
+      if (gender) body.gender = gender;
+      if (mobileNumber) body.mobileNumber = mobileNumber;
+      if (workStartTime) body.workStartTime = workStartTime;
+      if (workEndTime) body.workEndTime = workEndTime;
+      if (freeSlots.length > 0) body.freeSlots = freeSlots;
+      if (allergies) body.allergies = allergies;
+
+      const res = await authFetch("/api/parent-profile", {
         method: "PUT",
-        body: JSON.stringify({ name, role, workType }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
+      if (!res.ok) throw new Error("Save failed");
       qc.invalidateQueries({ queryKey: ["parent-profile"] });
-      setEditing(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("Saved", "Your profile is up to date.");
     } catch {
-      Alert.alert("Error", "Failed to save profile. Please try again.");
+      Alert.alert("Error", "Could not save profile. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -95,118 +192,210 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
-  const displayName = profile?.name ?? user?.firstName ?? "Parent";
+  const topPad = insets.top + (Platform.OS === "web" ? 16 : 0);
+  const botPad = insets.bottom + (Platform.OS === "web" ? 16 : 0);
+  const displayName = name || user?.firstName || "Parent";
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: topPad + 16, paddingBottom: botPad + 90, paddingHorizontal: 20 }}
+        contentContainerStyle={{ paddingTop: topPad + 16, paddingBottom: botPad + 100, paddingHorizontal: 20 }}
         showsVerticalScrollIndicator={false}
       >
+        {/* Header */}
         <View style={styles.headerRow}>
-          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Profile</Text>
-          {!editing ? (
-            <TouchableOpacity onPress={() => setEditing(true)} style={[styles.editBtn, { backgroundColor: colors.secondary }]}>
-              <Ionicons name="pencil" size={16} color={colors.primary} />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={handleSave} style={[styles.editBtn, { backgroundColor: colors.primary }]} disabled={saving}>
-              {saving ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="checkmark" size={16} color="#fff" />}
-            </TouchableOpacity>
-          )}
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.headerTitle, { color: colors.foreground }]}>My Parent Profile</Text>
+            <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>
+              Helps Amy AI build smarter routines for your child.
+            </Text>
+          </View>
         </View>
 
+        {/* Avatar block */}
         <View style={[styles.avatarSection, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-            <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
+          <View style={styles.avatarWrap}>
+            {user?.imageUrl ? (
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              <View style={[styles.avatar, { backgroundColor: colors.primary, overflow: "hidden" }]}>
+                {/* @ts-ignore — RN Image */}
+                {React.createElement(require("react-native").Image, {
+                  source: { uri: user.imageUrl },
+                  style: { width: 80, height: 80 },
+                })}
+              </View>
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Text style={styles.avatarText}>{displayName.charAt(0).toUpperCase()}</Text>
+              </View>
+            )}
+            <TouchableOpacity
+              onPress={handleProfilePicUpload}
+              disabled={uploadingPic}
+              style={[styles.cameraBtn, { backgroundColor: colors.primary }]}
+            >
+              {uploadingPic
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Ionicons name="camera" size={14} color="#fff" />}
+            </TouchableOpacity>
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={[styles.profileName, { color: colors.foreground }]}>{displayName}</Text>
-            <Text style={[styles.profileEmail, { color: colors.mutedForeground }]}>{user?.emailAddresses?.[0]?.emailAddress}</Text>
-          </View>
-        </View>
-
-        <View style={styles.statsRow}>
-          <View style={[styles.statCard, { backgroundColor: colors.secondary }]}>
-            <Text style={[styles.statNum, { color: colors.primary }]}>{children.length}</Text>
-            <Text style={[styles.statLabel, { color: colors.mutedForeground }]}>Children</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: "#F0FDF4" }]}>
-            <Ionicons name="leaf" size={22} color="#10B981" />
-            <Text style={[styles.statLabel, { color: "#059669" }]}>Active</Text>
-          </View>
-        </View>
-
-        {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} />
-        ) : editing ? (
-          <View style={[styles.editCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.editCardTitle, { color: colors.foreground }]}>Edit Profile</Text>
-
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Name</Text>
-              <TextInput
-                style={[styles.textInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
-                value={name}
-                onChangeText={setName}
-                placeholder="Your name"
-                placeholderTextColor={colors.mutedForeground}
-                testID="profile-name-input"
-              />
-            </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Role</Text>
-              <View style={styles.chipRow}>
-                {ROLES.map(r => {
-                  const active = role === r;
-                  return (
-                    <TouchableOpacity
-                      key={r}
-                      style={[styles.chip, { backgroundColor: active ? colors.primary : colors.background, borderColor: active ? colors.primary : colors.border }]}
-                      onPress={() => setRole(r)}
-                    >
-                      <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>
-                        {r.charAt(0).toUpperCase() + r.slice(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
-
-            <View style={styles.fieldGroup}>
-              <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>Work Type</Text>
-              <View style={styles.chipRow}>
-                {WORK_TYPES.map(wt => {
-                  const active = workType === wt.value;
-                  return (
-                    <TouchableOpacity
-                      key={wt.value}
-                      style={[styles.chip, { backgroundColor: active ? colors.primary : colors.background, borderColor: active ? colors.primary : colors.border }]}
-                      onPress={() => setWorkType(wt.value)}
-                    >
-                      <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>{wt.label}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
+            <Text style={[styles.profileEmail, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {user?.emailAddresses?.[0]?.emailAddress}
+            </Text>
+            <View style={styles.statsMini}>
+              <View style={[styles.statChip, { backgroundColor: colors.secondary }]}>
+                <Ionicons name="people" size={12} color={colors.primary} />
+                <Text style={[styles.statChipText, { color: colors.primary }]}>{children.length} children</Text>
               </View>
             </View>
           </View>
-        ) : (
-          <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <InfoRow icon="person" label="Role" value={profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : "—"} colors={colors} />
-            <InfoRow icon="briefcase" label="Work Type" value={WORK_TYPES.find(w => w.value === profile?.workType)?.label ?? "—"} colors={colors} />
-            <InfoRow icon="call" label="Mobile" value={profile?.mobileNumber ?? "Not set"} colors={colors} />
-          </View>
-        )}
+        </View>
 
+        {/* Personal Info */}
+        <Section title="Personal Info" subtitle="Basic details about you and your role" colors={colors}>
+          <Field label="Your Name" colors={colors}>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={name}
+              onChangeText={setName}
+              placeholder="e.g. Ayesha, Sarah, Ahmed…"
+              placeholderTextColor={colors.mutedForeground}
+            />
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>This name appears in your dashboard greeting.</Text>
+          </Field>
+
+          <Field label="Role" colors={colors}>
+            <ChipPicker options={ROLES} value={role} onChange={setRole} colors={colors} />
+          </Field>
+
+          <Field label="Gender" colors={colors}>
+            <ChipPicker options={GENDERS} value={gender} onChange={setGender} colors={colors} />
+          </Field>
+
+          <Field label="Mobile Number" colors={colors}>
+            <TextInput
+              style={[styles.input, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background }]}
+              value={mobileNumber}
+              onChangeText={setMobileNumber}
+              placeholder="+92 300 1234567"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="phone-pad"
+            />
+          </Field>
+        </Section>
+
+        {/* Work Schedule */}
+        <Section title="Work Schedule" subtitle="Amy AI uses this to assign tasks when you're free or busy" colors={colors}>
+          <Field label="Work Type" colors={colors}>
+            <ChipPicker options={WORK_TYPES} value={workType} onChange={setWorkType} colors={colors} />
+          </Field>
+
+          {workType !== "homemaker" && (
+            <View style={styles.row2}>
+              <Field label="Work Start" colors={colors} flex>
+                <TimeField value={workStartTime} onChange={setWorkStartTime} colors={colors} />
+              </Field>
+              <Field label="Work End" colors={colors} flex>
+                <TimeField value={workEndTime} onChange={setWorkEndTime} colors={colors} />
+              </Field>
+            </View>
+          )}
+        </Section>
+
+        {/* Free Slots */}
+        <Section
+          title="Free / Available Slots"
+          subtitle="Times during the day you're free for your child"
+          icon="time-outline"
+          colors={colors}
+          headerRight={
+            <TouchableOpacity onPress={addFreeSlot} style={[styles.smallBtn, { borderColor: colors.border }]}>
+              <Ionicons name="add" size={14} color={colors.primary} />
+              <Text style={[styles.smallBtnText, { color: colors.primary }]}>Add Slot</Text>
+            </TouchableOpacity>
+          }
+        >
+          {freeSlots.length === 0 ? (
+            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+              No free slots added. Tap "Add Slot" to specify when you're available.
+            </Text>
+          ) : (
+            <View style={{ gap: 8 }}>
+              {freeSlots.map((slot, i) => (
+                <View key={i} style={[styles.slotRow, { backgroundColor: colors.muted }]}>
+                  <TimeField value={slot.start} onChange={(v) => updateFreeSlot(i, "start", v)} colors={colors} compact />
+                  <Text style={[styles.toLabel, { color: colors.mutedForeground }]}>to</Text>
+                  <TimeField value={slot.end} onChange={(v) => updateFreeSlot(i, "end", v)} colors={colors} compact />
+                  <TouchableOpacity onPress={() => removeFreeSlot(i)} style={styles.trashBtn}>
+                    <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+          )}
+        </Section>
+
+        {/* Food Preferences */}
+        <Section
+          title="Food Preferences"
+          subtitle="Used by Amy AI to suggest appropriate meals"
+          icon="restaurant-outline"
+          colors={colors}
+        >
+          <Field label="Diet Type" colors={colors}>
+            <ChipPicker options={FOOD_TYPES} value={foodType} onChange={setFoodType} colors={colors} />
+          </Field>
+          <Field label="Allergies / Foods to Avoid" colors={colors}>
+            <TextInput
+              style={[
+                styles.input,
+                styles.textArea,
+                { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.background },
+              ]}
+              value={allergies}
+              onChangeText={setAllergies}
+              placeholder="e.g. peanuts, shellfish, dairy, gluten…"
+              placeholderTextColor={colors.mutedForeground}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+            />
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>
+              List allergies or ingredients to avoid in AI meal suggestions.
+            </Text>
+          </Field>
+        </Section>
+
+        {/* Save */}
+        <TouchableOpacity
+          onPress={handleSave}
+          disabled={saving}
+          style={[styles.saveBtn, { backgroundColor: colors.primary, opacity: saving ? 0.6 : 1 }]}
+        >
+          {saving ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Ionicons name="save-outline" size={16} color="#fff" />
+              <Text style={styles.saveText}>Save Profile</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        {/* Sign out */}
         <TouchableOpacity
           style={[styles.logoutBtn, { backgroundColor: "#FEF2F2", borderColor: "#FECACA" }]}
           onPress={handleLogout}
-          testID="logout-btn"
         >
           <Ionicons name="log-out-outline" size={20} color="#EF4444" />
           <Text style={styles.logoutText}>Sign Out</Text>
@@ -216,49 +405,163 @@ export default function ProfileScreen() {
   );
 }
 
-type InfoRowProps = { icon: React.ComponentProps<typeof Ionicons>["name"]; label: string; value: string; colors: Colors };
-
-function InfoRow({ icon, label, value, colors }: InfoRowProps) {
+// ─── Reusable building blocks ─────────────────────────────────────────────
+function Section({
+  title, subtitle, icon, colors, children, headerRight,
+}: {
+  title: string; subtitle?: string; icon?: React.ComponentProps<typeof Ionicons>["name"];
+  colors: Colors; children: React.ReactNode; headerRight?: React.ReactNode;
+}) {
   return (
-    <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
-      <View style={[styles.infoIcon, { backgroundColor: colors.secondary }]}>
-        <Ionicons name={icon} size={16} color={colors.primary} />
+    <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View style={styles.sectionHeader}>
+        <View style={{ flex: 1 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            {icon ? <Ionicons name={icon} size={16} color={colors.primary} /> : null}
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{title}</Text>
+          </View>
+          {subtitle ? (
+            <Text style={[styles.sectionSub, { color: colors.mutedForeground }]}>{subtitle}</Text>
+          ) : null}
+        </View>
+        {headerRight}
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.infoLabel, { color: colors.mutedForeground }]}>{label}</Text>
-        <Text style={[styles.infoValue, { color: colors.foreground }]}>{value}</Text>
-      </View>
+      <View style={{ gap: 14 }}>{children}</View>
     </View>
+  );
+}
+
+function Field({
+  label, colors, children, flex,
+}: { label: string; colors: Colors; children: React.ReactNode; flex?: boolean }) {
+  return (
+    <View style={[{ gap: 6 }, flex && { flex: 1 }]}>
+      <Text style={[styles.label, { color: colors.mutedForeground }]}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function ChipPicker({
+  options, value, onChange, colors,
+}: { options: { label: string; value: string }[]; value: string; onChange: (v: string) => void; colors: Colors }) {
+  return (
+    <View style={styles.chipRow}>
+      {options.map((opt) => {
+        const active = value === opt.value;
+        return (
+          <TouchableOpacity
+            key={opt.value || "_empty"}
+            onPress={() => { Haptics.selectionAsync(); onChange(opt.value); }}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: active ? colors.primary : colors.background,
+                borderColor: active ? colors.primary : colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>{opt.label}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function TimeField({
+  value, onChange, colors, compact,
+}: { value: string; onChange: (v: string) => void; colors: Colors; compact?: boolean }) {
+  return (
+    <TextInput
+      style={[
+        styles.input,
+        compact && { height: 36, paddingHorizontal: 10, fontSize: 13, flex: 1 },
+        { color: colors.foreground, borderColor: colors.border, backgroundColor: compact ? "#fff" : colors.background },
+      ]}
+      value={value}
+      onChangeText={onChange}
+      placeholder="HH:MM"
+      placeholderTextColor={colors.mutedForeground}
+      keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "default"}
+      maxLength={5}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 },
-  headerTitle: { fontSize: 28, fontFamily: "Inter_700Bold" },
-  editBtn: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  avatarSection: { flexDirection: "row", alignItems: "center", gap: 16, padding: 20, borderRadius: 20, borderWidth: 1, marginBottom: 16 },
-  avatar: { width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
-  avatarText: { fontSize: 26, fontFamily: "Inter_700Bold", color: "#fff" },
-  profileName: { fontSize: 20, fontFamily: "Inter_700Bold", marginBottom: 3 },
-  profileEmail: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  statsRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
-  statCard: { flex: 1, borderRadius: 16, padding: 16, alignItems: "center", gap: 4 },
-  statNum: { fontSize: 24, fontFamily: "Inter_700Bold" },
-  statLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
-  infoCard: { borderRadius: 18, borderWidth: 1, overflow: "hidden", marginBottom: 20 },
-  infoRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderBottomWidth: 1 },
-  infoIcon: { width: 34, height: 34, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  infoLabel: { fontSize: 11, fontFamily: "Inter_500Medium", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
-  infoValue: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
-  editCard: { borderRadius: 18, borderWidth: 1, padding: 20, gap: 16, marginBottom: 20 },
-  editCardTitle: { fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 4 },
-  fieldGroup: { gap: 8 },
-  fieldLabel: { fontSize: 12, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.5 },
-  textInput: { height: 48, borderRadius: 12, borderWidth: 1.5, paddingHorizontal: 14, fontSize: 15, fontFamily: "Inter_400Regular" },
+  center: { alignItems: "center", justifyContent: "center" },
+
+  headerRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
+  headerTitle: { fontSize: 24, fontFamily: "Inter_700Bold" },
+  headerSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+
+  avatarSection: {
+    flexDirection: "row", alignItems: "center", gap: 16,
+    padding: 16, borderRadius: 20, borderWidth: 1, marginBottom: 16,
+  },
+  avatarWrap: { position: "relative" },
+  avatar: { width: 80, height: 80, borderRadius: 40, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontSize: 32, fontFamily: "Inter_700Bold", color: "#fff" },
+  cameraBtn: {
+    position: "absolute", bottom: -2, right: -2,
+    width: 26, height: 26, borderRadius: 13,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 2, borderColor: "#fff",
+  },
+  profileName: { fontSize: 18, fontFamily: "Inter_700Bold", marginBottom: 2 },
+  profileEmail: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  statsMini: { flexDirection: "row", marginTop: 8, gap: 6 },
+  statChip: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 },
+  statChipText: { fontSize: 11, fontFamily: "Inter_700Bold" },
+
+  section: {
+    borderRadius: 20, borderWidth: 1, padding: 16, marginBottom: 14,
+  },
+  sectionHeader: { flexDirection: "row", alignItems: "flex-start", marginBottom: 14 },
+  sectionTitle: { fontSize: 16, fontFamily: "Inter_700Bold" },
+  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
+
+  label: { fontSize: 12, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.5 },
+  hint: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
+
+  input: {
+    height: 44, borderRadius: 12, borderWidth: 1.5,
+    paddingHorizontal: 14, fontSize: 14, fontFamily: "Inter_400Regular",
+  },
+  textArea: { height: 80, paddingTop: 10, paddingBottom: 10 },
+
+  row2: { flexDirection: "row", gap: 12 },
+
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5 },
-  chipText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  logoutBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
+  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, borderWidth: 1.5 },
+  chipText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
+
+  smallBtn: {
+    flexDirection: "row", alignItems: "center", gap: 4,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, borderWidth: 1.5,
+  },
+  smallBtnText: { fontSize: 12, fontFamily: "Inter_700Bold" },
+
+  emptyText: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", paddingVertical: 12 },
+
+  slotRow: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    padding: 8, borderRadius: 12,
+  },
+  toLabel: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  trashBtn: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+
+  saveBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    paddingVertical: 14, borderRadius: 16, marginBottom: 12,
+  },
+  saveText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
+
+  logoutBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+    paddingVertical: 14, borderRadius: 16, borderWidth: 1,
+  },
   logoutText: { color: "#EF4444", fontSize: 15, fontFamily: "Inter_600SemiBold" },
 });

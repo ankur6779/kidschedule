@@ -1,322 +1,972 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useMemo, useCallback } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  ActivityIndicator, Platform, FlatList,
+  ActivityIndicator, Platform, FlatList, TextInput, Share,
+  useWindowDimensions, NativeSyntheticEvent, NativeScrollEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { useColors } from "@/hooks/useColors";
+import { LinearGradient } from "expo-linear-gradient";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
 
-type Child = { id: number; name: string; age: number };
-
-type Win = {
-  win: number; title: string; objective: string;
-  deep_explanation: string; actions: string[];
-  example: string; micro_task: string; duration: string;
+// ─── Types ─────────────────────────────────────────────────────────────────
+interface GoalItem { id: string; title: string; emoji: string; bg: [string, string] }
+interface GoalCategory { id: string; title: string; emoji: string; bg: [string, string]; items: GoalItem[] }
+interface Win {
+  win: number; title: string; objective: string; deep_explanation: string;
+  actions: string[]; example: string; mistake_to_avoid: string;
+  micro_task: string; duration: string; science_reference: string;
+}
+interface Plan { title: string; root_cause: string; summary: string; wins: Win[] }
+type Phase = "goals" | "questions" | "loading" | "result";
+type Feedback = "yes" | "somewhat" | "no";
+type Question = {
+  id: "ageGroup" | "severity" | "triggers" | "routine" | "goalRefinement";
+  prompt: string; type: "single" | "multi"; options: string[];
 };
 
-type CoachPlan = { title: string; root_cause: string; summary: string; wins: Win[] };
-type CoachApiResponse = { plan?: CoachPlan; title?: string; wins?: Win[]; root_cause?: string; summary?: string };
+// ─── Goals (categorized) — mirrors web ────────────────────────────────────
+const GOAL_CATEGORIES: GoalCategory[] = [
+  {
+    id: "behavior", title: "Behavior", emoji: "🎯", bg: ["#FFE4E6", "#FED7AA"],
+    items: [
+      { id: "manage-tantrums",      title: "Manage Tantrums",      emoji: "😤", bg: ["#FFE4E6", "#FBCFE8"] },
+      { id: "handle-aggression",    title: "Handle Aggression",    emoji: "✋", bg: ["#FEE2E2", "#FECACA"] },
+      { id: "reduce-defiance",      title: "Reduce Defiance",      emoji: "🛑", bg: ["#FEF3C7", "#FED7AA"] },
+      { id: "emotional-regulation", title: "Emotional Regulation", emoji: "💗", bg: ["#FCE7F3", "#FBCFE8"] },
+      { id: "separation-anxiety",   title: "Separation Anxiety",   emoji: "🫂", bg: ["#EDE9FE", "#DDD6FE"] },
+    ],
+  },
+  {
+    id: "screen-focus", title: "Screen & Focus", emoji: "📱", bg: ["#E0F2FE", "#C7D2FE"],
+    items: [
+      { id: "balance-screen-time",          title: "Balance Screen Time",        emoji: "📱", bg: ["#E0F2FE", "#BFDBFE"] },
+      { id: "reduce-mobile-addiction",      title: "Reduce Mobile Addiction",    emoji: "📵", bg: ["#DBEAFE", "#C7D2FE"] },
+      { id: "improve-focus-span",           title: "Improve Focus Span",         emoji: "🎯", bg: ["#EDE9FE", "#FBCFE8"] },
+      { id: "reduce-shorts-overuse",        title: "Reduce Shorts Overuse",      emoji: "🎬", bg: ["#FFE4E6", "#FECACA"] },
+      { id: "reduce-instant-gratification", title: "Reduce Instant Gratification",emoji: "⏳", bg: ["#FEF3C7", "#FDE68A"] },
+    ],
+  },
+  {
+    id: "eating", title: "Eating", emoji: "🍽️", bg: ["#D1FAE5", "#CCFBF1"],
+    items: [
+      { id: "encourage-independent-eating", title: "Independent Eating",  emoji: "🥄", bg: ["#D1FAE5", "#BBF7D0"] },
+      { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",emoji: "🥦", bg: ["#CCFBF1", "#A7F3D0"] },
+      { id: "stop-junk-food-craving",       title: "Stop Junk Cravings",  emoji: "🍟", bg: ["#FED7AA", "#FDE68A"] },
+      { id: "healthy-eating-routine",       title: "Healthy Eating",      emoji: "🍎", bg: ["#BBF7D0", "#D1FAE5"] },
+      { id: "improve-mealtime-behavior",    title: "Mealtime Behavior",   emoji: "🍽️", bg: ["#ECFCCB", "#BBF7D0"] },
+    ],
+  },
+  {
+    id: "sleep", title: "Sleep", emoji: "😴", bg: ["#E0E7FF", "#EDE9FE"],
+    items: [
+      { id: "improve-sleep-patterns",   title: "Improve Sleep",        emoji: "😴", bg: ["#E0E7FF", "#DDD6FE"] },
+      { id: "fix-bedtime-resistance",   title: "Bedtime Resistance",   emoji: "🛏️", bg: ["#EDE9FE", "#E0E7FF"] },
+      { id: "stop-night-waking",        title: "Stop Night Waking",    emoji: "🌙", bg: ["#DBEAFE", "#E0E7FF"] },
+      { id: "consistent-sleep-routine", title: "Consistent Routine",   emoji: "🕘", bg: ["#EDE9FE", "#DDD6FE"] },
+      { id: "reduce-late-sleeping",     title: "Reduce Late Sleep",    emoji: "⏰", bg: ["#E0E7FF", "#DBEAFE"] },
+    ],
+  },
+  {
+    id: "learning", title: "Learning", emoji: "📚", bg: ["#EDE9FE", "#FCE7F3"],
+    items: [
+      { id: "boost-concentration",        title: "Boost Concentration",  emoji: "🎯", bg: ["#EDE9FE", "#FBCFE8"] },
+      { id: "build-study-discipline",     title: "Study Discipline",     emoji: "📖", bg: ["#DBEAFE", "#BFDBFE"] },
+      { id: "increase-learning-interest", title: "Learning Interest",    emoji: "💡", bg: ["#FEF3C7", "#FDE68A"] },
+      { id: "reduce-homework-resistance", title: "Homework Resistance",  emoji: "✏️", bg: ["#CCFBF1", "#A7F3D0"] },
+      { id: "develop-growth-mindset",     title: "Growth Mindset",       emoji: "🌱", bg: ["#BBF7D0", "#ECFCCB"] },
+    ],
+  },
+  {
+    id: "parenting-challenges", title: "Parenting", emoji: "💝", bg: ["#FEF3C7", "#FED7AA"],
+    items: [
+      { id: "manage-grandparents-interference", title: "Grandparents",         emoji: "👵", bg: ["#FFE4E6", "#FBCFE8"] },
+      { id: "align-parenting-between-parents",  title: "Align Co-Parenting",   emoji: "🤝", bg: ["#EDE9FE", "#DDD6FE"] },
+      { id: "handle-working-parent-guilt",      title: "Working Parent Guilt", emoji: "💼", bg: ["#E0F2FE", "#BFDBFE"] },
+      { id: "set-consistent-family-rules",      title: "Family Rules",         emoji: "📋", bg: ["#FEF3C7", "#FED7AA"] },
+    ],
+  },
+];
+const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
 
-const GOALS = [
-  { id: "manage-tantrums", label: "Tantrums" },
-  { id: "emotional-regulation", label: "Emotional Regulation" },
-  { id: "reduce-defiance", label: "Not Listening" },
-  { id: "handle-aggression", label: "Aggression" },
-  { id: "separation-anxiety", label: "Separation Anxiety" },
-  { id: "balance-screen-time", label: "Screen Time" },
-  { id: "improve-sleep-patterns", label: "Sleep Issues" },
-  { id: "fix-bedtime-resistance", label: "Bedtime Resistance" },
-  { id: "navigate-fussy-eating", label: "Fussy Eating" },
-  { id: "boost-concentration", label: "Focus/Concentration" },
-  { id: "reduce-homework-resistance", label: "Homework Resistance" },
-  { id: "handle-working-parent-guilt", label: "Working Parent Guilt" },
+const COMMON_TRIGGERS = [
+  "Hunger or tiredness", "Transitions or changes", "Being told 'no'", "Boredom",
+  "Sibling conflict", "School/social stress", "Inconsistent rules", "Sensory overload",
+];
+const QUESTIONS: Question[] = [
+  { id: "ageGroup",       prompt: "What's your child's age?",          type: "single", options: ["2–4 years", "5–7 years", "8–10 years"] },
+  { id: "severity",       prompt: "How challenging is it right now?",  type: "single", options: ["Mild – occasional", "Moderate – frequent", "Severe – daily struggle"] },
+  { id: "triggers",       prompt: "What triggers it most? (pick any)", type: "multi",  options: COMMON_TRIGGERS },
+  { id: "routine",        prompt: "What's your current approach?",     type: "single", options: ["No clear routine yet", "I try but it's inconsistent", "Strict rules, lots of pushback", "Trying gentle parenting", "Just starting to figure it out"] },
+  { id: "goalRefinement", prompt: "What matters most to you?",         type: "single", options: ["Reduce frequency", "Stay calm myself", "Build my child's skills", "Long-term healthy pattern"] },
 ];
 
-const AGE_GROUPS = ["2-4", "5-7", "8-10"];
-
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════════════════════════════════
 export default function CoachScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const authFetch = useAuthFetch();
-  const [selectedChild, setSelectedChild] = useState<number | null>(null);
-  const [selectedGoal, setSelectedGoal] = useState<string | null>(null);
-  const [ageGroup, setAgeGroup] = useState<string>("5-7");
-  const [plan, setPlan] = useState<CoachPlan | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [expandedWin, setExpandedWin] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { width } = useWindowDimensions();
 
-  const { data: children = [] } = useQuery<Child[]>({
-    queryKey: ["children"],
-    queryFn: () => authFetch("/api/children").then(r => r.json()),
-  });
+  const [phase, setPhase] = useState<Phase>("goals");
+  const [goalSearch, setGoalSearch] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [goalId, setGoalId] = useState<string>("");
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [sessionId, setSessionId] = useState<string>("");
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [feedbackByWin, setFeedbackByWin] = useState<Record<number, Feedback>>({});
+  const [extending, setExtending] = useState(false);
 
-  const handleGenerate = async () => {
-    if (!selectedGoal) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setLoading(true);
-    setError(null);
-    setPlan(null);
+  const scrollerRef = useRef<FlatList<Win>>(null);
+  const lastPayloadRef = useRef<{ goal: string; ageGroup: string; severity: string; triggers: string[]; routine: string; } | null>(null);
+  const originalWinCountRef = useRef<number>(0);
 
-    const child = children.find(c => c.id === selectedChild);
-    const ag = child ? (child.age < 5 ? "2-4" : child.age < 8 ? "5-7" : "8-10") : ageGroup;
+  const searchQuery = goalSearch.toLowerCase().trim();
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery) return GOAL_CATEGORIES;
+    return GOAL_CATEGORIES
+      .map((c) => ({ ...c, items: c.items.filter((g) => g.title.toLowerCase().includes(searchQuery)) }))
+      .filter((c) => c.items.length > 0);
+  }, [searchQuery]);
+  const totalMatches = filteredCategories.reduce((n, c) => n + c.items.length, 0);
+  const selectedGoal = ALL_GOALS.find((g) => g.id === goalId);
 
-    try {
-      const res = await authFetch("/api/ai-coach", {
-        method: "POST",
-        body: JSON.stringify({ goal: selectedGoal, ageGroup: ag }),
-      });
+  const progressPct = useMemo(() => {
+    const denom = originalWinCountRef.current;
+    if (!plan || denom === 0) return 0;
+    const sum = Object.values(feedbackByWin).reduce(
+      (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0), 0,
+    );
+    return Math.min(100, Math.round((sum / denom) * 100));
+  }, [feedbackByWin, plan]);
 
-      const contentType = res.headers.get("content-type") ?? "";
+  // ─── Goal pick → questions
+  const handlePickGoal = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setGoalId(id); setQIndex(0); setAnswers({}); setPhase("questions");
+  };
 
-      if (contentType.includes("text/event-stream") || contentType.includes("text/plain")) {
-        const text = await res.text();
-        let accumulated = "";
-        const lines = text.split("\n");
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const raw = line.slice(6).trim();
-            if (raw === "[DONE]") break;
-            try {
-              const parsed = JSON.parse(raw) as { choices?: { delta?: { content?: string } }[]; content?: string };
-              const delta = parsed?.choices?.[0]?.delta?.content ?? parsed?.content ?? "";
-              accumulated += delta;
-            } catch {
-              accumulated += raw;
-            }
-          }
-        }
-        try {
-          const outer = JSON.parse(accumulated) as CoachApiResponse;
-          const coachPlan: CoachPlan | undefined = outer?.plan ?? (
-            outer.title && outer.wins ? { title: outer.title, root_cause: outer.root_cause ?? "", summary: outer.summary ?? "", wins: outer.wins } : undefined
-          );
-          if (coachPlan?.title && coachPlan?.wins) {
-            setPlan(coachPlan);
-          } else {
-            setError("Could not parse plan from response.");
-          }
-        } catch {
-          setError("Could not generate plan. Please try again.");
-        }
-      } else {
-        const data = (await res.json()) as CoachApiResponse;
-        const coachPlan: CoachPlan | undefined = data?.plan ?? (
-          data.title && data.wins ? { title: data.title, root_cause: data.root_cause ?? "", summary: data.summary ?? "", wins: data.wins } : undefined
-        );
-        if (coachPlan?.title && coachPlan?.wins) {
-          setPlan(coachPlan);
-        } else {
-          setError("Could not generate plan. Please try again.");
-        }
-      }
-    } catch {
-      setError("Network error. Please check your connection.");
-    } finally {
-      setLoading(false);
+  const currentQ = QUESTIONS[qIndex];
+  const currentAnswer = currentQ ? answers[currentQ.id] : undefined;
+  const isAnswered = currentQ?.type === "multi"
+    ? Array.isArray(currentAnswer) && currentAnswer.length > 0
+    : typeof currentAnswer === "string" && currentAnswer.length > 0;
+
+  const handleSelectOption = (opt: string) => {
+    if (!currentQ) return;
+    Haptics.selectionAsync();
+    if (currentQ.type === "single") {
+      setAnswers((a) => ({ ...a, [currentQ.id]: opt }));
+    } else {
+      const cur = (answers[currentQ.id] as string[]) ?? [];
+      const next = cur.includes(opt) ? cur.filter((x) => x !== opt) : [...cur, opt];
+      setAnswers((a) => ({ ...a, [currentQ.id]: next }));
     }
   };
 
-  const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
-  const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+  const handleNextQ = () => {
+    if (qIndex < QUESTIONS.length - 1) setQIndex((i) => i + 1);
+    else submitPlan();
+  };
+  const handleBackQ = () => {
+    if (qIndex > 0) setQIndex((i) => i - 1);
+    else setPhase("goals");
+  };
 
-  return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView
-        contentContainerStyle={{ paddingTop: topPad + 16, paddingBottom: botPad + 90, paddingHorizontal: 20 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.headerRow}>
-          <View style={[styles.amyBadge, { backgroundColor: colors.secondary }]}>
-            <Ionicons name="bulb" size={20} color={colors.primary} />
-          </View>
-          <View>
-            <Text style={[styles.headerTitle, { color: colors.foreground }]}>Amy Coach</Text>
-            <Text style={[styles.headerSub, { color: colors.mutedForeground }]}>AI-powered parenting guidance</Text>
-          </View>
+  // ─── Submit
+  const submitPlan = async () => {
+    setPhase("loading");
+    setActiveIdx(0); setFeedbackByWin({});
+    const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10" };
+    const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
+    const payload = {
+      goal: goalId,
+      ageGroup: ageMap[answers.ageGroup as string] ?? (answers.ageGroup as string) ?? "5-7",
+      severity: sevMap[answers.severity as string] ?? "moderate",
+      triggers: (answers.triggers as string[]) ?? [],
+      routine: (answers.routine as string) ?? "",
+      goalRefinement: (answers.goalRefinement as string) ?? "",
+    };
+    lastPayloadRef.current = {
+      goal: payload.goal, ageGroup: payload.ageGroup, severity: payload.severity,
+      triggers: payload.triggers, routine: payload.routine,
+    };
+    try {
+      const res = await authFetch("/api/ai-coach", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Server ${res.status}`);
+      const data = (await res.json()) as { plan: Plan; sessionId: string };
+      setPlan(data.plan);
+      originalWinCountRef.current = data.plan.wins.length;
+      setSessionId(data.sessionId);
+      setPhase("result");
+    } catch {
+      setPhase("questions");
+    }
+  };
+
+  const goToCard = useCallback((i: number) => {
+    scrollerRef.current?.scrollToIndex({ index: i, animated: true });
+    setActiveIdx(i);
+  }, []);
+
+  const onScrollerMomentum = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const idx = Math.round(e.nativeEvent.contentOffset.x / width);
+    if (idx !== activeIdx) setActiveIdx(idx);
+  };
+
+  // ─── Feedback
+  const submitFeedback = async (winNumber: number, feedback: Feedback) => {
+    if (!plan || !sessionId) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const newMap = { ...feedbackByWin, [winNumber]: feedback };
+    setFeedbackByWin(newMap);
+    try {
+      await authFetch("/api/ai-coach/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId, goalId, planTitle: plan.title,
+          winNumber, totalWins: plan.wins.length, feedback,
+        }),
+      });
+    } catch { /* silent */ }
+    const newSum = Object.values(newMap).reduce(
+      (acc, f) => acc + (f === "yes" ? 1 : f === "somewhat" ? 0.5 : 0), 0,
+    );
+    const denom = originalWinCountRef.current || plan.wins.length;
+    const newPct = Math.min(100, Math.round((newSum / denom) * 100));
+    const isLastCard = activeIdx === plan.wins.length - 1;
+    if (newPct < 100 && (feedback === "no" || isLastCard)) {
+      await requestExtension(winNumber);
+    } else {
+      setTimeout(() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1)), 250);
+    }
+  };
+
+  const requestExtension = async (failedWinNumber: number) => {
+    if (!plan || !lastPayloadRef.current || extending) return;
+    const failedWin = plan.wins.find((w) => w.win === failedWinNumber);
+    if (!failedWin) return;
+    const nextIdx = activeIdx + 1;
+    setExtending(true);
+    try {
+      const startWinNumber = plan.wins.length + 1;
+      const res = await authFetch("/api/ai-coach/extend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...lastPayloadRef.current,
+          failedWinTitle: failedWin.title, failedWinNumber, startWinNumber,
+          existingWinTitles: plan.wins.map((w) => w.title),
+        }),
+      });
+      if (!res.ok) throw new Error(`Server ${res.status}`);
+      const data = (await res.json()) as { wins: Win[] };
+      if (Array.isArray(data.wins) && data.wins.length > 0) {
+        setPlan((p) => p ? { ...p, wins: [...p.wins, ...data.wins] } : p);
+        setTimeout(() => goToCard(nextIdx), 80);
+      }
+    } catch { /* silent */ } finally {
+      setExtending(false);
+    }
+  };
+
+  const handleShare = async () => {
+    if (!plan) return;
+    const text = `${plan.title}\n\n${plan.summary}\n\nMy ${plan.wins.length} wins from AmyNest Amy Coach:\n${plan.wins.map((w) => `${w.win}. ${w.title}`).join("\n")}`;
+    try { await Share.share({ title: plan.title, message: text }); } catch {}
+  };
+
+  const handleStartOver = () => {
+    setPhase("goals"); setGoalId(""); setAnswers({}); setPlan(null);
+    originalWinCountRef.current = 0; setSessionId(""); setActiveIdx(0);
+    setFeedbackByWin({}); lastPayloadRef.current = null;
+  };
+
+  const topPad = insets.top + (Platform.OS === "web" ? 16 : 0);
+  const botPad = insets.bottom + (Platform.OS === "web" ? 16 : 0);
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ── PHASE: GOALS ──────────────────────────────────────────────────────
+  if (phase === "goals") {
+    const activeCat = selectedCategoryId
+      ? GOAL_CATEGORIES.find((c) => c.id === selectedCategoryId) ?? null
+      : null;
+
+    // SEARCH MODE
+    if (searchQuery) {
+      return (
+        <View style={[styles.screen, { paddingTop: topPad }]}>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
+            <View style={styles.topBar}>
+              <View style={{ width: 36 }} />
+              <Text style={styles.topTitle}>Search Goals</Text>
+              <View style={{ width: 36 }} />
+            </View>
+            <View style={styles.searchBox}>
+              <Ionicons name="search" size={16} color="#9CA3AF" />
+              <TextInput
+                value={goalSearch}
+                onChangeText={setGoalSearch}
+                placeholder="Search goals…"
+                placeholderTextColor="#9CA3AF"
+                autoFocus
+                style={styles.searchInput}
+              />
+            </View>
+            {filteredCategories.map((cat) => (
+              <View key={cat.id} style={{ marginTop: 18 }}>
+                <Text style={styles.catHeader}>{cat.emoji}  {cat.title.toUpperCase()}</Text>
+                <View style={{ gap: 10, marginTop: 8 }}>
+                  {cat.items.map((g) => (
+                    <TouchableOpacity key={g.id} onPress={() => handlePickGoal(g.id)} activeOpacity={0.85}>
+                      <LinearGradient colors={g.bg} style={styles.goalRow}>
+                        <Text style={{ fontSize: 24 }}>{g.emoji}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.goalRowTitle}>{g.title}</Text>
+                          <Text style={styles.goalRowSub}>Tap to start →</Text>
+                        </View>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            ))}
+            {totalMatches === 0 && (
+              <Text style={styles.emptyText}>No goals match "{goalSearch}"</Text>
+            )}
+          </ScrollView>
         </View>
+      );
+    }
 
-        {children.length > 0 && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Select Child (optional)</Text>
-            <FlatList
-              horizontal
-              data={children}
-              keyExtractor={c => String(c.id)}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 10 }}
-              scrollEnabled={children.length > 2}
-              renderItem={({ item: c }) => {
-                const active = selectedChild === c.id;
-                return (
-                  <TouchableOpacity
-                    style={[styles.chip, { backgroundColor: active ? colors.primary : colors.card, borderColor: active ? colors.primary : colors.border }]}
-                    onPress={() => setSelectedChild(active ? null : c.id)}
-                  >
-                    <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>{c.name}</Text>
-                  </TouchableOpacity>
-                );
-              }}
+    // SUB-CATEGORY MODE
+    if (activeCat) {
+      return (
+        <View style={[styles.screen, { paddingTop: topPad }]}>
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
+            <View style={styles.topBar}>
+              <TouchableOpacity onPress={() => setSelectedCategoryId(null)} style={styles.backBtn}>
+                <Ionicons name="chevron-back" size={20} color="#6B7280" />
+                <Text style={styles.backText}>Categories</Text>
+              </TouchableOpacity>
+              <View style={{ width: 36 }} />
+            </View>
+            <LinearGradient colors={activeCat.bg} style={styles.catHeroBox}>
+              <Text style={{ fontSize: 36 }}>{activeCat.emoji}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.catHeroTitle}>{activeCat.title}</Text>
+                <Text style={styles.catHeroSub}>{activeCat.items.length} goals — pick one to start</Text>
+              </View>
+            </LinearGradient>
+
+            <View style={[styles.searchBox, { marginTop: 14 }]}>
+              <Ionicons name="search" size={16} color="#9CA3AF" />
+              <TextInput
+                value={goalSearch}
+                onChangeText={setGoalSearch}
+                placeholder={`Search in ${activeCat.title}…`}
+                placeholderTextColor="#9CA3AF"
+                style={styles.searchInput}
+              />
+            </View>
+
+            <View style={{ gap: 10, marginTop: 16 }}>
+              {activeCat.items.map((g) => (
+                <TouchableOpacity key={g.id} onPress={() => handlePickGoal(g.id)} activeOpacity={0.85}>
+                  <LinearGradient colors={g.bg} style={styles.goalRow}>
+                    <Text style={{ fontSize: 28 }}>{g.emoji}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.goalRowTitle}>{g.title}</Text>
+                      <Text style={styles.goalRowSub}>Tap to start →</Text>
+                    </View>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      );
+    }
+
+    // CATEGORY GRID
+    return (
+      <View style={[styles.screen, { paddingTop: topPad }]}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
+          <View style={styles.heroRow}>
+            <View style={styles.heroBadge}>
+              <Ionicons name="sparkles" size={20} color="#7C3AED" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.heroTitle}>Amy Coach</Text>
+              <Text style={styles.heroSub}>Pick a category — I'll build a 12-step plan</Text>
+            </View>
+          </View>
+
+          <View style={styles.searchBox}>
+            <Ionicons name="search" size={16} color="#9CA3AF" />
+            <TextInput
+              value={goalSearch}
+              onChangeText={setGoalSearch}
+              placeholder="Search all goals…"
+              placeholderTextColor="#9CA3AF"
+              style={styles.searchInput}
             />
           </View>
-        )}
 
-        {!selectedChild && (
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>Child's Age Group</Text>
-            <View style={styles.row}>
-              {AGE_GROUPS.map(ag => {
-                const active = ageGroup === ag;
-                return (
-                  <TouchableOpacity
-                    key={ag}
-                    style={[styles.chip, { backgroundColor: active ? colors.primary : colors.card, borderColor: active ? colors.primary : colors.border, flex: 1 }]}
-                    onPress={() => setAgeGroup(ag)}
-                  >
-                    <Text style={[styles.chipText, { color: active ? "#fff" : colors.foreground }]}>{ag} yrs</Text>
-                  </TouchableOpacity>
-                );
-              })}
+          <View style={styles.catGrid}>
+            {GOAL_CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id} style={styles.catCell}
+                onPress={() => { Haptics.selectionAsync(); setSelectedCategoryId(cat.id); }}
+                activeOpacity={0.85}
+              >
+                <LinearGradient colors={cat.bg} style={styles.catCellInner}>
+                  <Text style={{ fontSize: 36, marginBottom: 8 }}>{cat.emoji}</Text>
+                  <Text style={styles.catCellTitle}>{cat.title}</Text>
+                  <Text style={styles.catCellSub}>{cat.items.length} goals →</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── PHASE: QUESTIONS ──────────────────────────────────────────────────
+  if (phase === "questions" && currentQ) {
+    const qProgress = ((qIndex + 1) / QUESTIONS.length) * 100;
+    return (
+      <View style={[styles.screen, { paddingTop: topPad }]}>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 120 }}>
+          <TouchableOpacity onPress={handleBackQ} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={20} color="#6B7280" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+
+          <View style={{ marginTop: 18 }}>
+            <View style={styles.qProgressRow}>
+              <Text style={styles.qProgressText}>Question {qIndex + 1} of {QUESTIONS.length}</Text>
+              <Text style={styles.qProgressGoal}>{selectedGoal?.title}</Text>
             </View>
+            <View style={styles.qProgressBar}>
+              <LinearGradient
+                colors={["#8B5CF6", "#EC4899"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={[styles.qProgressFill, { width: `${qProgress}%` }]}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.qPrompt}>{currentQ.prompt}</Text>
+          {currentQ.type === "multi" && (
+            <Text style={styles.qHint}>Pick any that apply</Text>
+          )}
+
+          <View style={{ gap: 8, marginTop: 16 }}>
+            {currentQ.options.map((opt) => {
+              const selected = currentQ.type === "multi"
+                ? ((answers[currentQ.id] as string[]) ?? []).includes(opt)
+                : answers[currentQ.id] === opt;
+              return (
+                <TouchableOpacity
+                  key={opt} onPress={() => handleSelectOption(opt)} activeOpacity={0.8}
+                  style={[styles.qOption, selected && styles.qOptionSelected]}
+                >
+                  <Text style={[styles.qOptionText, selected && styles.qOptionTextSelected]}>{opt}</Text>
+                  {selected && <Ionicons name="checkmark" size={20} color="#7C3AED" />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <TouchableOpacity
+            onPress={handleNextQ} disabled={!isAnswered} activeOpacity={0.85}
+            style={{ marginTop: 24, opacity: isAnswered ? 1 : 0.4 }}
+          >
+            <LinearGradient
+              colors={["#7C3AED", "#EC4899"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.qNextBtn}
+            >
+              <Text style={styles.qNextText}>
+                {qIndex < QUESTIONS.length - 1 ? "Next" : "Build My Plan ✨"}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  // ── PHASE: LOADING ────────────────────────────────────────────────────
+  if (phase === "loading") {
+    return (
+      <LinearGradient
+        colors={["#4C1D95", "#581C87", "#831843"]}
+        style={[styles.loaderScreen, { paddingTop: topPad, paddingBottom: botPad }]}
+      >
+        <View style={{ alignItems: "center", paddingHorizontal: 32 }}>
+          <View style={styles.loaderIcon}>
+            <Ionicons name="sparkles" size={48} color="#fff" />
+          </View>
+          <Text style={styles.loaderTitle}>Building your plan…</Text>
+          <Text style={styles.loaderSub}>
+            Analysing your answers and crafting 12 deep, research-backed wins for {selectedGoal?.title.toLowerCase()}. Takes ~10 seconds.
+          </Text>
+          <ActivityIndicator size="large" color="#fff" style={{ marginTop: 24 }} />
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  // ── PHASE: RESULT ─────────────────────────────────────────────────────
+  if (phase === "result" && plan) {
+    return (
+      <LinearGradient colors={["#FAF5FF", "#FDF4FF", "#F0F9FF"]} style={[styles.screen, { paddingTop: topPad }]}>
+        {/* Top bar */}
+        <View style={styles.resultTopBar}>
+          <TouchableOpacity onPress={handleStartOver} style={styles.iconBtn}>
+            <Ionicons name="arrow-back" size={18} color="#6D28D9" />
+          </TouchableOpacity>
+
+          <LinearGradient
+            colors={["#8B5CF6", "#EC4899"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+            style={styles.progressPill}
+          >
+            <Text style={styles.progressPillText}>Progress {progressPct}%</Text>
+          </LinearGradient>
+
+          <TouchableOpacity onPress={handleShare} style={styles.iconBtn}>
+            <Ionicons name="share-outline" size={16} color="#6D28D9" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Progress dots */}
+        <View style={styles.dotsRow}>
+          {plan.wins.map((_, i) => (
+            <TouchableOpacity
+              key={i} onPress={() => goToCard(i)}
+              style={[
+                styles.dot,
+                { backgroundColor: i <= activeIdx ? "#8B5CF6" : "rgba(139,92,246,0.2)" },
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* Card pager */}
+        <FlatList
+          ref={scrollerRef}
+          data={plan.wins}
+          keyExtractor={(w, i) => `${w.win}-${i}`}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={onScrollerMomentum}
+          getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}
+          renderItem={({ item: w, index: i }) => (
+            <WinCard
+              w={w}
+              total={plan.wins.length}
+              isFirst={i === 0}
+              planTitle={i === 0 ? plan.title : undefined}
+              planSummary={i === 0 ? plan.summary : undefined}
+              planRootCause={i === 0 ? plan.root_cause : undefined}
+              currentFeedback={feedbackByWin[w.win]}
+              extending={extending}
+              onFeedback={(f) => submitFeedback(w.win, f)}
+              width={width}
+            />
+          )}
+        />
+
+        {/* Extending banner */}
+        {extending && (
+          <View style={styles.extBanner}>
+            <ActivityIndicator size="small" color="#fff" />
+            <Text style={styles.extBannerText}>Loading 3 new strategies for you…</Text>
           </View>
         )}
 
+        {/* Bottom nav */}
+        <View style={[styles.resultBottomNav, { paddingBottom: botPad + 12 }]}>
+          <TouchableOpacity
+            onPress={() => goToCard(Math.max(0, activeIdx - 1))}
+            disabled={activeIdx === 0}
+            style={[styles.prevBtn, activeIdx === 0 && { opacity: 0.4 }]}
+          >
+            <Ionicons name="arrow-back" size={14} color="#6D28D9" />
+            <Text style={styles.prevBtnText}>Prev</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
+            disabled={activeIdx === plan.wins.length - 1}
+            activeOpacity={0.85}
+            style={{ opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1 }}
+          >
+            <LinearGradient
+              colors={["#8B5CF6", "#EC4899"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={styles.nextBtn}
+            >
+              <Text style={styles.nextBtnText}>Next</Text>
+              <Ionicons name="arrow-forward" size={14} color="#fff" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+    );
+  }
+
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// WIN CARD
+// ═══════════════════════════════════════════════════════════════════════════
+function WinCard({
+  w, total, isFirst, planTitle, planSummary, planRootCause,
+  currentFeedback, extending, onFeedback, width,
+}: {
+  w: Win; total: number; isFirst: boolean;
+  planTitle?: string; planSummary?: string; planRootCause?: string;
+  currentFeedback?: Feedback; extending: boolean;
+  onFeedback: (f: Feedback) => void; width: number;
+}) {
+  const isExtension = w.win > 12;
+  const cardColors: [string, string, string] = isExtension
+    ? ["#FEF3C7", "#FCE7F3", "#EDE9FE"]
+    : ["#FAF5FF", "#FDF4FF", "#F0F9FF"];
+
+  return (
+    <LinearGradient colors={cardColors} style={{ width, height: "100%" }}>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: 84, paddingBottom: 140, paddingHorizontal: 22 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Win counter chip */}
+        <LinearGradient
+          colors={isExtension ? ["#F59E0B", "#EC4899"] : ["#8B5CF6", "#EC4899"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+          style={styles.winChip}
+        >
+          <Text style={styles.winChipText}>
+            {isExtension ? "💛 EXTRA STRATEGY " : "WIN "}{w.win} / {total}
+          </Text>
+        </LinearGradient>
+
+        {isFirst && planTitle && (
+          <View style={styles.planHeaderBox}>
+            <Text style={styles.planHeaderEyebrow}>YOUR PLAN</Text>
+            <Text style={styles.planHeaderTitle}>{planTitle}</Text>
+            {planRootCause ? (
+              <View style={styles.rootCauseBox}>
+                <Text style={styles.rootCauseEyebrow}>🧠 ROOT CAUSE</Text>
+                <Text style={styles.rootCauseText}>{planRootCause}</Text>
+              </View>
+            ) : null}
+            <Text style={styles.planSummaryText}>{planSummary}</Text>
+          </View>
+        )}
+
+        <Text style={styles.winTitle}>{w.title}</Text>
+        <Text style={styles.winObjective}>{w.objective}</Text>
+
+        {w.deep_explanation ? (
+          <View style={styles.section}>
+            <Text style={[styles.sectionEyebrow, { color: "#4338CA" }]}>🔬 WHY THIS WORKS</Text>
+            <Text style={styles.sectionBody}>{w.deep_explanation}</Text>
+          </View>
+        ) : null}
+
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>What do you want help with?</Text>
-          <View style={styles.goalGrid}>
-            {GOALS.map(g => {
-              const active = selectedGoal === g.id;
+          <Text style={[styles.sectionEyebrow, { color: "#7C3AED" }]}>✅ DO THIS</Text>
+          <View style={{ gap: 10, marginTop: 4 }}>
+            {w.actions.map((a, i) => (
+              <View key={i} style={styles.actionRow}>
+                <LinearGradient
+                  colors={["#8B5CF6", "#EC4899"]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                  style={styles.actionDot}
+                >
+                  <Text style={styles.actionDotText}>{i + 1}</Text>
+                </LinearGradient>
+                <Text style={styles.actionText}>{a}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {w.example ? (
+          <View style={[styles.section, { backgroundColor: "rgba(220,252,231,0.8)", borderColor: "rgba(34,197,94,0.35)" }]}>
+            <Text style={[styles.sectionEyebrow, { color: "#15803D" }]}>💬 REAL EXAMPLE</Text>
+            <Text style={[styles.sectionBody, { color: "#14532D", fontStyle: "italic" }]}>{w.example}</Text>
+          </View>
+        ) : null}
+
+        {w.mistake_to_avoid ? (
+          <View style={[styles.section, { backgroundColor: "rgba(254,226,226,0.7)", borderColor: "rgba(248,113,113,0.4)" }]}>
+            <Text style={[styles.sectionEyebrow, { color: "#B91C1C" }]}>⚠️ MISTAKE TO AVOID</Text>
+            <Text style={[styles.sectionBody, { color: "#7F1D1D" }]}>{w.mistake_to_avoid}</Text>
+          </View>
+        ) : null}
+
+        {w.micro_task ? (
+          <LinearGradient
+            colors={["rgba(167,139,250,0.18)", "rgba(236,72,153,0.15)"]}
+            style={styles.microTaskBox}
+          >
+            <Text style={styles.microTaskEyebrow}>🎯 DO THIS TODAY (under 5 min)</Text>
+            <Text style={styles.microTaskBody}>{w.micro_task}</Text>
+          </LinearGradient>
+        ) : null}
+
+        <View style={{ flexDirection: "row", gap: 6, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
+          <View style={styles.durationChip}>
+            <Text style={styles.durationChipText}>⏱ {w.duration}</Text>
+          </View>
+        </View>
+
+        {w.science_reference ? (
+          <Text style={styles.scienceRef}>📚 Based on: {w.science_reference}</Text>
+        ) : null}
+
+        {/* Feedback */}
+        <View style={styles.feedbackBox}>
+          <Text style={styles.feedbackTitle}>How did this win go?</Text>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            {([
+              { v: "yes" as const,      label: "Worked",           color: "#15803D", bg: "rgba(34,197,94,0.15)",  border: "rgba(34,197,94,0.45)" },
+              { v: "somewhat" as const, label: "Partially",        color: "#A16207", bg: "rgba(251,191,36,0.15)", border: "rgba(251,191,36,0.45)" },
+              { v: "no" as const,       label: "Not for me",       color: "#B91C1C", bg: "rgba(248,113,113,0.12)",border: "rgba(248,113,113,0.4)" },
+            ]).map((b) => {
+              const selected = currentFeedback === b.v;
               return (
                 <TouchableOpacity
-                  key={g.id}
-                  style={[styles.goalChip, { backgroundColor: active ? colors.primary : colors.card, borderColor: active ? colors.primary : colors.border }]}
-                  onPress={() => setSelectedGoal(active ? null : g.id)}
+                  key={b.v}
+                  onPress={() => onFeedback(b.v)}
+                  disabled={extending}
+                  activeOpacity={0.7}
+                  style={[
+                    styles.fbBtn,
+                    {
+                      backgroundColor: selected ? b.color : b.bg,
+                      borderColor: selected ? b.color : b.border,
+                      opacity: extending ? 0.7 : 1,
+                    },
+                  ]}
                 >
-                  <Text style={[styles.goalChipText, { color: active ? "#fff" : colors.foreground }]}>{g.label}</Text>
+                  <Text style={[styles.fbBtnText, { color: selected ? "#fff" : b.color }]}>{b.label}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[styles.generateBtn, { backgroundColor: selectedGoal ? colors.primary : colors.muted, opacity: loading ? 0.7 : 1 }]}
-          onPress={handleGenerate}
-          disabled={!selectedGoal || loading}
-          testID="generate-plan-btn"
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" size="small" />
-          ) : (
-            <>
-              <Ionicons name="sparkles" size={18} color={selectedGoal ? "#fff" : colors.mutedForeground} />
-              <Text style={[styles.generateBtnText, { color: selectedGoal ? "#fff" : colors.mutedForeground }]}>
-                Generate Plan
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        {error && (
-          <View style={[styles.errorBox, { backgroundColor: "#FEF2F2", borderColor: "#FCA5A5" }]}>
-            <Ionicons name="alert-circle" size={16} color="#EF4444" />
-            <Text style={styles.errorText}>{error}</Text>
+        {currentFeedback === "no" && (
+          <View style={[styles.section, { backgroundColor: "rgba(254,243,199,0.7)", borderColor: "rgba(245,158,11,0.4)", marginTop: 10 }]}>
+            <Text style={[styles.sectionEyebrow, { color: "#92400E" }]}>💛 EXTRA SUPPORT ADDED</Text>
+            <Text style={[styles.sectionBody, { color: "#78350F" }]}>
+              I've added 3 fresh strategies at the end of your plan — different angles to try. Tap Next to reach them.
+            </Text>
           </View>
         )}
 
-        {plan && (
-          <View style={styles.planContainer}>
-            <View style={[styles.planHeader, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
-              <Text style={[styles.planTitle, { color: colors.primary }]}>{plan.title}</Text>
-              <Text style={[styles.planSummary, { color: colors.foreground }]}>{plan.summary}</Text>
-            </View>
-
-            {plan.wins.slice(0, 12).map((win, idx) => {
-              const expanded = expandedWin === win.win;
-              return (
-                <TouchableOpacity
-                  key={win.win}
-                  style={[styles.winCard, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  onPress={() => setExpandedWin(expanded ? null : win.win)}
-                  testID={`win-card-${win.win}`}
-                >
-                  <View style={styles.winHeader}>
-                    <View style={[styles.winNum, { backgroundColor: colors.secondary }]}>
-                      <Text style={[styles.winNumText, { color: colors.primary }]}>{win.win}</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[styles.winTitle, { color: colors.foreground }]}>{win.title}</Text>
-                      <Text style={[styles.winObj, { color: colors.mutedForeground }]} numberOfLines={expanded ? undefined : 1}>{win.objective}</Text>
-                    </View>
-                    <Ionicons name={expanded ? "chevron-up" : "chevron-down"} size={16} color={colors.mutedForeground} />
-                  </View>
-
-                  {expanded && (
-                    <View style={styles.winBody}>
-                      <Text style={[styles.winExplain, { color: colors.foreground }]}>{win.deep_explanation}</Text>
-
-                      <Text style={[styles.actionsLabel, { color: colors.mutedForeground }]}>Steps</Text>
-                      {win.actions.map((a, i) => (
-                        <View key={i} style={styles.actionRow}>
-                          <View style={[styles.dot, { backgroundColor: colors.primary }]} />
-                          <Text style={[styles.actionText, { color: colors.foreground }]}>{a}</Text>
-                        </View>
-                      ))}
-
-                      <View style={[styles.microCard, { backgroundColor: colors.secondary }]}>
-                        <Ionicons name="flash" size={14} color={colors.primary} />
-                        <Text style={[styles.microText, { color: colors.primary }]}>{win.micro_task}</Text>
-                      </View>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+        {(currentFeedback === "yes" || currentFeedback === "somewhat") && (
+          <View style={styles.fbConfirm}>
+            <Text style={{ fontSize: 18 }}>{currentFeedback === "yes" ? "🎉" : "💜"}</Text>
+            <Text style={styles.fbConfirmText}>
+              {currentFeedback === "yes"
+                ? "Logged as a full win. Swipe to the next step."
+                : "Partial progress counted. Keep going — small wins compound."}
+            </Text>
           </View>
         )}
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// STYLES
+// ═══════════════════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 24 },
-  amyBadge: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  headerTitle: { fontSize: 24, fontFamily: "Inter_700Bold" },
-  headerSub: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  section: { marginBottom: 20, gap: 10 },
-  sectionLabel: { fontSize: 12, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.6 },
-  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20, borderWidth: 1.5, alignItems: "center" },
-  chipText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
-  row: { flexDirection: "row", gap: 10 },
-  goalGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  goalChip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20, borderWidth: 1.5 },
-  goalChipText: { fontSize: 13, fontFamily: "Inter_500Medium" },
-  generateBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 16, borderRadius: 16, marginBottom: 20 },
-  generateBtnText: { fontSize: 16, fontFamily: "Inter_700Bold" },
-  errorBox: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderRadius: 12, borderWidth: 1, marginBottom: 16 },
-  errorText: { color: "#EF4444", fontSize: 14, fontFamily: "Inter_400Regular", flex: 1 },
-  planContainer: { gap: 12, marginBottom: 8 },
-  planHeader: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 8 },
-  planTitle: { fontSize: 17, fontFamily: "Inter_700Bold" },
-  planSummary: { fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 20 },
-  winCard: { borderRadius: 16, borderWidth: 1, padding: 14, gap: 12 },
-  winHeader: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  winNum: { width: 30, height: 30, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 2 },
-  winNumText: { fontSize: 13, fontFamily: "Inter_700Bold" },
-  winTitle: { fontSize: 15, fontFamily: "Inter_700Bold", marginBottom: 2 },
-  winObj: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  winBody: { gap: 12 },
-  winExplain: { fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 22 },
-  actionsLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.6 },
-  actionRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  dot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
-  actionText: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular", lineHeight: 20 },
-  microCard: { flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 12, borderRadius: 12 },
-  microText: { flex: 1, fontSize: 13, fontFamily: "Inter_600SemiBold", lineHeight: 20 },
+  screen: { flex: 1, backgroundColor: "#F8F7FF" },
+
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
+  topTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
+  backBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
+  backText: { fontSize: 14, color: "#6B7280", fontFamily: "Inter_500Medium" },
+
+  heroRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
+  heroBadge: { width: 44, height: 44, borderRadius: 14, backgroundColor: "#F3E8FF", alignItems: "center", justifyContent: "center" },
+  heroTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
+  heroSub: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+
+  searchBox: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1.5, borderColor: "#E5E7EB",
+    paddingHorizontal: 12, paddingVertical: Platform.OS === "ios" ? 12 : 8,
+  },
+  searchInput: { flex: 1, fontSize: 14, color: "#1E1B4B", fontFamily: "Inter_400Regular", padding: 0 },
+
+  catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 },
+  catCell: { width: "47.5%" },
+  catCellInner: { borderRadius: 18, padding: 18 },
+  catCellTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 18 },
+  catCellSub: { fontSize: 11, color: "#6B7280", marginTop: 4 },
+
+  catHeader: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6B7280", letterSpacing: 0.6 },
+
+  catHeroBox: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: 18, marginTop: 6 },
+  catHeroTitle: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
+  catHeroSub: { fontSize: 12, color: "#6B7280", marginTop: 2 },
+
+  goalRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 18 },
+  goalRowTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
+  goalRowSub: { fontSize: 11, color: "#6B7280", marginTop: 2 },
+
+  emptyText: { textAlign: "center", marginTop: 30, color: "#6B7280", fontSize: 14 },
+
+  // Questions
+  qProgressRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
+  qProgressText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6B7280" },
+  qProgressGoal: { fontSize: 11, color: "#6B7280" },
+  qProgressBar: { height: 8, backgroundColor: "#E5E7EB", borderRadius: 4, overflow: "hidden" },
+  qProgressFill: { height: "100%", borderRadius: 4 },
+
+  qPrompt: { fontSize: 22, fontFamily: "Inter_700Bold", color: "#1E1B4B", marginTop: 22, lineHeight: 28 },
+  qHint: { fontSize: 12, color: "#6B7280", marginTop: 6 },
+
+  qOption: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16,
+    backgroundColor: "#fff", borderWidth: 2, borderColor: "#E5E7EB",
+  },
+  qOptionSelected: { backgroundColor: "#F5F3FF", borderColor: "#8B5CF6" },
+  qOptionText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1E1B4B", flex: 1 },
+  qOptionTextSelected: { color: "#5B21B6" },
+
+  qNextBtn: { paddingVertical: 16, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  qNextText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
+
+  // Loader
+  loaderScreen: { flex: 1, alignItems: "center", justifyContent: "center" },
+  loaderIcon: {
+    width: 88, height: 88, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center", justifyContent: "center", marginBottom: 24,
+  },
+  loaderTitle: { color: "#fff", fontSize: 22, fontFamily: "Inter_700Bold", textAlign: "center" },
+  loaderSub: { color: "rgba(255,255,255,0.85)", fontSize: 13, textAlign: "center", marginTop: 12, lineHeight: 20 },
+
+  // Result top
+  resultTopBar: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 14, paddingVertical: 10,
+  },
+  iconBtn: {
+    width: 36, height: 36, borderRadius: 999, backgroundColor: "rgba(167,139,250,0.18)",
+    alignItems: "center", justifyContent: "center",
+  },
+  progressPill: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
+  },
+  progressPillText: { color: "#fff", fontSize: 12, fontFamily: "Inter_700Bold", letterSpacing: 0.3 },
+
+  dotsRow: { flexDirection: "row", gap: 4, paddingHorizontal: 16, marginBottom: 6 },
+  dot: { flex: 1, height: 3, borderRadius: 2 },
+
+  // Win card
+  winChip: { alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, marginBottom: 10 },
+  winChipText: { color: "#fff", fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 0.5 },
+
+  planHeaderBox: { marginBottom: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "rgba(139,92,246,0.18)" },
+  planHeaderEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "#7C3AED", marginBottom: 4 },
+  planHeaderTitle: { fontSize: 19, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 23 },
+  rootCauseBox: { backgroundColor: "rgba(244,114,182,0.1)", borderWidth: 1, borderColor: "rgba(244,114,182,0.3)", borderRadius: 12, padding: 12, marginTop: 10, marginBottom: 8 },
+  rootCauseEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#BE185D", marginBottom: 4 },
+  rootCauseText: { fontSize: 12.5, lineHeight: 19, color: "#4C1D3A" },
+  planSummaryText: { fontSize: 12.5, color: "#4B5563", lineHeight: 19 },
+
+  winTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 28, marginBottom: 6 },
+  winObjective: { fontSize: 13.5, color: "#7C3AED", lineHeight: 19, fontFamily: "Inter_600SemiBold", marginBottom: 16 },
+
+  section: {
+    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(99,102,241,0.18)",
+    borderRadius: 14, padding: 14, marginBottom: 14,
+  },
+  sectionEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, marginBottom: 6 },
+  sectionBody: { fontSize: 13.5, lineHeight: 21, color: "#1F2937" },
+
+  actionRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
+  actionDot: { width: 22, height: 22, borderRadius: 999, alignItems: "center", justifyContent: "center", marginTop: 1 },
+  actionDotText: { color: "#fff", fontSize: 11, fontFamily: "Inter_700Bold" },
+  actionText: { flex: 1, fontSize: 13.5, lineHeight: 20, color: "#1F2937" },
+
+  microTaskBox: {
+    borderWidth: 1, borderColor: "rgba(167,139,250,0.5)",
+    borderRadius: 14, padding: 14, marginBottom: 12,
+  },
+  microTaskEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#6D28D9", marginBottom: 4 },
+  microTaskBody: { fontSize: 13.5, lineHeight: 19, color: "#1E1B4B", fontFamily: "Inter_600SemiBold" },
+
+  durationChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "rgba(139,92,246,0.12)" },
+  durationChipText: { fontSize: 11, color: "#6D28D9", fontFamily: "Inter_700Bold" },
+
+  scienceRef: {
+    fontSize: 11, color: "#6B7280", lineHeight: 17, marginBottom: 14,
+    fontStyle: "italic", paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: "rgba(139,92,246,0.3)",
+    marginTop: 8,
+  },
+
+  feedbackBox: {
+    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(139,92,246,0.25)",
+    borderRadius: 16, padding: 14, marginBottom: 8,
+  },
+  feedbackTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1E1B4B", marginBottom: 10 },
+  fbBtn: { flex: 1, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 10, borderWidth: 1.5, alignItems: "center" },
+  fbBtnText: { fontSize: 11.5, fontFamily: "Inter_700Bold", lineHeight: 14 },
+
+  fbConfirm: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "rgba(220,252,231,0.6)", borderWidth: 1, borderColor: "rgba(34,197,94,0.4)",
+    borderRadius: 12, padding: 10, marginTop: 8,
+  },
+  fbConfirmText: { flex: 1, fontSize: 12.5, color: "#14532D", fontFamily: "Inter_600SemiBold" },
+
+  // Result bottom
+  extBanner: {
+    position: "absolute", bottom: 80, alignSelf: "center",
+    flexDirection: "row", alignItems: "center", gap: 8,
+    backgroundColor: "rgba(99,102,241,0.95)", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999,
+  },
+  extBannerText: { color: "#fff", fontSize: 12.5, fontFamily: "Inter_700Bold" },
+
+  resultBottomNav: {
+    flexDirection: "row", justifyContent: "center", gap: 12, paddingVertical: 12,
+    backgroundColor: "rgba(255,255,255,0.6)",
+  },
+  prevBtn: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(139,92,246,0.2)",
+    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999,
+  },
+  prevBtnText: { color: "#6D28D9", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  nextBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999 },
+  nextBtnText: { color: "#fff", fontSize: 13, fontFamily: "Inter_700Bold" },
 });
