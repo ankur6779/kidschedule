@@ -86,9 +86,10 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inTabsGroup = segments[0] === "(tabs)";
     const inOnboarding = segments[0] === "onboarding";
     const inAuth = segments[0] === "sign-in" || segments[0] === "sign-up";
+    const inWelcome = segments[0] === "welcome" || segments.length === 0;
 
     if (!isSignedIn) {
-      if (!inAuth) router.replace("/sign-in");
+      if (!inAuth && !inWelcome) router.replace("/welcome");
       return;
     }
 
@@ -149,6 +150,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F8F7FF" } }}>
+      <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />
       <Stack.Screen name="onboarding" />
