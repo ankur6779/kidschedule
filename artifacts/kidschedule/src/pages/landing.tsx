@@ -1,6 +1,42 @@
 import { Link } from "wouter";
-import { ArrowRight, Sparkles, Brain, Calendar, LayoutGrid, MessageCircle, Zap } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Brain,
+  Calendar,
+  LayoutGrid,
+  MessageCircle,
+  Zap,
+  CheckCircle2,
+  Flame,
+  Smartphone,
+  Moon,
+  EarOff,
+  Utensils,
+  Target,
+  ListChecks,
+  HelpCircle,
+  ShieldCheck,
+  BookOpen,
+  Microscope,
+} from "lucide-react";
 import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
+
+const COACH_HIGHLIGHTS = [
+  "Personalized plans for your child",
+  "10–12 step deep solutions",
+  "Progress tracking built-in",
+  "Continuous guidance until solved",
+];
+
+const PROBLEMS = [
+  { icon: Flame, label: "Tantrums & Anger", color: "#EF4444" },
+  { icon: Smartphone, label: "Screen Addiction", color: "#06B6D4" },
+  { icon: Moon, label: "Sleep Problems", color: "#6366F1" },
+  { icon: EarOff, label: "Not Listening", color: "#F97316" },
+  { icon: Utensils, label: "Fussy Eating", color: "#EC4899" },
+  { icon: Target, label: "Low Focus", color: "#A855F7" },
+];
 
 const SECONDARY_FEATURES = [
   {
@@ -20,6 +56,42 @@ const SECONDARY_FEATURES = [
     title: "Quick AI Help",
     desc: "Ask anything and get instant parenting advice anytime, right when you need it.",
     gradient: "linear-gradient(135deg,#FFD166,#F97316)",
+  },
+];
+
+const STEPS = [
+  {
+    icon: Target,
+    title: "Choose your goal",
+    desc: "Pick the parenting challenge you want to solve — from tantrums to sleep.",
+  },
+  {
+    icon: HelpCircle,
+    title: "Answer a few questions",
+    desc: "Tell Amy about your child's age, personality, and current habits.",
+  },
+  {
+    icon: ListChecks,
+    title: "Get your step-by-step plan",
+    desc: "Receive a personalized, science-backed plan you can start today.",
+  },
+];
+
+const TRUST_PILLARS = [
+  {
+    icon: BookOpen,
+    title: "Habit Formation",
+    desc: "Built on proven principles of how children form lasting habits.",
+  },
+  {
+    icon: Microscope,
+    title: "Behavioral Research",
+    desc: "Grounded in modern child psychology and emotional development science.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Real Frameworks",
+    desc: "Practical parenting frameworks used by experts worldwide.",
   },
 ];
 
@@ -198,6 +270,48 @@ export default function LandingPage() {
         </p>
       </section>
 
+      {/* PROBLEM HOOK */}
+      <section className="relative z-10 px-5 pb-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-1.5 amy-glass mb-4 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white/80">
+              <Sparkles className="h-3 w-3 text-pink-300" />
+              Real Parenting Problems
+            </div>
+            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
+              Struggling with these?
+            </h2>
+            <p className="text-white/60 text-base max-w-lg mx-auto">
+              Every parent faces them. Amy Coach helps you solve them — one personalized step at a time.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
+            {PROBLEMS.map(({ icon: Icon, label, color }) => (
+              <div
+                key={label}
+                className="amy-glass-card rounded-2xl p-4 md:p-5 flex items-center gap-3"
+              >
+                <div
+                  className="h-10 w-10 md:h-11 md:w-11 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: `${color}20`,
+                    border: `1px solid ${color}40`,
+                  }}
+                >
+                  <Icon className="h-5 w-5 md:h-5 md:w-5" style={{ color }} />
+                </div>
+                <span className="text-white/90 text-sm md:text-base font-semibold">{label}</span>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-white/70 text-base md:text-lg italic">
+            You're not alone — and you don't have to figure it out yourself.
+          </p>
+        </div>
+      </section>
+
       {/* VALUE / FEATURES */}
       <section className="relative z-10 px-5 pb-20">
         <div className="max-w-5xl mx-auto">
@@ -210,9 +324,9 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Amy Coach — highlighted hero card */}
+          {/* Amy Coach — highlighted hero card with bullets */}
           <div
-            className="amy-glass-card rounded-3xl p-7 md:p-9 mb-5 relative overflow-hidden"
+            className="amy-glass-card rounded-3xl p-7 md:p-10 mb-5 relative overflow-hidden"
             style={{
               background:
                 "linear-gradient(135deg, rgba(168,85,247,0.18) 0%, rgba(99,102,241,0.12) 60%, rgba(255,255,255,0.04) 100%)",
@@ -224,34 +338,51 @@ export default function LandingPage() {
               className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-40 pointer-events-none"
               style={{ background: "radial-gradient(circle,#A855F7,transparent 70%)" }}
             />
-            <div className="relative flex flex-col md:flex-row md:items-center gap-5 md:gap-7">
-              <div
-                className="h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center shrink-0"
-                style={{
-                  background: "linear-gradient(135deg,#A855F7,#6366F1)",
-                  boxShadow: "0 10px 30px rgba(168,85,247,0.45)",
-                }}
-              >
-                <Brain className="h-7 w-7 md:h-8 md:w-8 text-white" />
+            <div className="relative">
+              <div className="flex flex-col md:flex-row md:items-start gap-5 md:gap-7 mb-6">
+                <div
+                  className="h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: "linear-gradient(135deg,#A855F7,#6366F1)",
+                    boxShadow: "0 10px 30px rgba(168,85,247,0.45)",
+                  }}
+                >
+                  <Brain className="h-7 w-7 md:h-8 md:w-8 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3 flex-wrap">
+                    <h3 className="font-quicksand font-bold text-xl md:text-2xl text-white">
+                      Amy Coach — Solve Real Parenting Challenges
+                    </h3>
+                    <span
+                      className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                      style={{
+                        background: "linear-gradient(135deg,#A855F7,#EC4899)",
+                        boxShadow: "0 4px 14px rgba(236,72,153,0.4)",
+                      }}
+                    >
+                      Core Feature
+                    </span>
+                  </div>
+                  <p className="text-white/75 text-sm md:text-base leading-relaxed">
+                    From tantrums to screen time, sleep to focus — Amy Coach gives you deep, personalized step-by-step plans that actually work. No generic advice, only science-backed solutions tailored to your child.
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <h3 className="font-quicksand font-bold text-xl md:text-2xl text-white">
-                    Amy Coach
-                  </h3>
-                  <span
-                    className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {COACH_HIGHLIGHTS.map((h) => (
+                  <div
+                    key={h}
+                    className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5"
                     style={{
-                      background: "linear-gradient(135deg,#A855F7,#EC4899)",
-                      boxShadow: "0 4px 14px rgba(236,72,153,0.4)",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.08)",
                     }}
                   >
-                    Core Feature
-                  </span>
-                </div>
-                <p className="text-white/75 text-sm md:text-base leading-relaxed">
-                  Deep, personalized step-by-step plans to solve real parenting challenges.
-                </p>
+                    <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-purple-300 shrink-0" />
+                    <span className="text-white/85 text-xs md:text-sm font-medium">{h}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -296,6 +427,120 @@ export default function LandingPage() {
                 <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="relative z-10 px-5 pb-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-1.5 amy-glass mb-4 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white/80">
+              <Zap className="h-3 w-3 text-yellow-300" />
+              Get Started in Minutes
+            </div>
+            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
+              How It Works
+            </h2>
+            <p className="text-white/60 text-base max-w-lg mx-auto">
+              Three simple steps to your first personalized parenting plan.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+            {STEPS.map(({ icon: Icon, title, desc }, idx) => (
+              <div
+                key={title}
+                className="amy-glass-card rounded-3xl p-6 md:p-7 relative"
+              >
+                <div
+                  className="absolute -top-3 -left-3 h-8 w-8 rounded-full flex items-center justify-center text-white font-bold text-sm font-quicksand"
+                  style={{
+                    background: "linear-gradient(135deg,#A855F7,#EC4899)",
+                    boxShadow: "0 6px 18px rgba(236,72,153,0.45)",
+                  }}
+                >
+                  {idx + 1}
+                </div>
+                <div
+                  className="h-12 w-12 rounded-2xl flex items-center justify-center mb-4"
+                  style={{
+                    background: "linear-gradient(135deg,#A855F7,#6366F1)",
+                    boxShadow: "0 8px 24px rgba(168,85,247,0.3)",
+                  }}
+                >
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="font-quicksand font-bold text-lg md:text-xl text-white mb-2">
+                  {title}
+                </h3>
+                <p className="text-white/65 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TRUST / SCIENCE */}
+      <section className="relative z-10 px-5 pb-20">
+        <div className="max-w-5xl mx-auto">
+          <div
+            className="amy-glass rounded-3xl p-7 md:p-12 relative overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.10) 100%)",
+              borderColor: "rgba(168,85,247,0.25)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full opacity-30 pointer-events-none"
+              style={{ background: "radial-gradient(circle,#6366F1,transparent 70%)" }}
+            />
+
+            <div className="relative text-center mb-9">
+              <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl mb-5"
+                style={{
+                  background: "linear-gradient(135deg,#6366F1,#A855F7)",
+                  boxShadow: "0 10px 30px rgba(99,102,241,0.45)",
+                }}
+              >
+                <ShieldCheck className="h-7 w-7 text-white" />
+              </div>
+              <h2 className="font-quicksand font-bold text-2xl md:text-4xl text-white leading-tight mb-3">
+                Built on Child Psychology &amp; Behavioral Science
+              </h2>
+              <p className="text-white/65 text-base max-w-xl mx-auto leading-relaxed">
+                Every plan is grounded in proven research — not generic advice. Trust the framework, follow the steps.
+              </p>
+            </div>
+
+            <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+              {TRUST_PILLARS.map(({ icon: Icon, title, desc }) => (
+                <div
+                  key={title}
+                  className="rounded-2xl p-5 md:p-6"
+                  style={{
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div
+                    className="h-10 w-10 rounded-xl flex items-center justify-center mb-3"
+                    style={{
+                      background: "rgba(168,85,247,0.20)",
+                      border: "1px solid rgba(168,85,247,0.35)",
+                    }}
+                  >
+                    <Icon className="h-5 w-5 text-purple-300" />
+                  </div>
+                  <h3 className="font-quicksand font-bold text-base md:text-lg text-white mb-1.5">
+                    {title}
+                  </h3>
+                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
