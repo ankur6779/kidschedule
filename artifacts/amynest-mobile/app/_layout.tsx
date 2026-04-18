@@ -135,8 +135,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   }, [isSignedIn]);
 
   const isCheckingOnboarding = isSignedIn && (onboardingStatus === "unknown" || onboardingStatus === "checking");
+  const isAuthTransition = !isLoaded || isCheckingOnboarding;
 
-  if (!isLoaded || isCheckingOnboarding) {
+  if (isAuthTransition) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0B0B1A" }}>
         <ActivityIndicator size="large" color="#7B3FF2" />
