@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -536,7 +537,7 @@ export default function CoachScreen() {
   // ── PHASE: RESULT ─────────────────────────────────────────────────────
   if (phase === "result" && plan) {
     return (
-      <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={[styles.screen, { paddingTop: topPad }]}>
+      <LinearGradient colors={theme.gradient} style={[styles.screen, { paddingTop: topPad }]}>
         {/* Top bar */}
         <View style={styles.resultTopBar}>
           <TouchableOpacity onPress={handleStartOver} style={styles.iconBtn}>
@@ -806,7 +807,7 @@ function WinCard({
 // STYLES
 // ═══════════════════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#0B0B1A" },
+  screen: { flex: 1 },
 
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
   topTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF" },

@@ -11,6 +11,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
@@ -403,7 +404,7 @@ export default function RoutineDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#0F172A", "#1E293B", "#0F172A"]} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
+      <LinearGradient colors={theme.gradient} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 8 }]}>

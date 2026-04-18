@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Babysitter = { id: number; name: string; mobileNumber?: string; notes?: string; createdAt: string };
 
@@ -17,6 +18,7 @@ export default function BabysittersScreen() {
   const router = useRouter();
   const authFetch = useAuthFetch();
   const qc = useQueryClient();
+  const { theme } = useTheme();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", mobileNumber: "", notes: "" });
   const [saving, setSaving] = useState(false);
@@ -66,7 +68,7 @@ export default function BabysittersScreen() {
   };
 
   return (
-    <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 4 }}>
           <Ionicons name="chevron-back" size={22} color="#fff" />

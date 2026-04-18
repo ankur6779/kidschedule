@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -43,6 +44,7 @@ export default function HubScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { theme } = useTheme();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("amy");
 
@@ -67,7 +69,7 @@ export default function HubScreen() {
   };
 
   return (
-    <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={{
           paddingTop: insets.top + 16,

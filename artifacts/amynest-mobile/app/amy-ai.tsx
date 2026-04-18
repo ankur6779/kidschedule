@@ -8,6 +8,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Message = { id: string; role: "user" | "amy"; text: string };
 
@@ -16,6 +17,7 @@ export default function AmyAIScreen() {
   const router = useRouter();
   const authFetch = useAuthFetch();
   const params = useLocalSearchParams<{ q?: string }>();
+  const { theme } = useTheme();
   const [messages, setMessages] = useState<Message[]>([
     { id: "welcome", role: "amy", text: "Hi! I'm Amy 💜 your AI parenting coach. Ask me anything — sleep, tantrums, picky eating, school worries. I'm here." },
   ]);
@@ -56,7 +58,7 @@ export default function AmyAIScreen() {
   };
 
   return (
-    <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color="#fff" />

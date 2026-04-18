@@ -8,6 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Routine = { id: number; childId: number; childName?: string; title?: string; createdAt: string; activities?: any[] };
 type Behavior = { id: number; type: string; date: string };
@@ -16,6 +17,7 @@ export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { theme } = useTheme();
 
   const { data: routines = [], isLoading: loadingR } = useQuery<Routine[]>({
     queryKey: ["routines"],
@@ -53,7 +55,7 @@ export default function ProgressScreen() {
   }, [stats, loadingR]);
 
   return (
-    <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 4 }}>
           <Ionicons name="chevron-back" size={22} color="#fff" />

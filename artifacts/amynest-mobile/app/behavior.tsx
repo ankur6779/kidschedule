@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Child = { id: number; name: string };
 type Behavior = { id: number; childId: number; childName?: string; date: string; type: string; behavior: string; notes?: string };
@@ -23,6 +24,7 @@ export default function BehaviorScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const { theme } = useTheme();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ childId: 0, type: "positive", behavior: "", notes: "" });
@@ -84,7 +86,7 @@ export default function BehaviorScreen() {
   }, [behaviors]);
 
   return (
-    <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={{ flex: 1 }}>
+    <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 4 }}>
           <Ionicons name="chevron-back" size={22} color="#fff" />
