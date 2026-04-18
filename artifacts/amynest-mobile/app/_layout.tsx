@@ -13,6 +13,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ProgressProvider } from "@/contexts/ProgressContext";
 import "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
@@ -188,13 +189,15 @@ export default function RootLayout() {
         <ThemeProvider>
           <ErrorBoundary>
             <QueryClientProvider client={queryClient}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <KeyboardProvider>
-                  <AuthGate>
-                    <RootLayoutNav />
-                  </AuthGate>
-                </KeyboardProvider>
-              </GestureHandlerRootView>
+              <ProgressProvider>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <KeyboardProvider>
+                    <AuthGate>
+                      <RootLayoutNav />
+                    </AuthGate>
+                  </KeyboardProvider>
+                </GestureHandlerRootView>
+              </ProgressProvider>
             </QueryClientProvider>
           </ErrorBoundary>
         </ThemeProvider>

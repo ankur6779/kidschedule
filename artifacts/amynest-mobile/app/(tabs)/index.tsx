@@ -1088,6 +1088,36 @@ export default function HomeScreen() {
           />
 
           <View style={{ height: 16 }} />
+
+          {/* Premium Dashboard entry */}
+          <Pressable
+            onPress={() => router.push("/dashboard/premium" as never)}
+            accessibilityRole="button"
+            accessibilityLabel="Open the premium dashboard"
+            testID="open-premium-dashboard"
+            style={{ borderRadius: 22, overflow: "hidden", marginBottom: 16 }}
+          >
+            <LinearGradient
+              colors={["#7C3AED", "#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ flexDirection: "row", alignItems: "center", padding: 18, gap: 14 }}
+            >
+              <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}>
+                <Ionicons name="speedometer" size={22} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800", letterSpacing: -0.2 }}>
+                  Premium Dashboard
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 12.5, marginTop: 3, lineHeight: 17 }}>
+                  Routine + Coach + Hub, all synced in one place
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#fff" />
+            </LinearGradient>
+          </Pressable>
+
           <ChildrenStrip
             children={childrenList}
             onPressChild={(id) => router.push(`/children/${id}`)}
