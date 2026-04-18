@@ -134,6 +134,13 @@ const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>["name
   default: "ellipse-outline",
 };
 
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
   return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
@@ -482,7 +489,7 @@ export default function RoutineDetailScreen() {
           }
           renderItem={({ item, index }) => (
             <Animated.View
-              entering={FadeIn.delay(index * 35).duration(280)}
+              entering={Platform.OS !== "web" ? FadeIn.delay(index * 35).duration(280) : undefined}
               style={styles.timelineRow}
             >
               <View style={styles.railCol}>
@@ -752,9 +759,9 @@ function ItemCard({ item }: { item: RoutineItem }) {
         styles.itemCard,
         {
           borderColor,
-          backgroundColor: isDone ? "rgba(16,185,129,0.10)"
-            : isDelayed ? "rgba(245,158,11,0.10)"
-            : "rgba(255,255,255,0.04)",
+          backgroundColor: isDone ? "rgba(16,185,129,0.12)"
+            : isDelayed ? "rgba(245,158,11,0.12)"
+            : "#1E293B",
           opacity: isSkipped ? 0.5 : 1,
         },
       ]}
@@ -766,8 +773,8 @@ function ItemCard({ item }: { item: RoutineItem }) {
           <Text style={styles.durationText}>{item.duration}m</Text>
         </View>
       </View>
-      <View style={[styles.catIcon, { backgroundColor: `${catColor}25`, borderColor: `${catColor}50` }]}>
-        <Ionicons name={catIcon} size={18} color={catColor} />
+      <View style={[styles.catIcon, { backgroundColor: hexToRgba(catColor, 0.22), borderColor: hexToRgba(catColor, 0.5) }]}>
+        <Ionicons name={catIcon} size={20} color={catColor} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[
@@ -880,7 +887,7 @@ const styles = StyleSheet.create({
   timeText: { fontSize: 12, fontWeight: "800" },
   durationRow: { flexDirection: "row", alignItems: "center", gap: 3 },
   durationText: { fontSize: 9, color: "rgba(255,255,255,0.45)", fontWeight: "500" },
-  catIcon: { width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center", borderWidth: 1 },
+  catIcon: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1.5 },
   activityText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600", lineHeight: 20 },
   notesText: { fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 3 },
   skipReason: { fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 3, fontStyle: "italic" },
