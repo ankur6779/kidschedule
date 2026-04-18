@@ -1,0 +1,196 @@
+Create a premium "Dashboard Screen" for my Expo React Native app (AmyNest AI) that acts as the central hub connecting Routine, Amy Coach, and Parent Hub with full data synchronization.
+
+---
+
+🎯 GOAL
+
+- Show child overview, current goals, and daily progress
+- Sync data from:
+  - Routine (tasks completion)
+  - Amy Coach (wins progress)
+  - Parent Hub (recommendations)
+- Feel like a premium app (Duolingo + Headspace + Netflix mix)
+
+---
+
+📱 SCREEN STRUCTURE
+
+1. HEADER (TOP)
+
+- Greeting: "Hi, [Parent Name]"
+- Subtext: "Let’s help [Child Name] grow better today"
+- Profile avatar (right)
+
+---
+
+2. CHILD SUMMARY CARD (MAIN HERO)
+
+Card includes:
+
+- Child name
+- Age group
+- Current focus goal (e.g. "Reduce Screen Time")
+- Progress ring (circular progress %)
+- CTA: "Continue Plan"
+
+---
+
+3. TODAY’S ROUTINE (IMPORTANT)
+
+Horizontal swipe cards:
+
+Each card:
+
+- Task title
+- Time (e.g. 10 min)
+- Status: Pending / Completed
+- Button: "Start" / "Done"
+
+👉 Tap → open Routine screen
+
+---
+
+4. AMY COACH PROGRESS
+
+Card includes:
+
+- Current win (e.g. Step 3/12)
+- Progress percentage
+- Small summary of current step
+- CTA: "Continue Coaching"
+
+👉 Tap → Amy Coach screen
+
+---
+
+5. INSIGHTS & RECOMMENDATIONS
+
+Dynamic section:
+
+- "Based on your child"
+- Show:
+  - 2–3 suggestions from Parent Hub
+  - Example:
+    - "Try focus activity today"
+    - "Adjust bedtime routine"
+
+---
+
+6. QUICK ACTIONS
+
+Buttons:
+
+- Start Amy Coach
+- View Routine
+- Explore Parent Hub
+
+---
+
+---
+
+📊 DATA SYNC (CORE LOGIC)
+
+Create a global state:
+
+userProfile = {
+children: [],
+parent: {},
+progress: {
+routineCompleted: 0,
+coachProgress: 0,
+totalProgress: 0
+}
+}
+
+---
+
+SYNC RULES:
+
+1. Routine:
+
+- When task completed → update routineCompleted
+
+2. Amy Coach:
+
+- When win completed → update coachProgress
+
+3. Dashboard:
+
+- Combine both → totalProgress
+
+---
+
+---
+
+⚡ ANIMATIONS (IMPORTANT)
+
+Use:
+
+- react-native-reanimated
+
+Effects:
+
+- Card fade-in
+- Progress ring animation
+- Button press scale
+- Smooth scroll transitions
+
+---
+
+🎨 UI STYLE
+
+- Soft gradient background (purple + pastel)
+- Glass cards
+- Rounded corners (20+)
+- Shadow + elevation
+- Clean spacing
+
+---
+
+📦 COMPONENT STRUCTURE
+
+/components
+DashboardHeader.js
+ChildCard.js
+RoutineCarousel.js
+CoachProgressCard.js
+InsightCard.js
+
+/screens
+DashboardScreen.js
+
+---
+
+📚 LIBRARIES
+
+- react-native-reanimated
+- react-native-svg (for progress ring)
+- expo-linear-gradient
+
+---
+
+✨ BONUS FEATURES
+
+- Add streak system (e.g. 3-day streak)
+- Add motivational message
+- Add daily goal indicator
+
+---
+
+🚫 IMPORTANT RULES
+
+- Do NOT create static UI
+- Use dynamic data
+- Keep everything connected
+- No clutter
+
+---
+
+FINAL RESULT
+
+- Dashboard becomes central control system
+- All features connected
+- Real-time progress tracking
+- Premium, polished UI
+
+---

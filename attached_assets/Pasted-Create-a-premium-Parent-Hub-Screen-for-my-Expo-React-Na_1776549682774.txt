@@ -1,0 +1,166 @@
+Create a premium "Parent Hub Screen" for my Expo React Native app (AmyNest AI).
+
+----------------------------------------
+🎯 GOAL
+----------------------------------------
+- Make Parent Hub a content + tools center for parents
+- Clean, premium, scrollable UI
+- Organized sections (NOT cluttered)
+- Feels like Pinterest + Netflix + Parenting app mix
+
+----------------------------------------
+🎨 UI STYLE (VERY IMPORTANT)
+----------------------------------------
+- Soft light gradient background
+- Rounded cards (borderRadius 20+)
+- Clean spacing
+- Minimal but premium
+- Smooth animations
+
+----------------------------------------
+📱 SCREEN STRUCTURE
+----------------------------------------
+
+1. HEADER
+- Title: "Parent Hub"
+- Subtitle: "Explore tools, activities & insights"
+- Optional: small profile avatar
+
+----------------------------------------
+
+2. FEATURE SECTIONS (VERTICAL SCROLL)
+
+----------------------------------------
+SECTION 1: QUICK ACTIONS (TOP PRIORITY)
+
+Horizontal cards (scrollable):
+
+- Start Amy Coach
+- View Routine
+- Track Progress
+
+👉 Card style:
+- gradient background
+- icon + title
+- small description
+
+----------------------------------------
+
+SECTION 2: DAILY ACTIVITIES
+
+- Grid layout (2 columns)
+
+Cards:
+- Brain Activities
+- Art & Craft
+- Learning Games
+- Focus Builders
+
+👉 Tap → open detail / videos
+
+----------------------------------------
+
+SECTION 3: PARENTING INSIGHTS (VERY IMPORTANT)
+
+Vertical cards:
+
+- "Why kids resist instructions"
+- "How to reduce screen dependency"
+- "Building sleep habits"
+
+👉 Each card:
+- title
+- short description
+- read more button
+
+----------------------------------------
+
+SECTION 4: PERSONALIZED SUGGESTIONS
+
+Based on user data:
+
+- Show:
+  "Recommended for your child"
+
+Example:
+- Improve focus plan
+- Reduce tantrum strategy
+
+----------------------------------------
+
+----------------------------------------
+⚡ ANIMATIONS
+----------------------------------------
+
+Use:
+- react-native-reanimated
+
+Effects:
+- fade-in on scroll
+- slight card scale on tap
+- smooth horizontal scroll
+
+----------------------------------------
+📦 COMPONENT STRUCTURE
+----------------------------------------
+
+/components
+  HubSection.js
+  ActionCard.js
+  InsightCard.js
+  ActivityCard.js
+
+/screens
+  ParentHubScreen.js
+
+----------------------------------------
+📚 LIBRARIES
+----------------------------------------
+
+- react-native-reanimated
+- expo-linear-gradient
+
+----------------------------------------
+🧠 DATA (DUMMY FOR NOW)
+----------------------------------------
+
+Create arrays:
+
+quickActions = []
+activities = []
+insights = []
+recommendations = []
+
+----------------------------------------
+🎯 NAVIGATION (IMPORTANT)
+----------------------------------------
+
+On click:
+- Amy Coach → /amy-coach
+- Routine → /routine
+- Activity → detail screen
+
+----------------------------------------
+✨ BONUS FEATURES
+----------------------------------------
+
+- Add search bar at top
+- Add filter chips (Behavior / Sleep / Focus)
+- Add bookmark/save feature
+
+----------------------------------------
+🚫 DO NOT
+----------------------------------------
+
+- Do NOT make cluttered UI
+- Do NOT use plain list
+- Avoid boring design
+
+----------------------------------------
+FINAL RESULT
+----------------------------------------
+
+- Premium parenting dashboard
+- Easy navigation
+- High engagement
+- Feels like real product
