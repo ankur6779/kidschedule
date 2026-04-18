@@ -12,6 +12,7 @@ import { BlurView } from "expo-blur";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
+import SwipeableCard from "@/components/SwipeableCard";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 
@@ -476,13 +477,18 @@ export default function RoutineDetailScreen() {
             </View>
           }
           renderItem={({ item, index }) => (
-            <ItemCard
-              item={item}
+            <SwipeableCard
               onTap={() => handleTap(index)}
-              onLongPress={() => { hapticImpact(); setActionItem(index); }}
-            />
+              onLongPress={() => setActionItem(index)}
+              onSwipeRight={() => setItemStatus(index, item.status === "completed" ? "pending" : "completed")}
+              onSwipeLeft={() => deleteItem(index)}
+              borderRadius={18}
+              glowColor={item.status === "completed" ? "#10B981" : "#7B3FF2"}
+            >
+              <ItemCard item={item} />
+            </SwipeableCard>
           )}
-          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          ItemSeparatorComponent={null}
         />
       )}
 
@@ -683,9 +689,7 @@ function Stat({ num, label, color }: { num: number; label: string; color: string
 }
 function Divider() { return <View style={styles.statDivider} />; }
 
-function ItemCard({ item, onTap, onLongPress }: {
-  item: RoutineItem; onTap: () => void; onLongPress: () => void;
-}) {
+function ItemCard({ item }: { item: RoutineItem }) {
   const catKey = item.category?.toLowerCase() ?? "default";
   const catColor = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.default;
   const catIcon = CATEGORY_ICONS[catKey] ?? CATEGORY_ICONS.default;
@@ -699,11 +703,8 @@ function ItemCard({ item, onTap, onLongPress }: {
     : "rgba(255,255,255,0.10)";
 
   return (
-    <Pressable
-      onPress={onTap}
-      onLongPress={onLongPress}
-      delayLongPress={350}
-      style={({ pressed }) => [
+    <View
+      style={[
         styles.itemCard,
         {
           borderColor,
@@ -711,7 +712,6 @@ function ItemCard({ item, onTap, onLongPress }: {
             : isDelayed ? "rgba(245,158,11,0.10)"
             : "rgba(255,255,255,0.04)",
           opacity: isSkipped ? 0.5 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
         },
       ]}
     >
@@ -745,7 +745,7 @@ function ItemCard({ item, onTap, onLongPress }: {
         {isSkipped && <Ionicons name="play-skip-forward" size={11} color="rgba(255,255,255,0.5)" />}
         {isDelayed && <Ionicons name="time" size={12} color="#F59E0B" />}
       </View>
-    </Pressable>
+    </View>
   );
 }
 

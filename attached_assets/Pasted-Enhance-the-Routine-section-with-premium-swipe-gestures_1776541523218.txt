@@ -1,0 +1,134 @@
+Enhance the Routine section with premium swipe gestures and smooth animations. Maintain existing UI and features, only upgrade interaction and feel.
+
+IMPORTANT:
+- Do NOT change functionality
+- Do NOT redesign layout
+- Only add swipe gestures + animations
+
+----------------------------------------
+
+1. SWIPE GESTURES (CORE FEATURE)
+
+Enable horizontal swipe on each routine card:
+
+RIGHT SWIPE:
+
+- Action: Mark routine as completed
+- Show green background (#22C55E)
+- Icon: checkmark appears
+- Haptic feedback (if possible)
+
+LEFT SWIPE:
+
+- Action: Delete routine
+- Show red background (#EF4444)
+- Icon: trash appears
+
+----------------------------------------
+
+2. SWIPE BEHAVIOR (PREMIUM FEEL)
+
+- Smooth drag with finger
+- Card follows finger (no lag)
+- Elastic resistance (slight bounce)
+
+ON RELEASE:
+
+- If swipe threshold crossed → complete action
+- If not → snap back smoothly
+
+----------------------------------------
+
+3. ANIMATION SYSTEM
+
+Use React Native Reanimated for all animations
+
+CARD INTERACTIONS:
+
+- On press:
+  scale: 0.96
+
+- On release:
+  smooth return
+
+- On swipe:
+  card rotates slightly (±5deg)
+  subtle shadow increase
+
+----------------------------------------
+
+4. SWIPE VISUAL FEEDBACK
+
+While swiping:
+
+- Background color gradually appears
+- Icon fades in (check / delete)
+- Card opacity slightly changes
+
+----------------------------------------
+
+5. COMPLETION ANIMATION
+
+When marked complete:
+
+- Card briefly scales down → fades → returns
+- Add checkmark animation
+- Optional: strikethrough text
+
+----------------------------------------
+
+6. DELETE ANIMATION
+
+When deleting:
+
+- Card slides out completely
+- Fade out
+- Remove from list smoothly
+
+----------------------------------------
+
+7. STACK / DEPTH EFFECT (ULTRA PREMIUM)
+
+- Slight elevation on active card
+- Nearby cards slightly smaller
+- Smooth vertical scroll
+
+----------------------------------------
+
+8. GLOBAL GLOW INTERACTION
+
+When user touches a card:
+
+- Add soft purple glow
+- Slight lift (scale 1.02)
+
+----------------------------------------
+
+9. PERFORMANCE
+
+- 60fps animations
+- Use native driver
+- Avoid heavy re-renders
+
+----------------------------------------
+
+10. CONSISTENCY
+
+- Same animation timing across app
+- No jitter or lag
+- Smooth easing functions
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT break existing UI
+- Do NOT remove features
+- Keep UX simple and intuitive
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated Routine screen code (Expo / React Native)
+- Reanimated + gesture handler integration

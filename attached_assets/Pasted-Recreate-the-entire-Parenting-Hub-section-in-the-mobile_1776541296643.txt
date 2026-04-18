@@ -1,0 +1,178 @@
+Recreate the entire "Parenting Hub" section in the mobile app with COMPLETE feature parity from the website.
+
+IMPORTANT:
+- Do NOT redesign logic or remove anything
+- Copy ALL features, content structure, and behavior
+- Only adapt layout for mobile and premium dark theme
+
+----------------------------------------
+
+1. FULL FEATURE PARITY (CRITICAL)
+
+Compare website vs app and implement EVERYTHING:
+
+- Parenting articles (research-based)
+- Categories (age-wise / topic-wise)
+- Search functionality
+- Filters (age group, topic, difficulty)
+- Article detail view (full content)
+- Saved / bookmarked articles
+- Recently viewed
+- Recommendations / suggested content
+
+----------------------------------------
+
+2. CONTENT STRUCTURE (MATCH WEBSITE)
+
+Replicate same hierarchy:
+
+- Categories section
+- Featured articles
+- Trending / recommended
+- Article list
+
+----------------------------------------
+
+3. MOBILE UI ADAPTATION
+
+- Vertical scroll layout
+- Cards instead of wide sections
+- Sticky search bar at top
+
+----------------------------------------
+
+4. CATEGORY UI (IMPROVE EXISTING ISSUE)
+
+PROBLEM:
+Text not readable / icons missing
+
+FIX:
+
+- Text color:
+  #000000 (black) on light cards
+
+- Icons:
+  Add visible icons for each category
+
+STYLE:
+- Soft gradient cards (pastel)
+- Rounded corners (20px+)
+- Clean spacing
+
+----------------------------------------
+
+5. ARTICLE CARDS (PREMIUM)
+
+Each card:
+
+- Title
+- Short description
+- Category tag
+- Read time (optional)
+- Thumbnail (if available)
+
+STYLE:
+- Glassmorphism or soft gradient
+- Shadow + subtle glow
+- Clean typography
+
+----------------------------------------
+
+6. ARTICLE DETAIL SCREEN
+
+- Full readable content
+- Proper spacing (line-height)
+- Sections:
+
+  - Title
+  - Content
+  - Tips / highlights
+  - Related articles
+
+----------------------------------------
+
+7. SEARCH + FILTER
+
+- Top search bar:
+
+  "Search parenting topics..."
+
+- Filters:
+
+  - Age group (2–4, 4–6, etc.)
+  - Topic (behavior, learning, sleep)
+
+----------------------------------------
+
+8. SAVE / BOOKMARK
+
+- Add bookmark icon on each article
+- Save to user profile
+- Show saved list
+
+----------------------------------------
+
+9. DARK PREMIUM THEME
+
+- Background: #0B0B1A
+- Cards: glass or soft gradient
+- Accent:
+  Purple (#7B3FF2)
+  Pink (#FF4ECD)
+
+TEXT:
+
+- Dark cards → white text
+- Light cards → black text
+
+----------------------------------------
+
+10. ICON SYSTEM (FIX MISSING ICONS)
+
+Use consistent icon library:
+
+- Category → grid / folder
+- Article → document
+- Search → magnify
+- Bookmark → star
+
+Ensure ALL icons visible
+
+----------------------------------------
+
+11. INTERACTIONS (PREMIUM)
+
+- Card press → scale 0.97 + glow
+- Hover (web) → slight lift
+- Smooth transitions
+
+----------------------------------------
+
+12. GLOBAL GLOW SYSTEM
+
+- On touch:
+  soft purple glow
+- Subtle elevation effect
+
+----------------------------------------
+
+13. PERFORMANCE
+
+- Lazy load articles
+- Smooth scroll
+- Optimize images
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT remove any website feature
+- Maintain same naming and structure
+- Keep UI clean and readable
+
+----------------------------------------
+
+OUTPUT:
+
+- Full Parenting Hub screen (Expo / React Native)
+- Modular components
