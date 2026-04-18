@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import amyLogo from "@assets/file_000000008c0c71fa81e22bfda886c9e8_1776489641690.png";
+import amyLogo from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
 
 interface Worksheet {
   id: string;

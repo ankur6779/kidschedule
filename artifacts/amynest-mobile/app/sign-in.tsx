@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Image,
 } from "react-native";
 import { useSignIn, useOAuth, useAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
@@ -12,6 +12,7 @@ import * as Haptics from "expo-haptics";
 
 WebBrowser.maybeCompleteAuthSession();
 
+const LOGO = require("../assets/images/amynest-logo.png");
 const PRIMARY = "#6366F1";
 const BG = "#F8F7FF";
 const DARK = "#1E1B4B";
@@ -71,9 +72,7 @@ export default function SignInScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           <View style={styles.brandRow}>
-            <View style={styles.logoBox}>
-              <Ionicons name="leaf" size={28} color="#fff" />
-            </View>
+            <Image source={LOGO} style={styles.logoBox} resizeMode="contain" />
             <Text style={styles.brandName}>AmyNest</Text>
           </View>
 
@@ -169,8 +168,7 @@ const styles = StyleSheet.create({
   scroll: { flexGrow: 1, paddingHorizontal: 24, justifyContent: "center" },
   brandRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 40 },
   logoBox: {
-    width: 44, height: 44, borderRadius: 12,
-    backgroundColor: PRIMARY, alignItems: "center", justifyContent: "center",
+    width: 52, height: 52, borderRadius: 12,
   },
   brandName: { fontSize: 24, fontWeight: "700", color: DARK, fontFamily: "Inter_700Bold" },
   title: { fontSize: 28, fontWeight: "700", color: DARK, fontFamily: "Inter_700Bold", marginBottom: 6 },
