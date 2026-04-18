@@ -138,8 +138,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (!isLoaded || isCheckingOnboarding) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#F8F7FF" }}>
-        <ActivityIndicator size="large" color="#6366F1" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0B0B1A" }}>
+        <ActivityIndicator size="large" color="#7B3FF2" />
       </View>
     );
   }
@@ -149,7 +149,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 function RootLayoutNav() {
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#F8F7FF" } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0B0B1A" } }}>
       <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />
@@ -161,8 +161,8 @@ function RootLayoutNav() {
           headerShown: true,
           headerTitle: "Child Profile",
           headerBackTitle: "Back",
-          headerTintColor: "#6366F1",
-          headerStyle: { backgroundColor: "#F8F7FF" },
+          headerTintColor: "#FF4ECD",
+          headerStyle: { backgroundColor: "#0B0B1A" },
         }}
       />
       <Stack.Screen
@@ -171,8 +171,8 @@ function RootLayoutNav() {
           headerShown: true,
           headerTitle: "Add Child",
           headerBackTitle: "Back",
-          headerTintColor: "#6366F1",
-          headerStyle: { backgroundColor: "#F8F7FF" },
+          headerTintColor: "#FF4ECD",
+          headerStyle: { backgroundColor: "#0B0B1A" },
         }}
       />
       <Stack.Screen
@@ -181,8 +181,8 @@ function RootLayoutNav() {
           headerShown: true,
           headerTitle: "Routine Detail",
           headerBackTitle: "Back",
-          headerTintColor: "#6366F1",
-          headerStyle: { backgroundColor: "#F8F7FF" },
+          headerTintColor: "#FF4ECD",
+          headerStyle: { backgroundColor: "#0B0B1A" },
         }}
       />
     </Stack>

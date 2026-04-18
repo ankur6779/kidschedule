@@ -116,7 +116,7 @@ function computeStreak(routines: Routine[]): number {
 function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
   return (
     <LinearGradient
-      colors={["#FEF3C7", "#FCE7F3", "#EDE9FE"] as const}
+      colors={["rgba(123,63,242,0.30)", "rgba(255,78,205,0.22)", "rgba(20,20,43,0.0)"] as const}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.heroGreeting}
@@ -199,7 +199,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
   if (todayRoutines.length === 0) {
     return (
-      <LinearGradient colors={["#F0F9FF", "#DBEAFE"] as const} style={styles.timelineEmpty}>
+      <LinearGradient colors={["rgba(79,195,247,0.18)", "rgba(123,63,242,0.18)"] as const} style={styles.timelineEmpty}>
         <Text style={{ fontSize: 32 }}>🗓️</Text>
         <Text style={styles.timelineEmptyTitle}>No plan for today yet</Text>
         <Text style={styles.timelineEmptySub}>Tap below to create today's routine in one tap.</Text>
@@ -237,7 +237,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
   if (displayItems.length === 0) {
     return (
-      <LinearGradient colors={["#ECFDF5", "#D1FAE5"] as const} style={styles.timelineDone}>
+      <LinearGradient colors={["rgba(16,185,129,0.18)", "rgba(79,195,247,0.14)"] as const} style={styles.timelineDone}>
         <Text style={{ fontSize: 28 }}>🌙</Text>
         <Text style={styles.timelineDoneTitle}>Day complete!</Text>
         <Text style={styles.timelineDoneSub}>Time to relax and recharge</Text>
@@ -248,7 +248,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
   return (
     <View style={styles.timelineCard}>
       <LinearGradient
-        colors={["#FAF5FF", "#FCE7F3"] as const}
+        colors={["rgba(123,63,242,0.22)", "rgba(255,78,205,0.18)"] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.timelineHeader}
@@ -384,22 +384,22 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
   const suggestions: { emoji: string; text: string; bg: string; border: string; color: string }[] = [];
 
   if (total === 0) {
-    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", bg: "#EFF6FF", border: "#BFDBFE", color: "#1E40AF" });
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", bg: "rgba(99,102,241,0.16)", border: "rgba(99,102,241,0.35)", color: "#C7D2FE" });
   } else if (p < 30 && hour >= 14) {
-    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", bg: "#FFFBEB", border: "#FDE68A", color: "#92400E" });
+    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", bg: "rgba(245,158,11,0.16)", border: "rgba(245,158,11,0.35)", color: "#FDE68A" });
   } else if (p >= 80) {
-    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", bg: "#F0FDF4", border: "#BBF7D0", color: "#166534" });
+    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", bg: "rgba(34,197,94,0.16)", border: "rgba(34,197,94,0.35)", color: "#BBF7D0" });
   }
   if (hour >= 15 && hour <= 17) {
-    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", bg: "#FFF1F2", border: "#FECDD3", color: "#9F1239" });
+    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", bg: "rgba(244,63,94,0.16)", border: "rgba(244,63,94,0.35)", color: "#FECDD3" });
   }
   if (streak >= 3) {
-    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, bg: "#FFF7ED", border: "#FED7AA", color: "#9A3412" });
+    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, bg: "rgba(249,115,22,0.16)", border: "rgba(249,115,22,0.35)", color: "#FED7AA" });
   } else if (streak === 0 && hour < 10) {
-    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", bg: "#F0F9FF", border: "#BAE6FD", color: "#075985" });
+    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", bg: "rgba(79,195,247,0.16)", border: "rgba(79,195,247,0.35)", color: "#BAE6FD" });
   }
   if (hour >= 19) {
-    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", bg: "#EEF2FF", border: "#C7D2FE", color: "#3730A3" });
+    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", bg: "rgba(123,63,242,0.16)", border: "rgba(123,63,242,0.35)", color: "#C7D2FE" });
   }
 
   const display = suggestions.slice(0, 3);
@@ -407,7 +407,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
   return (
     <View style={styles.amyCard}>
       <LinearGradient
-        colors={["#FAF5FF", "#FCE7F3"] as const}
+        colors={["rgba(123,63,242,0.22)", "rgba(255,78,205,0.18)"] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.amyHeader}
@@ -424,9 +424,9 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
       </LinearGradient>
       <View style={{ padding: 12, gap: 8 }}>
         {display.length === 0 ? (
-          <View style={[styles.amyTip, { backgroundColor: "#F9FAFB", borderColor: "#E5E7EB" }]}>
+          <View style={[styles.amyTip, { backgroundColor: "#1B1B3A", borderColor: "rgba(255,255,255,0.08)" }]}>
             <Text style={{ fontSize: 16 }}>💜</Text>
-            <Text style={[styles.amyTipText, { color: "#374151" }]}>Looking good — keep it going!</Text>
+            <Text style={[styles.amyTipText, { color: "rgba(255,255,255,0.85)" }]}>Looking good — keep it going!</Text>
           </View>
         ) : (
           display.map((s, i) => (
@@ -462,7 +462,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
   return (
     <View style={styles.scoreCard}>
       <LinearGradient
-        colors={["#F0FDF4", "#ECFDF5"] as const}
+        colors={["rgba(16,185,129,0.18)", "rgba(79,195,247,0.14)"] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.scoreHeader}
@@ -529,11 +529,11 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
   onCoach: () => void;
 }) {
   const features = [
-    { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: "#EFF6FF", border: "#DBEAFE", grad: ["#3B82F6", "#6366F1"] as const },
-    { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "#ECFDF5", border: "#D1FAE5", grad: ["#10B981", "#14B8A6"] as const },
-    { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", bg: "#FFF7ED", border: "#FED7AA", grad: ["#F97316", "#F59E0B"] as const },
-    { emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", bg: "#FAF5FF", border: "#E9D5FF", grad: ["#A855F7", "#9333EA"] as const },
-    { emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", bg: "#FFF1F2", border: "#FECDD3", grad: ["#F43F5E", "#EC4899"] as const },
+    { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: "rgba(99,102,241,0.14)", border: "rgba(99,102,241,0.35)", grad: ["#3B82F6", "#6366F1"] as const },
+    { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "rgba(16,185,129,0.14)", border: "rgba(16,185,129,0.35)", grad: ["#10B981", "#14B8A6"] as const },
+    { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", bg: "rgba(249,115,22,0.14)", border: "rgba(249,115,22,0.35)", grad: ["#F97316", "#F59E0B"] as const },
+    { emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", bg: "rgba(168,85,247,0.16)", border: "rgba(168,85,247,0.4)", grad: ["#A855F7", "#9333EA"] as const },
+    { emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", bg: "rgba(244,63,94,0.14)", border: "rgba(244,63,94,0.35)", grad: ["#F43F5E", "#EC4899"] as const },
   ];
 
   return (
@@ -710,8 +710,8 @@ export default function HomeScreen() {
               value={summary?.routinesGeneratedThisWeek ?? 0}
               sub="this week"
               icon="calendar-outline"
-              gradient={["#FAF5FF", "#F3E8FF"]}
-              accent="#6D28D9"
+              gradient={["rgba(123,63,242,0.22)", "rgba(123,63,242,0.08)"]}
+              accent="#C4A8FF"
               onPress={() => router.push("/(tabs)/routines")}
             />
             <StatCard
@@ -719,24 +719,24 @@ export default function HomeScreen() {
               value={summary?.positiveBehaviorsToday ?? 0}
               sub="today"
               icon="trending-up-outline"
-              gradient={["#ECFDF5", "#D1FAE5"]}
-              accent="#047857"
+              gradient={["rgba(52,211,153,0.22)", "rgba(52,211,153,0.06)"]}
+              accent="#6EE7B7"
             />
             <StatCard
               label="Challenging"
               value={summary?.negativeBehaviorsToday ?? 0}
               sub="today"
               icon="trending-down-outline"
-              gradient={["#FFF1F2", "#FCE7F3"]}
-              accent="#BE123C"
+              gradient={["rgba(255,78,205,0.22)", "rgba(255,78,205,0.06)"]}
+              accent="#FF9FE0"
             />
             <StatCard
               label="Children"
               value={summary?.totalChildren ?? 0}
               sub="total"
               icon="people-outline"
-              gradient={["#FFFBEB", "#FEF3C7"]}
-              accent="#B45309"
+              gradient={["rgba(79,195,247,0.22)", "rgba(79,195,247,0.06)"]}
+              accent="#7DD3FC"
               onPress={() => router.push("/(tabs)/children")}
             />
           </View>
@@ -837,7 +837,7 @@ export default function HomeScreen() {
                         <Ionicons name="trending-down" size={12} color="#EF4444" />
                         <Text style={[styles.behaviorChipText, { color: "#B91C1C" }]}>{stat.negative}</Text>
                       </View>
-                      <View style={[styles.behaviorChip, { backgroundColor: "#F4F4F5" }]}>
+                      <View style={[styles.behaviorChip, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                         <Ionicons name="remove" size={12} color="#71717A" />
                         <Text style={[styles.behaviorChipText, { color: "#52525B" }]}>{stat.neutral}</Text>
                       </View>
@@ -885,19 +885,19 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 28,
     fontFamily: "Inter_700Bold",
-    color: "#1F2937",
+    color: "#FFFFFF",
     marginBottom: 8,
   },
   heroSub: {
     fontSize: 13,
     lineHeight: 19,
     fontFamily: "Inter_400Regular",
-    color: "rgba(31,41,55,0.75)",
+    color: "rgba(255,255,255,0.78)",
   },
 
   /* CHILDREN STRIP */
   stripHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4, marginBottom: 8 },
-  stripEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "#71717A" },
+  stripEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "rgba(255,255,255,0.6)" },
   childCard: {
     minWidth: 180,
     borderRadius: 22,
@@ -907,7 +907,7 @@ const styles = StyleSheet.create({
   },
   childCardRow: { flexDirection: "row", alignItems: "center", gap: 10 },
   childEmojiBubble: {
-    width: 42, height: 42, borderRadius: 14, backgroundColor: "#fff",
+    width: 42, height: 42, borderRadius: 14, backgroundColor: "#14142B",
     alignItems: "center", justifyContent: "center",
     shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { width: 0, height: 1 },
   },
@@ -926,12 +926,12 @@ const styles = StyleSheet.create({
   /* TIMELINE */
   timelineRowWrap: { flexDirection: "row", gap: 10, marginBottom: 16 },
   timelineCard: {
-    backgroundColor: "#fff", borderRadius: 22, overflow: "hidden",
+    backgroundColor: "#14142B", borderRadius: 22, overflow: "hidden",
     shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
   },
   timelineHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 12, paddingHorizontal: 14 },
   timelineHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
-  timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
   timelineHeaderRight: { flexDirection: "row", alignItems: "center", gap: 4 },
   timelineHeaderLink: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#7C3AED" },
   timelineRow: {
@@ -945,14 +945,14 @@ const styles = StyleSheet.create({
   timelineNowText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#fff", letterSpacing: 0.5 },
   timelineNextBadge: { backgroundColor: "#EDE9FE", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
   timelineNextText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#6D28D9", letterSpacing: 0.5 },
-  timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
   timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(113,113,122,0.9)", marginTop: 2 },
   timelineEmpty: {
     borderRadius: 22, padding: 20, alignItems: "center", gap: 8,
     borderWidth: 1.5, borderStyle: "dashed", borderColor: "#BFDBFE",
   },
-  timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  timelineEmptySub: { fontSize: 11, color: "#71717A", textAlign: "center", fontFamily: "Inter_400Regular" },
+  timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  timelineEmptySub: { fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", fontFamily: "Inter_400Regular" },
   timelineEmptyBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
   timelineEmptyBtnText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 13 },
   timelineDone: { borderRadius: 22, padding: 18, alignItems: "center", gap: 4 },
@@ -978,57 +978,57 @@ const styles = StyleSheet.create({
 
   /* AMY CARD */
   amyCard: {
-    backgroundColor: "#fff", borderRadius: 18, overflow: "hidden", marginBottom: 16,
-    borderWidth: 1, borderColor: "rgba(0,0,0,0.06)",
+    backgroundColor: "#14142B", borderRadius: 18, overflow: "hidden", marginBottom: 16,
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
   },
   amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
   amyHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#A855F7", alignItems: "center", justifyContent: "center" },
-  amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  amySub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  amySub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
   amyTip: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
   amyTipText: { flex: 1, fontSize: 12, lineHeight: 17, fontFamily: "Inter_500Medium" },
 
   /* SCORE */
-  scoreCard: { backgroundColor: "#fff", borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.06)" },
+  scoreCard: { backgroundColor: "#14142B", borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" },
   scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
-  scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  scoreSub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  scoreSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
   scoreBody: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
   scoreRingWrap: { width: 70, height: 70, alignItems: "center", justifyContent: "center" },
   scoreRingCenter: { position: "absolute", alignItems: "center", justifyContent: "center" },
   scoreGrade: { fontSize: 20, fontFamily: "Inter_700Bold", lineHeight: 22 },
-  scoreOf: { fontSize: 9, color: "#71717A", fontFamily: "Inter_500Medium" },
-  scoreBetter: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#1F2937" },
+  scoreOf: { fontSize: 9, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_500Medium" },
+  scoreBetter: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#FFFFFF" },
   scoreRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-  scoreRowLabel: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular" },
-  scoreRowValue: { fontSize: 11, color: "#1F2937", fontFamily: "Inter_700Bold" },
-  scoreBar: { height: 5, backgroundColor: "#F4F4F5", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  scoreRowLabel: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
+  scoreRowValue: { fontSize: 11, color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+  scoreBar: { height: 5, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
   scoreBarFill: { height: "100%", borderRadius: 3 },
 
   /* LIST CARDS */
-  listCard: { backgroundColor: "#fff", borderRadius: 18, marginBottom: 16, borderWidth: 1, borderColor: "rgba(0,0,0,0.06)", overflow: "hidden" },
+  listCard: { backgroundColor: "#14142B", borderRadius: 18, marginBottom: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", overflow: "hidden" },
   listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "rgba(244,244,245,0.4)", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
   listHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  listSub: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular", marginTop: 1 },
+  listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  listSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
   listLink: { flexDirection: "row", alignItems: "center", gap: 4 },
   listLinkText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#A855F7" },
   listEmpty: { alignItems: "center", padding: 24, gap: 8 },
-  listEmptyText: { fontSize: 13, color: "#71717A", fontFamily: "Inter_500Medium" },
+  listEmptyText: { fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_500Medium" },
   listEmptyLink: { fontSize: 13, color: "#A855F7", fontFamily: "Inter_700Bold", marginTop: 4 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
-  listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
+  listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
   listRowMeta: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
   listChildPill: { backgroundColor: "rgba(168,85,247,0.10)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
   listChildPillText: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7C3AED" },
-  listRowDate: { fontSize: 11, color: "#71717A", fontFamily: "Inter_400Regular" },
-  listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  listRowDone: { fontSize: 9, color: "#71717A", fontFamily: "Inter_400Regular" },
+  listRowDate: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
+  listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  listRowDone: { fontSize: 9, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
 
   /* BEHAVIOR */
   behaviorRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
-  behaviorChild: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937", marginBottom: 8 },
+  behaviorChild: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginBottom: 8 },
   behaviorStats: { flexDirection: "row", gap: 8 },
   behaviorChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 8, borderRadius: 10 },
   behaviorChipText: { fontSize: 13, fontFamily: "Inter_700Bold" },
@@ -1053,11 +1053,11 @@ const styles = StyleSheet.create({
   onbHeroBody: { fontSize: 13, lineHeight: 19, fontFamily: "Inter_400Regular", color: "rgba(219,234,254,0.85)", textAlign: "center" },
   onbDivider: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 18 },
   onbDividerLine: { flex: 1, height: 1, backgroundColor: "#E4E4E7" },
-  onbDividerText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#71717A" },
+  onbDividerText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)" },
   onbFeature: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 },
   onbFeatureIcon: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  onbFeatureLabel: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1F2937" },
-  onbFeatureDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#52525B", marginTop: 2 },
+  onbFeatureLabel: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  onbFeatureDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.7)", marginTop: 2 },
   onbPrimary: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     paddingVertical: 16, borderRadius: 18, marginBottom: 10,
@@ -1066,9 +1066,9 @@ const styles = StyleSheet.create({
   onbPrimaryText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
   onbSecondary: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: "#E4E4E7",
-    backgroundColor: "#fff", marginBottom: 14,
+    paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#14142B", marginBottom: 14,
   },
-  onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#374151" },
-  onbFooter: { fontSize: 11, color: "#71717A", textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
+  onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.85)" },
+  onbFooter: { fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
 });

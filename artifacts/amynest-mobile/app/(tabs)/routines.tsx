@@ -240,7 +240,7 @@ export default function RoutinesScreen() {
                 if (isToday) {
                   dayBg = colors.primary; dayBorder = colors.primary; dayText = "#fff";
                 } else if (dayRoutines.length > 0) {
-                  dayBg = "#F0FDF4"; dayBorder = "#86EFAC"; dayText = "#166534";
+                  dayBg = "rgba(34,197,94,0.18)"; dayBorder = "rgba(34,197,94,0.45)"; dayText = "#BBF7D0";
                 } else if (isWeekend) {
                   dayBg = colors.muted; dayBorder = colors.border; dayText = colors.mutedForeground;
                 }

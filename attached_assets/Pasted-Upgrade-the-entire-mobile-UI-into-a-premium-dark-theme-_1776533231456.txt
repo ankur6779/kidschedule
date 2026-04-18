@@ -1,0 +1,110 @@
+Upgrade the entire mobile UI into a premium dark theme and redesign the bottom navigation (taskbar) to look modern, minimal, and high-end.
+
+IMPORTANT:
+- Do NOT change app structure
+- Only enhance UI, colors, and styling
+- Maintain clean UX
+
+----------------------------------------
+
+1. GLOBAL DARK THEME
+
+- Background: #0B0B1A (deep dark blue/black)
+- Secondary surfaces: #14142B
+- Cards: glassmorphism style (semi-transparent + blur)
+
+COLORS:
+- Primary: #7B3FF2 (neon purple)
+- Accent: #FF4ECD (pink glow)
+- Optional highlight: #4FC3F7 (soft blue)
+
+TEXT:
+- Primary: white (#FFFFFF)
+- Secondary: rgba(255,255,255,0.6)
+
+----------------------------------------
+
+2. CARD REDESIGN
+
+- Add glass effect (blur + transparency)
+- Border: subtle 1px rgba(255,255,255,0.08)
+- Add soft glow shadow (purple tint)
+- Rounded corners (20px+)
+
+----------------------------------------
+
+3. BUTTONS
+
+Primary button:
+- Gradient background (purple → pink)
+- Rounded full
+- Add glow effect
+- Slight scale on press
+
+----------------------------------------
+
+4. BOTTOM TASKBAR (MOST IMPORTANT)
+
+Redesign bottom navigation into premium floating style:
+
+STYLE:
+- Floating bar (not attached to edge)
+- Margin from bottom: 16px
+- Rounded: 28px (pill shape)
+- Background: glassmorphism (blur + dark transparency)
+- Add soft shadow + glow
+
+ITEMS:
+- Icons only (minimal)
+- Active icon:
+  - Highlight with gradient glow
+  - Slight scale (1.1)
+- Inactive icons:
+  - Low opacity (0.5)
+
+ANIMATION:
+- Smooth transition when switching tabs
+- Active tab glow animation
+- Slight bounce on press
+
+OPTIONAL:
+- Add small indicator dot under active icon
+
+----------------------------------------
+
+5. HEADER / TOP SECTION
+
+- Convert greeting card into glass card
+- Add subtle gradient glow behind it
+- Improve spacing and typography
+
+----------------------------------------
+
+6. MICRO-INTERACTIONS
+
+- Button press → scale 0.97
+- Cards → slight lift on tap
+- Smooth fade-in on load
+
+----------------------------------------
+
+7. CONSISTENCY
+
+- Use same border radius everywhere
+- Same shadow system
+- Same color palette
+
+----------------------------------------
+
+8. PERFORMANCE
+
+- Keep animations smooth (60fps)
+- Avoid heavy blur on low-end devices
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated React Native / Expo code
+- Clean StyleSheet or Tailwind (if used)
+- Component-based structure

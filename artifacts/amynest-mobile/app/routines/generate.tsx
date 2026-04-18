@@ -190,7 +190,7 @@ export default function GenerateRoutineScreen() {
       >
         {/* Hero */}
         <LinearGradient
-          colors={["#FAF5FF", "#FCE7F3"]}
+          colors={["rgba(123,63,242,0.22)", "rgba(255,78,205,0.18)"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.hero}
@@ -270,13 +270,13 @@ export default function GenerateRoutineScreen() {
                 style={[
                   styles.moodCard,
                   {
-                    backgroundColor: active ? m.bg : "#fff",
-                    borderColor: active ? m.border : "#E5E7EB",
+                    backgroundColor: active ? m.bg : "rgba(255,255,255,0.05)",
+                    borderColor: active ? m.border : "rgba(255,255,255,0.12)",
                   },
                 ]}
               >
                 <Text style={{ fontSize: 28 }}>{m.emoji}</Text>
-                <Text style={[styles.moodLabel, { color: active ? m.text : "#374151" }]}>
+                <Text style={[styles.moodLabel, { color: active ? m.text : "rgba(255,255,255,0.92)" }]}>
                   {m.label}
                 </Text>
                 <Text style={styles.moodHint}>{m.hint}</Text>
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 13,
     fontWeight: "800",
-    color: "#374151",
+    color: "rgba(255,255,255,0.85)",
     marginBottom: 10,
     marginTop: 8,
   },
@@ -387,16 +387,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#fff",
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#14142B",
     flexDirection: "row",
     alignItems: "baseline",
     gap: 6,
   },
   chipActive: { backgroundColor: "#A855F7", borderColor: "#A855F7" },
-  chipText: { fontSize: 14, fontWeight: "700", color: "#374151" },
+  chipText: { fontSize: 14, fontWeight: "700", color: "rgba(255,255,255,0.85)" },
   chipTextActive: { color: "#fff" },
-  chipMeta: { fontSize: 11, color: "#9CA3AF" },
+  chipMeta: { fontSize: 11, color: "rgba(255,255,255,0.45)" },
   dateChip: {
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
   },
   dateChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
   dateChipText: { fontSize: 14, fontWeight: "700", color: "#6D28D9" },
-  dateHint: { fontSize: 12, color: "#6B7280", marginTop: -8, marginBottom: 16, marginLeft: 2 },
+  dateHint: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: -8, marginBottom: 16, marginLeft: 2 },
   moodGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   moodCard: {
     width: "47%",
@@ -421,27 +421,27 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   moodLabel: { fontSize: 14, fontWeight: "800" },
-  moodHint: { fontSize: 11, color: "#6B7280" },
+  moodHint: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
   toggleChip: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#fff",
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#14142B",
     alignItems: "center",
   },
   toggleChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
-  toggleChipText: { fontSize: 13, fontWeight: "700", color: "#374151" },
-  optional: { fontWeight: "500", color: "#9CA3AF", fontSize: 12 },
+  toggleChipText: { fontSize: 13, fontWeight: "700", color: "rgba(255,255,255,0.85)" },
+  optional: { fontWeight: "500", color: "rgba(255,255,255,0.45)", fontSize: 12 },
   textarea: {
     borderWidth: 2,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#fff",
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "#14142B",
     borderRadius: 14,
     padding: 12,
     fontSize: 14,
-    color: "#111827",
+    color: "#FFFFFF",
     minHeight: 88,
   },
   primaryBtn: {
@@ -455,11 +455,11 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: "#fff", fontSize: 15, fontWeight: "800" },
   footerHint: {
     fontSize: 11,
-    color: "#9CA3AF",
+    color: "rgba(255,255,255,0.45)",
     textAlign: "center",
     marginTop: 12,
   },
   emptyWrap: { alignItems: "center" },
-  emptyTitle: { fontSize: 18, fontWeight: "800", color: "#111827", marginBottom: 6 },
-  emptySub: { fontSize: 13, color: "#6B7280", textAlign: "center" },
+  emptyTitle: { fontSize: 18, fontWeight: "800", color: "#FFFFFF", marginBottom: 6 },
+  emptySub: { fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: "center" },
 });

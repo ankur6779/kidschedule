@@ -536,7 +536,7 @@ export default function CoachScreen() {
   // ── PHASE: RESULT ─────────────────────────────────────────────────────
   if (phase === "result" && plan) {
     return (
-      <LinearGradient colors={["#FAF5FF", "#FDF4FF", "#F0F9FF"]} style={[styles.screen, { paddingTop: topPad }]}>
+      <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={[styles.screen, { paddingTop: topPad }]}>
         {/* Top bar */}
         <View style={styles.resultTopBar}>
           <TouchableOpacity onPress={handleStartOver} style={styles.iconBtn}>
@@ -650,8 +650,8 @@ function WinCard({
 }) {
   const isExtension = w.win > 12;
   const cardColors: [string, string, string] = isExtension
-    ? ["#FEF3C7", "#FCE7F3", "#EDE9FE"]
-    : ["#FAF5FF", "#FDF4FF", "#F0F9FF"];
+    ? ["#1B1B3A", "#241640", "#0B0B1A"]
+    : ["#0B0B1A", "#14142B", "#1B1B3A"];
 
   return (
     <LinearGradient colors={cardColors} style={{ width, height: "100%" }}>
@@ -806,60 +806,60 @@ function WinCard({
 // STYLES
 // ═══════════════════════════════════════════════════════════════════════════
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#F8F7FF" },
+  screen: { flex: 1, backgroundColor: "#0B0B1A" },
 
   topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },
-  topTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
+  topTitle: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
   backBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  backText: { fontSize: 14, color: "#6B7280", fontFamily: "Inter_500Medium" },
+  backText: { fontSize: 14, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_500Medium" },
 
   heroRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 14 },
   heroBadge: { width: 44, height: 44, borderRadius: 14, backgroundColor: "#F3E8FF", alignItems: "center", justifyContent: "center" },
-  heroTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
-  heroSub: { fontSize: 13, color: "#6B7280", marginTop: 2 },
+  heroTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  heroSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", marginTop: 2 },
 
   searchBox: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "#fff", borderRadius: 16, borderWidth: 1.5, borderColor: "#E5E7EB",
+    backgroundColor: "#14142B", borderRadius: 16, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.08)",
     paddingHorizontal: 12, paddingVertical: Platform.OS === "ios" ? 12 : 8,
   },
-  searchInput: { flex: 1, fontSize: 14, color: "#1E1B4B", fontFamily: "Inter_400Regular", padding: 0 },
+  searchInput: { flex: 1, fontSize: 14, color: "#FFFFFF", fontFamily: "Inter_400Regular", padding: 0 },
 
   catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 },
   catCell: { width: "47.5%" },
   catCellInner: { borderRadius: 18, padding: 18 },
-  catCellTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 18 },
-  catCellSub: { fontSize: 11, color: "#6B7280", marginTop: 4 },
+  catCellTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 18 },
+  catCellSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 4 },
 
-  catHeader: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6B7280", letterSpacing: 0.6 },
+  catHeader: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)", letterSpacing: 0.6 },
 
   catHeroBox: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: 18, marginTop: 6 },
-  catHeroTitle: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
-  catHeroSub: { fontSize: 12, color: "#6B7280", marginTop: 2 },
+  catHeroTitle: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  catHeroSub: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 2 },
 
   goalRow: { flexDirection: "row", alignItems: "center", gap: 14, padding: 16, borderRadius: 18 },
-  goalRowTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#1E1B4B" },
-  goalRowSub: { fontSize: 11, color: "#6B7280", marginTop: 2 },
+  goalRowTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  goalRowSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 },
 
-  emptyText: { textAlign: "center", marginTop: 30, color: "#6B7280", fontSize: 14 },
+  emptyText: { textAlign: "center", marginTop: 30, color: "rgba(255,255,255,0.6)", fontSize: 14 },
 
   // Questions
   qProgressRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
-  qProgressText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#6B7280" },
-  qProgressGoal: { fontSize: 11, color: "#6B7280" },
+  qProgressText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)" },
+  qProgressGoal: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
   qProgressBar: { height: 8, backgroundColor: "#E5E7EB", borderRadius: 4, overflow: "hidden" },
   qProgressFill: { height: "100%", borderRadius: 4 },
 
-  qPrompt: { fontSize: 22, fontFamily: "Inter_700Bold", color: "#1E1B4B", marginTop: 22, lineHeight: 28 },
-  qHint: { fontSize: 12, color: "#6B7280", marginTop: 6 },
+  qPrompt: { fontSize: 22, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginTop: 22, lineHeight: 28 },
+  qHint: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 6 },
 
   qOption: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16,
-    backgroundColor: "#fff", borderWidth: 2, borderColor: "#E5E7EB",
+    backgroundColor: "#14142B", borderWidth: 2, borderColor: "rgba(255,255,255,0.08)",
   },
   qOptionSelected: { backgroundColor: "#F5F3FF", borderColor: "#8B5CF6" },
-  qOptionText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#1E1B4B", flex: 1 },
+  qOptionText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#FFFFFF", flex: 1 },
   qOptionTextSelected: { color: "#5B21B6" },
 
   qNextBtn: { paddingVertical: 16, borderRadius: 16, alignItems: "center", justifyContent: "center" },
@@ -897,48 +897,48 @@ const styles = StyleSheet.create({
 
   planHeaderBox: { marginBottom: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "rgba(139,92,246,0.18)" },
   planHeaderEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "#7C3AED", marginBottom: 4 },
-  planHeaderTitle: { fontSize: 19, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 23 },
+  planHeaderTitle: { fontSize: 19, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 23 },
   rootCauseBox: { backgroundColor: "rgba(244,114,182,0.1)", borderWidth: 1, borderColor: "rgba(244,114,182,0.3)", borderRadius: 12, padding: 12, marginTop: 10, marginBottom: 8 },
   rootCauseEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#BE185D", marginBottom: 4 },
   rootCauseText: { fontSize: 12.5, lineHeight: 19, color: "#4C1D3A" },
-  planSummaryText: { fontSize: 12.5, color: "#4B5563", lineHeight: 19 },
+  planSummaryText: { fontSize: 12.5, color: "rgba(255,255,255,0.7)", lineHeight: 19 },
 
-  winTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#1E1B4B", lineHeight: 28, marginBottom: 6 },
+  winTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 28, marginBottom: 6 },
   winObjective: { fontSize: 13.5, color: "#7C3AED", lineHeight: 19, fontFamily: "Inter_600SemiBold", marginBottom: 16 },
 
   section: {
-    backgroundColor: "rgba(255,255,255,0.7)", borderWidth: 1, borderColor: "rgba(99,102,241,0.18)",
+    backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(99,102,241,0.25)",
     borderRadius: 14, padding: 14, marginBottom: 14,
   },
   sectionEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, marginBottom: 6 },
-  sectionBody: { fontSize: 13.5, lineHeight: 21, color: "#1F2937" },
+  sectionBody: { fontSize: 13.5, lineHeight: 21, color: "#FFFFFF" },
 
   actionRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   actionDot: { width: 22, height: 22, borderRadius: 999, alignItems: "center", justifyContent: "center", marginTop: 1 },
   actionDotText: { color: "#fff", fontSize: 11, fontFamily: "Inter_700Bold" },
-  actionText: { flex: 1, fontSize: 13.5, lineHeight: 20, color: "#1F2937" },
+  actionText: { flex: 1, fontSize: 13.5, lineHeight: 20, color: "#FFFFFF" },
 
   microTaskBox: {
     borderWidth: 1, borderColor: "rgba(167,139,250,0.5)",
     borderRadius: 14, padding: 14, marginBottom: 12,
   },
   microTaskEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#6D28D9", marginBottom: 4 },
-  microTaskBody: { fontSize: 13.5, lineHeight: 19, color: "#1E1B4B", fontFamily: "Inter_600SemiBold" },
+  microTaskBody: { fontSize: 13.5, lineHeight: 19, color: "#FFFFFF", fontFamily: "Inter_600SemiBold" },
 
   durationChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "rgba(139,92,246,0.12)" },
   durationChipText: { fontSize: 11, color: "#6D28D9", fontFamily: "Inter_700Bold" },
 
   scienceRef: {
-    fontSize: 11, color: "#6B7280", lineHeight: 17, marginBottom: 14,
+    fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 17, marginBottom: 14,
     fontStyle: "italic", paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: "rgba(139,92,246,0.3)",
     marginTop: 8,
   },
 
   feedbackBox: {
-    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(139,92,246,0.25)",
+    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(139,92,246,0.35)",
     borderRadius: 16, padding: 14, marginBottom: 8,
   },
-  feedbackTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#1E1B4B", marginBottom: 10 },
+  feedbackTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginBottom: 10 },
   fbBtn: { flex: 1, paddingVertical: 10, paddingHorizontal: 4, borderRadius: 10, borderWidth: 1.5, alignItems: "center" },
   fbBtnText: { fontSize: 11.5, fontFamily: "Inter_700Bold", lineHeight: 14 },
 
