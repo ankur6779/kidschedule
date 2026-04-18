@@ -171,13 +171,7 @@ function RootLayoutNav() {
       />
       <Stack.Screen
         name="routines/[id]"
-        options={{
-          headerShown: true,
-          headerTitle: "Routine Detail",
-          headerBackTitle: "Back",
-          headerTintColor: "#FF4ECD",
-          headerStyle: { backgroundColor: "#0B0B1A" },
-        }}
+        options={{ headerShown: false }}
       />
     </Stack>
   );

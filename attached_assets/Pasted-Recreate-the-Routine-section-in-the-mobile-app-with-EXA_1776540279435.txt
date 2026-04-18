@@ -1,0 +1,163 @@
+Recreate the "Routine" section in the mobile app with EXACT SAME features, structure, and logic as the website.
+
+IMPORTANT:
+- Do NOT redesign functionality
+- Copy ALL features from website
+- Maintain same flow and logic
+- Only adapt UI for mobile + premium dark theme
+
+----------------------------------------
+
+1. FEATURE PARITY (CRITICAL)
+
+Compare website vs app and implement ALL missing features:
+
+- Routine creation
+- Daily schedule view
+- Weekly planner
+- Time-based tasks
+- Add / edit / delete routine
+- Assign routine to child
+- Progress tracking
+- Completion status (done / pending)
+
+Ensure:
+- Same behavior as website
+- Same data structure
+
+----------------------------------------
+
+2. UI STRUCTURE (MATCH WEBSITE)
+
+Replicate layout hierarchy:
+
+- Header (Routine title + actions)
+- Routine cards / list
+- Add routine button
+- Day / week toggle
+- Empty state (if no routine)
+
+----------------------------------------
+
+3. MOBILE UI ADAPTATION
+
+- Convert layout into vertical scroll
+- Use cards instead of wide sections
+- Maintain same grouping
+
+----------------------------------------
+
+4. CARD DESIGN (PREMIUM)
+
+Each routine block:
+
+- Glassmorphism background
+- Rounded corners (20px+)
+- Soft shadow + glow
+
+CONTENT:
+
+- Routine title
+- Time
+- Status (completed / pending)
+- Child assigned
+
+----------------------------------------
+
+5. INTERACTION
+
+- Tap → open routine details
+- Long press → edit / delete options
+- Swipe:
+
+  - Right → mark complete
+  - Left → delete
+
+----------------------------------------
+
+6. ADD ROUTINE FLOW
+
+- Floating or top button: "Add Routine"
+
+Form should include:
+
+- Routine name
+- Time selection
+- Child selection
+- Notes (optional)
+
+----------------------------------------
+
+7. PROGRESS TRACKING
+
+- Show completion indicator:
+
+  - Progress bar OR checkmarks
+  - Daily completion % (optional)
+
+----------------------------------------
+
+8. ICONS (MUST FIX)
+
+Use consistent icons:
+
+- Time → clock
+- Routine → calendar
+- Complete → check circle
+- Add → plus
+
+Ensure ALL icons visible
+
+----------------------------------------
+
+9. DARK PREMIUM THEME
+
+- Background: #0B0B1A
+- Cards: semi-transparent (glass)
+- Accent:
+  Purple (#7B3FF2)
+  Pink (#FF4ECD)
+
+- Text:
+  Primary: white
+  Secondary: rgba(255,255,255,0.6)
+
+----------------------------------------
+
+10. ANIMATIONS
+
+- Card press → slight scale (0.97)
+- Swipe → smooth
+- Add routine → modal slide up
+
+----------------------------------------
+
+11. GLOBAL GLOW EFFECT
+
+Apply premium glow interaction:
+
+- On touch → soft purple glow
+- Slight elevation
+
+----------------------------------------
+
+12. CONSISTENCY
+
+- Same naming as website
+- Same flow
+- Same logic
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT remove any website feature
+- Do NOT simplify logic
+- Only adapt UI for mobile
+
+----------------------------------------
+
+OUTPUT:
+
+- Full Routine screen code (Expo / React Native)
+- Clean components
