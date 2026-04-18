@@ -142,9 +142,14 @@ export default function WelcomeScreen() {
               <View style={styles.navLogoCircle}>
                 <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
               </View>
-              <Text style={styles.navBrandText}>
-                Amy<Text style={styles.navNestAccent}>Nest</Text> <Text style={styles.navBrandAccent}>AI</Text>
-              </Text>
+              <View style={styles.navWordStack}>
+                <Text style={styles.navBrandText}>
+                  Amy<Text style={styles.navNestAccent}> Nest</Text>
+                </Text>
+                <View style={styles.navAiBadge}>
+                  <Text style={styles.navBrandAccent}>AI</Text>
+                </View>
+              </View>
             </View>
             <Link href="/sign-in" asChild>
               <TouchableOpacity testID="link-sign-in">
@@ -318,6 +323,7 @@ const styles = StyleSheet.create({
   /* nav */
   nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
   navBrand: { flexDirection: "row", alignItems: "center", gap: 10 },
+  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 2 },
   navLogoCircle: {
     width: 36, height: 36, borderRadius: 999,
     overflow: "hidden",
@@ -337,8 +343,19 @@ const styles = StyleSheet.create({
   navNestAccent: {
     color: "#22C55E",
   },
+  navAiBadge: {
+    borderWidth: 1,
+    borderColor: "rgba(168,85,247,0.45)",
+    borderRadius: 999,
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    backgroundColor: "rgba(168,85,247,0.08)",
+  },
   navBrandAccent: {
     color: "#A855F7",
+    fontSize: 10,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 1,
   },
   navSignIn: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontFamily: "Inter_600SemiBold", paddingHorizontal: 10, paddingVertical: 6 },
 
