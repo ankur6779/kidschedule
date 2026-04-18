@@ -116,7 +116,8 @@ export default function RoutinesScreen() {
 
   const goToGenerate = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push("/(tabs)" as never);
+    const qs = selectedChild ? `?childId=${selectedChild}` : "";
+    router.push(`/routines/generate${qs}` as never);
   };
 
   return (

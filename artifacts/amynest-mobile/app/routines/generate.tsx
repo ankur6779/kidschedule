@@ -1,0 +1,465 @@
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Platform,
+} from "react-native";
+import { useRouter, useLocalSearchParams, Stack } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useColors } from "@/hooks/useColors";
+
+type Child = {
+  id: number;
+  name: string;
+  age: number;
+  ageMonths?: number;
+  wakeUpTime?: string;
+};
+
+type Mood = "happy" | "normal" | "lazy" | "angry";
+
+const MOODS: { value: Mood; emoji: string; label: string; hint: string; bg: string; border: string; text: string }[] = [
+  { value: "happy",  emoji: "😊", label: "Happy",  hint: "Productive & energetic", bg: "#F0FDF4", border: "#86EFAC", text: "#166534" },
+  { value: "normal", emoji: "😐", label: "Normal", hint: "Balanced day",            bg: "#EFF6FF", border: "#BFDBFE", text: "#1E40AF" },
+  { value: "lazy",   emoji: "😴", label: "Lazy",   hint: "Easier tasks",            bg: "#FFFBEB", border: "#FCD34D", text: "#92400E" },
+  { value: "angry",  emoji: "😡", label: "Upset",  hint: "Calming activities",      bg: "#FFF1F2", border: "#FDA4AF", text: "#9F1239" },
+];
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function tomorrowISO(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+export default function GenerateRoutineScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const colors = useColors();
+  const authFetch = useAuthFetch();
+  const queryClient = useQueryClient();
+  const params = useLocalSearchParams<{ childId?: string; date?: string }>();
+
+  const initialChildId = params.childId ? Number(params.childId) : null;
+  const initialDate =
+    params.date && /^\d{4}-\d{2}-\d{2}$/.test(String(params.date)) ? String(params.date) : todayISO();
+
+  const [selectedChild, setSelectedChild] = useState<number | null>(initialChildId);
+  const [date, setDate] = useState<string>(initialDate);
+  const [mood, setMood] = useState<Mood>("normal");
+  const [hasSchool, setHasSchool] = useState<boolean | null>(null);
+  const [specialPlans, setSpecialPlans] = useState<string>("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { data: children = [], isLoading } = useQuery<Child[]>({
+    queryKey: ["children"],
+    queryFn: () => authFetch("/api/children").then((r) => r.json()),
+  });
+
+  // Auto-pick the first child if none selected
+  useEffect(() => {
+    if (selectedChild == null && children.length > 0) {
+      setSelectedChild(children[0].id);
+    }
+  }, [children, selectedChild]);
+
+  const selectedChildData = useMemo(
+    () => children.find((c) => c.id === selectedChild),
+    [children, selectedChild]
+  );
+
+  const isFormValid = selectedChild != null;
+
+  const onGenerate = async () => {
+    if (!isFormValid || isGenerating) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setIsGenerating(true);
+    try {
+      // Step 1: ask the server to build a routine
+      const genRes = await authFetch("/api/routines/generate", {
+        method: "POST",
+        body: JSON.stringify({
+          childId: selectedChild,
+          date,
+          hasSchool: hasSchool ?? undefined,
+          specialPlans: specialPlans.trim() || undefined,
+          mood: mood !== "normal" ? mood : undefined,
+        }),
+      });
+      if (!genRes.ok) throw new Error("Generate failed");
+      const generated = (await genRes.json()) as { title: string; items: any[] };
+
+      // Step 2: persist it (override = true so we replace any existing routine for same child+date)
+      const saveRes = await authFetch("/api/routines", {
+        method: "POST",
+        body: JSON.stringify({
+          childId: selectedChild,
+          date,
+          title: generated.title,
+          items: generated.items,
+          override: true,
+        }),
+      });
+      if (!saveRes.ok) throw new Error("Save failed");
+      const saved = (await saveRes.json()) as { id: number };
+
+      // Step 3: refresh dashboard + routines lists, then navigate
+      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: ["routines-all"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-recent-routines"] });
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace(`/routines/${saved.id}` as never);
+    } catch (e) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert(
+        "Couldn't generate routine",
+        "Amy ran into an issue. Please try again in a moment."
+      );
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const topPad = insets.top + (Platform.OS === "web" ? 12 : 0);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#A855F7" />
+      </View>
+    );
+  }
+
+  if (children.length === 0) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, paddingTop: topPad + 60, paddingHorizontal: 24 }]}>
+        <Stack.Screen options={{ title: "Generate Routine" }} />
+        <View style={styles.emptyWrap}>
+          <Text style={{ fontSize: 48, marginBottom: 12 }}>👶</Text>
+          <Text style={styles.emptyTitle}>Add a child first</Text>
+          <Text style={styles.emptySub}>
+            Amy needs to know about your child before she can plan their day.
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.replace("/children/new" as never)}
+            activeOpacity={0.9}
+            style={{ marginTop: 18 }}
+          >
+            <LinearGradient
+              colors={["#A855F7", "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.primaryBtn}
+            >
+              <Ionicons name="person-add" size={16} color="#fff" />
+              <Text style={styles.primaryBtnText}>Add child</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Stack.Screen options={{ title: "Generate Routine" }} />
+      <ScrollView
+        contentContainerStyle={{ paddingTop: topPad + 16, paddingBottom: insets.bottom + 140, paddingHorizontal: 16 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero */}
+        <LinearGradient
+          colors={["#FAF5FF", "#FCE7F3"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.hero}
+        >
+          <View style={styles.heroIcon}>
+            <Ionicons name="sparkles" size={20} color="#fff" />
+          </View>
+          <Text style={styles.heroTitle}>Plan your child's day</Text>
+          <Text style={styles.heroSub}>
+            Amy will build a smart, age-appropriate routine in seconds.
+          </Text>
+        </LinearGradient>
+
+        {/* Child picker */}
+        <Text style={styles.sectionLabel}>1. Choose a child</Text>
+        <View style={styles.chipsRow}>
+          {children.map((c) => {
+            const active = selectedChild === c.id;
+            return (
+              <TouchableOpacity
+                key={c.id}
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setSelectedChild(c.id);
+                }}
+                activeOpacity={0.85}
+                style={[styles.chip, active && styles.chipActive]}
+              >
+                <Text style={[styles.chipText, active && styles.chipTextActive]}>{c.name}</Text>
+                <Text style={[styles.chipMeta, active && { color: "rgba(255,255,255,0.85)" }]}>
+                  {c.age}y
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Date picker */}
+        <Text style={styles.sectionLabel}>2. Which day?</Text>
+        <View style={styles.chipsRow}>
+          {[
+            { label: "Today", value: todayISO() },
+            { label: "Tomorrow", value: tomorrowISO() },
+          ].map((opt) => {
+            const active = date === opt.value;
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                onPress={() => { Haptics.selectionAsync(); setDate(opt.value); }}
+                activeOpacity={0.85}
+                style={[styles.dateChip, active && styles.dateChipActive]}
+              >
+                <Ionicons
+                  name="calendar-outline"
+                  size={14}
+                  color={active ? "#fff" : "#7C3AED"}
+                />
+                <Text style={[styles.dateChipText, active && { color: "#fff" }]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <Text style={styles.dateHint}>{formatDate(date)}</Text>
+
+        {/* Mood */}
+        <Text style={styles.sectionLabel}>3. How is {selectedChildData?.name ?? "your child"} feeling?</Text>
+        <View style={styles.moodGrid}>
+          {MOODS.map((m) => {
+            const active = mood === m.value;
+            return (
+              <TouchableOpacity
+                key={m.value}
+                onPress={() => { Haptics.selectionAsync(); setMood(m.value); }}
+                activeOpacity={0.85}
+                style={[
+                  styles.moodCard,
+                  {
+                    backgroundColor: active ? m.bg : "#fff",
+                    borderColor: active ? m.border : "#E5E7EB",
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 28 }}>{m.emoji}</Text>
+                <Text style={[styles.moodLabel, { color: active ? m.text : "#374151" }]}>
+                  {m.label}
+                </Text>
+                <Text style={styles.moodHint}>{m.hint}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* School toggle */}
+        <Text style={styles.sectionLabel}>4. School day?</Text>
+        <View style={styles.chipsRow}>
+          {[
+            { label: "🎒 Yes, school", value: true },
+            { label: "🏠 No, home day", value: false },
+          ].map((opt) => {
+            const active = hasSchool === opt.value;
+            return (
+              <TouchableOpacity
+                key={String(opt.value)}
+                onPress={() => { Haptics.selectionAsync(); setHasSchool(opt.value); }}
+                activeOpacity={0.85}
+                style={[styles.toggleChip, active && styles.toggleChipActive]}
+              >
+                <Text style={[styles.toggleChipText, active && { color: "#fff" }]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Special plans */}
+        <Text style={styles.sectionLabel}>5. Anything special today? <Text style={styles.optional}>(optional)</Text></Text>
+        <TextInput
+          value={specialPlans}
+          onChangeText={setSpecialPlans}
+          placeholder="e.g. doctor visit at 4pm, birthday party, swimming class…"
+          placeholderTextColor="#9CA3AF"
+          style={styles.textarea}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+        />
+
+        {/* Generate button */}
+        <TouchableOpacity
+          onPress={onGenerate}
+          disabled={!isFormValid || isGenerating}
+          activeOpacity={0.9}
+          style={{ marginTop: 24, opacity: isFormValid && !isGenerating ? 1 : 0.6 }}
+        >
+          <LinearGradient
+            colors={["#A855F7", "#EC4899"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.primaryBtn}
+          >
+            {isGenerating ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Ionicons name="sparkles" size={18} color="#fff" />
+            )}
+            <Text style={styles.primaryBtnText}>
+              {isGenerating ? "Amy is planning…" : "Generate with Amy"}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <Text style={styles.footerHint}>
+          Amy will replace any existing routine for {selectedChildData?.name ?? "this child"} on{" "}
+          {formatDate(date)}.
+        </Text>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  hero: {
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 24,
+    alignItems: "flex-start",
+    gap: 6,
+  },
+  heroIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#A855F7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
+  },
+  heroTitle: { fontSize: 18, fontWeight: "800", color: "#581C87" },
+  heroSub: { fontSize: 13, color: "#7C3AED" },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#374151",
+    marginBottom: 10,
+    marginTop: 8,
+  },
+  chipsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
+  chip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "baseline",
+    gap: 6,
+  },
+  chipActive: { backgroundColor: "#A855F7", borderColor: "#A855F7" },
+  chipText: { fontSize: 14, fontWeight: "700", color: "#374151" },
+  chipTextActive: { color: "#fff" },
+  chipMeta: { fontSize: 11, color: "#9CA3AF" },
+  dateChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#E9D5FF",
+    backgroundColor: "#FAF5FF",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  dateChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  dateChipText: { fontSize: 14, fontWeight: "700", color: "#6D28D9" },
+  dateHint: { fontSize: 12, color: "#6B7280", marginTop: -8, marginBottom: 16, marginLeft: 2 },
+  moodGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
+  moodCard: {
+    width: "47%",
+    borderWidth: 2,
+    borderRadius: 16,
+    padding: 14,
+    alignItems: "flex-start",
+    gap: 4,
+  },
+  moodLabel: { fontSize: 14, fontWeight: "800" },
+  moodHint: { fontSize: 11, color: "#6B7280" },
+  toggleChip: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  toggleChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  toggleChipText: { fontSize: 13, fontWeight: "700", color: "#374151" },
+  optional: { fontWeight: "500", color: "#9CA3AF", fontSize: 12 },
+  textarea: {
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 12,
+    fontSize: 14,
+    color: "#111827",
+    minHeight: 88,
+  },
+  primaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 16,
+  },
+  primaryBtnText: { color: "#fff", fontSize: 15, fontWeight: "800" },
+  footerHint: {
+    fontSize: 11,
+    color: "#9CA3AF",
+    textAlign: "center",
+    marginTop: 12,
+  },
+  emptyWrap: { alignItems: "center" },
+  emptyTitle: { fontSize: 18, fontWeight: "800", color: "#111827", marginBottom: 6 },
+  emptySub: { fontSize: 13, color: "#6B7280", textAlign: "center" },
+});

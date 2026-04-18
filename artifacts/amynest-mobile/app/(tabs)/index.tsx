@@ -693,7 +693,7 @@ export default function HomeScreen() {
             <View style={{ flex: 1 }}>
               <NowNextTimeline
                 routines={allRoutines}
-                onGenerate={() => router.push("/(tabs)/coach")}
+                onGenerate={() => router.push("/routines/generate")}
                 onOpen={(id) => router.push(`/routines/${id}`)}
                 onSeeAll={() => router.push("/(tabs)/routines")}
               />
