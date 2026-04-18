@@ -90,8 +90,8 @@ function ChildrenStrip({ children }: { children: any[] }) {
   return (
     <div className="-mx-1">
       <div className="flex items-center justify-between px-1 mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">Your little ones</p>
-        <Link href="/children" className="text-xs font-semibold text-primary hover:underline">Manage</Link>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-white/50">Your little ones</p>
+        <Link href="/children" className="text-xs font-semibold text-violet-400 hover:text-violet-300">Manage</Link>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
         {children.map((c: any, i: number) => {
@@ -101,19 +101,25 @@ function ChildrenStrip({ children }: { children: any[] }) {
           return (
             <Link key={c.id} href={`/children/${c.id}`}>
               <div
-                className={`shrink-0 snap-start min-w-[180px] sm:min-w-[200px] rounded-3xl border-2 ${info.bgColor} p-4 transition-all hover:scale-[1.02] hover:shadow-md cursor-pointer animate-in fade-in slide-in-from-left-3 duration-500`}
-                style={{ animationDelay: `${i * 80}ms` }}
+                className="relative shrink-0 snap-start min-w-[180px] sm:min-w-[200px] rounded-3xl border border-white/10 p-4 backdrop-blur-md overflow-hidden transition-all hover:scale-[1.03] hover:border-violet-400/40 cursor-pointer"
+                style={{
+                  background: "linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%)",
+                  boxShadow: "0 0 25px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
+                  animationDelay: `${i * 80}ms`,
+                }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-2xl bg-white dark:bg-white/10 shadow-sm flex items-center justify-center text-2xl shrink-0">
+                <div className="absolute -top-5 -right-5 w-16 h-16 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(139,92,246,0.25)" }} />
+                <div className="flex items-center gap-3 relative">
+                  <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
+                    style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.3),rgba(236,72,153,0.2))", border: "1px solid rgba(255,255,255,0.1)" }}>
                     {info.emoji}
                   </div>
                   <div className="min-w-0">
-                    <p className={`font-black text-sm leading-tight truncate ${info.color}`}>{c.name}</p>
-                    <p className="text-[11px] text-foreground/60 mt-0.5">{formatAge(c.age, ageMonths)}</p>
+                    <p className="font-black text-sm leading-tight truncate text-white">{c.name}</p>
+                    <p className="text-[11px] text-white/50 mt-0.5">{formatAge(c.age, ageMonths)}</p>
                   </div>
                 </div>
-                <p className="text-[11px] text-foreground/60 mt-2.5 italic">
+                <p className="text-[11px] text-white/35 mt-2.5 italic relative">
                   Personalised for {c.name}
                 </p>
               </div>
@@ -121,10 +127,11 @@ function ChildrenStrip({ children }: { children: any[] }) {
           );
         })}
         <Link href="/children/new">
-          <div className="shrink-0 snap-start min-w-[140px] rounded-3xl border-2 border-dashed border-border bg-muted/20 p-4 flex items-center justify-center text-center hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+          <div className="shrink-0 snap-start min-w-[140px] rounded-3xl border border-dashed border-white/15 p-4 flex items-center justify-center text-center backdrop-blur-sm hover:border-violet-400/50 hover:bg-white/5 transition-all cursor-pointer"
+            style={{ background: "rgba(255,255,255,0.03)" }}>
             <div>
               <div className="text-2xl mb-1">➕</div>
-              <p className="text-xs font-bold text-foreground/70">Add child</p>
+              <p className="text-xs font-bold text-white/50">Add child</p>
             </div>
           </div>
         </Link>
@@ -186,19 +193,25 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
   }
 
   return (
-    <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-white dark:bg-white/5">
-      <CardHeader className="pb-3 bg-gradient-to-r from-violet-50 dark:from-violet-500/15 to-pink-50 dark:to-pink-500/15">
-        <div className="flex items-center justify-between">
-          <CardTitle className="font-quicksand text-base flex items-center gap-2">
-            <Clock className="h-4 w-4 text-violet-600" />
-            Today's Timeline
-          </CardTitle>
-          <Link href="/routines" className="text-xs font-bold text-violet-600 hover:underline flex items-center">
-            View all <ArrowRight className="h-3 w-3 ml-1" />
-          </Link>
+    <div
+      className="rounded-3xl overflow-hidden border border-white/10"
+      style={{
+        background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)",
+        boxShadow: "0 0 30px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/8"
+        style={{ borderBottomColor: "rgba(255,255,255,0.08)" }}>
+        <div className="flex items-center gap-2">
+          <Clock className="h-4 w-4 text-violet-400" />
+          <span className="font-quicksand font-bold text-sm text-white">Today's Timeline</span>
         </div>
-      </CardHeader>
-      <CardContent className="p-3 space-y-2">
+        <Link href="/routines" className="text-xs font-bold text-violet-400 hover:text-violet-300 flex items-center gap-0.5">
+          View all <ArrowRight className="h-3 w-3 ml-0.5" />
+        </Link>
+      </div>
+      <div className="p-3 space-y-2">
         {displayItems.map((item, idx) => {
           const isCurrent = currentIdx >= 0 && idx === 0;
           const isNext = idx === (currentIdx >= 0 ? 1 : 0);
@@ -208,30 +221,36 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
               <div
                 className={`flex items-center gap-3 p-3 rounded-2xl transition-all hover:scale-[1.01] ${
                   isCurrent
-                    ? "bg-gradient-to-r from-violet-500 to-pink-500 text-white shadow-md"
-                    : "bg-muted/30 hover:bg-muted/60"
+                    ? "text-white shadow-md"
+                    : "hover:bg-white/5"
                 }`}
+                style={isCurrent ? {
+                  background: "linear-gradient(90deg,#7B3FF2,#FF4ECD)",
+                  boxShadow: "0 4px 20px rgba(123,63,242,0.4)",
+                } : {
+                  background: "rgba(255,255,255,0.04)",
+                }}
               >
-                <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-foreground/70"}`}>
+                <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-white/60"}`}>
                   <div className="text-xs font-bold">{item.time}</div>
                   {isCurrent && <span className="mt-1 text-[9px] font-black uppercase bg-white/25 px-1.5 py-0.5 rounded-full">Now</span>}
-                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 px-1.5 py-0.5 rounded-full">Next</span>}
+                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-500/25 text-violet-300 px-1.5 py-0.5 rounded-full">Next</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`font-bold text-sm ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+                  <div className={`font-bold text-sm text-white ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
                     {item.activity}
                   </div>
-                  <div className={`text-[11px] mt-0.5 ${isCurrent ? "text-white/80" : "text-muted-foreground"}`}>
+                  <div className={`text-[11px] mt-0.5 ${isCurrent ? "text-white/80" : "text-white/40"}`}>
                     {item.childName} · {item.duration}m
                   </div>
                 </div>
-                {completed && !isCurrent && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
+                {completed && !isCurrent && <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />}
               </div>
             </Link>
           );
         })}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
