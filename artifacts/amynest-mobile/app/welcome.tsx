@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Pressable,
+  Image,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,24 +17,44 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const LOGO = require("../assets/images/amynest-logo.png");
+
 const FEATURES = [
   {
     icon: "sparkles" as const,
     title: "AI Coach",
-    desc: "Personalized step-by-step plans rooted in child psychology.",
+    tagline: "Your personal parenting expert",
     color: "#A855F7",
+    bullets: [
+      "10–12 step deep coaching plans for 29+ parenting challenges",
+      "Built on real child psychology & behavioural science",
+      "Personalized for your child's age, temperament & situation",
+      "Continuous guidance until your problem is fully resolved",
+    ],
   },
   {
     icon: "calendar" as const,
     title: "Smart Routines",
-    desc: "Daily routines that build lasting habits effortlessly.",
+    tagline: "Build lasting habits, effortlessly",
     color: "#06B6D4",
+    bullets: [
+      "Custom daily routines designed around your family",
+      "Wake-up, study, screen time, sleep — all balanced",
+      "Visual schedules kids actually love to follow",
+      "Track progress & celebrate small wins together",
+    ],
   },
   {
     icon: "grid" as const,
     title: "Parent Hub",
-    desc: "Activities & guidance — all in one beautiful place.",
+    tagline: "Everything in one beautiful place",
     color: "#EC4899",
+    bullets: [
+      "Curated activities & expert parenting guides",
+      "Quick AI help — ask anything, anytime",
+      "Behaviour insights & weekly progress reports",
+      "Tips backed by Dr. Becky, Dr. Karp & decades of research",
+    ],
   },
 ];
 
@@ -49,21 +70,18 @@ export default function WelcomeScreen() {
   const slideUp = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
-    // floating logo
     Animated.loop(
       Animated.sequence([
         Animated.timing(floatY, { toValue: -10, duration: 2500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         Animated.timing(floatY, { toValue: 0, duration: 2500, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ]),
     ).start();
-    // bouncing mascot
     Animated.loop(
       Animated.sequence([
         Animated.timing(bounceY, { toValue: -8, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
         Animated.timing(bounceY, { toValue: 0, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
       ]),
     ).start();
-    // pulse halo
     Animated.loop(
       Animated.parallel([
         Animated.sequence([
@@ -76,181 +94,214 @@ export default function WelcomeScreen() {
         ]),
       ]),
     ).start();
-    // fade-in entrance
     Animated.parallel([
       Animated.timing(fadeIn, { toValue: 1, duration: 700, useNativeDriver: true }),
       Animated.timing(slideUp, { toValue: 0, duration: 700, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
     ]).start();
   }, []);
 
+  const tap = () => {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
   const handleStart = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    }
+    tap();
     router.push("/sign-up");
   };
 
   const handleMascot = () => {
-    if (Platform.OS !== "web") {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push("/sign-up");
   };
 
   return (
-    <LinearGradient
-      colors={["#0f0c29", "#302b63", "#24243e"]}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      {/* Glow blobs */}
-      <View pointerEvents="none" style={styles.blobsContainer}>
-        <View style={[styles.blob, styles.blob1]} />
-        <View style={[styles.blob, styles.blob2]} />
-        <View style={[styles.blob, styles.blob3]} />
-      </View>
-
-      <ScrollView
-        contentContainerStyle={[
-          styles.scroll,
-          { paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 },
-        ]}
-        showsVerticalScrollIndicator={false}
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={["#0f0c29", "#302b63", "#24243e"]}
+        style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
-        {/* Top nav */}
-        <View style={styles.nav}>
-          <View style={styles.navBrand}>
-            <View style={styles.navLogoBox}>
-              <Ionicons name="leaf" size={16} color="#fff" />
-            </View>
-            <Text style={styles.navBrandText}>
-              AmyNest <Text style={styles.navBrandAccent}>AI</Text>
-            </Text>
-          </View>
-          <Link href="/sign-in" asChild>
-            <TouchableOpacity testID="link-sign-in">
-              <Text style={styles.navSignIn}>Sign in</Text>
-            </TouchableOpacity>
-          </Link>
+        {/* Glow blobs */}
+        <View pointerEvents="none" style={styles.blobsContainer}>
+          <View style={[styles.blob, styles.blob1]} />
+          <View style={[styles.blob, styles.blob2]} />
+          <View style={[styles.blob, styles.blob3]} />
         </View>
 
-        <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
-          {/* Badge */}
-          <View style={styles.badge}>
-            <Ionicons name="sparkles" size={12} color="#C4B5FD" />
-            <Text style={styles.badgeText}>AI-Powered Parenting Coach</Text>
+        <ScrollView
+          contentContainerStyle={[
+            styles.scroll,
+            { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 120 },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Top nav with round logo */}
+          <View style={styles.nav}>
+            <View style={styles.navBrand}>
+              <View style={styles.navLogoCircle}>
+                <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
+              </View>
+              <Text style={styles.navBrandText}>
+                AmyNest <Text style={styles.navBrandAccent}>AI</Text>
+              </Text>
+            </View>
+            <Link href="/sign-in" asChild>
+              <TouchableOpacity testID="link-sign-in">
+                <Text style={styles.navSignIn}>Sign in</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
 
-          {/* Logo + Mascot */}
-          <View style={styles.logoRow}>
-            <Animated.View style={{ transform: [{ translateY: floatY }] }}>
-              <LinearGradient
-                colors={["#FFFFFF", "#E0E7FF"]}
-                style={styles.logoBox}
-              >
-                <Ionicons name="leaf" size={56} color="#6366F1" />
-              </LinearGradient>
+          <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
+            {/* Badge */}
+            <View style={styles.badge}>
+              <Ionicons name="sparkles" size={12} color="#C4B5FD" />
+              <Text style={styles.badgeText}>AI-Powered Parenting Coach</Text>
+            </View>
+
+            {/* BIG round logo in center */}
+            <Animated.View style={[styles.bigLogoWrap, { transform: [{ translateY: floatY }] }]}>
+              <View style={styles.bigLogoGlow} />
+              <View style={styles.bigLogoCircle}>
+                <Image source={LOGO} style={styles.bigLogoImg} resizeMode="cover" />
+              </View>
             </Animated.View>
 
-            {/* Mascot — clickable */}
-            <Pressable onPress={handleMascot} testID="link-mascot">
-              <View style={styles.mascotWrap}>
-                <Animated.View
-                  pointerEvents="none"
-                  style={[
-                    styles.mascotPulse,
-                    { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
-                  ]}
-                />
-                <Animated.View style={{ transform: [{ translateY: bounceY }] }}>
-                  <LinearGradient
-                    colors={["#FFFFFF", "#E0E7FF"]}
-                    style={styles.mascotBox}
-                  >
-                    <Text style={styles.mascotEmoji}>🤖</Text>
-                  </LinearGradient>
-                </Animated.View>
-                <View style={styles.tooltip}>
-                  <Text style={styles.tooltipText}>💬 Talk to Amy</Text>
+            {/* Headline */}
+            <Text style={styles.title}>
+              Where Smart{"\n"}
+              <Text style={styles.titleAccent}>Parenting</Text> Begins
+            </Text>
+
+            {/* Subtext */}
+            <Text style={styles.subtitle}>
+              Step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
+            </Text>
+
+            {/* Primary CTA */}
+            <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-hero-cta">
+              <LinearGradient
+                colors={["#A855F7", "#EC4899"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cta}
+              >
+                <Text style={styles.ctaText}>Start Parenting Smarter</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <Text style={styles.smallNote}>✨ Free to start · No credit card required</Text>
+          </Animated.View>
+
+          {/* Features — detailed */}
+          <View style={styles.featuresWrap}>
+            <Text style={styles.sectionTitle}>Everything you need to{"\n"}parent smarter</Text>
+            <Text style={styles.sectionSub}>
+              Three powerful tools, built around real child psychology — designed to make your parenting journey easier, calmer, and more confident.
+            </Text>
+
+            {FEATURES.map((f) => (
+              <View key={f.title} style={[styles.featureCard, { borderColor: `${f.color}40` }]}>
+                <View style={styles.featureHeader}>
+                  <View style={[styles.featureIcon, { backgroundColor: `${f.color}25` }]}>
+                    <Ionicons name={f.icon} size={24} color={f.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.featureTitle}>{f.title}</Text>
+                    <Text style={[styles.featureTagline, { color: f.color }]}>{f.tagline}</Text>
+                  </View>
+                </View>
+                <View style={styles.bulletList}>
+                  {f.bullets.map((b) => (
+                    <View key={b} style={styles.bulletRow}>
+                      <View style={[styles.bulletDot, { backgroundColor: f.color }]} />
+                      <Text style={styles.bulletText}>{b}</Text>
+                    </View>
+                  ))}
                 </View>
               </View>
-            </Pressable>
+            ))}
           </View>
 
-          {/* Headline */}
-          <Text style={styles.title}>
-            Where Smart{"\n"}
-            <Text style={styles.titleAccent}>Parenting</Text> Begins
-          </Text>
-
-          {/* Subtext */}
-          <Text style={styles.subtitle}>
-            Step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
-          </Text>
-
-          {/* Primary CTA */}
-          <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-hero-cta">
-            <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.cta}
-            >
-              <Text style={styles.ctaText}>Start Parenting Smarter</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <Text style={styles.smallNote}>✨ Free to start · No credit card required</Text>
-        </Animated.View>
-
-        {/* Features */}
-        <View style={styles.featuresWrap}>
-          <Text style={styles.sectionTitle}>Everything you need to parent smarter</Text>
-          <Text style={styles.sectionSub}>Three powerful tools, one beautifully simple app.</Text>
-
-          {FEATURES.map((f) => (
-            <View key={f.title} style={styles.featureCard}>
-              <View style={[styles.featureIcon, { backgroundColor: `${f.color}25` }]}>
-                <Ionicons name={f.icon} size={22} color={f.color} />
+          {/* Final CTA */}
+          <View style={styles.finalCtaCard}>
+            <View style={styles.finalIconBox}>
+              <Ionicons name="rocket" size={28} color="#fff" />
+            </View>
+            <Text style={styles.finalTitle}>
+              Ready to be a more{"\n"}confident parent?
+            </Text>
+            <Text style={styles.finalSub}>
+              Join AmyNest AI today — get your first personalized plan in under 2 minutes. Completely free, no credit card.
+            </Text>
+            <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-final-cta">
+              <LinearGradient
+                colors={["#A855F7", "#EC4899"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={[styles.cta, { paddingHorizontal: 36 }]}
+              >
+                <Text style={styles.ctaText}>Start Parenting Smarter</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <View style={styles.trustRow}>
+              <View style={styles.trustItem}>
+                <Ionicons name="shield-checkmark" size={14} color="#10B981" />
+                <Text style={styles.trustText}>Privacy-first</Text>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.featureTitle}>{f.title}</Text>
-                <Text style={styles.featureDesc}>{f.desc}</Text>
+              <View style={styles.trustItem}>
+                <Ionicons name="flash" size={14} color="#F59E0B" />
+                <Text style={styles.trustText}>Instant plans</Text>
+              </View>
+              <View style={styles.trustItem}>
+                <Ionicons name="heart" size={14} color="#EC4899" />
+                <Text style={styles.trustText}>Loved by parents</Text>
               </View>
             </View>
-          ))}
-        </View>
-
-        {/* Final CTA */}
-        <View style={styles.finalCtaCard}>
-          <View style={styles.finalIconBox}>
-            <Ionicons name="chatbubbles" size={28} color="#fff" />
           </View>
-          <Text style={styles.finalTitle}>Ready to start your parenting journey?</Text>
-          <Text style={styles.finalSub}>
-            Join AmyNest AI and get a personalized plan in minutes — completely free.
-          </Text>
-          <TouchableOpacity onPress={handleStart} activeOpacity={0.85} testID="button-final-cta">
-            <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={[styles.cta, { paddingHorizontal: 36 }]}
-            >
-              <Text style={styles.ctaText}>Start Parenting Smarter</Text>
-              <Ionicons name="arrow-forward" size={20} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Where Smart Parenting Begins</Text>
-        </View>
-      </ScrollView>
-    </LinearGradient>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Where Smart Parenting Begins</Text>
+          </View>
+        </ScrollView>
+      </LinearGradient>
+
+      {/* Floating Amy Mascot — bottom right, fixed */}
+      <View
+        pointerEvents="box-none"
+        style={[styles.mascotFloater, { bottom: insets.bottom + 20 }]}
+      >
+        <Pressable onPress={handleMascot} testID="link-mascot">
+          <View style={styles.mascotWrap}>
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.mascotPulse,
+                { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
+              ]}
+            />
+            <Animated.View style={{ transform: [{ translateY: bounceY }] }}>
+              <LinearGradient
+                colors={["#A855F7", "#EC4899"]}
+                style={styles.mascotBox}
+              >
+                <Text style={styles.mascotEmoji}>🤖</Text>
+                <View style={styles.mascotBadge}>
+                  <Text style={styles.mascotBadgeText}>AI</Text>
+                </View>
+              </LinearGradient>
+            </Animated.View>
+            <View style={styles.tooltip}>
+              <Text style={styles.tooltipText}>💬 Talk to Amy</Text>
+            </View>
+          </View>
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -264,16 +315,21 @@ const styles = StyleSheet.create({
 
   scroll: { paddingHorizontal: 20 },
 
+  /* nav */
   nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  navBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
-  navLogoBox: {
-    width: 30, height: 30, borderRadius: 8,
-    backgroundColor: "#6366F1", alignItems: "center", justifyContent: "center",
+  navBrand: { flexDirection: "row", alignItems: "center", gap: 10 },
+  navLogoCircle: {
+    width: 36, height: 36, borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    borderWidth: 1.5, borderColor: "rgba(255,255,255,0.4)",
   },
-  navBrandText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
+  navLogoImg: { width: 36, height: 36 },
+  navBrandText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
   navBrandAccent: { color: "#C4B5FD" },
   navSignIn: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontFamily: "Inter_600SemiBold", paddingHorizontal: 10, paddingVertical: 6 },
 
+  /* hero */
   hero: { alignItems: "center", marginTop: 16, marginBottom: 32 },
   badge: {
     flexDirection: "row", alignItems: "center", gap: 6,
@@ -284,32 +340,23 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: "rgba(255,255,255,0.85)", fontSize: 11, fontFamily: "Inter_600SemiBold" },
 
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 28 },
-  logoBox: {
-    width: 110, height: 110, borderRadius: 28,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#A855F7", shadowOpacity: 0.6, shadowRadius: 24, shadowOffset: { width: 0, height: 8 },
-    elevation: 10,
-  },
-  mascotWrap: { alignItems: "center", justifyContent: "center" },
-  mascotPulse: {
+  /* big middle logo */
+  bigLogoWrap: { alignItems: "center", justifyContent: "center", marginBottom: 26 },
+  bigLogoGlow: {
     position: "absolute",
-    width: 80, height: 80, borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.5)",
+    width: 200, height: 200, borderRadius: 999,
+    backgroundColor: "rgba(168,85,247,0.35)",
+    top: -10,
   },
-  mascotBox: {
-    width: 70, height: 70, borderRadius: 999,
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#A855F7", shadowOpacity: 0.6, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
-    elevation: 8,
+  bigLogoCircle: {
+    width: 170, height: 170, borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    borderWidth: 3, borderColor: "rgba(255,255,255,0.3)",
+    shadowColor: "#A855F7", shadowOpacity: 0.7, shadowRadius: 30, shadowOffset: { width: 0, height: 12 },
+    elevation: 14,
   },
-  mascotEmoji: { fontSize: 36 },
-  tooltip: {
-    position: "absolute", bottom: -28,
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.95)",
-  },
-  tooltipText: { fontSize: 10, color: "#0f0c29", fontFamily: "Inter_600SemiBold" },
+  bigLogoImg: { width: 170, height: 170 },
 
   title: {
     fontSize: 34, lineHeight: 40, color: "#fff",
@@ -332,28 +379,34 @@ const styles = StyleSheet.create({
   ctaText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
   smallNote: { color: "rgba(255,255,255,0.5)", fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 16 },
 
+  /* features */
   featuresWrap: { marginBottom: 32 },
   sectionTitle: {
-    fontSize: 22, color: "#fff", fontFamily: "Inter_700Bold",
-    textAlign: "center", marginBottom: 6, letterSpacing: -0.3,
+    fontSize: 24, lineHeight: 30, color: "#fff", fontFamily: "Inter_700Bold",
+    textAlign: "center", marginBottom: 10, letterSpacing: -0.3,
   },
   sectionSub: {
-    fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular",
-    textAlign: "center", marginBottom: 20,
+    fontSize: 14, lineHeight: 20, color: "rgba(255,255,255,0.65)", fontFamily: "Inter_400Regular",
+    textAlign: "center", marginBottom: 22, paddingHorizontal: 6,
   },
   featureCard: {
-    flexDirection: "row", alignItems: "center", gap: 14,
-    padding: 16, borderRadius: 20, marginBottom: 12,
+    padding: 18, borderRadius: 22, marginBottom: 14,
     backgroundColor: "rgba(255,255,255,0.05)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+    borderWidth: 1,
   },
+  featureHeader: { flexDirection: "row", alignItems: "center", gap: 14, marginBottom: 14 },
   featureIcon: {
-    width: 46, height: 46, borderRadius: 14,
+    width: 48, height: 48, borderRadius: 14,
     alignItems: "center", justifyContent: "center",
   },
-  featureTitle: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold", marginBottom: 3 },
-  featureDesc: { color: "rgba(255,255,255,0.65)", fontSize: 12.5, fontFamily: "Inter_400Regular", lineHeight: 17 },
+  featureTitle: { color: "#fff", fontSize: 17, fontFamily: "Inter_700Bold", marginBottom: 2 },
+  featureTagline: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  bulletList: { gap: 9, paddingLeft: 4 },
+  bulletRow: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
+  bulletDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
+  bulletText: { flex: 1, color: "rgba(255,255,255,0.78)", fontSize: 13, lineHeight: 19, fontFamily: "Inter_400Regular" },
 
+  /* final cta */
   finalCtaCard: {
     alignItems: "center",
     padding: 28, borderRadius: 28, marginBottom: 24,
@@ -361,7 +414,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
   finalIconBox: {
-    width: 56, height: 56, borderRadius: 16,
+    width: 60, height: 60, borderRadius: 18,
     backgroundColor: "#A855F7",
     alignItems: "center", justifyContent: "center",
     marginBottom: 18,
@@ -369,14 +422,54 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   finalTitle: {
-    fontSize: 22, lineHeight: 28, color: "#fff", fontFamily: "Inter_700Bold",
-    textAlign: "center", marginBottom: 10, letterSpacing: -0.3,
+    fontSize: 24, lineHeight: 30, color: "#fff", fontFamily: "Inter_700Bold",
+    textAlign: "center", marginBottom: 12, letterSpacing: -0.3,
   },
   finalSub: {
-    fontSize: 13.5, lineHeight: 20, color: "rgba(255,255,255,0.7)",
-    fontFamily: "Inter_400Regular", textAlign: "center", marginBottom: 22,
+    fontSize: 14, lineHeight: 21, color: "rgba(255,255,255,0.7)",
+    fontFamily: "Inter_400Regular", textAlign: "center", marginBottom: 22, paddingHorizontal: 4,
   },
+  trustRow: { flexDirection: "row", justifyContent: "center", gap: 16, marginTop: 18, flexWrap: "wrap" },
+  trustItem: { flexDirection: "row", alignItems: "center", gap: 5 },
+  trustText: { color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontFamily: "Inter_600SemiBold" },
 
+  /* footer */
   footer: { alignItems: "center", paddingTop: 12, paddingBottom: 8, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)" },
   footerText: { color: "rgba(255,255,255,0.4)", fontSize: 11, fontFamily: "Inter_400Regular" },
+
+  /* floating mascot bottom-right */
+  mascotFloater: {
+    position: "absolute",
+    right: 18,
+    alignItems: "center",
+  },
+  mascotWrap: { alignItems: "center", justifyContent: "center" },
+  mascotPulse: {
+    position: "absolute",
+    width: 80, height: 80, borderRadius: 999,
+    backgroundColor: "rgba(168,85,247,0.5)",
+  },
+  mascotBox: {
+    width: 64, height: 64, borderRadius: 999,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#A855F7", shadowOpacity: 0.7, shadowRadius: 18, shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
+    borderWidth: 2, borderColor: "rgba(255,255,255,0.3)",
+  },
+  mascotEmoji: { fontSize: 30 },
+  mascotBadge: {
+    position: "absolute",
+    bottom: -4, right: -4,
+    backgroundColor: "#fff",
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 2, borderColor: "#A855F7",
+  },
+  mascotBadgeText: { fontSize: 9, fontFamily: "Inter_700Bold", color: "#A855F7" },
+  tooltip: {
+    position: "absolute", bottom: -28,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.95)",
+  },
+  tooltipText: { fontSize: 10, color: "#0f0c29", fontFamily: "Inter_600SemiBold" },
 });
