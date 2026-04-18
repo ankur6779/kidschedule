@@ -22,81 +22,59 @@ import {
 } from "lucide-react";
 import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { useTranslation } from "react-i18next";
 
-const COACH_HIGHLIGHTS = [
-  "Personalized plans for your child",
-  "10–12 step deep solutions",
-  "Progress tracking built-in",
-  "Continuous guidance until solved",
+const COACH_HIGHLIGHT_KEYS = [
+  "landing.highlight_1",
+  "landing.highlight_2",
+  "landing.highlight_3",
+  "landing.highlight_4",
 ];
 
 const PROBLEMS = [
-  { icon: Flame, label: "Tantrums & Anger", color: "#EF4444" },
-  { icon: Smartphone, label: "Screen Addiction", color: "#06B6D4" },
-  { icon: Moon, label: "Sleep Problems", color: "#6366F1" },
-  { icon: EarOff, label: "Not Listening", color: "#F97316" },
-  { icon: Utensils, label: "Fussy Eating", color: "#EC4899" },
-  { icon: Target, label: "Low Focus", color: "#A855F7" },
+  { icon: Flame, labelKey: "landing.problem_tantrums", color: "#EF4444" },
+  { icon: Smartphone, labelKey: "landing.problem_screen", color: "#06B6D4" },
+  { icon: Moon, labelKey: "landing.problem_sleep", color: "#6366F1" },
+  { icon: EarOff, labelKey: "landing.problem_listening", color: "#F97316" },
+  { icon: Utensils, labelKey: "landing.problem_eating", color: "#EC4899" },
+  { icon: Target, labelKey: "landing.problem_focus", color: "#A855F7" },
 ];
 
 const SECONDARY_FEATURES = [
   {
     icon: Calendar,
-    title: "Smart Daily Routine",
-    desc: "Create structured, personalized routines that help your child build strong habits.",
+    titleKey: "landing.feature_routine_title",
+    descKey: "landing.feature_routine_desc",
     gradient: "linear-gradient(135deg,#06B6D4,#3B82F6)",
   },
   {
     icon: LayoutGrid,
-    title: "Parent Hub",
-    desc: "Access activities, insights, and curated parenting guidance in one place.",
+    titleKey: "landing.feature_hub_title",
+    descKey: "landing.feature_hub_desc",
     gradient: "linear-gradient(135deg,#EC4899,#F97316)",
   },
   {
     icon: Zap,
-    title: "Quick AI Help",
-    desc: "Ask anything and get instant parenting advice anytime, right when you need it.",
+    titleKey: "landing.feature_ai_title",
+    descKey: "landing.feature_ai_desc",
     gradient: "linear-gradient(135deg,#FFD166,#F97316)",
   },
 ];
 
 const STEPS = [
-  {
-    icon: Target,
-    title: "Choose your goal",
-    desc: "Pick the parenting challenge you want to solve — from tantrums to sleep.",
-  },
-  {
-    icon: HelpCircle,
-    title: "Answer a few questions",
-    desc: "Tell Amy about your child's age, personality, and current habits.",
-  },
-  {
-    icon: ListChecks,
-    title: "Get your step-by-step plan",
-    desc: "Receive a personalized, science-backed plan you can start today.",
-  },
+  { icon: Target, titleKey: "landing.step1_title", descKey: "landing.step1_desc" },
+  { icon: HelpCircle, titleKey: "landing.step2_title", descKey: "landing.step2_desc" },
+  { icon: ListChecks, titleKey: "landing.step3_title", descKey: "landing.step3_desc" },
 ];
 
 const TRUST_PILLARS = [
-  {
-    icon: BookOpen,
-    title: "Habit Formation",
-    desc: "Built on proven principles of how children form lasting habits.",
-  },
-  {
-    icon: Microscope,
-    title: "Behavioral Research",
-    desc: "Grounded in modern child psychology and emotional development science.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Real Frameworks",
-    desc: "Practical parenting frameworks used by experts worldwide.",
-  },
+  { icon: BookOpen, titleKey: "landing.trust1_title", descKey: "landing.trust1_desc" },
+  { icon: Microscope, titleKey: "landing.trust2_title", descKey: "landing.trust2_desc" },
+  { icon: ShieldCheck, titleKey: "landing.trust3_title", descKey: "landing.trust3_desc" },
 ];
 
 export default function LandingPage() {
+  const { t } = useTranslation();
   return (
     <div
       className="min-h-screen flex flex-col overflow-x-hidden text-white relative"
@@ -220,7 +198,7 @@ export default function LandingPage() {
           <LanguageSwitcher />
           <Link href="/sign-in">
             <button className="text-sm font-semibold text-white/70 hover:text-white transition-colors px-3 py-1.5">
-              Sign in
+              {t("landing.nav_sign_in")}
             </button>
           </Link>
         </div>
@@ -231,7 +209,7 @@ export default function LandingPage() {
         {/* Badge */}
         <div className="amy-fade-up amy-glass mb-8 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white/80">
           <Sparkles className="h-3.5 w-3.5 text-purple-300" />
-          AI-Powered Parenting Coach
+          {t("landing.badge")}
         </div>
 
         {/* Big floating logo */}
@@ -248,12 +226,12 @@ export default function LandingPage() {
 
         {/* Headline — animated color cycle */}
         <h1 className="amy-fade-up-2 amy-color-cycle font-quicksand font-black text-4xl md:text-6xl leading-[1.1] tracking-tight max-w-3xl mb-5">
-          Where Smart Parenting Begins
+          {t("landing.hero_headline")}
         </h1>
 
         {/* Subtext */}
         <p className="amy-fade-up-3 text-white/75 text-base md:text-xl max-w-xl leading-relaxed mb-10">
-          Get step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
+          {t("landing.hero_sub")}
         </p>
 
         {/* Single Primary CTA */}
@@ -263,14 +241,14 @@ export default function LandingPage() {
               className="amy-cta inline-flex items-center gap-2 text-base md:text-lg font-bold px-9 md:px-10 py-4 md:py-5 rounded-2xl text-white"
               data-testid="button-hero-cta"
             >
-              Start Parenting Smarter
+              {t("landing.hero_cta")}
               <ArrowRight className="h-5 w-5" />
             </button>
           </Link>
         </div>
 
         <p className="amy-fade-up-4 mt-6 text-xs text-white/50">
-          ✨ Free to start · No credit card required
+          {t("landing.hero_free")}
         </p>
       </section>
 
@@ -280,20 +258,20 @@ export default function LandingPage() {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-1.5 amy-glass mb-4 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white/80">
               <Sparkles className="h-3 w-3 text-pink-300" />
-              Real Parenting Problems
+              {t("landing.problems_eyebrow")}
             </div>
             <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
-              Struggling with these?
+              {t("landing.problems_heading")}
             </h2>
             <p className="text-white/60 text-base max-w-lg mx-auto">
-              Every parent faces them. Amy Coach helps you solve them — one personalized step at a time.
+              {t("landing.problems_sub")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
-            {PROBLEMS.map(({ icon: Icon, label, color }) => (
+            {PROBLEMS.map(({ icon: Icon, labelKey, color }) => (
               <div
-                key={label}
+                key={labelKey}
                 className="amy-glass-card rounded-2xl p-4 md:p-5 flex items-center gap-3"
               >
                 <div
@@ -305,13 +283,13 @@ export default function LandingPage() {
                 >
                   <Icon className="h-5 w-5 md:h-5 md:w-5" style={{ color }} />
                 </div>
-                <span className="text-white/90 text-sm md:text-base font-semibold">{label}</span>
+                <span className="text-white/90 text-sm md:text-base font-semibold">{t(labelKey)}</span>
               </div>
             ))}
           </div>
 
           <p className="text-center text-white/70 text-base md:text-lg italic">
-            You're not alone — and you don't have to figure it out yourself.
+            {t("landing.not_alone")}
           </p>
         </div>
       </section>
@@ -321,10 +299,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
-              Everything You Need for Smarter Parenting
+              {t("landing.features_heading")}
             </h2>
             <p className="text-white/60 text-base max-w-lg mx-auto">
-              One platform. Multiple powerful tools designed for your child.
+              {t("landing.features_sub")}
             </p>
           </div>
 
@@ -356,7 +334,7 @@ export default function LandingPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3 flex-wrap">
                     <h3 className="font-quicksand font-bold text-xl md:text-2xl text-white">
-                      Amy Coach — Solve Real Parenting Challenges
+                      {t("landing.coach_title")}
                     </h3>
                     <span
                       className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
@@ -365,18 +343,18 @@ export default function LandingPage() {
                         boxShadow: "0 4px 14px rgba(236,72,153,0.4)",
                       }}
                     >
-                      Core Feature
+                      {t("landing.core_feature")}
                     </span>
                   </div>
                   <p className="text-white/75 text-sm md:text-base leading-relaxed">
-                    From tantrums to screen time, sleep to focus — Amy Coach gives you deep, personalized step-by-step plans that actually work. No generic advice, only science-backed solutions tailored to your child.
+                    {t("landing.coach_desc")}
                   </p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {COACH_HIGHLIGHTS.map((h) => (
+                {COACH_HIGHLIGHT_KEYS.map((key) => (
                   <div
-                    key={h}
+                    key={key}
                     className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5"
                     style={{
                       background: "rgba(255,255,255,0.05)",
@@ -384,7 +362,7 @@ export default function LandingPage() {
                     }}
                   >
                     <CheckCircle2 className="h-4 w-4 md:h-5 md:w-5 text-purple-300 shrink-0" />
-                    <span className="text-white/85 text-xs md:text-sm font-medium">{h}</span>
+                    <span className="text-white/85 text-xs md:text-sm font-medium">{t(key)}</span>
                   </div>
                 ))}
               </div>
@@ -393,9 +371,9 @@ export default function LandingPage() {
 
           {/* Secondary feature cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
-            {SECONDARY_FEATURES.map(({ icon: Icon, title, desc, gradient }) => (
+            {SECONDARY_FEATURES.map(({ icon: Icon, titleKey, descKey, gradient }) => (
               <div
-                key={title}
+                key={titleKey}
                 className="amy-glass-card rounded-3xl p-5 md:p-7 flex flex-col gap-3 md:gap-4"
               >
                 <div
@@ -409,9 +387,9 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <h3 className="font-quicksand font-bold text-base md:text-lg text-white mb-1.5 md:mb-2">
-                    {title}
+                    {t(titleKey)}
                   </h3>
-                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{desc}</p>
+                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{t(descKey)}</p>
                 </div>
               </div>
             ))}
@@ -420,14 +398,14 @@ export default function LandingPage() {
           {/* Mid CTA */}
           <div className="text-center mt-12">
             <p className="text-white/80 text-base md:text-lg mb-5 font-medium">
-              Start with Amy Coach and explore more as you grow.
+              {t("landing.mid_cta")}
             </p>
             <Link href="/sign-up">
               <button
                 className="amy-cta inline-flex items-center gap-2 text-sm md:text-base font-bold px-7 md:px-8 py-3.5 md:py-4 rounded-2xl text-white"
                 data-testid="button-features-cta"
               >
-                Get Started
+                {t("landing.mid_cta_btn")}
                 <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
               </button>
             </Link>
@@ -441,20 +419,20 @@ export default function LandingPage() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-1.5 amy-glass mb-4 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white/80">
               <Zap className="h-3 w-3 text-yellow-300" />
-              Get Started in Minutes
+              {t("landing.how_eyebrow")}
             </div>
             <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
-              How It Works
+              {t("landing.how_heading")}
             </h2>
             <p className="text-white/60 text-base max-w-lg mx-auto">
-              Three simple steps to your first personalized parenting plan.
+              {t("landing.how_sub")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-            {STEPS.map(({ icon: Icon, title, desc }, idx) => (
+            {STEPS.map(({ icon: Icon, titleKey, descKey }, idx) => (
               <div
-                key={title}
+                key={titleKey}
                 className="amy-glass-card rounded-3xl p-6 md:p-7 relative"
               >
                 <div
@@ -476,9 +454,9 @@ export default function LandingPage() {
                   <Icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="font-quicksand font-bold text-lg md:text-xl text-white mb-2">
-                  {title}
+                  {t(titleKey)}
                 </h3>
-                <p className="text-white/65 text-sm leading-relaxed">{desc}</p>
+                <p className="text-white/65 text-sm leading-relaxed">{t(descKey)}</p>
               </div>
             ))}
           </div>
@@ -512,17 +490,17 @@ export default function LandingPage() {
                 <ShieldCheck className="h-7 w-7 text-white" />
               </div>
               <h2 className="font-quicksand font-bold text-2xl md:text-4xl text-white leading-tight mb-3">
-                Built on Child Psychology &amp; Behavioral Science
+                {t("landing.trust_heading")}
               </h2>
               <p className="text-white/65 text-base max-w-xl mx-auto leading-relaxed">
-                Every plan is grounded in proven research — not generic advice. Trust the framework, follow the steps.
+                {t("landing.trust_sub")}
               </p>
             </div>
 
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
-              {TRUST_PILLARS.map(({ icon: Icon, title, desc }) => (
+              {TRUST_PILLARS.map(({ icon: Icon, titleKey, descKey }) => (
                 <div
-                  key={title}
+                  key={titleKey}
                   className="rounded-2xl p-5 md:p-6"
                   style={{
                     background: "rgba(255,255,255,0.04)",
@@ -539,9 +517,9 @@ export default function LandingPage() {
                     <Icon className="h-5 w-5 text-purple-300" />
                   </div>
                   <h3 className="font-quicksand font-bold text-base md:text-lg text-white mb-1.5">
-                    {title}
+                    {t(titleKey)}
                   </h3>
-                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{desc}</p>
+                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{t(descKey)}</p>
                 </div>
               ))}
             </div>
@@ -562,17 +540,17 @@ export default function LandingPage() {
               <MessageCircle className="h-8 w-8 text-white" />
             </div>
             <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white leading-tight mb-4">
-              Ready to start your parenting journey?
+              {t("landing.final_cta_heading")}
             </h2>
             <p className="text-white/70 text-base md:text-lg mb-8 leading-relaxed">
-              Join AmyNest AI and get a personalized parenting plan in minutes — completely free.
+              {t("landing.final_cta_sub")}
             </p>
             <Link href="/sign-up">
               <button
                 className="amy-cta inline-flex items-center gap-2 text-base md:text-lg font-bold px-10 md:px-12 py-4 md:py-5 rounded-2xl text-white"
                 data-testid="button-final-cta"
               >
-                Start Parenting Smarter
+                {t("landing.final_cta_btn")}
                 <ArrowRight className="h-5 w-5" />
               </button>
             </Link>
@@ -589,7 +567,7 @@ export default function LandingPage() {
               AmyNest <span className="amy-gradient-text">AI</span>
             </span>
           </div>
-          <p className="text-xs text-white/40">Where Smart Parenting Begins</p>
+          <p className="text-xs text-white/40">{t("landing.footer_tagline")}</p>
         </div>
       </footer>
     </div>

@@ -1,0 +1,92 @@
+Create a premium "Routine Screen" for my Expo React Native app (AmyNest AI) with a Netflix-style UI.
+
+Requirements:
+
+1. UI STYLE (VERY IMPORTANT)
+- Full premium UI like Netflix / modern parenting apps
+- Smooth horizontal swipe cards (carousel)
+- Each card = one routine task
+- Card should be large, rounded (borderRadius 24), shadow, gradient background
+- Slight scale effect on active card
+- Background subtle gradient (light purple / soft pastel)
+
+2. CARD CONTENT
+Each Routine Card must include:
+- Title (e.g. "Brush Teeth")
+- Subtitle (short instruction)
+- Time badge (e.g. "5 min")
+- Progress indicator (completed / pending)
+- CTA Button: "Start" / "Complete"
+
+3. SWIPE BEHAVIOR
+- Horizontal FlatList with snap-to-center
+- Smooth scrolling
+- Active card slightly zoomed
+- Inactive cards slightly faded
+
+4. ANIMATION (IMPORTANT)
+Use:
+- react-native-reanimated
+- gesture-handler
+
+Effects:
+- scale interpolation on scroll
+- opacity change
+- smooth snap
+
+5. DETAIL VIEW (BOTTOM SHEET)
+When user taps card:
+- Open bottom sheet (use @gorhom/bottom-sheet)
+- Show:
+  - Full instructions
+  - Steps list (5–7 steps)
+  - "Mark as Completed" button
+
+6. PROGRESS TRACKER
+- Show progress at top right (e.g. 40%)
+- Progress updates when tasks completed
+
+7. DUMMY DATA (for now)
+Create sample routines:
+- Brush Teeth
+- Get Ready for School
+- Homework Time
+- Play Time
+- Sleep Routine
+
+Each should have:
+- title
+- description
+- duration
+- steps array
+
+8. FILE STRUCTURE
+Create clean structure:
+
+/components
+  RoutineCard.js
+  ProgressBar.js
+
+/screens
+  RoutineScreen.js
+
+9. LIBRARIES TO INSTALL
+- react-native-reanimated
+- react-native-gesture-handler
+- @gorhom/bottom-sheet
+- expo-linear-gradient
+
+10. CLEAN CODE
+- Use functional components
+- Use hooks
+- Keep reusable components
+- No inline messy code
+
+11. BONUS (if possible)
+- Add haptic feedback on card press
+- Add smooth entry animation on screen load
+
+Goal:
+The screen should feel premium, smooth, and production-ready — not basic UI.
+
+Do NOT use web code. Only React Native components.

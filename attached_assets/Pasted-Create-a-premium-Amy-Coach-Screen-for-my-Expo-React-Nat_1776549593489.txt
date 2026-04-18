@@ -1,0 +1,169 @@
+Create a premium "Amy Coach Screen" for my Expo React Native app (AmyNest AI) with advanced swipe-based UI and deep step-by-step solutions.
+
+----------------------------------------
+🎯 GOAL
+----------------------------------------
+- Each swipe card = 1 “Win” (solution step)
+- Deep content (NOT one-liners)
+- Infinite support loop (if not working)
+- Premium animations + UX
+
+----------------------------------------
+🎨 UI STYLE (VERY IMPORTANT)
+----------------------------------------
+- Full screen swipe cards (vertical swipe like reels OR horizontal)
+- Clean light gradient background (no images)
+- Rounded card (borderRadius 24+)
+- Glassmorphism effect (light blur style)
+- Smooth transitions
+
+----------------------------------------
+📱 CARD CONTENT (DETAILED)
+----------------------------------------
+
+Each card must include:
+
+1. Title (Win name)
+2. Objective (what this solves)
+3. Deep explanation (6–8 lines minimum)
+4. Actions (4–5 bullet steps)
+5. Example (real-life)
+6. Mistake to avoid
+7. Micro task
+8. Science reference (small text)
+
+👉 Layout must be scrollable inside card
+
+----------------------------------------
+🔄 SWIPE BEHAVIOR
+----------------------------------------
+
+- Use FlatList (pagingEnabled)
+- One card per screen
+- Smooth snap
+- Indicator dots (top)
+
+----------------------------------------
+⚡ ANIMATIONS
+----------------------------------------
+
+Use:
+- react-native-reanimated
+
+Effects:
+- fade-in card
+- slight scale on active
+- smooth swipe transition
+- button press animation
+
+----------------------------------------
+📊 PROGRESS TRACKER (TOP RIGHT)
+----------------------------------------
+
+- Show % (e.g. 35%)
+- Based on completed wins
+
+RULE:
+- If user clicks "Not worked":
+  → progress DOES NOT increase
+
+----------------------------------------
+🎯 ACTION BUTTONS (VERY IMPORTANT)
+----------------------------------------
+
+At bottom of each card:
+
+3 buttons:
+- ✅ Worked
+- ⚖️ Partially worked
+- ❌ Not worked for me
+
+----------------------------------------
+🧠 LOGIC SYSTEM (CORE FEATURE)
+----------------------------------------
+
+IF "Worked":
+→ mark win complete
+→ move to next card
+→ increase progress
+
+IF "Partially worked":
+→ small progress increase
+→ move next
+
+IF "Not worked":
+→ DO NOT increase progress
+→ dynamically ADD new solution cards
+→ append to list
+
+----------------------------------------
+🔁 INFINITE SUPPORT LOOP
+----------------------------------------
+
+- If user stuck → generate more wins
+- Keep appending cards
+- Never end until progress = 100%
+
+----------------------------------------
+📦 DATA STRUCTURE
+----------------------------------------
+
+wins = [
+  {
+    id,
+    title,
+    objective,
+    explanation,
+    actions: [],
+    example,
+    mistake,
+    microTask,
+    science
+  }
+]
+
+----------------------------------------
+📂 FILE STRUCTURE
+----------------------------------------
+
+/components
+  CoachCard.js
+  ProgressBar.js
+  ActionButtons.js
+
+/screens
+  AmyCoachScreen.js
+
+----------------------------------------
+📚 LIBRARIES
+----------------------------------------
+
+- react-native-reanimated
+- react-native-gesture-handler
+- expo-linear-gradient
+
+----------------------------------------
+✨ BONUS FEATURES
+----------------------------------------
+
+- typing animation for AI intro
+- subtle haptic feedback on button press
+- loading screen before showing cards
+
+----------------------------------------
+🚫 IMPORTANT RULES
+----------------------------------------
+
+- NO basic UI
+- NO small cards
+- NO text clutter
+- Must feel premium app
+
+----------------------------------------
+FINAL RESULT
+----------------------------------------
+
+- Full screen swipe experience
+- Deep expert-level parenting guidance
+- Smart adaptive system
+- Premium feel like top apps

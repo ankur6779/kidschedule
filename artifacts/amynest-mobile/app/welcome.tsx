@@ -22,83 +22,59 @@ import { SUPPORTED_LANGUAGES, setLanguage, type LanguageCode } from "@/i18n";
 
 const LOGO = require("../assets/images/amynest-logo.png");
 
-const COACH_HIGHLIGHTS = [
-  "Personalized plans for your child",
-  "10–12 step deep solutions",
-  "Progress tracking built-in",
-  "Continuous guidance until solved",
+const COACH_HIGHLIGHT_KEYS = [
+  "landing.highlight_1",
+  "landing.highlight_2",
+  "landing.highlight_3",
+  "landing.highlight_4",
 ];
 
-const PROBLEMS: { icon: keyof typeof Ionicons.glyphMap; label: string; color: string }[] = [
-  { icon: "flame", label: "Tantrums & Anger", color: "#EF4444" },
-  { icon: "phone-portrait", label: "Screen Addiction", color: "#06B6D4" },
-  { icon: "moon", label: "Sleep Problems", color: "#6366F1" },
-  { icon: "ear-outline", label: "Not Listening", color: "#F97316" },
-  { icon: "restaurant", label: "Fussy Eating", color: "#EC4899" },
-  { icon: "locate", label: "Low Focus", color: "#A855F7" },
+const PROBLEMS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string; color: string }[] = [
+  { icon: "flame", labelKey: "landing.problem_tantrums", color: "#EF4444" },
+  { icon: "phone-portrait", labelKey: "landing.problem_screen", color: "#06B6D4" },
+  { icon: "moon", labelKey: "landing.problem_sleep", color: "#6366F1" },
+  { icon: "ear-outline", labelKey: "landing.problem_listening", color: "#F97316" },
+  { icon: "restaurant", labelKey: "landing.problem_eating", color: "#EC4899" },
+  { icon: "locate", labelKey: "landing.problem_focus", color: "#A855F7" },
 ];
 
-const SECONDARY_FEATURES: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string; gradient: readonly [string, string] }[] = [
+const SECONDARY_FEATURES: { icon: keyof typeof Ionicons.glyphMap; titleKey: string; descKey: string; gradient: readonly [string, string] }[] = [
   {
     icon: "calendar",
-    title: "Smart Daily Routine",
-    desc: "Create structured, personalized routines that help your child build strong habits.",
+    titleKey: "landing.feature_routine_title",
+    descKey: "landing.feature_routine_desc",
     gradient: ["#06B6D4", "#3B82F6"] as const,
   },
   {
     icon: "grid",
-    title: "Parent Hub",
-    desc: "Access activities, insights, and curated parenting guidance in one place.",
+    titleKey: "landing.feature_hub_title",
+    descKey: "landing.feature_hub_desc",
     gradient: ["#EC4899", "#F97316"] as const,
   },
   {
     icon: "flash",
-    title: "Quick AI Help",
-    desc: "Ask anything and get instant parenting advice anytime, right when you need it.",
+    titleKey: "landing.feature_ai_title",
+    descKey: "landing.feature_ai_desc",
     gradient: ["#FFD166", "#F97316"] as const,
   },
 ];
 
-const STEPS: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
-  {
-    icon: "locate",
-    title: "Choose your goal",
-    desc: "Pick the parenting challenge you want to solve — from tantrums to sleep.",
-  },
-  {
-    icon: "help-circle",
-    title: "Answer a few questions",
-    desc: "Tell Amy about your child's age, personality, and current habits.",
-  },
-  {
-    icon: "list",
-    title: "Get your step-by-step plan",
-    desc: "Receive a personalized, science-backed plan you can start today.",
-  },
+const STEPS: { icon: keyof typeof Ionicons.glyphMap; titleKey: string; descKey: string }[] = [
+  { icon: "locate", titleKey: "landing.step1_title", descKey: "landing.step1_desc" },
+  { icon: "help-circle", titleKey: "landing.step2_title", descKey: "landing.step2_desc" },
+  { icon: "list", titleKey: "landing.step3_title", descKey: "landing.step3_desc" },
 ];
 
-const TRUST_PILLARS: { icon: keyof typeof Ionicons.glyphMap; title: string; desc: string }[] = [
-  {
-    icon: "book",
-    title: "Habit Formation",
-    desc: "Built on proven principles of how children form lasting habits.",
-  },
-  {
-    icon: "flask",
-    title: "Behavioral Research",
-    desc: "Grounded in modern child psychology and emotional development science.",
-  },
-  {
-    icon: "shield-checkmark",
-    title: "Real Frameworks",
-    desc: "Practical parenting frameworks used by experts worldwide.",
-  },
+const TRUST_PILLARS: { icon: keyof typeof Ionicons.glyphMap; titleKey: string; descKey: string }[] = [
+  { icon: "book", titleKey: "landing.trust1_title", descKey: "landing.trust1_desc" },
+  { icon: "flask", titleKey: "landing.trust2_title", descKey: "landing.trust2_desc" },
+  { icon: "shield-checkmark", titleKey: "landing.trust3_title", descKey: "landing.trust3_desc" },
 ];
 
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [langOpen, setLangOpen] = useState(false);
   const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) ?? SUPPORTED_LANGUAGES[0];
 
@@ -181,7 +157,7 @@ export default function WelcomeScreen() {
               </TouchableOpacity>
               <Link href="/sign-in" asChild>
                 <TouchableOpacity testID="link-sign-in" activeOpacity={0.7}>
-                  <Text style={styles.navSignIn}>Sign in</Text>
+                  <Text style={styles.navSignIn}>{t("landing.nav_sign_in")}</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -222,7 +198,7 @@ export default function WelcomeScreen() {
             {/* Glass badge */}
             <View style={styles.badge}>
               <Ionicons name="sparkles" size={12} color="#C4B5FD" />
-              <Text style={styles.badgeText}>AI-Powered Parenting Coach</Text>
+              <Text style={styles.badgeText}>{t("landing.badge")}</Text>
             </View>
 
             {/* Floating logo — centered */}
@@ -233,12 +209,12 @@ export default function WelcomeScreen() {
 
             {/* Headline — color cycling */}
             <Animated.Text style={[styles.title, { color: titleColor }]}>
-              Where Smart Parenting Begins
+              {t("landing.hero_headline")}
             </Animated.Text>
 
             {/* Subtext */}
             <Text style={styles.subtitle}>
-              Get step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
+              {t("landing.hero_sub")}
             </Text>
 
             {/* Primary CTA */}
@@ -249,28 +225,26 @@ export default function WelcomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
               >
-                <Text style={styles.ctaText}>Start Parenting Smarter</Text>
+                <Text style={styles.ctaText}>{t("landing.hero_cta")}</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
 
-            <Text style={styles.smallNote}>✨ Free to start · No credit card required</Text>
+            <Text style={styles.smallNote}>{t("landing.hero_free")}</Text>
           </Animated.View>
 
           {/* PROBLEM HOOK */}
           <View style={styles.sectionWrap}>
             <View style={styles.eyebrow}>
               <Ionicons name="sparkles" size={11} color="#F472B6" />
-              <Text style={styles.eyebrowText}>REAL PARENTING PROBLEMS</Text>
+              <Text style={styles.eyebrowText}>{t("landing.problems_eyebrow")}</Text>
             </View>
-            <Text style={styles.sectionTitle}>Struggling with these?</Text>
-            <Text style={styles.sectionSub}>
-              Every parent faces them. Amy Coach helps you solve them — one personalized step at a time.
-            </Text>
+            <Text style={styles.sectionTitle}>{t("landing.problems_heading")}</Text>
+            <Text style={styles.sectionSub}>{t("landing.problems_sub")}</Text>
 
             <View style={styles.problemsGrid}>
               {PROBLEMS.map((p) => (
-                <View key={p.label} style={styles.problemCard}>
+                <View key={p.labelKey} style={styles.problemCard}>
                   <View
                     style={[
                       styles.problemIcon,
@@ -280,23 +254,19 @@ export default function WelcomeScreen() {
                     <Ionicons name={p.icon} size={18} color={p.color} />
                   </View>
                   <Text style={styles.problemLabel} numberOfLines={2}>
-                    {p.label}
+                    {t(p.labelKey)}
                   </Text>
                 </View>
               ))}
             </View>
 
-            <Text style={styles.problemFooter}>
-              You're not alone — and you don't have to figure it out yourself.
-            </Text>
+            <Text style={styles.problemFooter}>{t("landing.not_alone")}</Text>
           </View>
 
           {/* AMY COACH — CORE FEATURE */}
           <View style={styles.sectionWrap}>
-            <Text style={styles.sectionTitle}>Everything You Need for Smarter Parenting</Text>
-            <Text style={styles.sectionSub}>
-              One platform. Multiple powerful tools designed for your child.
-            </Text>
+            <Text style={styles.sectionTitle}>{t("landing.features_heading")}</Text>
+            <Text style={styles.sectionSub}>{t("landing.features_sub")}</Text>
 
             <View style={styles.coachCard}>
               <View style={styles.coachHeaderRow}>
@@ -317,19 +287,17 @@ export default function WelcomeScreen() {
                       end={{ x: 1, y: 0 }}
                       style={styles.corePill}
                     >
-                      <Text style={styles.corePillText}>CORE FEATURE</Text>
+                      <Text style={styles.corePillText}>{t("landing.core_feature")}</Text>
                     </LinearGradient>
                   </View>
                 </View>
               </View>
-              <Text style={styles.coachSub}>
-                From tantrums to screen time, sleep to focus — Amy Coach gives you deep, personalized step-by-step plans that actually work. No generic advice, only science-backed solutions tailored to your child.
-              </Text>
+              <Text style={styles.coachSub}>{t("landing.coach_desc")}</Text>
               <View style={styles.coachBullets}>
-                {COACH_HIGHLIGHTS.map((h) => (
-                  <View key={h} style={styles.coachBullet}>
+                {COACH_HIGHLIGHT_KEYS.map((key) => (
+                  <View key={key} style={styles.coachBullet}>
                     <Ionicons name="checkmark-circle" size={18} color="#C4B5FD" />
-                    <Text style={styles.coachBulletText}>{h}</Text>
+                    <Text style={styles.coachBulletText}>{t(key)}</Text>
                   </View>
                 ))}
               </View>
@@ -338,7 +306,7 @@ export default function WelcomeScreen() {
             {/* Secondary features grid (2-col) */}
             <View style={styles.secondaryGrid}>
               {SECONDARY_FEATURES.map((f) => (
-                <View key={f.title} style={styles.secondaryCard}>
+                <View key={f.titleKey} style={styles.secondaryCard}>
                   <LinearGradient
                     colors={f.gradient}
                     start={{ x: 0, y: 0 }}
@@ -347,16 +315,14 @@ export default function WelcomeScreen() {
                   >
                     <Ionicons name={f.icon} size={20} color="#fff" />
                   </LinearGradient>
-                  <Text style={styles.secondaryTitle}>{f.title}</Text>
-                  <Text style={styles.secondaryDesc}>{f.desc}</Text>
+                  <Text style={styles.secondaryTitle}>{t(f.titleKey)}</Text>
+                  <Text style={styles.secondaryDesc}>{t(f.descKey)}</Text>
                 </View>
               ))}
             </View>
 
             {/* Mid CTA */}
-            <Text style={styles.midCtaText}>
-              Start with Amy Coach and explore more as you grow.
-            </Text>
+            <Text style={styles.midCtaText}>{t("landing.mid_cta")}</Text>
             <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-features-cta" style={[styles.ctaWrap, { marginTop: 14 }]}>
               <LinearGradient
                 colors={["#A855F7", "#EC4899"] as const}
@@ -364,7 +330,7 @@ export default function WelcomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={[styles.cta, { minWidth: 220, paddingVertical: 14 }]}
               >
-                <Text style={[styles.ctaText, { fontSize: 15 }]}>Get Started</Text>
+                <Text style={[styles.ctaText, { fontSize: 15 }]}>{t("landing.mid_cta_btn")}</Text>
                 <Ionicons name="arrow-forward" size={18} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
@@ -374,15 +340,13 @@ export default function WelcomeScreen() {
           <View style={styles.sectionWrap}>
             <View style={styles.eyebrow}>
               <Ionicons name="flash" size={11} color="#FFD166" />
-              <Text style={styles.eyebrowText}>GET STARTED IN MINUTES</Text>
+              <Text style={styles.eyebrowText}>{t("landing.how_eyebrow")}</Text>
             </View>
-            <Text style={styles.sectionTitle}>How It Works</Text>
-            <Text style={styles.sectionSub}>
-              Three simple steps to your first personalized parenting plan.
-            </Text>
+            <Text style={styles.sectionTitle}>{t("landing.how_heading")}</Text>
+            <Text style={styles.sectionSub}>{t("landing.how_sub")}</Text>
 
             {STEPS.map((s, idx) => (
-              <View key={s.title} style={styles.stepCard}>
+              <View key={s.titleKey} style={styles.stepCard}>
                 <LinearGradient
                   colors={["#A855F7", "#EC4899"] as const}
                   start={{ x: 0, y: 0 }}
@@ -399,8 +363,8 @@ export default function WelcomeScreen() {
                 >
                   <Ionicons name={s.icon} size={22} color="#fff" />
                 </LinearGradient>
-                <Text style={styles.stepTitle}>{s.title}</Text>
-                <Text style={styles.stepDesc}>{s.desc}</Text>
+                <Text style={styles.stepTitle}>{t(s.titleKey)}</Text>
+                <Text style={styles.stepDesc}>{t(s.descKey)}</Text>
               </View>
             ))}
           </View>
@@ -410,18 +374,16 @@ export default function WelcomeScreen() {
             <View style={styles.trustHeaderIcon}>
               <Ionicons name="shield-checkmark" size={26} color="#fff" />
             </View>
-            <Text style={styles.trustTitle}>Built on Child Psychology &amp; Behavioral Science</Text>
-            <Text style={styles.trustSub}>
-              Every plan is grounded in proven research — not generic advice. Trust the framework, follow the steps.
-            </Text>
-            {TRUST_PILLARS.map((t) => (
-              <View key={t.title} style={styles.trustCard}>
+            <Text style={styles.trustTitle}>{t("landing.trust_heading")}</Text>
+            <Text style={styles.trustSub}>{t("landing.trust_sub")}</Text>
+            {TRUST_PILLARS.map((pillar) => (
+              <View key={pillar.titleKey} style={styles.trustCard}>
                 <View style={styles.trustCardIcon}>
-                  <Ionicons name={t.icon} size={18} color="#C4B5FD" />
+                  <Ionicons name={pillar.icon} size={18} color="#C4B5FD" />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.trustCardTitle}>{t.title}</Text>
-                  <Text style={styles.trustCardDesc}>{t.desc}</Text>
+                  <Text style={styles.trustCardTitle}>{t(pillar.titleKey)}</Text>
+                  <Text style={styles.trustCardDesc}>{t(pillar.descKey)}</Text>
                 </View>
               </View>
             ))}
@@ -437,10 +399,8 @@ export default function WelcomeScreen() {
             >
               <Ionicons name="chatbubble-ellipses" size={28} color="#fff" />
             </LinearGradient>
-            <Text style={styles.finalCtaTitle}>Ready to start your parenting journey?</Text>
-            <Text style={styles.finalCtaSub}>
-              Join AmyNest AI and get a personalized parenting plan in minutes — completely free.
-            </Text>
+            <Text style={styles.finalCtaTitle}>{t("landing.final_cta_heading")}</Text>
+            <Text style={styles.finalCtaSub}>{t("landing.final_cta_sub")}</Text>
             <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-final-cta" style={styles.ctaWrap}>
               <LinearGradient
                 colors={["#A855F7", "#EC4899"]}
@@ -448,7 +408,7 @@ export default function WelcomeScreen() {
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
               >
-                <Text style={styles.ctaText}>Start Parenting Smarter</Text>
+                <Text style={styles.ctaText}>{t("landing.final_cta_btn")}</Text>
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
               </LinearGradient>
             </TouchableOpacity>
@@ -462,7 +422,7 @@ export default function WelcomeScreen() {
                 AmyNest <Text style={styles.navBrandAi}>AI</Text>
               </Text>
             </View>
-            <Text style={styles.footerTag}>Where Smart Parenting Begins</Text>
+            <Text style={styles.footerTag}>{t("landing.footer_tagline")}</Text>
           </View>
         </ScrollView>
       </LinearGradient>
