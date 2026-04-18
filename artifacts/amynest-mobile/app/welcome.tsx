@@ -137,24 +137,47 @@ export default function WelcomeScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top nav with round logo */}
+          {/* Top nav — premium brand */}
           <View style={styles.nav}>
             <View style={styles.navBrand}>
-              <View style={styles.navLogoCircle}>
-                <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
+              {/* Gradient ring logo */}
+              <View style={styles.navLogoRing}>
+                <LinearGradient
+                  colors={["#A855F7", "#EC4899", "#6366F1"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.navLogoGradientRing}
+                >
+                  <View style={styles.navLogoInner}>
+                    <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
+                  </View>
+                </LinearGradient>
               </View>
+
+              {/* Text + badge */}
               <View style={styles.navWordStack}>
-                <Text style={styles.navBrandText}>
-                  Amy<Text style={styles.navNestAccent}> Nest</Text>
-                </Text>
-                <View style={styles.navAiBadge}>
-                  <Text style={styles.navBrandAccent}>AI</Text>
+                {/* "Amy Nest" gradient text row */}
+                <View style={styles.navTextRow}>
+                  <Text style={styles.navAmy}>Amy </Text>
+                  <Text style={styles.navNest}>Nest</Text>
                 </View>
+                {/* Premium AI pill */}
+                <LinearGradient
+                  colors={["#7C3AED", "#A855F7"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.navAiBadge}
+                >
+                  <Text style={styles.navBrandAccent}>AI</Text>
+                </LinearGradient>
               </View>
             </View>
+
             <Link href="/sign-in" asChild>
               <TouchableOpacity testID="link-sign-in">
-                <Text style={styles.navSignIn}>Sign in</Text>
+                <View style={styles.navSignInBtn}>
+                  <Text style={styles.navSignIn}>Sign in</Text>
+                </View>
               </TouchableOpacity>
             </Link>
           </View>
@@ -324,42 +347,69 @@ const styles = StyleSheet.create({
   /* nav */
   nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
   navBrand: { flexDirection: "row", alignItems: "center", gap: 10 },
-  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 2 },
-  navLogoCircle: {
-    width: 36, height: 36, borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1.5, borderColor: "rgba(255,255,255,0.18)",
-  },
-  navLogoImg: { width: 36, height: 36 },
-  navBrandText: {
+  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 3 },
+  navTextRow: { flexDirection: "row", alignItems: "center" },
+  navAmy: {
     color: "#E9E7FF",
     fontSize: 16,
     fontFamily: "Inter_700Bold",
-    letterSpacing: -0.2,
-    textShadowColor: "rgba(168,85,247,0.35)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 8,
+    letterSpacing: 0.2,
   },
-  navNestAccent: {
+  navNest: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.2,
     color: "#22C55E",
   },
+
+  /* gradient ring logo */
+  navLogoRing: {
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  navLogoGradientRing: {
+    width: 44, height: 44, borderRadius: 999,
+    padding: 2,
+    alignItems: "center", justifyContent: "center",
+  },
+  navLogoInner: {
+    width: 38, height: 38, borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+  },
+  navLogoImg: { width: 38, height: 38 },
+
+  /* premium AI pill */
   navAiBadge: {
-    marginLeft: 28,
-    borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.45)",
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 1,
-    backgroundColor: "rgba(168,85,247,0.08)",
+    paddingHorizontal: 9,
+    paddingVertical: 2,
+    shadowColor: "#7C3AED",
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   navBrandAccent: {
-    color: "#A855F7",
-    fontSize: 10,
+    color: "#fff",
+    fontSize: 9,
     fontFamily: "Inter_700Bold",
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
-  navSignIn: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontFamily: "Inter_600SemiBold", paddingHorizontal: 10, paddingVertical: 6 },
+
+  /* sign in glass btn */
+  navSignInBtn: {
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  navSignIn: { color: "rgba(255,255,255,0.8)", fontSize: 13, fontFamily: "Inter_600SemiBold" },
 
   /* hero */
   hero: { alignItems: "center", marginTop: 16, marginBottom: 32 },

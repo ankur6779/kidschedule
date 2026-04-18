@@ -1,0 +1,90 @@
+Redesign this "Amy Nest AI" header into a premium, modern, and high-end brand component.
+
+Tech:
+- React + Tailwind CSS
+- Optional: Framer Motion for subtle animation
+
+----------------------------------------
+
+DESIGN GOAL:
+Make it look like a luxury AI startup brand (similar quality to Apple, Stripe, Notion).
+
+----------------------------------------
+
+STYLE:
+
+- Dark premium background: gradient (#0B0B1A → #14142B)
+- Add soft glow lighting (purple + pink accent)
+- Glassmorphism effect (blur + transparency)
+- Smooth rounded corners (16px–24px radius)
+
+----------------------------------------
+
+LOGO SECTION:
+
+- Keep circular logo but enhance:
+  - Add soft gradient ring (purple → pink → blue)
+  - Add subtle glow behind logo
+  - Slight floating animation
+
+----------------------------------------
+
+TEXT: "Amy Nest"
+
+- Use modern font (Inter / SF Pro style)
+- Font-weight: semi-bold
+- Add gradient text (purple → pink)
+- Slight letter spacing for premium feel
+
+----------------------------------------
+
+"AI" BADGE:
+
+- Convert into premium pill badge:
+  - Gradient background (purple glow)
+  - Small, clean, minimal
+  - Add inner shadow + soft glow
+  - Rounded full (pill shape)
+
+----------------------------------------
+
+ANIMATIONS:
+
+- On load: fade + slight slide up
+- Logo: subtle floating effect
+- Hover:
+  - Glow increase
+  - Slight scale (1.03)
+
+----------------------------------------
+
+LAYOUT:
+
+- Horizontal alignment
+- Proper spacing between logo, text, and badge
+- Center vertically aligned
+
+----------------------------------------
+
+EXTRA PREMIUM TOUCH:
+
+- Add subtle animated gradient border
+- Add blur glow behind entire component
+- Add tiny particle / light effect (optional)
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Clean, minimal, no clutter
+- Mobile responsive
+- Maintain fast performance
+- Do NOT overuse bright colors
+
+----------------------------------------
+
+OUTPUT:
+
+- Clean React component
+- Tailwind styling
+- Reusable component (HeaderBrand.jsx)
