@@ -543,15 +543,16 @@ function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: 
 
 // ─── Side Drawer (right slide-in nav) ─────────────────────────────────────
 const DRAWER_ITEMS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; route: string }[] = [
-  { key: "dashboard", label: "Dashboard",     icon: "home-outline",          route: "/(tabs)/index" },
-  { key: "hub",       label: "Parenting Hub", icon: "library-outline",       route: "/(tabs)/coach" },
-  { key: "coach",     label: "Amy Coach",     icon: "sparkles-outline",      route: "/(tabs)/coach" },
-  { key: "children",  label: "Children",      icon: "people-outline",        route: "/(tabs)/children" },
-  { key: "routines",  label: "Routines",      icon: "calendar-outline",      route: "/(tabs)/routines" },
-  { key: "progress",  label: "Progress",      icon: "trending-up-outline",   route: "/(tabs)/routines" },
-  { key: "behavior",  label: "Behavior",      icon: "happy-outline",         route: "/(tabs)/index" },
-  { key: "amy",       label: "Amy AI",        icon: "chatbubbles-outline",   route: "/(tabs)/coach" },
-  { key: "babysitters", label: "Babysitters", icon: "heart-outline",         route: "/(tabs)/profile" },
+  { key: "dashboard",   label: "Dashboard",     icon: "home-outline",          route: "/(tabs)/index" },
+  { key: "hub",         label: "Parenting Hub", icon: "book-outline",          route: "/(tabs)/hub" },
+  { key: "coach",       label: "Amy Coach",     icon: "sparkles-outline",      route: "/(tabs)/coach" },
+  { key: "children",    label: "Children",      icon: "people-outline",        route: "/(tabs)/children" },
+  { key: "routines",    label: "Routines",      icon: "calendar-outline",      route: "/(tabs)/routines" },
+  { key: "progress",    label: "Progress",      icon: "trending-up-outline",   route: "/progress" },
+  { key: "behavior",    label: "Behavior",      icon: "happy-outline",         route: "/behavior" },
+  { key: "amy",         label: "Amy AI",        icon: "chatbubbles-outline",   route: "/amy-ai" },
+  { key: "babysitters", label: "Babysitters",   icon: "heart-outline",         route: "/babysitters" },
+  { key: "profile",     label: "Profile",       icon: "person-outline",        route: "/(tabs)/profile" },
 ];
 
 function SideDrawer({

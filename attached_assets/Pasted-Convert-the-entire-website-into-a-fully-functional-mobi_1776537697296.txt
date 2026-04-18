@@ -1,0 +1,173 @@
+Convert the entire website into a fully functional mobile app with COMPLETE feature parity, navigation, and UI consistency.
+
+IMPORTANT:
+- Do NOT redesign logic
+- Copy ALL features from website
+- Match structure EXACTLY
+- Only adapt UI for mobile + dark premium theme
+
+----------------------------------------
+
+1. FULL NAVIGATION SYNC
+
+Replicate ALL website sections into mobile app:
+
+- Dashboard
+- Parenting Hub
+- Amy Coach
+- Children
+- Routines
+- Progress
+- Behavior
+- Amy AI
+- Babysitters
+
+IMPLEMENTATION:
+
+- Bottom tab (only 4 main):
+  Dashboard
+  Routine
+  Amy Coach (center highlight)
+  Parent Hub
+
+- All other sections:
+  Accessible via sidebar (hamburger menu)
+
+----------------------------------------
+
+2. SIDEBAR (DRAWER NAVIGATION)
+
+- Add top-right hamburger menu
+
+ON CLICK:
+- Open right-side drawer
+
+STYLE:
+- Dark theme (#0B0B1A)
+- Glassmorphism background
+- Smooth slide animation
+
+ITEMS:
+- Same as website (ALL pages)
+- Add icons for each item
+
+ACTIVE STATE:
+- Gradient highlight (purple → pink)
+- Rounded pill
+
+----------------------------------------
+
+3. FEATURE PARITY (CRITICAL)
+
+Compare website vs app:
+
+- Identify missing features
+- Add ALL missing modules
+
+INCLUDING:
+
+- Parenting content/articles
+- Child profiles
+- Routine planner
+- Behavior tracking
+- Progress analytics
+- AI recommendations
+- Amy AI chat
+
+Ensure:
+- Same data flow
+- Same logic
+- Same structure
+
+----------------------------------------
+
+4. GOOGLE AUTHENTICATION
+
+Implement Google Sign-In:
+
+- Use Expo Auth Session or Firebase Auth
+
+FEATURES:
+- Sign in with Google button
+- Secure login flow
+- Store user session
+- Auto login if already authenticated
+
+UI:
+- Premium Google button
+- Clean onboarding screen
+
+----------------------------------------
+
+5. UI THEME (DARK PREMIUM)
+
+- Background: #0B0B1A
+- Cards: glassmorphism
+- Accent:
+  Purple (#7B3FF2)
+  Pink (#FF4ECD)
+
+- Soft glow + gradients
+- Clean spacing
+
+----------------------------------------
+
+6. ICON SYSTEM (FIX ALL MISSING ICONS)
+
+- Use consistent icon library (Lucide / Expo Vector Icons)
+
+Assign icons:
+
+Dashboard → home  
+Parenting Hub → book  
+Amy Coach → brain  
+Children → users  
+Routines → calendar  
+Progress → chart  
+Behavior → activity  
+Amy AI → sparkles / bot  
+Babysitters → heart  
+
+Ensure ALL icons visible
+
+----------------------------------------
+
+7. UI CONSISTENCY
+
+- Match website layout hierarchy
+- Maintain same sections
+- Keep naming identical
+
+BUT:
+- Optimize spacing for mobile
+
+----------------------------------------
+
+8. COMPONENT STRUCTURE
+
+Create reusable components:
+
+- Header
+- Sidebar
+- Bottom Tab
+- Cards
+- Lists
+- Chat UI
+
+----------------------------------------
+
+9. PERFORMANCE
+
+- Smooth animations (Reanimated)
+- Fast loading
+- No UI lag
+
+----------------------------------------
+
+10. OUTPUT
+
+- Full Expo app code
+- Navigation working
+- Auth working
+- All screens implemented
+- Clean modular structure

@@ -14,18 +14,19 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
 
-type TabKey = "index" | "children" | "routines" | "coach" | "profile";
+type TabKey = "index" | "routines" | "coach" | "hub";
 
 const TAB_META: Record<TabKey, { icon: keyof typeof Ionicons.glyphMap; iconActive: keyof typeof Ionicons.glyphMap; label: string }> = {
   index:    { icon: "home-outline",     iconActive: "home",     label: "Home" },
-  children: { icon: "people-outline",   iconActive: "people",   label: "Kids" },
   routines: { icon: "calendar-outline", iconActive: "calendar", label: "Routines" },
   coach:    { icon: "sparkles-outline", iconActive: "sparkles", label: "Coach" },
-  profile:  { icon: "person-outline",   iconActive: "person",   label: "Profile" },
+  hub:      { icon: "book-outline",     iconActive: "book",     label: "Hub" },
 };
 
+const VISIBLE_TABS: string[] = ["index", "routines", "coach", "hub"];
+
 const BRAIN_SIZE = 64;
-const BRAIN_LIFT = 22; // how many px the brain rises above the pill top
+const BRAIN_LIFT = 22;
 
 // ─── Regular Tab Item ──────────────────────────────────────────────────────
 function TabItem({
@@ -85,7 +86,7 @@ function TabItem({
   );
 }
 
-// ─── Brain Coach Button — rendered OUTSIDE BlurView so it's never clipped ──
+// ─── Brain Coach Button ────────────────────────────────────────────────────
 function CoachBrainButton({
   focused,
   onPress,
@@ -98,7 +99,6 @@ function CoachBrainButton({
   const pulse = useRef(new Animated.Value(1)).current;
   const bounce = useRef(new Animated.Value(1)).current;
 
-  // Continuous glow pulse
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
@@ -124,9 +124,7 @@ function CoachBrainButton({
       style={styles.coachHit}
       hitSlop={6}
     >
-      {/* Outer glow ring (pulsing) */}
       <Animated.View style={[styles.coachGlowRing, { transform: [{ scale: pulse }] }]} />
-      {/* Brain disc */}
       <Animated.View style={{ transform: [{ scale: bounce }] }}>
         <LinearGradient
           colors={["#9B5FF5", "#7B3FF2", "#FF4ECD"]}
@@ -149,9 +147,9 @@ function FloatingTabBar({ state, navigation }: any) {
   const insets = useSafeAreaInsets();
   const bottomOffset = Math.max(insets.bottom, 12) + 8;
 
-  // Tab order as rendered: index(0) children(1) coach(2) routines(3) profile(4)
-  // We render left pair + spacer + right pair in the pill, brain button outside.
-  const routes = state.routes as Array<{ key: string; name: string }>;
+  const allRoutes = state.routes as Array<{ key: string; name: string }>;
+  // Only render the 4 visible tabs in the pill — others are hidden.
+  const routes = allRoutes.filter(r => VISIBLE_TABS.includes(r.name));
 
   const makeHandlers = (route: { key: string; name: string }, focused: boolean) => ({
     onPress: () => {
@@ -161,21 +159,22 @@ function FloatingTabBar({ state, navigation }: any) {
     onLongPress: () => navigation.emit({ type: "tabLongPress", target: route.key }),
   });
 
-  // Find coach route
-  const coachIdx = routes.findIndex(r => r.name === "coach");
-  const coachRoute = routes[coachIdx];
-  const coachFocused = state.index === coachIdx;
+  const coachIdxAll = allRoutes.findIndex(r => r.name === "coach");
+  const coachRoute = allRoutes[coachIdxAll];
+  const coachFocused = state.index === coachIdxAll;
   const coachHandlers = coachRoute ? makeHandlers(coachRoute, coachFocused) : { onPress: () => {}, onLongPress: () => {} };
 
-  // Non-coach routes
+  // Non-coach visible routes for the pill
   const nonCoach = routes.filter(r => r.name !== "coach");
+  // We expect 3 non-coach: split as left=[0], right=[1,2] → place coach center after first
+  const left = nonCoach.slice(0, 1);   // index/Home
+  const right = nonCoach.slice(1);     // routines, hub
 
   return (
     <View
       pointerEvents="box-none"
       style={[styles.barWrap, { bottom: bottomOffset }]}
     >
-      {/* Pill — BlurView clips only its own interior; coach brain is outside */}
       <View style={styles.barShadow}>
         <BlurView
           intensity={Platform.OS === "android" ? 70 : 50}
@@ -183,9 +182,8 @@ function FloatingTabBar({ state, navigation }: any) {
           style={styles.barBlur}
         >
           <View style={styles.barInner}>
-            {/* Left pair */}
-            {nonCoach.slice(0, 2).map(route => {
-              const focused = state.index === routes.indexOf(route);
+            {left.map(route => {
+              const focused = state.index === allRoutes.indexOf(route);
               const { onPress, onLongPress } = makeHandlers(route, focused);
               return (
                 <TabItem
@@ -198,12 +196,25 @@ function FloatingTabBar({ state, navigation }: any) {
               );
             })}
 
-            {/* Spacer hole for the brain button */}
+            {/* second left slot — keep balance: render routines in left position too */}
+            {right.slice(0, 1).map(route => {
+              const focused = state.index === allRoutes.indexOf(route);
+              const { onPress, onLongPress } = makeHandlers(route, focused);
+              return (
+                <TabItem
+                  key={route.key}
+                  routeKey={route.name as TabKey}
+                  focused={focused}
+                  onPress={onPress}
+                  onLongPress={onLongPress}
+                />
+              );
+            })}
+
             <View style={styles.coachSpacer} />
 
-            {/* Right pair */}
-            {nonCoach.slice(2).map(route => {
-              const focused = state.index === routes.indexOf(route);
+            {right.slice(1).map(route => {
+              const focused = state.index === allRoutes.indexOf(route);
               const { onPress, onLongPress } = makeHandlers(route, focused);
               return (
                 <TabItem
@@ -215,11 +226,13 @@ function FloatingTabBar({ state, navigation }: any) {
                 />
               );
             })}
+
+            {/* fourth (visual right) slot empty filler if needed - actually we only have 4 tabs (3 non-coach), so we add a placeholder for symmetry */}
+            <View style={styles.itemHit} pointerEvents="none" />
           </View>
         </BlurView>
       </View>
 
-      {/* Brain button lives OUTSIDE BlurView — never clipped */}
       <View style={styles.coachAbsoluteWrap} pointerEvents="box-none">
         <CoachBrainButton
           focused={coachFocused}
@@ -242,12 +255,13 @@ export default function TabLayout() {
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
-      {/* Order matters: coach is slot 2 (center of 5 visible) */}
       <Tabs.Screen name="index"    options={{ title: "Home" }} />
-      <Tabs.Screen name="children" options={{ title: "Kids" }} />
-      <Tabs.Screen name="coach"    options={{ title: "Coach" }} />
       <Tabs.Screen name="routines" options={{ title: "Routines" }} />
-      <Tabs.Screen name="profile"  options={{ title: "Profile" }} />
+      <Tabs.Screen name="coach"    options={{ title: "Coach" }} />
+      <Tabs.Screen name="hub"      options={{ title: "Hub" }} />
+      {/* Hidden from tab bar — accessible via drawer */}
+      <Tabs.Screen name="children" options={{ title: "Kids", href: null }} />
+      <Tabs.Screen name="profile"  options={{ title: "Profile", href: null }} />
     </Tabs>
   );
 }
@@ -262,7 +276,6 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     alignItems: "center",
-    // overflow visible so brain button shadow shows above pill
     overflow: "visible",
   },
   barShadow: {
@@ -277,7 +290,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(11,11,26,0.7)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.09)",
-    // keep overflow hidden here — but brain is outside this view
     overflow: "hidden",
   },
   barBlur: {
@@ -293,15 +305,12 @@ const styles = StyleSheet.create({
     paddingVertical: PILL_PADDING_V,
     backgroundColor: "rgba(20,20,43,0.5)",
   },
-  // spacer that occupies the center slot in the pill
   coachSpacer: {
     width: BRAIN_SIZE + 8,
     height: PILL_ITEM_H,
   },
-  // wrapper absolutely centred on the pill, lifting the brain up
   coachAbsoluteWrap: {
     position: "absolute",
-    // pill height centers, then lift by BRAIN_LIFT
     top: -(BRAIN_SIZE / 2 - PILL_H / 2 + BRAIN_LIFT),
     alignSelf: "center",
     zIndex: 20,
@@ -347,7 +356,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.95,
     shadowRadius: 28,
   },
-  // ── regular tab item ──────────────────────────────────────────────────────
   itemHit: {
     flex: 1,
     alignItems: "center",
