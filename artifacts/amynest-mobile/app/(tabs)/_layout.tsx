@@ -39,35 +39,53 @@ function TabItem({
   onLongPress: () => void;
 }) {
   const meta = TAB_META[routeKey];
-  const scale = useRef(new Animated.Value(focused ? 1.08 : 1)).current;
-  const glow = useRef(new Animated.Value(focused ? 1 : 0)).current;
+  const isPrimary = routeKey === "coach";
+  const baseScale = isPrimary ? 1.18 : 1;
+  const focusedScale = isPrimary ? 1.22 : 1.08;
+  const scale = useRef(new Animated.Value(focused ? focusedScale : baseScale)).current;
+  const glow = useRef(new Animated.Value(focused || isPrimary ? 1 : 0)).current;
+  const lift = useRef(new Animated.Value(isPrimary ? -10 : 0)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.spring(scale, {
-        toValue: focused ? 1.08 : 1,
+        toValue: focused ? focusedScale : baseScale,
         useNativeDriver: true,
         friction: 6,
         tension: 120,
       }),
       Animated.timing(glow, {
-        toValue: focused ? 1 : 0,
+        toValue: focused || isPrimary ? 1 : 0,
         duration: 220,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [focused, scale, glow]);
+  }, [focused, scale, glow, focusedScale, baseScale, isPrimary]);
+
+  // Continuous gentle pulse for the primary Coach tab
+  useEffect(() => {
+    if (!isPrimary) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.08, duration: 1200, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 1200, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [isPrimary, pulse]);
 
   const pressDown = () => {
     Animated.spring(scale, {
-      toValue: focused ? 1.0 : 0.94,
+      toValue: (focused ? focusedScale : baseScale) * 0.92,
       useNativeDriver: true,
       friction: 5,
     }).start();
   };
   const pressUp = () => {
     Animated.spring(scale, {
-      toValue: focused ? 1.08 : 1,
+      toValue: focused ? focusedScale : baseScale,
       useNativeDriver: true,
       friction: 5,
     }).start();
@@ -85,12 +103,18 @@ function TabItem({
       style={styles.itemHit}
       hitSlop={8}
     >
-      <Animated.View style={[styles.itemInner, { transform: [{ scale }] }]}>
-        {/* Active gradient glow halo behind icon */}
+      <Animated.View
+        style={[
+          styles.itemInner,
+          isPrimary && styles.itemInnerPrimary,
+          { transform: [{ translateY: lift }, { scale }, { scale: pulse }] },
+        ]}
+      >
+        {/* Active / primary gradient glow halo behind icon */}
         <Animated.View
           pointerEvents="none"
           style={[
-            styles.glowWrap,
+            isPrimary ? styles.glowWrapPrimary : styles.glowWrap,
             { opacity: glow },
           ]}
         >
@@ -98,33 +122,35 @@ function TabItem({
             colors={["#7B3FF2", "#FF4ECD"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.glowGradient}
+            style={isPrimary ? styles.glowGradientPrimary : styles.glowGradient}
           />
         </Animated.View>
 
         <Ionicons
-          name={focused ? meta.iconActive : meta.icon}
-          size={focused ? 24 : 22}
-          color={focused ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
+          name={focused || isPrimary ? meta.iconActive : meta.icon}
+          size={isPrimary ? 26 : focused ? 24 : 22}
+          color={focused || isPrimary ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
         />
 
-        {/* Active dot indicator */}
-        <Animated.View
-          style={[
-            styles.activeDot,
-            {
-              opacity: glow,
-              transform: [
-                {
-                  scale: glow.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.4, 1],
-                  }),
-                },
-              ],
-            },
-          ]}
-        />
+        {/* Active dot indicator (hidden for primary which uses ring) */}
+        {!isPrimary && (
+          <Animated.View
+            style={[
+              styles.activeDot,
+              {
+                opacity: glow,
+                transform: [
+                  {
+                    scale: glow.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.4, 1],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          />
+        )}
       </Animated.View>
     </Pressable>
   );
@@ -245,6 +271,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  itemInnerPrimary: {
+    shadowColor: "#FF4ECD",
+    shadowOpacity: 0.55,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
+  },
   glowWrap: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 24,
@@ -254,6 +287,22 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 24,
     opacity: 0.85,
+  },
+  glowWrapPrimary: {
+    position: "absolute",
+    top: -6,
+    bottom: -6,
+    left: -6,
+    right: -6,
+    borderRadius: 30,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.18)",
+  },
+  glowGradientPrimary: {
+    flex: 1,
+    borderRadius: 30,
+    opacity: 1,
   },
   activeDot: {
     position: "absolute",

@@ -1,0 +1,148 @@
+Apply the following UI improvements to the mobile app. Do NOT redesign the app. Only fix and enhance these specific areas with premium quality.
+
+----------------------------------------
+
+1. FIX: STREAK CARD SIZE MATCH
+
+- The "Day Streak (0)" card should match the height and visual weight of the adjacent card (e.g., "No plan for today")
+- Maintain same padding, border radius, and alignment
+- Ensure grid consistency (2-column layout balanced)
+
+----------------------------------------
+
+2. FIX: AMY COACH TEXT VISIBILITY + PREMIUM CARDS
+
+PROBLEM:
+Text inside Amy Coach cards is not visible due to low contrast
+
+SOLUTION:
+
+- Change text color to match theme:
+  Primary: white (#FFFFFF)
+  Secondary: rgba(255,255,255,0.7)
+
+- Apply purple theme consistency:
+  - Accent: #7B3FF2
+
+CARD UPGRADE:
+- Add glassmorphism effect:
+  background: rgba(255,255,255,0.05)
+  backdrop blur
+- Add subtle border: 1px rgba(255,255,255,0.08)
+- Add soft purple glow shadow
+- Rounded corners: 20px
+- Add hover/press lift effect
+
+----------------------------------------
+
+3. ADD: MOBILE SIDEBAR NAVIGATION (TOP RIGHT)
+
+- Add a hamburger menu icon at top-right in header
+
+ON CLICK:
+- Open sliding drawer from right side
+
+DRAWER STYLE:
+- Dark theme background (#0B0B1A)
+- Smooth slide animation
+- Slight overlay blur behind
+
+MENU ITEMS:
+- Dashboard
+- Parenting Hub
+- Amy Coach
+- Children
+- Routines
+- Progress
+- Behavior
+- Amy AI
+- Babysitters
+
+ACTIVE ITEM:
+- Highlight with gradient background (purple → pink)
+- Rounded pill style
+
+----------------------------------------
+
+4. FIX: BOTTOM TOOLBAR (AMY COACH HIGHLIGHT)
+
+- Highlight "Amy Coach" tab as primary
+
+STYLE:
+- Move icon slightly upward (floating feel)
+- Add circular glowing background
+- Gradient glow (purple → pink)
+- Scale: 1.1
+
+OTHER TABS:
+- Keep minimal with low opacity
+
+ANIMATION:
+- Smooth transition when switching tabs
+- Slight bounce on active tab
+
+----------------------------------------
+
+5. FIX: AMY AI ASSISTANT ICON (CUTE + ANIMATED)
+
+- Replace current icon with cute circular avatar (Amy AI face)
+
+STYLE:
+- Soft pastel face (friendly, child-safe look)
+- Gradient ring (purple + pink + blue)
+- Glow effect behind
+
+ANIMATION:
+- Floating (up-down loop)
+- Pulse (scale 1 → 1.05)
+- Subtle rotation (very slight)
+
+POSITION:
+- Bottom-right floating button
+
+TOOLTIP:
+- "Talk to Amy AI"
+
+ON CLICK:
+- Open chat screen
+
+----------------------------------------
+
+6. HEADER IMPROVEMENT (ADD AMY AI ICON)
+
+- In header text (e.g., "Amy Nest AI")
+
+ADD:
+- Small Amy AI face icon next to text
+
+STYLE:
+- Tiny circular avatar
+- Subtle glow
+- Proper spacing (8px gap)
+
+----------------------------------------
+
+GLOBAL CONSISTENCY:
+
+- Dark theme (#0B0B1A)
+- Purple primary (#7B3FF2)
+- Pink accent (#FF4ECD)
+- Glassmorphism across UI
+- Soft glow shadows
+- Smooth animations
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT change layout structure
+- Maintain performance
+- Keep UI clean and minimal
+- Mobile responsive
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated Expo / React Native code
+- Component-based clean structure

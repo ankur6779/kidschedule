@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, FlatList, Platform, ActivityIndicator,
+  Modal, Pressable, Animated, Dimensions, Easing,
 } from "react-native";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
@@ -113,7 +114,9 @@ function computeStreak(routines: Routine[]): number {
 }
 
 // ─── Hero Greeting ────────────────────────────────────────────────────────
-function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
+function HeroGreeting({
+  displayName, hasChildren, onMenu,
+}: { displayName: string; hasChildren: boolean; onMenu: () => void }) {
   return (
     <LinearGradient
       colors={["rgba(123,63,242,0.30)", "rgba(255,78,205,0.22)", "rgba(20,20,43,0.0)"] as const}
@@ -121,6 +124,15 @@ function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasCh
       end={{ x: 1, y: 1 }}
       style={styles.heroGreeting}
     >
+      <View style={styles.heroTopRow}>
+        <View style={styles.heroBrandRow}>
+          <AmyAvatar size={28} />
+          <Text style={styles.heroBrand}>AmyNest <Text style={{ color: "#FF9FE0" }}>AI</Text></Text>
+        </View>
+        <TouchableOpacity onPress={onMenu} hitSlop={10} style={styles.menuBtn} activeOpacity={0.8}>
+          <Ionicons name="menu" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
       <Text style={styles.heroEyebrow}>{getGreeting().toUpperCase()}</Text>
       <Text style={styles.heroTitle}>
         👋 Hi{displayName ? `, ${displayName}` : ""}, let's make today easier
@@ -320,21 +332,21 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
 // ─── Streak Card ──────────────────────────────────────────────────────────
 function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }) {
-  const colors = streak >= 3
-    ? ["#FB923C", "#FB7185"] as const
-    : streak > 0
-    ? ["#FEF3C7", "#FED7AA"] as const
-    : ["#F4F4F5", "#E4E4E7"] as const;
   const isHot = streak >= 3;
   const isWarm = streak > 0 && streak < 3;
-  const numColor = isHot ? "#fff" : isWarm ? "#C2410C" : "#71717A";
-  const labelColor = isHot ? "rgba(255,255,255,0.9)" : isWarm ? "#EA580C" : "#71717A";
-  const subColor = isHot ? "rgba(255,255,255,0.75)" : "#71717A";
+  const grad = isHot
+    ? ["rgba(251,113,133,0.35)", "rgba(251,146,60,0.28)"] as const
+    : isWarm
+    ? ["rgba(251,146,60,0.22)", "rgba(245,158,11,0.16)"] as const
+    : ["rgba(123,63,242,0.18)", "rgba(255,78,205,0.10)"] as const;
+  const numColor = isHot ? "#FFFFFF" : isWarm ? "#FED7AA" : "rgba(255,255,255,0.92)";
+  const labelColor = "rgba(255,255,255,0.85)";
+  const subColor = "rgba(255,255,255,0.6)";
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-      <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.streakCard}>
-        <Text style={[styles.streakEmoji, streak === 0 && { opacity: 0.4 }]}>🔥</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={{ flex: 1 }}>
+      <LinearGradient colors={grad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.streakCard}>
+        <Text style={[styles.streakEmoji, streak === 0 && { opacity: 0.5 }]}>🔥</Text>
         <Text style={[styles.streakNum, { color: numColor }]}>{streak}</Text>
         <Text style={[styles.streakLabel, { color: labelColor }]}>Day Streak</Text>
         <Text style={[styles.streakSub, { color: subColor }]}>
@@ -342,6 +354,196 @@ function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }
         </Text>
       </LinearGradient>
     </TouchableOpacity>
+  );
+}
+
+// ─── Amy AI Avatar (cute animated face) ──────────────────────────────────
+function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: boolean }) {
+  const float = useRef(new Animated.Value(0)).current;
+  const pulse = useRef(new Animated.Value(1)).current;
+  const rot = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!animated) return;
+    const floatLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: -6, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(float, { toValue: 0, duration: 1400, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.06, duration: 1100, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 1100, useNativeDriver: true }),
+      ])
+    );
+    const rotLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(rot, { toValue: 1, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(rot, { toValue: -1, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    floatLoop.start();
+    pulseLoop.start();
+    rotLoop.start();
+    return () => {
+      floatLoop.stop();
+      pulseLoop.stop();
+      rotLoop.stop();
+    };
+  }, [animated, float, pulse, rot]);
+
+  const ringPad = Math.max(2, Math.round(size * 0.08));
+  const inner = size - ringPad * 2;
+  const rotate = rot.interpolate({ inputRange: [-1, 1], outputRange: ["-4deg", "4deg"] });
+
+  return (
+    <Animated.View
+      style={{
+        width: size,
+        height: size,
+        transform: [{ translateY: float }, { scale: pulse }, { rotate }],
+      }}
+    >
+      <LinearGradient
+        colors={["#7B3FF2", "#FF4ECD", "#4FC3F7"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          alignItems: "center",
+          justifyContent: "center",
+          shadowColor: "#FF4ECD",
+          shadowOpacity: 0.6,
+          shadowRadius: size * 0.4,
+          shadowOffset: { width: 0, height: 0 },
+          elevation: 8,
+        }}
+      >
+        <View
+          style={{
+            width: inner,
+            height: inner,
+            borderRadius: inner / 2,
+            backgroundColor: "#FFE4F1",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          <Text style={{ fontSize: inner * 0.62, lineHeight: inner }}>🐣</Text>
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+}
+
+// ─── Side Drawer (right slide-in nav) ─────────────────────────────────────
+const DRAWER_ITEMS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; route: string }[] = [
+  { key: "dashboard", label: "Dashboard",     icon: "home-outline",          route: "/(tabs)/" },
+  { key: "hub",       label: "Parenting Hub", icon: "library-outline",       route: "/(tabs)/coach" },
+  { key: "coach",     label: "Amy Coach",     icon: "sparkles-outline",      route: "/(tabs)/coach" },
+  { key: "children",  label: "Children",      icon: "people-outline",        route: "/(tabs)/children" },
+  { key: "routines",  label: "Routines",      icon: "calendar-outline",      route: "/(tabs)/routines" },
+  { key: "progress",  label: "Progress",      icon: "trending-up-outline",   route: "/(tabs)/routines" },
+  { key: "behavior",  label: "Behavior",      icon: "happy-outline",         route: "/(tabs)/" },
+  { key: "amy",       label: "Amy AI",        icon: "chatbubbles-outline",   route: "/(tabs)/coach" },
+  { key: "babysitters", label: "Babysitters", icon: "heart-outline",         route: "/(tabs)/profile" },
+];
+
+function SideDrawer({
+  open, onClose, activeKey, onNavigate,
+}: { open: boolean; onClose: () => void; activeKey: string; onNavigate: (route: string) => void }) {
+  const screenW = Dimensions.get("window").width;
+  const drawerW = Math.min(300, screenW * 0.82);
+  const tx = useRef(new Animated.Value(drawerW)).current;
+  const fade = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(tx, { toValue: open ? 0 : drawerW, duration: 260, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(fade, { toValue: open ? 1 : 0, duration: 220, useNativeDriver: true }),
+    ]).start();
+  }, [open, tx, fade, drawerW]);
+
+  return (
+    <Modal visible={open} transparent animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[styles.drawerScrim, { opacity: fade }]}>
+        <Pressable style={{ flex: 1 }} onPress={onClose} />
+      </Animated.View>
+      <Animated.View
+        style={[
+          styles.drawerPanel,
+          { width: drawerW, transform: [{ translateX: tx }] },
+        ]}
+      >
+        <LinearGradient
+          colors={["#0B0B1A", "#14142B", "#1B1B3A"]}
+          style={{ flex: 1, paddingTop: 56, paddingHorizontal: 16, paddingBottom: 20 }}
+        >
+          <View style={styles.drawerHeader}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <AmyAvatar size={34} />
+              <View>
+                <Text style={styles.drawerBrand}>AmyNest</Text>
+                <Text style={styles.drawerBrandSub}>AI Parenting Coach</Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={onClose} hitSlop={12}>
+              <Ionicons name="close" size={22} color="rgba(255,255,255,0.85)" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView style={{ marginTop: 10 }} showsVerticalScrollIndicator={false}>
+            {DRAWER_ITEMS.map((item) => {
+              const active = item.key === activeKey;
+              return (
+                <TouchableOpacity
+                  key={item.key}
+                  activeOpacity={0.85}
+                  onPress={() => { onClose(); setTimeout(() => onNavigate(item.route), 220); }}
+                  style={{ marginBottom: 6 }}
+                >
+                  {active ? (
+                    <LinearGradient
+                      colors={["#7B3FF2", "#FF4ECD"]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[styles.drawerItem, styles.drawerItemActive]}
+                    >
+                      <Ionicons name={item.icon} size={18} color="#FFFFFF" />
+                      <Text style={[styles.drawerItemLabel, { color: "#FFFFFF" }]}>{item.label}</Text>
+                    </LinearGradient>
+                  ) : (
+                    <View style={styles.drawerItem}>
+                      <Ionicons name={item.icon} size={18} color="rgba(255,255,255,0.7)" />
+                      <Text style={styles.drawerItemLabel}>{item.label}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </LinearGradient>
+      </Animated.View>
+    </Modal>
+  );
+}
+
+// ─── Floating Amy AI button ───────────────────────────────────────────────
+function AmyFAB({ onPress, bottomOffset }: { onPress: () => void; bottomOffset: number }) {
+  return (
+    <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomOffset }]}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.fabHit}>
+        <View style={styles.fabRing}>
+          <AmyAvatar size={56} animated />
+        </View>
+        <View style={styles.fabTooltip}>
+          <Text style={styles.fabTooltipText}>Talk to Amy AI</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -652,6 +854,7 @@ export default function HomeScreen() {
 
   const streak = useMemo(() => computeStreak(allRoutines), [allRoutines]);
   const noChildren = !summaryLoading && (summary?.totalChildren ?? 0) === 0;
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
@@ -665,6 +868,7 @@ export default function HomeScreen() {
   }
 
   return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={{ paddingTop: topPad + 12, paddingBottom: botPad + 110, paddingHorizontal: 16 }}
@@ -679,7 +883,11 @@ export default function HomeScreen() {
         />
       ) : (
         <>
-          <HeroGreeting displayName={displayName} hasChildren={(childrenList.length ?? 0) > 0} />
+          <HeroGreeting
+            displayName={displayName}
+            hasChildren={(childrenList.length ?? 0) > 0}
+            onMenu={() => setDrawerOpen(true)}
+          />
 
           <View style={{ height: 16 }} />
           <ChildrenStrip
@@ -863,6 +1071,21 @@ export default function HomeScreen() {
         </>
       )}
     </ScrollView>
+
+    {!noChildren && (
+      <AmyFAB
+        onPress={() => router.push("/(tabs)/coach")}
+        bottomOffset={botPad + 96}
+      />
+    )}
+
+    <SideDrawer
+      open={drawerOpen}
+      onClose={() => setDrawerOpen(false)}
+      activeKey="dashboard"
+      onNavigate={(route) => router.push(route as any)}
+    />
+    </View>
   );
 }
 
@@ -924,7 +1147,7 @@ const styles = StyleSheet.create({
   childAddText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "rgba(31,41,55,0.7)" },
 
   /* TIMELINE */
-  timelineRowWrap: { flexDirection: "row", gap: 10, marginBottom: 16 },
+  timelineRowWrap: { flexDirection: "row", gap: 10, marginBottom: 16, alignItems: "stretch" },
   timelineCard: {
     backgroundColor: "#14142B", borderRadius: 22, overflow: "hidden",
     shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
@@ -960,7 +1183,21 @@ const styles = StyleSheet.create({
   timelineDoneSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(6,95,70,0.7)" },
 
   /* STREAK */
-  streakCard: { borderRadius: 22, padding: 14, alignItems: "center", justifyContent: "center", minHeight: 130 },
+  streakCard: {
+    flex: 1,
+    borderRadius: 22,
+    padding: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 150,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    shadowColor: "#7B3FF2",
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
   streakEmoji: { fontSize: 26, marginBottom: 2 },
   streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30 },
   streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2 },
@@ -1071,4 +1308,74 @@ const styles = StyleSheet.create({
   },
   onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.85)" },
   onbFooter: { fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
+
+  /* HERO TOP ROW (brand + menu) */
+  heroTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  heroBrandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  menuBtn: {
+    width: 36, height: 36, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
+  },
+
+  /* DRAWER */
+  drawerScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  drawerPanel: {
+    position: "absolute",
+    top: 0, bottom: 0, right: 0,
+    borderLeftWidth: 1,
+    borderLeftColor: "rgba(255,255,255,0.08)",
+    shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 30, shadowOffset: { width: -8, height: 0 },
+    elevation: 24,
+  },
+  drawerHeader: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.08)",
+  },
+  drawerBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  drawerBrandSub: { fontSize: 11, fontFamily: "Inter_500Medium", color: "rgba(255,255,255,0.6)" },
+  drawerItem: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    paddingVertical: 12, paddingHorizontal: 14, borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  drawerItemActive: {
+    shadowColor: "#FF4ECD", shadowOpacity: 0.5, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 8,
+  },
+  drawerItemLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.85)" },
+
+  /* AMY FAB */
+  fabWrap: {
+    position: "absolute",
+    right: 18,
+    alignItems: "flex-end",
+  },
+  fabHit: {
+    alignItems: "center",
+  },
+  fabRing: {
+    width: 64, height: 64, borderRadius: 32,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(11,11,26,0.6)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    shadowColor: "#FF4ECD", shadowOpacity: 0.55, shadowRadius: 22, shadowOffset: { width: 0, height: 0 }, elevation: 14,
+  },
+  fabTooltip: {
+    marginTop: 6,
+    paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(11,11,26,0.85)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
+  },
+  fabTooltipText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.85)" },
 });
