@@ -15,7 +15,7 @@ type Behavior = { id: number; childId: number; childName?: string; date: string;
 
 const TYPES: { key: string; label: string; emoji: string; color: string }[] = [
   { key: "positive", label: "Positive", emoji: "🌟", color: "#34D399" },
-  { key: "challenging", label: "Challenging", emoji: "⚡", color: "#FBBF24" },
+  { key: "negative", label: "Challenging", emoji: "⚡", color: "#FBBF24" },
   { key: "milestone", label: "Milestone", emoji: "🏆", color: "#A78BFA" },
 ];
 
