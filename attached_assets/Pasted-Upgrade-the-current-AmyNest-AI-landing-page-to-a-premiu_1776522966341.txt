@@ -1,0 +1,142 @@
+Upgrade the current AmyNest AI landing page to a premium, high-conversion, modern dark-themed experience with smooth animations and strong visual hierarchy.
+
+🎯 GOAL:
+Make the landing page feel like a world-class AI product (like Headspace / Duolingo / Calm level polish). It should instantly impress users and drive them to start onboarding.
+
+---
+
+🎨 DESIGN SYSTEM (VERY IMPORTANT)
+
+• Use DARK gradient background:
+  - Deep purple (#0f0c29 → #302b63 → #24243e)
+  - Soft glowing radial highlights behind elements
+
+• Add glassmorphism cards:
+  - backdrop-blur
+  - subtle border (rgba white 0.1)
+  - soft shadow
+
+• Typography:
+  - Headline: bold, large, premium spacing
+  - Highlight “AI Parenting Coach” with gradient text (purple → blue)
+
+---
+
+🧠 HERO SECTION (TOP AREA)
+
+1. Increase logo size significantly (center aligned)
+2. Add subtle floating animation to logo (slow up-down motion)
+
+3. Add a cute AI chatbot mascot:
+   - Rounded, friendly, glowing character (Amy AI)
+   - Slight bounce animation
+   - Place near headline
+
+4. Headline:
+   “Where Smart Parenting Begins” 
+   → Animate text fade + slide-up
+
+5. Subtext:
+   Keep but improve readability (slightly brighter text)
+
+---
+
+🔥 CTA RULES (IMPORTANT FIX)
+
+REMOVE multiple signup buttons
+
+KEEP ONLY 2 CTAs:
+
+1️⃣ Primary CTA (CENTER HERO):
+   Button text:
+   → “Start Parenting Smarter”
+
+   Style:
+   - Gradient button (purple → pink)
+   - Glow effect
+   - Hover scale animation
+
+2️⃣ FINAL CTA (BOTTOM OF PAGE):
+   Button text:
+   → “Start Parenting Smarter”
+
+   Style:
+   - Same as primary
+   - Bigger padding
+   - Center aligned
+
+REMOVE:
+❌ “Get started free”
+❌ Extra signup links
+❌ Duplicate CTAs
+
+---
+
+🤖 CHATBOT (AMY AI ENTRY POINT)
+
+• Make chatbot clickable
+• On click:
+   → Redirect to Sign up page 
+
+• Add tooltip:
+   “Talk to Amy AI”
+
+• Add pulse animation every few seconds
+
+---
+
+✨ ANIMATIONS (MAKE IT PREMIUM)
+
+Add:
+• Fade-in sections on scroll
+• Floating elements (very subtle)
+• Button hover scale (1.05)
+• Smooth transitions (300ms ease)
+
+DO NOT overdo — keep it elegant
+
+---
+
+📦 ADD VALUE SECTIONS (BELOW HERO)
+
+Add 3 feature cards:
+
+1. AI Coach
+2. Smart Routines
+3. Parent Hub
+
+Each card:
+• Icon + title + short description
+• Glass card design
+• Hover lift animation
+
+---
+
+📱 MOBILE OPTIMIZATION
+
+• Ensure spacing is clean
+• CTA always visible in first screen
+• No clutter
+
+---
+
+🧼 CLEANUP
+
+• Remove clutter
+• Improve spacing consistency
+• Align everything center-based premium layout
+
+---
+
+🎯 FINAL RESULT SHOULD FEEL LIKE:
+
+• Calm + premium
+• AI-powered but friendly
+• High trust for parents
+• Very clean, not noisy
+
+---
+
+IMPORTANT:
+Do NOT break existing routing.
+Keep onboarding navigation intact.

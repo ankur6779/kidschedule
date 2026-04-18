@@ -1,463 +1,251 @@
 import { Link } from "wouter";
-import {
-  ArrowRight, Sparkles, Brain, CheckCircle2, Target,
-  TrendingUp, MessageSquareHeart, Zap, Moon, Utensils,
-  Tv2, Frown, Ear, Lightbulb, FlaskConical, BookOpen,
-  Calendar, LayoutGrid, MessageCircle,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { BrandLogo } from "@/components/brand-logo";
+import { ArrowRight, Sparkles, Brain, Calendar, LayoutGrid, MessageCircle } from "lucide-react";
 import logoImg from "@assets/file_000000008c0c71fa81e22bfda886c9e8_1776489641690.png";
-
-/* ─── data ───────────────────────────────────────────────────────── */
-const STRUGGLES = [
-  { icon: Frown,           label: "Tantrums & Anger",  color: "#EF4444", bg: "#FEF2F2" },
-  { icon: Tv2,             label: "Screen Addiction",   color: "#F59E0B", bg: "#FFFBEB" },
-  { icon: Moon,            label: "Sleep Problems",     color: "#6366F1", bg: "#EEF2FF" },
-  { icon: Ear,             label: "Not Listening",      color: "#8B5CF6", bg: "#F5F3FF" },
-  { icon: Utensils,        label: "Fussy Eating",       color: "#10B981", bg: "#ECFDF5" },
-  { icon: Lightbulb,       label: "Low Focus",          color: "#EC4899", bg: "#FDF2F8" },
-];
-
-const STEPS = [
-  {
-    n: "01",
-    title: "Choose your goal",
-    desc: "Pick from 29 real parenting challenges — behavior, sleep, eating, screen time, and more.",
-    color: "#6366F1",
-  },
-  {
-    n: "02",
-    title: "Answer a few questions",
-    desc: "Tell Amy about your child's age, situation, and what you've already tried.",
-    color: "#A855F7",
-  },
-  {
-    n: "03",
-    title: "Get a personalized plan",
-    desc: "Receive a 10–12 step deep coaching plan built on real child psychology — just for your family.",
-    color: "#EC4899",
-  },
-];
-
-const SCIENCE_PILLARS = [
-  {
-    icon: Brain,
-    title: "Habit Formation Principles",
-    desc: "Plans rooted in how children actually build lasting habits through repetition, reward, and environment design.",
-    color: "#6366F1",
-  },
-  {
-    icon: FlaskConical,
-    title: "Emotional Development Research",
-    desc: "Evidence-based strategies drawn from developmental psychology and child behaviour studies.",
-    color: "#A855F7",
-  },
-  {
-    icon: BookOpen,
-    title: "Real-World Parenting Frameworks",
-    desc: "Techniques validated by experts like Dr. Harvey Karp, Dr. Becky Kennedy, and decades of peer-reviewed research.",
-    color: "#EC4899",
-  },
-];
 
 const FEATURES = [
   {
-    icon: Zap,
-    label: "Core Feature",
-    title: "Amy Coach",
-    desc: "Deep, personalized step-by-step plans to solve real parenting challenges. Built on child psychology.",
-    gradient: "linear-gradient(135deg,#6366F1,#A855F7)",
-    bg: "linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 60%,#FDF2F8 100%)",
-    border: "#E0E7FF",
-    color: "#6366F1",
-    highlight: true,
-    href: "/sign-up",
+    icon: Brain,
+    title: "AI Coach",
+    desc: "Deep, personalized step-by-step parenting plans rooted in child psychology — built just for your child.",
+    gradient: "linear-gradient(135deg,#A855F7,#6366F1)",
   },
   {
     icon: Calendar,
-    label: null,
-    title: "Smart Daily Routine",
-    desc: "Create structured, personalized routines that help your child build strong, lasting habits.",
-    gradient: "linear-gradient(135deg,#10B981,#059669)",
-    bg: "#F0FDF4",
-    border: "#BBF7D0",
-    color: "#10B981",
-    highlight: false,
-    href: "/sign-up",
+    title: "Smart Routines",
+    desc: "Structured daily routines that help your child build strong, lasting habits effortlessly.",
+    gradient: "linear-gradient(135deg,#06B6D4,#3B82F6)",
   },
   {
     icon: LayoutGrid,
-    label: null,
     title: "Parent Hub",
-    desc: "Access activities, insights, and curated parenting guidance — everything in one place.",
-    gradient: "linear-gradient(135deg,#F59E0B,#EF4444)",
-    bg: "#FFFBEB",
-    border: "#FDE68A",
-    color: "#F59E0B",
-    highlight: false,
-    href: "/sign-up",
-  },
-  {
-    icon: MessageCircle,
-    label: null,
-    title: "Quick AI Help",
-    desc: "Ask anything about your child and get instant, smart parenting advice — anytime you need it.",
-    gradient: "linear-gradient(135deg,#EC4899,#8B5CF6)",
-    bg: "#FDF2F8",
-    border: "#FBCFE8",
-    color: "#EC4899",
-    highlight: false,
-    href: "/sign-up",
+    desc: "Activities, insights, and curated parenting guidance — everything you need in one place.",
+    gradient: "linear-gradient(135deg,#EC4899,#F97316)",
   },
 ];
 
-/* ─── component ─────────────────────────────────────────────────── */
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white flex flex-col overflow-x-hidden">
+    <div
+      className="min-h-screen flex flex-col overflow-x-hidden text-white relative"
+      style={{
+        background: "linear-gradient(160deg,#0f0c29 0%,#302b63 55%,#24243e 100%)",
+      }}
+    >
+      <style>{`
+        @keyframes amyFloat {
+          0%, 100% { transform: translateY(0) }
+          50% { transform: translateY(-10px) }
+        }
+        @keyframes amyBounce {
+          0%, 100% { transform: translateY(0) }
+          50% { transform: translateY(-6px) }
+        }
+        @keyframes amyPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0.6) }
+          50% { box-shadow: 0 0 0 18px rgba(168,85,247,0) }
+        }
+        @keyframes amyFadeUp {
+          from { opacity: 0; transform: translateY(24px) }
+          to { opacity: 1; transform: translateY(0) }
+        }
+        @keyframes amyShimmer {
+          0% { background-position: 0% 50% }
+          100% { background-position: 200% 50% }
+        }
+        .amy-float { animation: amyFloat 5s ease-in-out infinite }
+        .amy-bounce { animation: amyBounce 2.6s ease-in-out infinite }
+        .amy-pulse { animation: amyPulse 2.8s ease-out infinite }
+        .amy-fade-up { animation: amyFadeUp 0.8s ease-out both }
+        .amy-fade-up-1 { animation: amyFadeUp 0.8s ease-out 0.1s both }
+        .amy-fade-up-2 { animation: amyFadeUp 0.8s ease-out 0.2s both }
+        .amy-fade-up-3 { animation: amyFadeUp 0.8s ease-out 0.35s both }
+        .amy-fade-up-4 { animation: amyFadeUp 0.8s ease-out 0.5s both }
+        .amy-gradient-text {
+          background: linear-gradient(90deg,#A855F7,#6366F1,#06B6D4,#A855F7);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          animation: amyShimmer 6s linear infinite;
+        }
+        .amy-glass {
+          background: rgba(255,255,255,0.05);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .amy-glass-card {
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.1);
+          transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+        }
+        .amy-glass-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 20px 50px -10px rgba(168,85,247,0.4);
+          border-color: rgba(168,85,247,0.4);
+        }
+        .amy-cta {
+          background: linear-gradient(135deg,#A855F7 0%,#EC4899 100%);
+          box-shadow: 0 10px 40px rgba(168,85,247,0.5), 0 0 0 1px rgba(255,255,255,0.1) inset;
+          transition: transform .3s ease, box-shadow .3s ease;
+        }
+        .amy-cta:hover {
+          transform: scale(1.05);
+          box-shadow: 0 14px 50px rgba(236,72,153,0.6), 0 0 0 1px rgba(255,255,255,0.2) inset;
+        }
+        .amy-tooltip {
+          opacity: 0;
+          transform: translateY(4px);
+          transition: opacity .25s ease, transform .25s ease;
+          pointer-events: none;
+        }
+        .amy-mascot:hover .amy-tooltip {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      `}</style>
 
-      {/* ── NAV ── */}
-      <header
-        className="flex items-center justify-between px-5 py-3 sticky top-0 z-50 border-b border-white/60"
-        style={{ background: "rgba(255,255,255,0.85)", backdropFilter: "blur(16px)" }}
-      >
-        <BrandLogo size="sm" showTagline={false} />
+      {/* Glow blobs */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-30"
+          style={{ background: "radial-gradient(circle,#A855F7,transparent 70%)" }}
+        />
+        <div
+          className="absolute top-1/3 -right-40 w-[600px] h-[600px] rounded-full opacity-25"
+          style={{ background: "radial-gradient(circle,#3B82F6,transparent 70%)" }}
+        />
+        <div
+          className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full opacity-20"
+          style={{ background: "radial-gradient(circle,#EC4899,transparent 70%)" }}
+        />
+      </div>
+
+      {/* NAV — minimal */}
+      <header className="relative z-20 flex items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2">
-          <Link href="/sign-in">
-            <Button variant="ghost" size="sm" className="text-slate-600 hidden sm:inline-flex" data-testid="link-sign-in">
-              Sign in
-            </Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button
-              size="sm"
-              className="font-semibold text-sm px-4"
-              style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
-              data-testid="link-sign-up"
-            >
-              Get started free
-            </Button>
-          </Link>
+          <img src={logoImg} alt="AmyNest AI" className="h-8 w-8 rounded-lg object-contain" />
+          <span className="font-quicksand font-bold text-base text-white tracking-tight">
+            AmyNest <span className="amy-gradient-text">AI</span>
+          </span>
         </div>
+        <Link href="/sign-in">
+          <button className="text-sm font-semibold text-white/70 hover:text-white transition-colors px-3 py-1.5">
+            Sign in
+          </button>
+        </Link>
       </header>
 
-      {/* ── HERO ── */}
-      <section
-        className="relative flex flex-col items-center text-center px-5 pt-16 pb-20 overflow-hidden"
-        style={{
-          background: "linear-gradient(160deg,#EEF2FF 0%,#F5F3FF 40%,#FDF2F8 70%,#EFF6FF 100%)",
-        }}
-      >
-        {/* Decorative blobs */}
-        <div aria-hidden className="absolute -top-20 -left-20 w-72 h-72 rounded-full opacity-30 pointer-events-none"
-          style={{ background: "radial-gradient(circle,#A855F7,transparent 70%)" }} />
-        <div aria-hidden className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle,#6366F1,transparent 70%)" }} />
-
+      {/* HERO */}
+      <section className="relative z-10 flex flex-col items-center text-center px-5 pt-12 pb-24">
         {/* Badge */}
-        <div className="landing-fade-up mb-6 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 rounded-full border"
-          style={{ background: "rgba(99,102,241,0.08)", color: "#6366F1", borderColor: "#C7D2FE" }}>
-          <Sparkles className="h-3.5 w-3.5" />
+        <div className="amy-fade-up amy-glass mb-8 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white/80">
+          <Sparkles className="h-3.5 w-3.5 text-purple-300" />
           AI-Powered Parenting Coach
         </div>
 
-        {/* Logo */}
-        <div className="landing-fade-up-1 landing-float mb-6">
-          <img
-            src={logoImg}
-            alt="AmyNest AI"
-            className="h-28 w-28 rounded-2xl object-contain"
-            style={{ filter: "drop-shadow(0 8px 32px rgba(99,102,241,0.25))" }}
-          />
+        {/* Logo + Mascot row */}
+        <div className="amy-fade-up-1 relative mb-8 flex items-center justify-center gap-4">
+          {/* Big floating logo */}
+          <div className="amy-float">
+            <img
+              src={logoImg}
+              alt="AmyNest AI"
+              className="h-36 w-36 md:h-44 md:w-44 rounded-3xl object-contain"
+              style={{ filter: "drop-shadow(0 12px 50px rgba(168,85,247,0.6))" }}
+            />
+          </div>
+
+          {/* Amy AI Mascot — clickable */}
+          <Link href="/sign-up">
+            <div className="amy-mascot relative cursor-pointer group" data-testid="link-amy-mascot">
+              <div
+                className="amy-bounce amy-pulse h-20 w-20 md:h-24 md:w-24 rounded-full flex items-center justify-center text-4xl md:text-5xl select-none"
+                style={{
+                  background: "linear-gradient(135deg,#FFFFFF 0%,#E0E7FF 100%)",
+                  boxShadow: "0 8px 32px rgba(168,85,247,0.5)",
+                }}
+                aria-label="Talk to Amy AI"
+              >
+                <span style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}>🤖</span>
+              </div>
+              {/* Tooltip */}
+              <div
+                className="amy-tooltip absolute -bottom-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-semibold px-3 py-1.5 rounded-full"
+                style={{
+                  background: "rgba(255,255,255,0.95)",
+                  color: "#0f0c29",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+                }}
+              >
+                💬 Talk to Amy AI
+              </div>
+            </div>
+          </Link>
         </div>
 
         {/* Headline */}
-        <h1 className="landing-fade-up-2 font-quicksand font-bold text-4xl md:text-6xl leading-[1.1] text-slate-900 max-w-2xl mb-4">
-          Your Personal{" "}
-          <span className="landing-shimmer-text">AI Parenting Coach</span>
+        <h1 className="amy-fade-up-2 font-quicksand font-black text-4xl md:text-6xl leading-[1.1] tracking-tight max-w-3xl mb-5">
+          Where Smart{" "}
+          <span className="amy-gradient-text">Parenting</span>{" "}
+          Begins
         </h1>
 
-        {/* Sub-headline */}
-        <p className="landing-fade-up-3 text-slate-500 text-lg md:text-xl max-w-xl leading-relaxed mb-10">
-          Get step-by-step, science-backed solutions for your child's behavior, habits, and growth —
-          personalized for your family.
+        {/* Subtext */}
+        <p className="amy-fade-up-3 text-white/75 text-base md:text-xl max-w-xl leading-relaxed mb-10">
+          Get step-by-step, science-backed parenting plans personalized for your child — by your AI Parenting Coach.
         </p>
 
-        {/* CTAs */}
-        <div className="landing-fade-up-4 flex flex-col sm:flex-row items-center gap-3">
+        {/* Single Primary CTA */}
+        <div className="amy-fade-up-4">
           <Link href="/sign-up">
-            <Button
-              size="lg"
-              className="gap-2 text-base font-semibold px-8 shadow-xl shadow-indigo-200/60"
-              style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
-              data-testid="button-get-started"
+            <button
+              className="amy-cta inline-flex items-center gap-2 text-base md:text-lg font-bold px-9 md:px-10 py-4 md:py-5 rounded-2xl text-white"
+              data-testid="button-hero-cta"
             >
               Start Parenting Smarter
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="/sign-in">
-            <Button
-              size="lg"
-              variant="outline"
-              className="text-base font-semibold px-8 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-              data-testid="button-sign-in-hero"
-            >
-              Try Amy Coach
-            </Button>
+              <ArrowRight className="h-5 w-5" />
+            </button>
           </Link>
         </div>
 
-        {/* Social proof micro-line */}
-        <p className="landing-fade-in mt-8 text-xs text-slate-400 flex items-center gap-1.5">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-          Free to start · No credit card required · 29 parenting goals covered
+        <p className="amy-fade-up-4 mt-6 text-xs text-white/50">
+          ✨ Free to start · No credit card required
         </p>
       </section>
 
-      {/* ── AMY COACH FEATURE ── */}
-      <section className="px-5 py-16 md:py-20">
-        <div className="max-w-4xl mx-auto">
-          <div
-            className="rounded-3xl p-8 md:p-12 border"
-            style={{
-              background: "linear-gradient(135deg,#EEF2FF 0%,#F5F3FF 50%,#FDF2F8 100%)",
-              borderColor: "#E0E7FF",
-            }}
-          >
-            {/* Tag */}
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full mb-4"
-              style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff" }}>
-              <Zap className="h-3 w-3" />
-              MAIN FEATURE
-            </div>
-
-            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 leading-tight mb-4">
-              Amy Coach — Solve Real Parenting Challenges
-            </h2>
-            <p className="text-slate-500 text-base md:text-lg leading-relaxed max-w-2xl mb-10">
-              From tantrums to screen time, sleep to focus — Amy Coach gives you deep, personalized
-              step-by-step plans that actually work. No generic advice, only science-backed solutions
-              tailored to your child.
-            </p>
-
-            {/* Highlights grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-              {[
-                { icon: Target,              text: "Personalized plans for your child",          color: "#6366F1" },
-                { icon: CheckCircle2,        text: "10–12 deep, actionable steps",               color: "#A855F7" },
-                { icon: TrendingUp,          text: "Progress tracking built-in",                 color: "#EC4899" },
-                { icon: MessageSquareHeart,  text: "Continuous guidance until resolved",         color: "#10B981" },
-              ].map(({ icon: Icon, text, color }) => (
-                <div key={text} className="flex items-center gap-3 bg-white rounded-2xl px-4 py-3.5 shadow-sm border border-white">
-                  <span className="flex-shrink-0 flex items-center justify-center h-8 w-8 rounded-xl"
-                    style={{ background: `${color}18`, color }}>
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <span className="text-sm font-semibold text-slate-700">{text}</span>
-                </div>
-              ))}
-            </div>
-
-            <Link href="/sign-up">
-              <Button
-                size="lg"
-                className="gap-2 text-base font-semibold px-8"
-                style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
-              >
-                Start with Amy Coach
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── PROBLEM HOOK ── */}
-      <section className="px-5 py-16 md:py-20 bg-slate-50">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 mb-3">
-            Struggling with these?
-          </h2>
-          <p className="text-slate-400 text-base mb-10">Every parent does. You're in the right place.</p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4 mb-8">
-            {STRUGGLES.map(({ icon: Icon, label, color, bg }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center gap-2.5 rounded-2xl p-5 md:p-6 border border-transparent transition-all hover:-translate-y-0.5 hover:shadow-md"
-                style={{ background: bg }}
-              >
-                <span className="flex items-center justify-center h-11 w-11 rounded-2xl"
-                  style={{ background: `${color}20`, color }}>
-                  <Icon className="h-5 w-5" />
-                </span>
-                <span className="text-sm font-semibold text-slate-700 text-center">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-slate-500 text-base font-medium">
-            You're not alone — and you don't have to figure it out yourself.
-          </p>
-        </div>
-      </section>
-
-      {/* ── FEATURES OVERVIEW ── */}
-      <section className="px-5 py-16 md:py-20 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 mb-3">
-              Everything You Need for Smarter Parenting
-            </h2>
-            <p className="text-slate-400 text-base max-w-lg mx-auto">
-              One platform. Multiple powerful tools designed for your child.
-            </p>
-          </div>
-
-          {/* Amy Coach — highlighted full-width card */}
-          {(() => {
-            const f = FEATURES[0];
-            const Icon = f.icon;
-            return (
-              <Link href={f.href}>
-                <div
-                  className="rounded-3xl p-7 md:p-9 mb-4 border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-xl group"
-                  style={{ background: f.bg as string, borderColor: f.border }}
-                >
-                  <div className="flex flex-col md:flex-row md:items-center gap-5">
-                    <div className="flex-shrink-0 flex items-center justify-center h-14 w-14 rounded-2xl shadow-lg"
-                      style={{ background: f.gradient }}>
-                      <Icon className="h-7 w-7 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <h3 className="font-quicksand font-bold text-xl md:text-2xl text-slate-900">{f.title}</h3>
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full text-white"
-                          style={{ background: f.gradient }}>
-                          {f.label}
-                        </span>
-                      </div>
-                      <p className="text-slate-500 text-sm md:text-base leading-relaxed max-w-xl">{f.desc}</p>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-indigo-400 hidden md:block transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })()}
-
-          {/* Other 3 features — 3-column grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {FEATURES.slice(1).map((f) => {
-              const Icon = f.icon;
-              return (
-                <Link key={f.title} href={f.href}>
-                  <div
-                    className="flex flex-col gap-4 rounded-2xl p-6 border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md h-full"
-                    style={{ background: f.bg as string, borderColor: f.border }}
-                  >
-                    <div className="flex items-center justify-center h-11 w-11 rounded-xl shadow-sm"
-                      style={{ background: f.gradient }}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-quicksand font-bold text-base text-slate-900 mb-1.5">{f.title}</h3>
-                      <p className="text-slate-500 text-sm leading-relaxed">{f.desc}</p>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Section CTA */}
-          <div className="text-center mt-10">
-            <p className="text-slate-400 text-sm mb-4">
-              Start with Amy Coach and explore more as you grow
-            </p>
-            <Link href="/sign-up">
-              <Button
-                size="lg"
-                className="gap-2 font-semibold px-8"
-                style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
-              >
-                Get Started Free
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ── */}
-      <section className="px-5 py-16 md:py-20">
-        <div className="max-w-4xl mx-auto">
+      {/* VALUE / FEATURES */}
+      <section className="relative z-10 px-5 pb-20">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 mb-3">
-              How it works
+            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
+              Everything you need to parent smarter
             </h2>
-            <p className="text-slate-400 text-base">Three simple steps to better parenting</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {STEPS.map(({ n, title, desc, color }) => (
-              <div
-                key={n}
-                className="relative flex flex-col gap-4 rounded-3xl p-7 border bg-white shadow-sm hover:shadow-md transition-shadow"
-              >
-                <span
-                  className="text-4xl font-black leading-none"
-                  style={{ color: `${color}30` }}
-                >
-                  {n}
-                </span>
-                <div className="flex-1">
-                  <h3 className="font-quicksand font-bold text-lg text-slate-900 mb-2">{title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-                </div>
-                <div className="h-1 rounded-full w-10" style={{ background: color }} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SCIENCE / TRUST ── */}
-      <section
-        className="px-5 py-16 md:py-20"
-        style={{ background: "linear-gradient(160deg,#EEF2FF,#F5F3FF 60%,#FDF2F8)" }}
-      >
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full mb-4"
-              style={{ background: "rgba(99,102,241,0.1)", color: "#6366F1" }}>
-              <Brain className="h-3 w-3" />
-              Built on science
-            </div>
-            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 mb-3">
-              Child psychology &amp; behavioural science
-            </h2>
-            <p className="text-slate-400 text-base max-w-xl mx-auto">
-              Amy Coach doesn't give generic tips. Every plan is grounded in decades of research
-              and expert frameworks — so it actually works.
+            <p className="text-white/60 text-base max-w-lg mx-auto">
+              Three powerful tools, one beautifully simple app — built around your family.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {SCIENCE_PILLARS.map(({ icon: Icon, title, desc, color }) => (
+            {FEATURES.map(({ icon: Icon, title, desc, gradient }) => (
               <div
                 key={title}
-                className="flex flex-col gap-4 rounded-2xl p-6 bg-white border shadow-sm"
+                className="amy-glass-card rounded-3xl p-7 flex flex-col gap-4"
               >
-                <span className="flex items-center justify-center h-11 w-11 rounded-2xl"
-                  style={{ background: `${color}15`, color }}>
-                  <Icon className="h-5 w-5" />
-                </span>
+                <div
+                  className="h-12 w-12 rounded-2xl flex items-center justify-center"
+                  style={{
+                    background: gradient,
+                    boxShadow: "0 8px 24px rgba(168,85,247,0.3)",
+                  }}
+                >
+                  <Icon className="h-6 w-6 text-white" />
+                </div>
                 <div>
-                  <h3 className="font-quicksand font-bold text-base text-slate-900 mb-1.5">{title}</h3>
-                  <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                  <h3 className="font-quicksand font-bold text-lg text-white mb-2">{title}</h3>
+                  <p className="text-white/65 text-sm leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
@@ -465,36 +253,49 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FINAL CTA BANNER ── */}
-      <section className="px-5 py-16">
+      {/* FINAL CTA */}
+      <section className="relative z-10 px-5 pb-24">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-slate-900 leading-tight mb-4">
-            Ready to become a more confident parent?
-          </h2>
-          <p className="text-slate-400 text-base mb-8">
-            Join AmyNest AI and get a personalized parenting plan in minutes — completely free.
-          </p>
-          <Link href="/sign-up">
-            <Button
-              size="lg"
-              className="gap-2 text-base font-semibold px-10 shadow-xl shadow-indigo-200/60"
-              style={{ background: "linear-gradient(135deg,#6366F1,#A855F7)", color: "#fff", border: "none" }}
+          <div className="amy-glass rounded-3xl p-10 md:p-14">
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-6"
+              style={{
+                background: "linear-gradient(135deg,#A855F7,#EC4899)",
+                boxShadow: "0 12px 40px rgba(236,72,153,0.4)",
+              }}
             >
-              Start Parenting Smarter
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
+              <MessageCircle className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white leading-tight mb-4">
+              Ready to start your parenting journey?
+            </h2>
+            <p className="text-white/70 text-base md:text-lg mb-8 leading-relaxed">
+              Join AmyNest AI and get a personalized parenting plan in minutes — completely free.
+            </p>
+            <Link href="/sign-up">
+              <button
+                className="amy-cta inline-flex items-center gap-2 text-base md:text-lg font-bold px-10 md:px-12 py-4 md:py-5 rounded-2xl text-white"
+                data-testid="button-final-cta"
+              >
+                Start Parenting Smarter
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
-      <footer className="px-5 py-6 border-t text-center">
-        <div className="flex flex-col items-center gap-1">
-          <BrandLogo size="sm" showTagline={false} />
-          <p className="text-xs text-slate-400 mt-1">Where Smart Parenting Begins</p>
+      {/* FOOTER */}
+      <footer className="relative z-10 px-5 py-8 border-t border-white/10 text-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex items-center gap-2">
+            <img src={logoImg} alt="AmyNest AI" className="h-6 w-6 rounded-md object-contain" />
+            <span className="font-quicksand font-bold text-sm text-white/80">
+              AmyNest <span className="amy-gradient-text">AI</span>
+            </span>
+          </div>
+          <p className="text-xs text-white/40">Where Smart Parenting Begins</p>
         </div>
       </footer>
-
     </div>
   );
 }
