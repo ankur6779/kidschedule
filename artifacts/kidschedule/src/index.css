@@ -2,6 +2,49 @@
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 
+/* ── Landing page animations ─────────────────────────────────────── */
+@keyframes landingFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes landingFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes landingScaleIn {
+  from { opacity: 0; transform: scale(0.88); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes landingFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes landingShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.landing-fade-up   { animation: landingFadeUp 0.7s cubic-bezier(0.22,1,0.36,1) both; }
+.landing-fade-up-1 { animation: landingFadeUp 0.7s 0.05s cubic-bezier(0.22,1,0.36,1) both; }
+.landing-fade-up-2 { animation: landingFadeUp 0.7s 0.15s cubic-bezier(0.22,1,0.36,1) both; }
+.landing-fade-up-3 { animation: landingFadeUp 0.7s 0.25s cubic-bezier(0.22,1,0.36,1) both; }
+.landing-fade-up-4 { animation: landingFadeUp 0.7s 0.38s cubic-bezier(0.22,1,0.36,1) both; }
+.landing-fade-in   { animation: landingFadeIn 1s 0.1s both; }
+.landing-scale-in  { animation: landingScaleIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+.landing-float     { animation: landingFloat 3.5s ease-in-out infinite; }
+.landing-shimmer-text {
+  background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899, #6366f1);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: landingShimmer 4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-fade-up, .landing-fade-up-1, .landing-fade-up-2,
+  .landing-fade-up-3, .landing-fade-up-4, .landing-fade-in,
+  .landing-scale-in, .landing-float { animation: none !important; }
+}
+
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.92) translateY(16px); }
   to   { opacity: 1; transform: scale(1) translateY(0); }
