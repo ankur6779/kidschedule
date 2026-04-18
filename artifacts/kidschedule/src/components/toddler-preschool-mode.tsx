@@ -299,27 +299,27 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
   };
 
   return (
-    <Card className="rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 shadow-none">
+    <Card className="rounded-3xl border-2 border-amber-200 dark:border-amber-400/30 bg-gradient-to-br from-amber-50 dark:from-amber-500/15 to-orange-50 dark:to-orange-500/15 shadow-none">
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-2xl">📖</span>
           <div className="flex-1">
-            <h3 className="font-quicksand text-base font-bold text-amber-900">Story Time for {childName}</h3>
-            <p className="text-xs text-amber-700">Short moral stories · {idx + 1} of {stories.length}</p>
+            <h3 className="font-quicksand text-base font-bold text-amber-900 dark:text-amber-100">Story Time for {childName}</h3>
+            <p className="text-xs text-amber-700 dark:text-amber-200">Short moral stories · {idx + 1} of {stories.length}</p>
           </div>
         </div>
 
         {/* Story card */}
-        <div className="bg-white rounded-2xl p-4 border border-amber-100 mb-3">
+        <div className="bg-white rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30 mb-3">
           <div className="flex items-start justify-between mb-3 gap-2">
-            <h4 className="font-quicksand font-bold text-lg text-amber-900">
+            <h4 className="font-quicksand font-bold text-lg text-amber-900 dark:text-amber-100">
               {story.emoji} {story.title}
             </h4>
             <Button
               size="sm"
               variant="outline"
               onClick={handleSpeak}
-              className={`shrink-0 rounded-full h-8 px-3 text-xs font-bold border-amber-300 transition-all ${speaking ? "bg-amber-100 text-amber-700" : "text-amber-700 hover:bg-amber-50"}`}
+              className={`shrink-0 rounded-full h-8 px-3 text-xs font-bold border-amber-300 transition-all ${speaking ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-200" : "text-amber-700 dark:text-amber-200 hover:bg-amber-50 dark:bg-amber-500/15"}`}
             >
               {speaking
                 ? <><VolumeX className="h-3 w-3 mr-1" />Stop</>
@@ -329,9 +329,9 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
           <p className="text-sm text-foreground/80 leading-relaxed italic mb-4">
             "{story.story}"
           </p>
-          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
-            <p className="text-xs font-bold text-amber-800 mb-1">💡 Moral</p>
-            <p className="text-sm text-amber-900 font-semibold">{story.moral}</p>
+          <div className="bg-amber-50 dark:bg-amber-500/15 rounded-xl p-3 border border-amber-200 dark:border-amber-400/30">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-200 mb-1">💡 Moral</p>
+            <p className="text-sm text-amber-900 dark:text-amber-100 font-semibold">{story.moral}</p>
           </div>
         </div>
 
@@ -341,13 +341,13 @@ function StoryPlayer({ stories, childName, accentColor }: { stories: Story[]; ch
             size="sm"
             variant="outline"
             onClick={handleNext}
-            className="flex-1 rounded-full h-9 border-amber-300 text-amber-800 font-bold text-sm hover:bg-amber-100"
+            className="flex-1 rounded-full h-9 border-amber-300 text-amber-800 dark:text-amber-200 font-bold text-sm hover:bg-amber-100 dark:bg-amber-500/20"
           >
             <SkipForward className="h-4 w-4 mr-1.5" /> Next Story
           </Button>
           {speaking && (
             <Button size="sm" variant="outline" onClick={handleSpeak}
-              className="rounded-full h-9 px-4 border-amber-300 text-amber-700 font-bold text-sm">
+              className="rounded-full h-9 px-4 border-amber-300 text-amber-700 dark:text-amber-200 font-bold text-sm">
               <VolumeX className="h-4 w-4" />
             </Button>
           )}
@@ -415,10 +415,10 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths,
 
   const totalDone = Object.values(doneCounts).reduce((a, b) => a + b, 0);
 
-  const accentActivity  = { bg: "bg-blue-50",   border: "border-blue-200",   title: "text-blue-900",   badge: "text-blue-700",   badgeBg: "bg-blue-100" };
-  const accentSkill     = { bg: "bg-violet-50", border: "border-violet-200", title: "text-violet-900", badge: "text-violet-700", badgeBg: "bg-violet-100" };
-  const accentTask      = { bg: "bg-rose-50",   border: "border-rose-200",   title: "text-rose-900",   badge: "text-rose-700",   badgeBg: "bg-rose-100" };
-  const accentFun       = { bg: "bg-green-50",  border: "border-green-200",  title: "text-green-900",  badge: "text-green-700",  badgeBg: "bg-green-100" };
+  const accentActivity  = { bg: "bg-blue-50 dark:bg-blue-500/15",   border: "border-blue-200 dark:border-blue-400/30",   title: "text-blue-900 dark:text-blue-100",   badge: "text-blue-700 dark:text-blue-200",   badgeBg: "bg-blue-100 dark:bg-blue-500/20" };
+  const accentSkill     = { bg: "bg-violet-50 dark:bg-violet-500/15", border: "border-violet-200 dark:border-violet-400/30", title: "text-violet-900 dark:text-violet-100", badge: "text-violet-700 dark:text-violet-200", badgeBg: "bg-violet-100 dark:bg-violet-500/20" };
+  const accentTask      = { bg: "bg-rose-50 dark:bg-rose-500/15",   border: "border-rose-200 dark:border-rose-400/30",   title: "text-rose-900 dark:text-rose-100",   badge: "text-rose-700 dark:text-rose-200",   badgeBg: "bg-rose-100 dark:bg-rose-500/20" };
+  const accentFun       = { bg: "bg-green-50 dark:bg-green-500/15",  border: "border-green-200 dark:border-green-400/30",  title: "text-green-900 dark:text-green-100",  badge: "text-green-700 dark:text-green-200",  badgeBg: "bg-green-100 dark:bg-green-500/20" };
 
   const act   = activities[actIdx];
   const skill = skills[skillIdx];
@@ -433,19 +433,19 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths,
       {/* ── Hero Banner — hidden in focused view ── */}
       {!showOnly && <div className={`rounded-3xl border-2 p-5 ${
         isToddler
-          ? "bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 border-purple-200"
-          : "bg-gradient-to-br from-blue-50 via-green-50 to-teal-50 border-blue-200"
+          ? "bg-gradient-to-br from-purple-50 dark:from-purple-500/15 via-pink-50 dark:via-pink-500/15 to-blue-50 dark:to-blue-500/15 border-purple-200 dark:border-purple-400/30"
+          : "bg-gradient-to-br from-blue-50 dark:from-blue-500/15 via-green-50 dark:via-green-500/15 to-teal-50 dark:to-teal-500/15 border-blue-200 dark:border-blue-400/30"
       }`}>
         <div className="flex items-center gap-4 mb-4">
           <div className="text-5xl">{headerEmoji}</div>
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <Badge className={`font-bold text-xs ${isToddler ? "bg-purple-100 text-purple-800 border-purple-300" : "bg-blue-100 text-blue-800 border-blue-300"}`}>
+              <Badge className={`font-bold text-xs ${isToddler ? "bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200 border-purple-300" : "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-200 border-blue-300"}`}>
                 {label}
               </Badge>
               <Badge variant="outline" className="text-xs font-medium">{ageLabel}</Badge>
               {totalDone > 0 && (
-                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs font-bold">
+                <Badge className="bg-yellow-100 dark:bg-yellow-500/20 text-yellow-800 dark:text-yellow-200 border-yellow-300 text-xs font-bold">
                   ⭐ {totalDone} done today
                 </Badge>
               )}
@@ -537,11 +537,11 @@ export function ToddlerPreschoolMode({ ageGroup, childName, ageYears, ageMonths,
 
       {/* ── 🌟 All Done Banner — only in full view ── */}
       {!showOnly && totalDone >= 4 && (
-        <Card className="rounded-3xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 to-amber-50 shadow-none">
+        <Card className="rounded-3xl border-2 border-yellow-300 bg-gradient-to-br from-yellow-50 dark:from-yellow-500/15 to-amber-50 dark:to-amber-500/15 shadow-none">
           <CardContent className="p-5 text-center">
             <div className="text-4xl mb-2">🏆</div>
-            <h3 className="font-quicksand text-lg font-bold text-yellow-800 mb-1">You're a Super Parent Today!</h3>
-            <p className="text-sm text-yellow-700">
+            <h3 className="font-quicksand text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-1">You're a Super Parent Today!</h3>
+            <p className="text-sm text-yellow-700 dark:text-yellow-200">
               {childName} is lucky to have you showing up this way. Every one of these moments shapes who they become. 💛
             </p>
             <div className="flex justify-center gap-2 mt-3 flex-wrap">

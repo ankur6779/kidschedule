@@ -14,67 +14,67 @@ interface GoalCategory { id: string; title: string; emoji: string; gradient: str
 const GOAL_CATEGORIES: GoalCategory[] = [
   {
     id: "behavior", title: "Behavior", emoji: "🎯",
-    gradient: "from-rose-100 via-pink-50 to-orange-100",
+    gradient: "from-rose-100 dark:from-rose-500/20 via-pink-50 dark:via-pink-500/15 to-orange-100 dark:to-orange-500/20",
     items: [
-      { id: "manage-tantrums",       title: "Manage Tantrums",           emoji: "😤", gradient: "from-rose-100 to-pink-200" },
-      { id: "handle-aggression",     title: "Handle Aggression",         emoji: "✋", gradient: "from-red-100 to-rose-200" },
-      { id: "reduce-defiance",       title: "Reduce Defiance",           emoji: "🛑", gradient: "from-amber-100 to-orange-200" },
-      { id: "emotional-regulation",  title: "Emotional Regulation",      emoji: "💗", gradient: "from-pink-100 to-fuchsia-200" },
-      { id: "separation-anxiety",    title: "Separation Anxiety",        emoji: "🫂", gradient: "from-violet-100 to-purple-200" },
+      { id: "manage-tantrums",       title: "Manage Tantrums",           emoji: "😤", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "handle-aggression",     title: "Handle Aggression",         emoji: "✋", gradient: "from-red-100 dark:from-red-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "reduce-defiance",       title: "Reduce Defiance",           emoji: "🛑", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
+      { id: "emotional-regulation",  title: "Emotional Regulation",      emoji: "💗", gradient: "from-pink-100 dark:from-pink-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
+      { id: "separation-anxiety",    title: "Separation Anxiety",        emoji: "🫂", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
     ],
   },
   {
     id: "screen-focus", title: "Screen & Focus", emoji: "📱",
-    gradient: "from-sky-100 via-blue-50 to-indigo-100",
+    gradient: "from-sky-100 dark:from-sky-500/20 via-blue-50 dark:via-blue-500/15 to-indigo-100 dark:to-indigo-500/20",
     items: [
-      { id: "balance-screen-time",         title: "Balance Screen Time",         emoji: "📱", gradient: "from-sky-100 to-blue-200" },
-      { id: "reduce-mobile-addiction",     title: "Reduce Mobile Addiction",     emoji: "📵", gradient: "from-blue-100 to-indigo-200" },
-      { id: "improve-focus-span",          title: "Improve Focus Span",          emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
-      { id: "reduce-shorts-overuse",       title: "Reduce YouTube / Shorts Overuse", emoji: "🎬", gradient: "from-rose-100 to-red-200" },
-      { id: "reduce-instant-gratification",title: "Reduce Instant Gratification", emoji: "⏳", gradient: "from-amber-100 to-yellow-200" },
+      { id: "balance-screen-time",         title: "Balance Screen Time",         emoji: "📱", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+      { id: "reduce-mobile-addiction",     title: "Reduce Mobile Addiction",     emoji: "📵", gradient: "from-blue-100 dark:from-blue-500/20 to-indigo-200 dark:to-indigo-500/25" },
+      { id: "improve-focus-span",          title: "Improve Focus Span",          emoji: "🎯", gradient: "from-purple-100 dark:from-purple-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
+      { id: "reduce-shorts-overuse",       title: "Reduce YouTube / Shorts Overuse", emoji: "🎬", gradient: "from-rose-100 dark:from-rose-500/20 to-red-200 dark:to-red-500/25" },
+      { id: "reduce-instant-gratification",title: "Reduce Instant Gratification", emoji: "⏳", gradient: "from-amber-100 dark:from-amber-500/20 to-yellow-200 dark:to-yellow-500/25" },
     ],
   },
   {
     id: "eating", title: "Eating", emoji: "🍽️",
-    gradient: "from-emerald-100 via-green-50 to-teal-100",
+    gradient: "from-emerald-100 dark:from-emerald-500/20 via-green-50 dark:via-green-500/15 to-teal-100 dark:to-teal-500/20",
     items: [
-      { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 to-green-200" },
-      { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",        emoji: "🥦", gradient: "from-teal-100 to-cyan-200" },
-      { id: "stop-junk-food-craving",       title: "Stop Junk Food Craving",       emoji: "🍟", gradient: "from-orange-100 to-amber-200" },
-      { id: "healthy-eating-routine",       title: "Build Healthy Eating Routine", emoji: "🍎", gradient: "from-green-100 to-emerald-200" },
-      { id: "improve-mealtime-behavior",    title: "Improve Mealtime Behavior",    emoji: "🍽️", gradient: "from-lime-100 to-green-200" },
+      { id: "encourage-independent-eating", title: "Encourage Independent Eating", emoji: "🥄", gradient: "from-emerald-100 dark:from-emerald-500/20 to-green-200 dark:to-green-500/25" },
+      { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",        emoji: "🥦", gradient: "from-teal-100 dark:from-teal-500/20 to-cyan-200 dark:to-cyan-500/25" },
+      { id: "stop-junk-food-craving",       title: "Stop Junk Food Craving",       emoji: "🍟", gradient: "from-orange-100 dark:from-orange-500/20 to-amber-200 dark:to-amber-500/25" },
+      { id: "healthy-eating-routine",       title: "Build Healthy Eating Routine", emoji: "🍎", gradient: "from-green-100 dark:from-green-500/20 to-emerald-200 dark:to-emerald-500/25" },
+      { id: "improve-mealtime-behavior",    title: "Improve Mealtime Behavior",    emoji: "🍽️", gradient: "from-lime-100 dark:from-lime-500/20 to-green-200 dark:to-green-500/25" },
     ],
   },
   {
     id: "sleep", title: "Sleep", emoji: "😴",
-    gradient: "from-indigo-100 via-violet-50 to-purple-100",
+    gradient: "from-indigo-100 dark:from-indigo-500/20 via-violet-50 dark:via-violet-500/15 to-purple-100 dark:to-purple-500/20",
     items: [
-      { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",    emoji: "😴", gradient: "from-indigo-100 to-violet-200" },
-      { id: "fix-bedtime-resistance",    title: "Fix Bedtime Resistance",    emoji: "🛏️", gradient: "from-purple-100 to-indigo-200" },
-      { id: "stop-night-waking",         title: "Stop Night Waking",         emoji: "🌙", gradient: "from-blue-100 to-indigo-200" },
-      { id: "consistent-sleep-routine",  title: "Build Consistent Routine",  emoji: "🕘", gradient: "from-violet-100 to-purple-200" },
-      { id: "reduce-late-sleeping",      title: "Reduce Late Sleeping Habit",emoji: "⏰", gradient: "from-indigo-100 to-blue-200" },
+      { id: "improve-sleep-patterns",    title: "Improve Sleep Patterns",    emoji: "😴", gradient: "from-indigo-100 dark:from-indigo-500/20 to-violet-200 dark:to-violet-500/25" },
+      { id: "fix-bedtime-resistance",    title: "Fix Bedtime Resistance",    emoji: "🛏️", gradient: "from-purple-100 dark:from-purple-500/20 to-indigo-200 dark:to-indigo-500/25" },
+      { id: "stop-night-waking",         title: "Stop Night Waking",         emoji: "🌙", gradient: "from-blue-100 dark:from-blue-500/20 to-indigo-200 dark:to-indigo-500/25" },
+      { id: "consistent-sleep-routine",  title: "Build Consistent Routine",  emoji: "🕘", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
+      { id: "reduce-late-sleeping",      title: "Reduce Late Sleeping Habit",emoji: "⏰", gradient: "from-indigo-100 dark:from-indigo-500/20 to-blue-200 dark:to-blue-500/25" },
     ],
   },
   {
     id: "learning", title: "Learning", emoji: "📚",
-    gradient: "from-purple-100 via-fuchsia-50 to-pink-100",
+    gradient: "from-purple-100 dark:from-purple-500/20 via-fuchsia-50 dark:via-fuchsia-500/15 to-pink-100 dark:to-pink-500/20",
     items: [
-      { id: "boost-concentration",        title: "Boost Concentration",       emoji: "🎯", gradient: "from-purple-100 to-fuchsia-200" },
-      { id: "build-study-discipline",     title: "Build Study Discipline",    emoji: "📖", gradient: "from-blue-100 to-sky-200" },
-      { id: "increase-learning-interest", title: "Increase Learning Interest",emoji: "💡", gradient: "from-yellow-100 to-amber-200" },
-      { id: "reduce-homework-resistance", title: "Reduce Homework Resistance",emoji: "✏️", gradient: "from-teal-100 to-emerald-200" },
-      { id: "develop-growth-mindset",     title: "Develop Growth Mindset",    emoji: "🌱", gradient: "from-green-100 to-lime-200" },
+      { id: "boost-concentration",        title: "Boost Concentration",       emoji: "🎯", gradient: "from-purple-100 dark:from-purple-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
+      { id: "build-study-discipline",     title: "Build Study Discipline",    emoji: "📖", gradient: "from-blue-100 dark:from-blue-500/20 to-sky-200 dark:to-sky-500/25" },
+      { id: "increase-learning-interest", title: "Increase Learning Interest",emoji: "💡", gradient: "from-yellow-100 dark:from-yellow-500/20 to-amber-200 dark:to-amber-500/25" },
+      { id: "reduce-homework-resistance", title: "Reduce Homework Resistance",emoji: "✏️", gradient: "from-teal-100 dark:from-teal-500/20 to-emerald-200 dark:to-emerald-500/25" },
+      { id: "develop-growth-mindset",     title: "Develop Growth Mindset",    emoji: "🌱", gradient: "from-green-100 dark:from-green-500/20 to-lime-200 dark:to-lime-500/25" },
     ],
   },
   {
     id: "parenting-challenges", title: "Parenting Challenges", emoji: "💝",
-    gradient: "from-amber-100 via-orange-50 to-yellow-100",
+    gradient: "from-amber-100 dark:from-amber-500/20 via-orange-50 dark:via-orange-500/15 to-yellow-100 dark:to-yellow-500/20",
     items: [
-      { id: "manage-grandparents-interference", title: "Manage Grandparents' Interference", emoji: "👵", gradient: "from-rose-100 to-pink-200" },
-      { id: "align-parenting-between-parents",  title: "Align Parenting Between Parents",   emoji: "🤝", gradient: "from-violet-100 to-purple-200" },
-      { id: "handle-working-parent-guilt",      title: "Handle Working Parent Guilt",       emoji: "💼", gradient: "from-sky-100 to-blue-200" },
-      { id: "set-consistent-family-rules",      title: "Set Consistent Family Rules",       emoji: "📋", gradient: "from-amber-100 to-orange-200" },
+      { id: "manage-grandparents-interference", title: "Manage Grandparents' Interference", emoji: "👵", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "align-parenting-between-parents",  title: "Align Parenting Between Parents",   emoji: "🤝", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
+      { id: "handle-working-parent-guilt",      title: "Handle Working Parent Guilt",       emoji: "💼", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+      { id: "set-consistent-family-rules",      title: "Set Consistent Family Rules",       emoji: "📋", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
     ],
   },
 ];
@@ -416,7 +416,7 @@ export default function AICoachPage() {
               <ChevronLeft className="h-4 w-4" /> Back
             </Link>
             <Link href="/amy-coach/progress">
-              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 hover:bg-violet-200 dark:bg-violet-500/25 transition-all">
                 <BarChart3 className="h-3.5 w-3.5" /> My Progress
               </button>
             </Link>
@@ -467,7 +467,7 @@ export default function AICoachPage() {
               <ChevronLeft className="h-4 w-4" /> Categories
             </button>
             <Link href="/amy-coach/progress">
-              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+              <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 hover:bg-violet-200 dark:bg-violet-500/25 transition-all">
                 <BarChart3 className="h-3.5 w-3.5" /> My Progress
               </button>
             </Link>
@@ -516,7 +516,7 @@ export default function AICoachPage() {
             <ChevronLeft className="h-4 w-4" /> Back
           </Link>
           <Link href="/amy-coach/progress">
-            <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-all">
+            <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 hover:bg-violet-200 dark:bg-violet-500/25 transition-all">
               <BarChart3 className="h-3.5 w-3.5" /> My Progress
             </button>
           </Link>
@@ -590,7 +590,7 @@ export default function AICoachPage() {
                 onClick={() => handleSelectOption(opt)}
                 className={`w-full text-left px-4 py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 ${
                   selected
-                    ? "bg-violet-50 border-violet-500 text-violet-900"
+                    ? "bg-violet-50 dark:bg-violet-500/15 border-violet-500 text-violet-900 dark:text-violet-100"
                     : "bg-card border-border hover:border-violet-300"
                 }`}
               >

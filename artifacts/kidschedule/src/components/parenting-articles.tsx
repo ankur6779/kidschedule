@@ -109,9 +109,9 @@ function ArticleModal({ article, onClose }: { article: Article; onClose: () => v
             }
             if (section.type === "tip") {
               return (
-                <div key={i} className="bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-200 rounded-2xl p-4 flex gap-3">
+                <div key={i} className="bg-gradient-to-r from-violet-50 dark:from-violet-500/15 to-pink-50 dark:to-pink-500/15 border border-violet-200 dark:border-violet-400/30 rounded-2xl p-4 flex gap-3">
                   <div className="shrink-0 text-lg">✨</div>
-                  <p className="text-violet-800 text-sm leading-relaxed font-medium">{section.text}</p>
+                  <p className="text-violet-800 dark:text-violet-200 text-sm leading-relaxed font-medium">{section.text}</p>
                 </div>
               );
             }
@@ -228,7 +228,7 @@ export function ParentingArticles({ childAgeMonths }: { childAgeMonths: number }
       {/* Section header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
             <BookOpen className="h-4 w-4 text-emerald-600" />
           </div>
           <div>
@@ -246,7 +246,7 @@ export function ParentingArticles({ childAgeMonths }: { childAgeMonths: number }
       {continueArticle && !activeArticle && (
         <button
           onClick={() => openArticle(continueArticle)}
-          className="w-full flex items-center gap-3 bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl px-4 py-3 hover:border-violet-400 transition-all text-left"
+          className="w-full flex items-center gap-3 bg-gradient-to-r from-violet-50 dark:from-violet-500/15 to-indigo-50 dark:to-indigo-500/15 border border-violet-200 dark:border-violet-400/30 rounded-2xl px-4 py-3 hover:border-violet-400 transition-all text-left"
         >
           <span className="text-2xl shrink-0">{continueArticle.emoji}</span>
           <div className="flex-1 min-w-0">

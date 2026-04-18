@@ -174,9 +174,9 @@ function saveState(childName: string, state: PuzzleState) {
 // ─── Difficulty badge ─────────────────────────────────────────────────────────
 
 const DIFF_STYLES: Record<Difficulty, { label: string; color: string }> = {
-  easy:   { label: "Easy ⭐",   color: "bg-green-100 text-green-800 border-green-200" },
-  medium: { label: "Medium ⭐⭐", color: "bg-amber-100 text-amber-800 border-amber-200" },
-  hard:   { label: "Hard ⭐⭐⭐",  color: "bg-red-100 text-red-800 border-red-200" },
+  easy:   { label: "Easy ⭐",   color: "bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-200 border-green-200 dark:border-green-400/30" },
+  medium: { label: "Medium ⭐⭐", color: "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-400/30" },
+  hard:   { label: "Hard ⭐⭐⭐",  color: "bg-red-100 dark:bg-red-500/20 text-red-800 dark:text-red-200 border-red-200 dark:border-red-400/30" },
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -300,21 +300,21 @@ function PuzzleEngine({ childName, ageGroup }: { childName: string; ageGroup: Ag
     ).length;
     const pct = Math.round((state.totalCorrect / Math.max(state.totalAttempted, 1)) * 100);
     return (
-      <Card className="rounded-3xl border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 overflow-hidden">
+      <Card className="rounded-3xl border-2 border-emerald-200 dark:border-emerald-400/30 bg-gradient-to-br from-emerald-50 dark:from-emerald-500/15 to-green-50 dark:to-green-500/15 overflow-hidden">
         <CardContent className="p-6 text-center space-y-4">
           <div className="text-5xl">🏆</div>
-          <h3 className="font-bold text-xl text-emerald-800">Puzzle Session Complete!</h3>
-          <p className="text-sm text-emerald-700">
+          <h3 className="font-bold text-xl text-emerald-800 dark:text-emerald-200">Puzzle Session Complete!</h3>
+          <p className="text-sm text-emerald-700 dark:text-emerald-200">
             Great job, {childName}! You've completed all {PUZZLES_PER_SESSION} puzzles today.
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
-            <div className="bg-white rounded-2xl px-4 py-2 shadow-sm border border-emerald-200">
+            <div className="bg-white rounded-2xl px-4 py-2 shadow-sm border border-emerald-200 dark:border-emerald-400/30">
               <p className="text-xs text-muted-foreground">Overall Accuracy</p>
-              <p className="font-bold text-lg text-emerald-700">{pct}%</p>
+              <p className="font-bold text-lg text-emerald-700 dark:text-emerald-200">{pct}%</p>
             </div>
-            <div className="bg-white rounded-2xl px-4 py-2 shadow-sm border border-emerald-200">
+            <div className="bg-white rounded-2xl px-4 py-2 shadow-sm border border-emerald-200 dark:border-emerald-400/30">
               <p className="text-xs text-muted-foreground">Current Level</p>
-              <p className="font-bold text-lg text-emerald-700 capitalize">{state.difficulty}</p>
+              <p className="font-bold text-lg text-emerald-700 dark:text-emerald-200 capitalize">{state.difficulty}</p>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">Come back tomorrow for a new set of puzzles!</p>
@@ -378,9 +378,9 @@ function PuzzleEngine({ childName, ageGroup }: { childName: string; ageGroup: Ag
                   onClick={() => !submitted && setSelected(opt)}
                   className={`flex items-center gap-3 w-full text-left px-4 py-3 rounded-2xl border-2 font-medium text-sm transition-all ${
                     isThisCorrect
-                      ? "bg-green-50 border-green-400 text-green-800"
+                      ? "bg-green-50 dark:bg-green-500/15 border-green-400 text-green-800 dark:text-green-200"
                       : isThisWrong
-                      ? "bg-red-50 border-red-400 text-red-700"
+                      ? "bg-red-50 dark:bg-red-500/15 border-red-400 text-red-700 dark:text-red-200"
                       : selected === opt
                       ? "bg-primary/10 border-primary text-primary"
                       : "bg-muted/40 border-transparent hover:border-primary/30 hover:bg-muted/70"
@@ -411,14 +411,14 @@ function PuzzleEngine({ childName, ageGroup }: { childName: string; ageGroup: Ag
 
           {/* Feedback */}
           {submitted && (
-            <div className={`rounded-2xl px-4 py-3 flex items-start gap-2.5 ${isCorrect ? "bg-green-50 border border-green-200" : "bg-amber-50 border border-amber-200"}`}>
+            <div className={`rounded-2xl px-4 py-3 flex items-start gap-2.5 ${isCorrect ? "bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-400/30" : "bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30"}`}>
               <span className="text-xl flex-shrink-0">{isCorrect ? "✅" : "❌"}</span>
               <div>
-                <p className={`font-bold text-sm ${isCorrect ? "text-green-800" : "text-amber-800"}`}>
+                <p className={`font-bold text-sm ${isCorrect ? "text-green-800 dark:text-green-200" : "text-amber-800 dark:text-amber-200"}`}>
                   {isCorrect ? "Correct! Great job! 🌟" : `Not quite! The answer is: ${currentPuzzle?.correctAnswer}`}
                 </p>
                 {isCorrect && state.correctStreak >= 2 && (
-                  <p className="text-xs text-green-700 mt-0.5">🔥 {state.correctStreak} in a row!</p>
+                  <p className="text-xs text-green-700 dark:text-green-200 mt-0.5">🔥 {state.correctStreak} in a row!</p>
                 )}
               </div>
             </div>
@@ -426,9 +426,9 @@ function PuzzleEngine({ childName, ageGroup }: { childName: string; ageGroup: Ag
 
           {/* Level up message */}
           {levelUpMsg && (
-            <div className="rounded-2xl bg-violet-50 border border-violet-200 px-4 py-3 flex items-center gap-2">
+            <div className="rounded-2xl bg-violet-50 dark:bg-violet-500/15 border border-violet-200 dark:border-violet-400/30 px-4 py-3 flex items-center gap-2">
               <Trophy className="h-5 w-5 text-violet-600 flex-shrink-0" />
-              <p className="text-sm font-bold text-violet-800">{levelUpMsg}</p>
+              <p className="text-sm font-bold text-violet-800 dark:text-violet-200">{levelUpMsg}</p>
             </div>
           )}
 

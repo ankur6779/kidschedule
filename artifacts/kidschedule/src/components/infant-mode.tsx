@@ -193,10 +193,10 @@ const TIPS: Record<TipCategory, TipData> = {
 };
 
 const TIP_CATEGORY_META: Record<TipCategory, { label: string; emoji: string; color: string; bgColor: string; borderColor: string; badgeColor: string }> = {
-  feeding:     { label: "Feeding Tip",       emoji: "🍼", color: "text-amber-900",   bgColor: "bg-amber-50",  borderColor: "border-amber-200",  badgeColor: "bg-amber-100 text-amber-800" },
-  health:      { label: "Health Tip",        emoji: "🏥", color: "text-blue-900",    bgColor: "bg-blue-50",   borderColor: "border-blue-200",   badgeColor: "bg-blue-100 text-blue-800" },
-  development: { label: "Development Tip",   emoji: "🧠", color: "text-violet-900",  bgColor: "bg-violet-50", borderColor: "border-violet-200", badgeColor: "bg-violet-100 text-violet-800" },
-  bonding:     { label: "Bonding Activity",  emoji: "❤️", color: "text-rose-900",    bgColor: "bg-rose-50",   borderColor: "border-rose-200",   badgeColor: "bg-rose-100 text-rose-800" },
+  feeding:     { label: "Feeding Tip",       emoji: "🍼", color: "text-amber-900 dark:text-amber-100",   bgColor: "bg-amber-50 dark:bg-amber-500/15",  borderColor: "border-amber-200 dark:border-amber-400/30",  badgeColor: "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200" },
+  health:      { label: "Health Tip",        emoji: "🏥", color: "text-blue-900 dark:text-blue-100",    bgColor: "bg-blue-50 dark:bg-blue-500/15",   borderColor: "border-blue-200 dark:border-blue-400/30",   badgeColor: "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-200" },
+  development: { label: "Development Tip",   emoji: "🧠", color: "text-violet-900 dark:text-violet-100",  bgColor: "bg-violet-50 dark:bg-violet-500/15", borderColor: "border-violet-200 dark:border-violet-400/30", badgeColor: "bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-200" },
+  bonding:     { label: "Bonding Activity",  emoji: "❤️", color: "text-rose-900 dark:text-rose-100",    bgColor: "bg-rose-50 dark:bg-rose-500/15",   borderColor: "border-rose-200 dark:border-rose-400/30",   badgeColor: "bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-200" },
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -472,14 +472,14 @@ function MemoryMoments({ childName }: { childName: string }) {
   };
 
   return (
-    <Card className="rounded-3xl border-2 border-yellow-200 bg-yellow-50 shadow-none">
+    <Card className="rounded-3xl border-2 border-yellow-200 dark:border-yellow-400/30 bg-yellow-50 dark:bg-yellow-500/15 shadow-none">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">📸</span>
             <div>
-              <h3 className="font-quicksand text-base font-bold text-yellow-900">Today's Moments</h3>
-              <p className="text-xs text-yellow-700">Save precious milestones & memories</p>
+              <h3 className="font-quicksand text-base font-bold text-yellow-900 dark:text-yellow-100">Today's Moments</h3>
+              <p className="text-xs text-yellow-700 dark:text-yellow-200">Save precious milestones & memories</p>
             </div>
           </div>
           <Button
@@ -499,7 +499,7 @@ function MemoryMoments({ childName }: { childName: string }) {
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && save()}
               placeholder={`e.g. ${childName} laughed for the first time!`}
-              className="flex-1 rounded-2xl border-2 border-yellow-200 bg-white px-4 py-2 text-sm text-yellow-900 placeholder:text-yellow-400 focus:outline-none focus:border-yellow-400"
+              className="flex-1 rounded-2xl border-2 border-yellow-200 dark:border-yellow-400/30 bg-white px-4 py-2 text-sm text-yellow-900 dark:text-yellow-100 placeholder:text-yellow-400 focus:outline-none focus:border-yellow-400"
             />
             <Button size="sm" onClick={save} className="rounded-2xl bg-yellow-500 hover:bg-yellow-600 text-white font-bold border-0 px-4">
               Save
@@ -510,16 +510,16 @@ function MemoryMoments({ childName }: { childName: string }) {
         {moments.length === 0 ? (
           <div className="text-center py-6">
             <div className="text-3xl mb-2">📝</div>
-            <p className="text-sm text-yellow-700 font-medium">No moments saved yet</p>
+            <p className="text-sm text-yellow-700 dark:text-yellow-200 font-medium">No moments saved yet</p>
             <p className="text-xs text-yellow-600 mt-1">Tap "Save Moment" to capture today's memories</p>
           </div>
         ) : (
           <div className="space-y-2">
             {moments.map((m) => (
-              <div key={m.id} className="flex items-start gap-3 bg-white rounded-2xl p-3 border border-yellow-100 group">
+              <div key={m.id} className="flex items-start gap-3 bg-white rounded-2xl p-3 border border-yellow-100 dark:border-yellow-400/30 group">
                 <span className="text-xl shrink-0">{m.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-yellow-900 leading-snug">{m.text}</p>
+                  <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100 leading-snug">{m.text}</p>
                   <p className="text-xs text-yellow-600 mt-0.5">{m.date}</p>
                 </div>
                 <button onClick={() => remove(m.id)} className="opacity-0 group-hover:opacity-100 transition-opacity text-yellow-400 hover:text-rose-500 shrink-0 p-1">
@@ -581,13 +581,13 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
     <div className="space-y-5">
 
       {/* ── Hero Banner — hidden when focused on a single category ── */}
-      {!showOnly && <div className="bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 border-2 border-pink-200 rounded-3xl p-5">
+      {!showOnly && <div className="bg-gradient-to-br from-pink-50 dark:from-pink-500/15 via-purple-50 dark:via-purple-500/15 to-indigo-50 dark:to-indigo-500/15 border-2 border-pink-200 dark:border-pink-400/30 rounded-3xl p-5">
         <div className="flex items-center gap-4 mb-4">
           <div className="text-5xl animate-bounce-slow">👶</div>
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-1">
-              <Badge className="bg-pink-100 text-pink-800 border-pink-300 font-bold text-xs">Infant Mode</Badge>
-              <Badge className="bg-purple-100 text-purple-800 border-purple-300 font-bold text-xs">
+              <Badge className="bg-pink-100 dark:bg-pink-500/20 text-pink-800 dark:text-pink-200 border-pink-300 font-bold text-xs">Infant Mode</Badge>
+              <Badge className="bg-purple-100 dark:bg-purple-500/20 text-purple-800 dark:text-purple-200 border-purple-300 font-bold text-xs">
                 Tips for {ageRangeLabel}
               </Badge>
             </div>
@@ -604,7 +604,7 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
             <span>Month {totalMonths}</span>
             <span>12 months</span>
           </div>
-          <div className="h-2.5 bg-white/70 rounded-full overflow-hidden border border-pink-200">
+          <div className="h-2.5 bg-white/70 rounded-full overflow-hidden border border-pink-200 dark:border-pink-400/30">
             <div
               className="h-full bg-gradient-to-r from-pink-400 to-purple-500 rounded-full transition-all duration-700"
               style={{ width: `${Math.min(100, (totalMonths / 12) * 100)}%` }}
@@ -629,13 +629,13 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
       )}
 
       {/* ── Lullaby Player ── */}
-      {show("lullaby") && <Card className="rounded-3xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 shadow-none">
+      {show("lullaby") && <Card className="rounded-3xl border-2 border-purple-200 dark:border-purple-400/30 bg-gradient-to-br from-purple-50 dark:from-purple-500/15 to-pink-50 dark:to-pink-500/15 shadow-none">
         <CardContent className="p-5">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-2xl">🎵</span>
             <div className="flex-1">
-              <h3 className="font-quicksand text-base font-bold text-purple-900">Lullaby Player</h3>
-              <p className="text-xs text-purple-700">
+              <h3 className="font-quicksand text-base font-bold text-purple-900 dark:text-purple-100">Lullaby Player</h3>
+              <p className="text-xs text-purple-700 dark:text-purple-200">
                 {isNight ? "🌙 Night mode — sleep melodies" : "☀️ Daytime — soft play sounds"}
               </p>
             </div>
@@ -650,10 +650,10 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
 
           {/* Time-based suggestion */}
           {!playing && (
-            <div className="bg-white/60 border border-purple-100 rounded-2xl p-3 mb-3 flex items-center gap-2">
+            <div className="bg-white/60 border border-purple-100 dark:border-purple-400/30 rounded-2xl p-3 mb-3 flex items-center gap-2">
               <span className="text-lg">{suggestedTrack.emoji}</span>
               <div className="flex-1">
-                <p className="text-xs font-bold text-purple-800">Recommended now</p>
+                <p className="text-xs font-bold text-purple-800 dark:text-purple-200">Recommended now</p>
                 <p className="text-xs text-purple-600">{suggestedTrack.name}</p>
               </div>
               <Button
@@ -675,18 +675,18 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
                 <div
                   key={track.name}
                   className={`flex items-center gap-3 rounded-2xl px-4 py-2.5 border transition-all ${
-                    isCurrent ? "bg-purple-100 border-purple-300" : "bg-white/60 border-purple-100"
+                    isCurrent ? "bg-purple-100 dark:bg-purple-500/20 border-purple-300" : "bg-white/60 border-purple-100 dark:border-purple-400/30"
                   }`}
                 >
                   <span className="text-lg">{track.emoji}</span>
                   <div className="flex-1">
-                    <p className={`text-sm font-bold ${isCurrent ? "text-purple-900" : "text-purple-800"}`}>{track.name}</p>
+                    <p className={`text-sm font-bold ${isCurrent ? "text-purple-900 dark:text-purple-100" : "text-purple-800 dark:text-purple-200"}`}>{track.name}</p>
                     {track.timeOfDay !== "any" && (
                       <p className="text-[10px] text-purple-500 font-medium">{track.timeOfDay === "night" ? "🌙 Night" : "☀️ Daytime"}</p>
                     )}
                   </div>
                   {isPlaying ? (
-                    <Button size="sm" variant="outline" onClick={stopAll} className="rounded-full h-7 px-2 border-purple-300 text-purple-700 text-xs">
+                    <Button size="sm" variant="outline" onClick={stopAll} className="rounded-full h-7 px-2 border-purple-300 text-purple-700 dark:text-purple-200 text-xs">
                       <Square className="h-3 w-3 mr-1" />Stop
                     </Button>
                   ) : (
@@ -705,7 +705,7 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
               variant="outline"
               size="sm"
               onClick={handleNextLullaby}
-              className="flex-1 rounded-full h-9 border-purple-300 text-purple-700 font-bold text-sm hover:bg-purple-100"
+              className="flex-1 rounded-full h-9 border-purple-300 text-purple-700 dark:text-purple-200 font-bold text-sm hover:bg-purple-100 dark:bg-purple-500/20"
             >
               <SkipForward className="h-4 w-4 mr-1.5" />Next Song
             </Button>
@@ -714,7 +714,7 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
                 variant="outline"
                 size="sm"
                 onClick={stopAll}
-                className="rounded-full h-9 px-4 border-rose-300 text-rose-700 font-bold text-sm hover:bg-rose-50"
+                className="rounded-full h-9 px-4 border-rose-300 text-rose-700 dark:text-rose-200 font-bold text-sm hover:bg-rose-50 dark:bg-rose-500/15"
               >
                 <Square className="h-4 w-4 mr-1" />Stop
               </Button>
@@ -728,7 +728,7 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
       </Card>}
 
       {/* ── Vaccination Timeline (Collapsible) ── */}
-      {show("vaccines") && <Card className="rounded-3xl border-2 border-blue-200 bg-blue-50 shadow-none">
+      {show("vaccines") && <Card className="rounded-3xl border-2 border-blue-200 dark:border-blue-400/30 bg-blue-50 dark:bg-blue-500/15 shadow-none">
         <button
           className="w-full px-5 py-4 flex items-center justify-between"
           onClick={() => setVacOpen(!vacOpen)}
@@ -736,7 +736,7 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
           <div className="flex items-center gap-3">
             <span className="text-2xl">💉</span>
             <div className="text-left">
-              <h3 className="font-quicksand text-base font-bold text-blue-900">Vaccination Schedule</h3>
+              <h3 className="font-quicksand text-base font-bold text-blue-900 dark:text-blue-100">Vaccination Schedule</h3>
               <p className="text-xs text-blue-600">Track your baby's immunization journey</p>
             </div>
           </div>
@@ -749,23 +749,23 @@ export function InfantMode({ childName, ageYears, ageMonths, showOnly }: InfantM
               const status = getVaccineStatus(totalMonths, v.age);
               return (
                 <div key={v.age} className={`rounded-xl p-3 border flex items-start gap-3 transition-all ${
-                  status === "done" ? "bg-green-50 border-green-200" :
-                  status === "due_soon" ? "bg-amber-50 border-amber-300 ring-1 ring-amber-300" :
-                  "bg-white border-blue-100"
+                  status === "done" ? "bg-green-50 dark:bg-green-500/15 border-green-200 dark:border-green-400/30" :
+                  status === "due_soon" ? "bg-amber-50 dark:bg-amber-500/15 border-amber-300 ring-1 ring-amber-300" :
+                  "bg-white border-blue-100 dark:border-blue-400/30"
                 }`}>
                   <div className={`text-xs font-bold px-2 py-1 rounded-lg shrink-0 whitespace-nowrap ${
-                    status === "done" ? "bg-green-100 text-green-700" :
-                    status === "due_soon" ? "bg-amber-100 text-amber-800" :
-                    "bg-blue-100 text-blue-700"
+                    status === "done" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-200" :
+                    status === "due_soon" ? "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200" :
+                    "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-200"
                   }`}>
                     {status === "done" ? "✅" : status === "due_soon" ? "⚡" : "📅"} {v.age}
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {v.vaccines.map((vac) => (
                       <span key={vac} className={`text-xs px-2 py-0.5 rounded-full font-medium border ${
-                        status === "done" ? "bg-green-50 border-green-200 text-green-800" :
-                        status === "due_soon" ? "bg-amber-50 border-amber-300 text-amber-900" :
-                        "bg-blue-50 border-blue-200 text-blue-800"
+                        status === "done" ? "bg-green-50 dark:bg-green-500/15 border-green-200 dark:border-green-400/30 text-green-800 dark:text-green-200" :
+                        status === "due_soon" ? "bg-amber-50 dark:bg-amber-500/15 border-amber-300 text-amber-900 dark:text-amber-100" :
+                        "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-400/30 text-blue-800 dark:text-blue-200"
                       }`}>{vac}</span>
                     ))}
                   </div>

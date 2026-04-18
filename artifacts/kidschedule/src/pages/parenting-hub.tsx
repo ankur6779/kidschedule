@@ -113,28 +113,28 @@ const EMOTIONAL_CARDS = [
     title: "I'm feeling overwhelmed",
     subtitle: "It's okay. You're not alone.",
     prompt: "I'm feeling completely overwhelmed as a parent. What can I do to feel better?",
-    bg: "bg-rose-50 border-rose-200 hover:border-rose-400",
+    bg: "bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-400/30 hover:border-rose-400",
   },
   {
     emoji: "😰",
     title: "My child seems anxious",
     subtitle: "Let's figure this out together.",
     prompt: "My child seems anxious and worried a lot. How can I help them?",
-    bg: "bg-amber-50 border-amber-200 hover:border-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-400/30 hover:border-amber-400",
   },
   {
     emoji: "😔",
     title: "We're struggling to connect",
     subtitle: "Small steps can make a big difference.",
     prompt: "I feel like my child and I aren't connecting well. How can we build a stronger bond?",
-    bg: "bg-violet-50 border-violet-200 hover:border-violet-400",
+    bg: "bg-violet-50 dark:bg-violet-500/15 border-violet-200 dark:border-violet-400/30 hover:border-violet-400",
   },
   {
     emoji: "😮‍💨",
     title: "I need a parenting break",
     subtitle: "Self-care is part of good parenting.",
     prompt: "I'm a parent who needs some time for myself. How can I take care of my own wellbeing?",
-    bg: "bg-emerald-50 border-emerald-200 hover:border-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-400/30 hover:border-emerald-400",
   },
 ];
 
@@ -155,7 +155,7 @@ function EmotionalSupportSection() {
           </Link>
         ))}
       </div>
-      <div className="bg-gradient-to-r from-pink-50 to-violet-50 border border-pink-200 rounded-2xl p-4 flex gap-3 items-start">
+      <div className="bg-gradient-to-r from-pink-50 dark:from-pink-500/15 to-violet-50 dark:to-violet-500/15 border border-pink-200 dark:border-pink-400/30 rounded-2xl p-4 flex gap-3 items-start">
         <AmyIcon size={36} />
         <div>
           <p className="font-bold text-sm text-foreground">You're doing better than you think 💜</p>
@@ -364,7 +364,7 @@ export default function ParentingHub() {
           icon={<AmyIcon size={22} bounce />}
           title="Ask Amy AI"
           description="Get warm, practical parenting advice"
-          accentClass="bg-gradient-to-br from-amber-100 to-rose-100"
+          accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-rose-100 dark:to-rose-500/20"
           defaultOpen
         >
           <AmyAISuggestionsSection />
@@ -376,7 +376,7 @@ export default function ParentingHub() {
           icon={<BookOpen className="h-5 w-5 text-emerald-600" />}
           title="Parenting Articles"
           description="Research-based, age-matched reading"
-          accentClass="bg-emerald-100"
+          accentClass="bg-emerald-100 dark:bg-emerald-500/20"
           defaultOpen
         >
           {effectiveChild ? (
@@ -393,7 +393,7 @@ export default function ParentingHub() {
             icon={<Sparkles className="h-5 w-5 text-violet-600" />}
             title="Daily Tips"
             description="Amy AI picks today's best tips for you"
-            accentClass="bg-violet-100"
+            accentClass="bg-violet-100 dark:bg-violet-500/20"
             defaultOpen
           >
             <DailyTips ageGroup={ageGroup} childName={effectiveChild.name} />
@@ -406,7 +406,7 @@ export default function ParentingHub() {
           icon={<Heart className="h-5 w-5 text-rose-500" />}
           title="Emotional Support"
           description="For the tough parenting days"
-          accentClass="bg-rose-100"
+          accentClass="bg-rose-100 dark:bg-rose-500/20"
         >
           <EmotionalSupportSection />
         </HubSection>
@@ -418,7 +418,7 @@ export default function ParentingHub() {
             icon={<Palette className="h-5 w-5 text-fuchsia-600" />}
             title="Activities & Learning"
             description="Age-based games, stories & skills"
-            accentClass="bg-fuchsia-100"
+            accentClass="bg-fuchsia-100 dark:bg-fuchsia-500/20"
           >
             <ActivitiesSection
               ageGroup={ageGroup}
@@ -457,7 +457,7 @@ function PageHeader() {
         </p>
       </div>
       <Link href="/assistant">
-        <button className="shrink-0 flex items-center gap-2 bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 rounded-2xl px-3 py-2 border border-border hover:border-primary/40 transition-all">
+        <button className="shrink-0 flex items-center gap-2 bg-gradient-to-br from-amber-100 dark:from-amber-500/20 via-rose-100 dark:via-rose-500/20 to-violet-200 dark:to-violet-500/25 rounded-2xl px-3 py-2 border border-border hover:border-primary/40 transition-all">
           <AmyIcon size={24} bounce />
           <span className="text-xs font-bold text-foreground">Ask Amy</span>
           <MessageCircleHeart className="h-4 w-4 text-rose-500" />

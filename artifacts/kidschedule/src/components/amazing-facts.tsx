@@ -261,9 +261,9 @@ const ALL_FACTS: Fact[] = [
 
 const CATEGORY_LABEL: Record<FactCategory, string> = { animal: "Animal", science: "Science", gk: "G.K." };
 const CATEGORY_COLORS: Record<FactCategory, string> = {
-  animal: "bg-green-100 text-green-800 border-green-200",
-  science: "bg-blue-100 text-blue-800 border-blue-200",
-  gk: "bg-amber-100 text-amber-800 border-amber-200",
+  animal: "bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-200 border-green-200 dark:border-green-400/30",
+  science: "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-400/30",
+  gk: "bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-200 border-amber-200 dark:border-amber-400/30",
 };
 
 function lsKey(childName: string) {
@@ -390,8 +390,8 @@ export function AmazingFacts({ childName, ageGroup, lang = "en" }: AmazingFactsP
                   onClick={() => toggleLike(fact.id)}
                   className={`flex-shrink-0 flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-1.5 transition-all ${
                     isLiked
-                      ? "bg-blue-100 text-blue-700 border border-blue-200"
-                      : "bg-muted/60 text-muted-foreground hover:bg-blue-50 hover:text-blue-600"
+                      ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-400/30"
+                      : "bg-muted/60 text-muted-foreground hover:bg-blue-50 dark:bg-blue-500/15 hover:text-blue-600"
                   }`}
                   title="Interesting!"
                 >

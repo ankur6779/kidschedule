@@ -36,49 +36,49 @@ type ActivityState = {
 
 // ─── Datasets ────────────────────────────────────────────────────────────────
 const WORKSHEETS: Worksheet[] = [
-  { id:"ws1",  title:"ABC Tracing Practice",       emoji:"✏️", bg:"bg-blue-100",    accent:"#3B82F6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",       ageMin:24, ageMax:60,  subject:"Literacy" },
-  { id:"ws2",  title:"1–10 Number Counting",       emoji:"🔢", bg:"bg-green-100",   accent:"#10B981", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:24, ageMax:60,  subject:"Math" },
-  { id:"ws3",  title:"Color the Farm Animals",     emoji:"🐄", bg:"bg-orange-100",  accent:"#F97316", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:24, ageMax:72,  subject:"Art" },
-  { id:"ws4",  title:"Match the Shapes",           emoji:"🔵", bg:"bg-purple-100",  accent:"#8B5CF6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",    ageMin:24, ageMax:60,  subject:"Math" },
-  { id:"ws5",  title:"Big & Small Sort",           emoji:"🐘", bg:"bg-amber-100",   accent:"#D97706", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:24, ageMax:54,  subject:"Logic" },
-  { id:"ws6",  title:"Write My Name Practice",     emoji:"✨", bg:"bg-pink-100",    accent:"#EC4899", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:84,  subject:"Literacy" },
-  { id:"ws7",  title:"Spot the Difference",        emoji:"👀", bg:"bg-teal-100",    accent:"#14B8A6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:96,  subject:"Logic" },
-  { id:"ws8",  title:"Connect the Dots – Stars",   emoji:"🌟", bg:"bg-yellow-100",  accent:"#EAB308", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:84,  subject:"Art" },
-  { id:"ws9",  title:"Alphabet Coloring A–Z",      emoji:"🎨", bg:"bg-rose-100",    accent:"#F43F5E", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:36, ageMax:72,  subject:"Literacy" },
-  { id:"ws10", title:"Simple Addition Fun",        emoji:"➕", bg:"bg-indigo-100",  accent:"#6366F1", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:48, ageMax:96,  subject:"Math" },
-  { id:"ws11", title:"Hindi Varnamala Tracing",    emoji:"हि",  bg:"bg-emerald-100", accent:"#059669", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",     ageMin:36, ageMax:84,  subject:"Hindi" },
-  { id:"ws12", title:"My Body Parts Worksheet",    emoji:"🧍", bg:"bg-sky-100",     accent:"#0EA5E9", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:24, ageMax:72,  subject:"Science" },
-  { id:"ws13", title:"Fruits & Vegetables Match",  emoji:"🍎", bg:"bg-lime-100",    accent:"#84CC16", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",    ageMin:24, ageMax:72,  subject:"GK" },
-  { id:"ws14", title:"Weather Chart Worksheet",    emoji:"🌤️", bg:"bg-cyan-100",    accent:"#06B6D4", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:48, ageMax:96,  subject:"Science" },
-  { id:"ws15", title:"Multiplication Table 2–5",   emoji:"✖️", bg:"bg-violet-100",  accent:"#7C3AED", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:72, ageMax:96,  subject:"Math" },
-  { id:"ws16", title:"Story Sequencing Cards",     emoji:"📖", bg:"bg-fuchsia-100", accent:"#D946EF", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",     ageMin:60, ageMax:96,  subject:"Literacy" },
-  { id:"ws17", title:"Map of India Fill-in",       emoji:"🗺️", bg:"bg-orange-100",  accent:"#EA580C", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",       ageMin:72, ageMax:96,  subject:"GK" },
-  { id:"ws18", title:"Colour the Rangoli",         emoji:"🪔", bg:"bg-red-100",     accent:"#DC2626", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:36, ageMax:96,  subject:"Art" },
-  { id:"ws19", title:"Opposite Words Match",       emoji:"🔄", bg:"bg-blue-100",    accent:"#2563EB", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", ageMin:48, ageMax:84,  subject:"Literacy" },
+  { id:"ws1",  title:"ABC Tracing Practice",       emoji:"✏️", bg:"bg-blue-100 dark:bg-blue-500/20",    accent:"#3B82F6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",       ageMin:24, ageMax:60,  subject:"Literacy" },
+  { id:"ws2",  title:"1–10 Number Counting",       emoji:"🔢", bg:"bg-green-100 dark:bg-green-500/20",   accent:"#10B981", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:24, ageMax:60,  subject:"Math" },
+  { id:"ws3",  title:"Color the Farm Animals",     emoji:"🐄", bg:"bg-orange-100 dark:bg-orange-500/20",  accent:"#F97316", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:24, ageMax:72,  subject:"Art" },
+  { id:"ws4",  title:"Match the Shapes",           emoji:"🔵", bg:"bg-purple-100 dark:bg-purple-500/20",  accent:"#8B5CF6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",    ageMin:24, ageMax:60,  subject:"Math" },
+  { id:"ws5",  title:"Big & Small Sort",           emoji:"🐘", bg:"bg-amber-100 dark:bg-amber-500/20",   accent:"#D97706", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:24, ageMax:54,  subject:"Logic" },
+  { id:"ws6",  title:"Write My Name Practice",     emoji:"✨", bg:"bg-pink-100 dark:bg-pink-500/20",    accent:"#EC4899", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:84,  subject:"Literacy" },
+  { id:"ws7",  title:"Spot the Difference",        emoji:"👀", bg:"bg-teal-100 dark:bg-teal-500/20",    accent:"#14B8A6", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:96,  subject:"Logic" },
+  { id:"ws8",  title:"Connect the Dots – Stars",   emoji:"🌟", bg:"bg-yellow-100 dark:bg-yellow-500/20",  accent:"#EAB308", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:36, ageMax:84,  subject:"Art" },
+  { id:"ws9",  title:"Alphabet Coloring A–Z",      emoji:"🎨", bg:"bg-rose-100 dark:bg-rose-500/20",    accent:"#F43F5E", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:36, ageMax:72,  subject:"Literacy" },
+  { id:"ws10", title:"Simple Addition Fun",        emoji:"➕", bg:"bg-indigo-100 dark:bg-indigo-500/20",  accent:"#6366F1", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:48, ageMax:96,  subject:"Math" },
+  { id:"ws11", title:"Hindi Varnamala Tracing",    emoji:"हि",  bg:"bg-emerald-100 dark:bg-emerald-500/20", accent:"#059669", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",     ageMin:36, ageMax:84,  subject:"Hindi" },
+  { id:"ws12", title:"My Body Parts Worksheet",    emoji:"🧍", bg:"bg-sky-100 dark:bg-sky-500/20",     accent:"#0EA5E9", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",      ageMin:24, ageMax:72,  subject:"Science" },
+  { id:"ws13", title:"Fruits & Vegetables Match",  emoji:"🍎", bg:"bg-lime-100 dark:bg-lime-500/20",    accent:"#84CC16", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",    ageMin:24, ageMax:72,  subject:"GK" },
+  { id:"ws14", title:"Weather Chart Worksheet",    emoji:"🌤️", bg:"bg-cyan-100 dark:bg-cyan-500/20",    accent:"#06B6D4", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:48, ageMax:96,  subject:"Science" },
+  { id:"ws15", title:"Multiplication Table 2–5",   emoji:"✖️", bg:"bg-violet-100 dark:bg-violet-500/20",  accent:"#7C3AED", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",  ageMin:72, ageMax:96,  subject:"Math" },
+  { id:"ws16", title:"Story Sequencing Cards",     emoji:"📖", bg:"bg-fuchsia-100 dark:bg-fuchsia-500/20", accent:"#D946EF", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",     ageMin:60, ageMax:96,  subject:"Literacy" },
+  { id:"ws17", title:"Map of India Fill-in",       emoji:"🗺️", bg:"bg-orange-100 dark:bg-orange-500/20",  accent:"#EA580C", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",       ageMin:72, ageMax:96,  subject:"GK" },
+  { id:"ws18", title:"Colour the Rangoli",         emoji:"🪔", bg:"bg-red-100 dark:bg-red-500/20",     accent:"#DC2626", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",   ageMin:36, ageMax:96,  subject:"Art" },
+  { id:"ws19", title:"Opposite Words Match",       emoji:"🔄", bg:"bg-blue-100 dark:bg-blue-500/20",    accent:"#2563EB", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", ageMin:48, ageMax:84,  subject:"Literacy" },
   { id:"ws20", title:"Clock Reading Practice",     emoji:"⏰", bg:"bg-stone-100",   accent:"#78716C", fileUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing",     ageMin:60, ageMax:96,  subject:"Math" },
 ];
 
 const REELS: Reel[] = [
-  { id:"r1",  title:"Easy Paper Butterfly Craft",     emoji:"🦋", bg:"bg-pink-100",    accent:"#EC4899", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"4 min", ageMin:24, ageMax:96 },
-  { id:"r2",  title:"Rainbow Umbrella Painting",      emoji:"🌈", bg:"bg-yellow-100",  accent:"#F59E0B", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:24, ageMax:84 },
-  { id:"r3",  title:"Clay Fruits – Mango & Apple",    emoji:"🥭", bg:"bg-orange-100",  accent:"#F97316", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:36, ageMax:96 },
-  { id:"r4",  title:"DIY Paper Crown for Kids",       emoji:"👑", bg:"bg-amber-100",   accent:"#D97706", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"5 min", ageMin:24, ageMax:84 },
-  { id:"r5",  title:"Vegetable Stamp Art",            emoji:"🥦", bg:"bg-green-100",   accent:"#10B981", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:72 },
-  { id:"r6",  title:"How to Draw a Lion – Easy",      emoji:"🦁", bg:"bg-amber-100",   accent:"#B45309", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:36, ageMax:96 },
-  { id:"r7",  title:"Sock Puppet Show Craft",         emoji:"🧦", bg:"bg-purple-100",  accent:"#7C3AED", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"9 min", ageMin:36, ageMax:84 },
-  { id:"r8",  title:"Nature Collage with Leaves",     emoji:"🍃", bg:"bg-teal-100",    accent:"#0D9488", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:96 },
-  { id:"r9",  title:"Marble Run Paper Craft",         emoji:"⚙️", bg:"bg-blue-100",    accent:"#3B82F6", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"10 min", ageMin:60, ageMax:96 },
-  { id:"r10", title:"Diwali Diya Decoration",         emoji:"🪔", bg:"bg-red-100",     accent:"#DC2626", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:36, ageMax:96 },
-  { id:"r11", title:"Paper Plate Fish Mobile",        emoji:"🐠", bg:"bg-sky-100",     accent:"#0284C7", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"5 min", ageMin:24, ageMax:72 },
-  { id:"r12", title:"Finger Printing Art – Flowers",  emoji:"🌸", bg:"bg-rose-100",    accent:"#F43F5E", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:24, ageMax:72 },
-  { id:"r13", title:"Create a Paper Zoo",             emoji:"🦒", bg:"bg-lime-100",    accent:"#65A30D", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"12 min", ageMin:48, ageMax:96 },
-  { id:"r14", title:"Sand Art Greeting Cards",        emoji:"🏖️", bg:"bg-yellow-100",  accent:"#CA8A04", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:48, ageMax:96 },
-  { id:"r15", title:"Recycled Robot Craft",           emoji:"🤖", bg:"bg-slate-100",   accent:"#475569", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"11 min", ageMin:60, ageMax:96 },
-  { id:"r16", title:"Paper Bag Puppet Animals",       emoji:"🐸", bg:"bg-emerald-100", accent:"#059669", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:84 },
+  { id:"r1",  title:"Easy Paper Butterfly Craft",     emoji:"🦋", bg:"bg-pink-100 dark:bg-pink-500/20",    accent:"#EC4899", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"4 min", ageMin:24, ageMax:96 },
+  { id:"r2",  title:"Rainbow Umbrella Painting",      emoji:"🌈", bg:"bg-yellow-100 dark:bg-yellow-500/20",  accent:"#F59E0B", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:24, ageMax:84 },
+  { id:"r3",  title:"Clay Fruits – Mango & Apple",    emoji:"🥭", bg:"bg-orange-100 dark:bg-orange-500/20",  accent:"#F97316", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:36, ageMax:96 },
+  { id:"r4",  title:"DIY Paper Crown for Kids",       emoji:"👑", bg:"bg-amber-100 dark:bg-amber-500/20",   accent:"#D97706", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"5 min", ageMin:24, ageMax:84 },
+  { id:"r5",  title:"Vegetable Stamp Art",            emoji:"🥦", bg:"bg-green-100 dark:bg-green-500/20",   accent:"#10B981", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:72 },
+  { id:"r6",  title:"How to Draw a Lion – Easy",      emoji:"🦁", bg:"bg-amber-100 dark:bg-amber-500/20",   accent:"#B45309", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:36, ageMax:96 },
+  { id:"r7",  title:"Sock Puppet Show Craft",         emoji:"🧦", bg:"bg-purple-100 dark:bg-purple-500/20",  accent:"#7C3AED", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"9 min", ageMin:36, ageMax:84 },
+  { id:"r8",  title:"Nature Collage with Leaves",     emoji:"🍃", bg:"bg-teal-100 dark:bg-teal-500/20",    accent:"#0D9488", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:96 },
+  { id:"r9",  title:"Marble Run Paper Craft",         emoji:"⚙️", bg:"bg-blue-100 dark:bg-blue-500/20",    accent:"#3B82F6", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"10 min", ageMin:60, ageMax:96 },
+  { id:"r10", title:"Diwali Diya Decoration",         emoji:"🪔", bg:"bg-red-100 dark:bg-red-500/20",     accent:"#DC2626", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:36, ageMax:96 },
+  { id:"r11", title:"Paper Plate Fish Mobile",        emoji:"🐠", bg:"bg-sky-100 dark:bg-sky-500/20",     accent:"#0284C7", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"5 min", ageMin:24, ageMax:72 },
+  { id:"r12", title:"Finger Printing Art – Flowers",  emoji:"🌸", bg:"bg-rose-100 dark:bg-rose-500/20",    accent:"#F43F5E", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"6 min", ageMin:24, ageMax:72 },
+  { id:"r13", title:"Create a Paper Zoo",             emoji:"🦒", bg:"bg-lime-100 dark:bg-lime-500/20",    accent:"#65A30D", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"12 min", ageMin:48, ageMax:96 },
+  { id:"r14", title:"Sand Art Greeting Cards",        emoji:"🏖️", bg:"bg-yellow-100 dark:bg-yellow-500/20",  accent:"#CA8A04", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"8 min", ageMin:48, ageMax:96 },
+  { id:"r15", title:"Recycled Robot Craft",           emoji:"🤖", bg:"bg-slate-100 dark:bg-slate-500/20",   accent:"#475569", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"11 min", ageMin:60, ageMax:96 },
+  { id:"r16", title:"Paper Bag Puppet Animals",       emoji:"🐸", bg:"bg-emerald-100 dark:bg-emerald-500/20", accent:"#059669", videoUrl:"https://drive.google.com/drive/folders/1rZqwBYoSIxnDIXBO4XvIqN5b4UBnbQD3?usp=sharing", duration:"7 min", ageMin:24, ageMax:84 },
 ];
 
 const ORIGAMI: Origami[] = [
-  { id:"og1", title:"Learn to make a Paper Boat", emoji:"⛵", bg:"bg-sky-100", accent:"#0284C7", difficulty:"Easy", ageMin:24, ageMax:96,
+  { id:"og1", title:"Learn to make a Paper Boat", emoji:"⛵", bg:"bg-sky-100 dark:bg-sky-500/20", accent:"#0284C7", difficulty:"Easy", ageMin:24, ageMax:96,
     guideUrl:"https://origami.me/boat/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet of paper, coloured side up. Lay it flat on a table." },
@@ -88,7 +88,7 @@ const ORIGAMI: Origami[] = [
       { fold:"pullOpen", instruction:"Gently pull the two open sides apart from the middle and flatten down." },
       { fold:"done",     instruction:"Pull the two top points outward carefully — your boat ⛵ is ready to sail!" },
     ]},
-  { id:"og2", title:"Fold a Flying Paper Airplane", emoji:"✈️", bg:"bg-blue-100", accent:"#3B82F6", difficulty:"Easy", ageMin:36, ageMax:96,
+  { id:"og2", title:"Fold a Flying Paper Airplane", emoji:"✈️", bg:"bg-blue-100 dark:bg-blue-500/20", accent:"#3B82F6", difficulty:"Easy", ageMin:36, ageMax:96,
     guideUrl:"https://origami.me/dart-airplane/",
     steps:[
       { fold:"start",    instruction:"Start with an A4 or rectangular sheet of paper." },
@@ -98,7 +98,7 @@ const ORIGAMI: Origami[] = [
       { fold:"halfV",    instruction:"Fold the plane in half along the center crease so both wings face up." },
       { fold:"done",     instruction:"Fold each wing down flat. Hold from below and launch your airplane ✈️!" },
     ]},
-  { id:"og3", title:"Make a Jumping Paper Frog", emoji:"🐸", bg:"bg-green-100", accent:"#16A34A", difficulty:"Medium", ageMin:48, ageMax:96,
+  { id:"og3", title:"Make a Jumping Paper Frog", emoji:"🐸", bg:"bg-green-100 dark:bg-green-500/20", accent:"#16A34A", difficulty:"Medium", ageMin:48, ageMax:96,
     guideUrl:"https://origami.me/jumping-frog/",
     steps:[
       { fold:"start",    instruction:"Start with an index card or a square piece of green paper." },
@@ -110,7 +110,7 @@ const ORIGAMI: Origami[] = [
       { fold:"kite",     instruction:"Fold the bottom strip up, then fold it back down halfway to create a spring." },
       { fold:"done",     instruction:"Flip over. Press the spring and release — watch it jump! 🐸" },
     ]},
-  { id:"og4", title:"Create a Paper Butterfly", emoji:"🦋", bg:"bg-pink-100", accent:"#DB2777", difficulty:"Easy", ageMin:24, ageMax:96,
+  { id:"og4", title:"Create a Paper Butterfly", emoji:"🦋", bg:"bg-pink-100 dark:bg-pink-500/20", accent:"#DB2777", difficulty:"Easy", ageMin:24, ageMax:96,
     guideUrl:"https://origami.me/butterfly/",
     steps:[
       { fold:"start",    instruction:"Start with a colourful square sheet of paper." },
@@ -120,7 +120,7 @@ const ORIGAMI: Origami[] = [
       { fold:"foldUp",   instruction:"Pinch tightly in the center — twist a bit of wire or a thin strip of paper around the pinch." },
       { fold:"done",     instruction:"Fan out both halves gently into wings. Your butterfly 🦋 is ready to flutter!" },
     ]},
-  { id:"og5", title:"Fold a Paper Tulip Flower", emoji:"🌷", bg:"bg-rose-100", accent:"#E11D48", difficulty:"Medium", ageMin:48, ageMax:96,
+  { id:"og5", title:"Fold a Paper Tulip Flower", emoji:"🌷", bg:"bg-rose-100 dark:bg-rose-500/20", accent:"#E11D48", difficulty:"Medium", ageMin:48, ageMax:96,
     guideUrl:"https://origami.me/tulip/",
     steps:[
       { fold:"start",    instruction:"Use a square sheet — red or pink on one side. Place coloured side down." },
@@ -131,7 +131,7 @@ const ORIGAMI: Origami[] = [
       { fold:"pullOpen", instruction:"Gently blow into the small hole at the bottom to puff up the tulip bud." },
       { fold:"done",     instruction:"Attach a green paper strip as the stem. Your tulip 🌷 is in full bloom!" },
     ]},
-  { id:"og6", title:"Make a Paper Crane (Tsuru)", emoji:"🦢", bg:"bg-purple-100", accent:"#9333EA", difficulty:"Fun", ageMin:72, ageMax:96,
+  { id:"og6", title:"Make a Paper Crane (Tsuru)", emoji:"🦢", bg:"bg-purple-100 dark:bg-purple-500/20", accent:"#9333EA", difficulty:"Fun", ageMin:72, ageMax:96,
     guideUrl:"https://origami.me/crane/",
     steps:[
       { fold:"start",    instruction:"Use a perfect square sheet. White side up. Crease both diagonals and unfold." },
@@ -145,7 +145,7 @@ const ORIGAMI: Origami[] = [
       { fold:"pullOpen", instruction:"Blow gently into the small hole at the bottom to puff up the body." },
       { fold:"done",     instruction:"Pull the wings apart slowly. Your crane 🦢 is complete — make 1000 for a wish!" },
     ]},
-  { id:"og7", title:"Fold a Paper Bunny", emoji:"🐰", bg:"bg-amber-100", accent:"#D97706", difficulty:"Easy", ageMin:24, ageMax:84,
+  { id:"og7", title:"Fold a Paper Bunny", emoji:"🐰", bg:"bg-amber-100 dark:bg-amber-500/20", accent:"#D97706", difficulty:"Easy", ageMin:24, ageMax:84,
     guideUrl:"https://origami.me/bunny/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet — white or any light colour works great." },
@@ -155,7 +155,7 @@ const ORIGAMI: Origami[] = [
       { fold:"crease",   instruction:"Fold the two ear tips down slightly to shape floppy ears." },
       { fold:"done",     instruction:"Flip over and draw a face. Your bunny 🐰 is hopping with joy!" },
     ]},
-  { id:"og8", title:"Simple Paper Star", emoji:"⭐", bg:"bg-yellow-100", accent:"#CA8A04", difficulty:"Easy", ageMin:24, ageMax:96,
+  { id:"og8", title:"Simple Paper Star", emoji:"⭐", bg:"bg-yellow-100 dark:bg-yellow-500/20", accent:"#CA8A04", difficulty:"Easy", ageMin:24, ageMax:96,
     guideUrl:"https://www.instructables.com/Easy-Origami-Star/",
     steps:[
       { fold:"start",    instruction:"Cut a long thin strip of paper — about 1 cm wide and 25 cm long." },
@@ -164,7 +164,7 @@ const ORIGAMI: Origami[] = [
       { fold:"foldDown", instruction:"When the strip is almost done, tuck the end neatly under the last flap." },
       { fold:"done",     instruction:"Pinch each of the five sides gently inward — watch your star ⭐ puff up!" },
     ]},
-  { id:"og9", title:"Paper Heart for Mom", emoji:"❤️", bg:"bg-red-100", accent:"#DC2626", difficulty:"Easy", ageMin:36, ageMax:96,
+  { id:"og9", title:"Paper Heart for Mom", emoji:"❤️", bg:"bg-red-100 dark:bg-red-500/20", accent:"#DC2626", difficulty:"Easy", ageMin:36, ageMax:96,
     guideUrl:"https://origami.me/heart/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet — red or pink, coloured side up." },
@@ -174,7 +174,7 @@ const ORIGAMI: Origami[] = [
       { fold:"foldUp",   instruction:"Flip over. Fold all four corners toward the center of the model." },
       { fold:"done",     instruction:"Flip over again — a beautiful heart ❤️ for the most special person!" },
     ]},
-  { id:"og10", title:"Fold a Sailboat Card", emoji:"⛵", bg:"bg-teal-100", accent:"#0F766E", difficulty:"Medium", ageMin:48, ageMax:96,
+  { id:"og10", title:"Fold a Sailboat Card", emoji:"⛵", bg:"bg-teal-100 dark:bg-teal-500/20", accent:"#0F766E", difficulty:"Medium", ageMin:48, ageMax:96,
     guideUrl:"https://origami.me/sailboat/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet — blue on one side. Colour side down." },
@@ -185,7 +185,7 @@ const ORIGAMI: Origami[] = [
       { fold:"crease",   instruction:"Fold the small triangle at the left side behind for a clean edge." },
       { fold:"done",     instruction:"Stand it up — your sailboat ⛵ card is ready to send to someone special!" },
     ]},
-  { id:"og11", title:"Make a Paper Peacock", emoji:"🦚", bg:"bg-emerald-100", accent:"#059669", difficulty:"Fun", ageMin:60, ageMax:96,
+  { id:"og11", title:"Make a Paper Peacock", emoji:"🦚", bg:"bg-emerald-100 dark:bg-emerald-500/20", accent:"#059669", difficulty:"Fun", ageMin:60, ageMax:96,
     guideUrl:"https://origami.me/peacock/",
     steps:[
       { fold:"start",    instruction:"Use a bright green or teal square sheet. Coloured side up." },
@@ -199,7 +199,7 @@ const ORIGAMI: Origami[] = [
       { fold:"pullOpen", instruction:"Fan out the accordion folds at the top to spread the tail feathers." },
       { fold:"done",     instruction:"Stand the peacock upright — your paper peacock 🦚 is magnificent!" },
     ]},
-  { id:"og12", title:"Paper Pinwheel Spinner", emoji:"🌀", bg:"bg-indigo-100", accent:"#4F46E5", difficulty:"Easy", ageMin:24, ageMax:84,
+  { id:"og12", title:"Paper Pinwheel Spinner", emoji:"🌀", bg:"bg-indigo-100 dark:bg-indigo-500/20", accent:"#4F46E5", difficulty:"Easy", ageMin:24, ageMax:84,
     guideUrl:"https://www.instructables.com/How-to-Make-a-Pinwheel/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet — use two different colours for extra fun!" },
@@ -208,7 +208,7 @@ const ORIGAMI: Origami[] = [
       { fold:"foldUp",   instruction:"Take every other cut point and fold it into the center (alternating corners)." },
       { fold:"done",     instruction:"Push a pin through the center into a pencil eraser — blow and spin! 🌀" },
     ]},
-  { id:"og13", title:"Fold a Cute Paper Fox", emoji:"🦊", bg:"bg-orange-100", accent:"#EA580C", difficulty:"Medium", ageMin:48, ageMax:96,
+  { id:"og13", title:"Fold a Cute Paper Fox", emoji:"🦊", bg:"bg-orange-100 dark:bg-orange-500/20", accent:"#EA580C", difficulty:"Medium", ageMin:48, ageMax:96,
     guideUrl:"https://origami.me/fox/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet — orange on one side. Coloured side down." },
@@ -220,7 +220,7 @@ const ORIGAMI: Origami[] = [
       { fold:"halfH",    instruction:"Fold the model in half vertically so the face is on top." },
       { fold:"done",     instruction:"Draw eyes and a nose. Your fox 🦊 is ready to play in the forest!" },
     ]},
-  { id:"og14", title:"Origami Elephant", emoji:"🐘", bg:"bg-slate-100", accent:"#475569", difficulty:"Fun", ageMin:60, ageMax:96,
+  { id:"og14", title:"Origami Elephant", emoji:"🐘", bg:"bg-slate-100 dark:bg-slate-500/20", accent:"#475569", difficulty:"Fun", ageMin:60, ageMax:96,
     guideUrl:"https://origami.me/elephant/",
     steps:[
       { fold:"start",    instruction:"Start with a large square sheet — grey works best for an elephant!" },
@@ -233,7 +233,7 @@ const ORIGAMI: Origami[] = [
       { fold:"foldUp",   instruction:"Fold the back top corner down at an angle — this forms the tail." },
       { fold:"done",     instruction:"Open up the body slightly. Your elephant 🐘 is ready to parade!" },
     ]},
-  { id:"og15", title:"Paper Fortune Teller", emoji:"🔮", bg:"bg-violet-100", accent:"#7C3AED", difficulty:"Easy", ageMin:36, ageMax:96,
+  { id:"og15", title:"Paper Fortune Teller", emoji:"🔮", bg:"bg-violet-100 dark:bg-violet-500/20", accent:"#7C3AED", difficulty:"Easy", ageMin:36, ageMax:96,
     guideUrl:"https://origami.me/fortune-teller/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet. Write colours on top flaps and numbers on inner flaps!" },
@@ -243,7 +243,7 @@ const ORIGAMI: Origami[] = [
       { fold:"pullOpen", instruction:"Push all four corners toward the center from underneath with your thumbs & forefingers." },
       { fold:"done",     instruction:"Pinch all four corners together. Open and close to use your fortune teller 🔮!" },
     ]},
-  { id:"og16", title:"Mini Paper Basket", emoji:"🧺", bg:"bg-lime-100", accent:"#65A30D", difficulty:"Medium", ageMin:48, ageMax:96,
+  { id:"og16", title:"Mini Paper Basket", emoji:"🧺", bg:"bg-lime-100 dark:bg-lime-500/20", accent:"#65A30D", difficulty:"Medium", ageMin:48, ageMax:96,
     guideUrl:"https://www.instructables.com/Origami-Paper-Basket/",
     steps:[
       { fold:"start",    instruction:"Start with a square sheet. Use a sturdy paper like craft paper or cardstock." },
@@ -501,9 +501,9 @@ export function DailyKidsActivity({ childName, ageMonths }: { childName: string;
       </div>
 
       {/* ── Parent Guidance ────────────────────────────────────── */}
-      <div className="flex items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3">
+      <div className="flex items-center gap-3 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30 px-4 py-3">
         <span className="text-2xl">❤️</span>
-        <p className="text-sm font-semibold text-amber-800">
+        <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
           Spend 20–30 minutes doing this activity with your child
         </p>
       </div>
@@ -573,7 +573,7 @@ function WorksheetCard({ item, done, saved, onDone, onSave, onPreview }: {
         <p className="text-xs font-bold text-foreground leading-snug mb-2">{item.title}</p>
         <div className="flex gap-1.5">
           <button onClick={onPreview}
-            className="flex-1 text-center text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-500 hover:text-white transition-colors">
+            className="flex-1 text-center text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 dark:bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-200 hover:bg-fuchsia-500 hover:text-white transition-colors">
             👁 Preview
           </button>
           <a href={item.fileUrl} target="_blank" rel="noopener noreferrer"
@@ -582,7 +582,7 @@ function WorksheetCard({ item, done, saved, onDone, onSave, onPreview }: {
           </a>
         </div>
         <button onClick={onDone}
-          className={`w-full mt-1.5 text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700"}`}>
+          className={`w-full mt-1.5 text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 dark:bg-green-500/20 hover:text-green-700 dark:text-green-200"}`}>
           {done ? "✓ Done" : "Mark Done"}
         </button>
       </div>
@@ -620,7 +620,7 @@ function ReelCard({ item, done, saved, onDone, onSave, onPreview }: {
         <p className="text-xs font-bold text-foreground leading-snug mb-2">{item.title}</p>
         <div className="flex gap-1.5 mb-1.5">
           <button onClick={onPreview}
-            className="flex-1 text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 text-fuchsia-700 hover:bg-fuchsia-500 hover:text-white transition-colors">
+            className="flex-1 text-[10px] font-bold py-1 rounded-lg bg-fuchsia-100 dark:bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-200 hover:bg-fuchsia-500 hover:text-white transition-colors">
             ▶ Play
           </button>
           <a href={item.videoUrl} target="_blank" rel="noopener noreferrer"
@@ -629,7 +629,7 @@ function ReelCard({ item, done, saved, onDone, onSave, onPreview }: {
           </a>
         </div>
         <button onClick={onDone}
-          className={`w-full text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700"}`}>
+          className={`w-full text-[10px] font-bold py-1 rounded-lg transition-colors ${done ? "bg-green-500 text-white" : "bg-muted text-muted-foreground hover:bg-green-100 dark:bg-green-500/20 hover:text-green-700 dark:text-green-200"}`}>
           {done ? "✓ Watched" : "Mark Done"}
         </button>
       </div>
@@ -639,9 +639,9 @@ function ReelCard({ item, done, saved, onDone, onSave, onPreview }: {
 
 // ─── Origami Card ─────────────────────────────────────────────────────────────
 const DIFFICULTY_COLORS: Record<string, string> = {
-  Easy:   "bg-green-100 text-green-700",
-  Medium: "bg-amber-100 text-amber-700",
-  Fun:    "bg-purple-100 text-purple-700",
+  Easy:   "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-200",
+  Medium: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-200",
+  Fun:    "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-200",
 };
 
 // ─── Fold Diagram SVG Data ───────────────────────────────────────────────────
@@ -666,7 +666,7 @@ function FoldDiagram({ fold, emoji, size = 88 }: { fold: FoldShape; emoji: strin
     return (
       <div className="flex flex-col items-center justify-center gap-1" style={{ width: size, height: size }}>
         <span style={{ fontSize: size * 0.48 }}>{emoji}</span>
-        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">Final!</span>
+        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-full">Final!</span>
       </div>
     );
   }
@@ -871,7 +871,7 @@ function OrigamiCard({ item, done, saved, onDone, onSave, onViewSteps }: {
               ⬇ Guide
             </a>
             <button onClick={onDone}
-              className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-colors border ${done ? "bg-green-500 text-white border-green-500" : "bg-muted text-muted-foreground hover:bg-green-100 hover:text-green-700 border-border"}`}>
+              className={`flex-1 py-1.5 rounded-xl text-[10px] font-bold transition-colors border ${done ? "bg-green-500 text-white border-green-500" : "bg-muted text-muted-foreground hover:bg-green-100 dark:bg-green-500/20 hover:text-green-700 dark:text-green-200 border-border"}`}>
               {done ? "✓ Done" : "Mark Done"}
             </button>
           </div>

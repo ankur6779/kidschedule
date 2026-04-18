@@ -66,7 +66,7 @@ function computeStreak(routines: Routine[]): number {
 function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
   const greeting = getGreeting();
   return (
-    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 via-rose-100 to-violet-100 p-6 sm:p-7 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
+    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 dark:from-amber-500/20 via-rose-100 dark:via-rose-500/20 to-violet-100 dark:to-violet-500/20 p-6 sm:p-7 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
       <div aria-hidden className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/40 blur-2xl" />
       <div aria-hidden className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-white/30 blur-2xl" />
       <div className="relative">
@@ -140,7 +140,7 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
 
   if (todayRoutines.length === 0) {
     return (
-      <Card className="rounded-3xl shadow-sm border-2 border-dashed bg-gradient-to-br from-sky-50 to-blue-50 overflow-hidden">
+      <Card className="rounded-3xl shadow-sm border-2 border-dashed bg-gradient-to-br from-sky-50 dark:from-sky-500/15 to-blue-50 dark:to-blue-500/15 overflow-hidden">
         <CardContent className="p-6 text-center space-y-3">
           <div className="text-4xl">🗓️</div>
           <p className="font-bold text-foreground">No plan for today yet</p>
@@ -175,10 +175,10 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
 
   if (displayItems.length === 0) {
     return (
-      <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50">
+      <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-emerald-50 dark:from-emerald-500/15 to-teal-50 dark:to-teal-500/15">
         <CardContent className="p-5 text-center space-y-1">
           <div className="text-3xl">🌙</div>
-          <p className="font-bold text-emerald-800">Day complete!</p>
+          <p className="font-bold text-emerald-800 dark:text-emerald-200">Day complete!</p>
           <p className="text-xs text-emerald-700/70">Time to relax and recharge</p>
         </CardContent>
       </Card>
@@ -187,7 +187,7 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
 
   return (
     <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-white">
-      <CardHeader className="pb-3 bg-gradient-to-r from-violet-50 to-pink-50">
+      <CardHeader className="pb-3 bg-gradient-to-r from-violet-50 dark:from-violet-500/15 to-pink-50 dark:to-pink-500/15">
         <div className="flex items-center justify-between">
           <CardTitle className="font-quicksand text-base flex items-center gap-2">
             <Clock className="h-4 w-4 text-violet-600" />
@@ -215,7 +215,7 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
                 <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-foreground/70"}`}>
                   <div className="text-xs font-bold">{item.time}</div>
                   {isCurrent && <span className="mt-1 text-[9px] font-black uppercase bg-white/25 px-1.5 py-0.5 rounded-full">Now</span>}
-                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-100 text-violet-700 px-1.5 py-0.5 rounded-full">Next</span>}
+                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 px-1.5 py-0.5 rounded-full">Next</span>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className={`font-bold text-sm ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
@@ -269,7 +269,7 @@ function RewardsCard({ streak }: { streak: number }) {
             <Trophy className="h-4 w-4 text-violet-600" />
             Rewards & Points
           </CardTitle>
-          <div className="flex items-center gap-1.5 bg-violet-100 text-violet-700 rounded-full px-3 py-1">
+          <div className="flex items-center gap-1.5 bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 rounded-full px-3 py-1">
             <Star className="h-3.5 w-3.5 fill-violet-500" />
             <span className="font-black text-sm">{points}</span>
             <span className="text-xs font-medium">pts</span>
@@ -278,7 +278,7 @@ function RewardsCard({ streak }: { streak: number }) {
       </CardHeader>
       <CardContent className="p-4 space-y-4">
         {redeemMsg && (
-          <div className="text-sm font-medium text-center py-1.5 px-3 bg-green-50 border border-green-200 rounded-xl text-green-800">
+          <div className="text-sm font-medium text-center py-1.5 px-3 bg-green-50 dark:bg-green-500/15 border border-green-200 dark:border-green-400/30 rounded-xl text-green-800 dark:text-green-200">
             {redeemMsg}
           </div>
         )}
@@ -288,7 +288,7 @@ function RewardsCard({ streak }: { streak: number }) {
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Badges Earned</p>
             <div className="flex flex-wrap gap-2">
               {badges.map((b) => (
-                <div key={b.id} className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1 text-xs font-bold text-amber-800">
+                <div key={b.id} className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30 rounded-full px-2.5 py-1 text-xs font-bold text-amber-800 dark:text-amber-200">
                   {b.emoji} {b.label}
                 </div>
               ))}
@@ -343,25 +343,25 @@ function CoParentCard({ routines, streak }: { routines: Routine[]; streak: numbe
   const suggestions: { emoji: string; text: string; color: string }[] = [];
 
   if (total === 0) {
-    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", color: "bg-blue-50 border-blue-200 text-blue-800" });
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", color: "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-400/30 text-blue-800 dark:text-blue-200" });
   } else if (pct < 30 && hour >= 14) {
-    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", color: "bg-amber-50 border-amber-200 text-amber-800" });
+    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", color: "bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-400/30 text-amber-800 dark:text-amber-200" });
   } else if (pct >= 80) {
-    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", color: "bg-green-50 border-green-200 text-green-800" });
+    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", color: "bg-green-50 dark:bg-green-500/15 border-green-200 dark:border-green-400/30 text-green-800 dark:text-green-200" });
   }
 
   if (hour >= 15 && hour <= 17) {
-    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", color: "bg-rose-50 border-rose-200 text-rose-800" });
+    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", color: "bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-400/30 text-rose-800 dark:text-rose-200" });
   }
 
   if (streak >= 3) {
-    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, color: "bg-orange-50 border-orange-200 text-orange-800" });
+    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, color: "bg-orange-50 dark:bg-orange-500/15 border-orange-200 dark:border-orange-400/30 text-orange-800 dark:text-orange-200" });
   } else if (streak === 0 && hour < 10) {
-    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", color: "bg-sky-50 border-sky-200 text-sky-800" });
+    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", color: "bg-sky-50 dark:bg-sky-500/15 border-sky-200 dark:border-sky-400/30 text-sky-800 dark:text-sky-200" });
   }
 
   if (hour >= 19) {
-    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", color: "bg-indigo-50 border-indigo-200 text-indigo-800" });
+    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", color: "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-200 dark:border-indigo-400/30 text-indigo-800 dark:text-indigo-200" });
   }
 
   const display = suggestions.slice(0, 3);
@@ -458,11 +458,11 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
 // ─── Onboarding Screen ───────────────────────────────────────────────────────
 function OnboardingScreen({ displayName }: { displayName: string }) {
   const features = [
-    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 border-blue-100" },
-    { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50 border-emerald-100" },
-    { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-orange-500 to-amber-500", bg: "bg-orange-50 border-orange-100" },
-    { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-purple-500", bg: "bg-violet-50 border-violet-100" },
-    { icon: <Heart className="h-5 w-5" />, emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", color: "from-rose-500 to-pink-500", bg: "bg-rose-50 border-rose-100" },
+    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 dark:bg-blue-500/15 border-blue-100 dark:border-blue-400/30" },
+    { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-100 dark:border-emerald-400/30" },
+    { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-orange-500 to-amber-500", bg: "bg-orange-50 dark:bg-orange-500/15 border-orange-100 dark:border-orange-400/30" },
+    { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-purple-500", bg: "bg-violet-50 dark:bg-violet-500/15 border-violet-100 dark:border-violet-400/30" },
+    { icon: <Heart className="h-5 w-5" />, emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", color: "from-rose-500 to-pink-500", bg: "bg-rose-50 dark:bg-rose-500/15 border-rose-100 dark:border-rose-400/30" },
   ];
 
   return (
@@ -658,10 +658,10 @@ export default function Dashboard() {
 
         {/* Streak mini-card — softer pastel */}
         <Link href="/progress">
-          <Card className={`rounded-3xl border-none shadow-sm cursor-pointer hover:shadow-md transition-all h-full ${streak >= 3 ? "bg-gradient-to-br from-orange-300 to-rose-400" : streak > 0 ? "bg-gradient-to-br from-amber-100 to-orange-100" : "bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border"}`}>
+          <Card className={`rounded-3xl border-none shadow-sm cursor-pointer hover:shadow-md transition-all h-full ${streak >= 3 ? "bg-gradient-to-br from-orange-300 to-rose-400" : streak > 0 ? "bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-orange-100 dark:to-orange-500/20" : "bg-gradient-to-br from-muted/30 to-muted/10 border-2 border-dashed border-border"}`}>
             <CardContent className="p-4 flex flex-col items-center justify-center h-full text-center min-h-[100px]">
               <div className={`text-3xl mb-1 ${streak === 0 ? "grayscale opacity-40" : ""}`}>🔥</div>
-              <div className={`font-black text-2xl ${streak >= 3 ? "text-white" : streak > 0 ? "text-orange-700" : "text-muted-foreground"}`}>
+              <div className={`font-black text-2xl ${streak >= 3 ? "text-white" : streak > 0 ? "text-orange-700 dark:text-orange-200" : "text-muted-foreground"}`}>
                 {streak}
               </div>
               <div className={`text-xs font-bold ${streak >= 3 ? "text-white/85" : streak > 0 ? "text-orange-600" : "text-muted-foreground"}`}>
@@ -681,53 +681,53 @@ export default function Dashboard() {
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)
         ) : (
           <>
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-violet-50 to-purple-50">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-violet-50 dark:from-violet-500/15 to-purple-50 dark:to-purple-500/15">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-violet-700 font-bold text-xs">Routines</span>
+                  <span className="text-violet-700 dark:text-violet-200 font-bold text-xs">Routines</span>
                   <Calendar className="h-4 w-4 text-violet-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-violet-700">{summary?.routinesGeneratedThisWeek || 0}</span>
+                  <span className="text-3xl font-black text-violet-700 dark:text-violet-200">{summary?.routinesGeneratedThisWeek || 0}</span>
                   <span className="text-[10px] text-violet-500/80">this week</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-emerald-50 to-teal-50">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-emerald-50 dark:from-emerald-500/15 to-teal-50 dark:to-teal-500/15">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-700 font-bold text-xs">Great Job</span>
+                  <span className="text-emerald-700 dark:text-emerald-200 font-bold text-xs">Great Job</span>
                   <TrendingUp className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-emerald-700">{summary?.positiveBehaviorsToday || 0}</span>
+                  <span className="text-3xl font-black text-emerald-700 dark:text-emerald-200">{summary?.positiveBehaviorsToday || 0}</span>
                   <span className="text-[10px] text-emerald-500/80">today</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-rose-50 to-pink-50">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-rose-50 dark:from-rose-500/15 to-pink-50 dark:to-pink-500/15">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-rose-700 font-bold text-xs">Challenging</span>
+                  <span className="text-rose-700 dark:text-rose-200 font-bold text-xs">Challenging</span>
                   <TrendingDown className="h-4 w-4 text-rose-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-rose-700">{summary?.negativeBehaviorsToday || 0}</span>
+                  <span className="text-3xl font-black text-rose-700 dark:text-rose-200">{summary?.negativeBehaviorsToday || 0}</span>
                   <span className="text-[10px] text-rose-500/80">today</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50">
+            <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-amber-50 dark:from-amber-500/15 to-orange-50 dark:to-orange-500/15">
               <CardContent className="p-4 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-amber-700 font-bold text-xs">Children</span>
+                  <span className="text-amber-700 dark:text-amber-200 font-bold text-xs">Children</span>
                   <Users className="h-4 w-4 text-amber-500" />
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-amber-700">{summary?.totalChildren || 0}</span>
+                  <span className="text-3xl font-black text-amber-700 dark:text-amber-200">{summary?.totalChildren || 0}</span>
                   <span className="text-[10px] text-amber-500/80">total</span>
                 </div>
               </CardContent>

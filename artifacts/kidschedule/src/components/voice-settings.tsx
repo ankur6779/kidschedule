@@ -49,7 +49,7 @@ export function VoiceSettingsPanel({ onToggle }: VoiceSettingsPanelProps) {
         variant="outline"
         size="sm"
         onClick={handleToggle}
-        className={`rounded-full gap-2 ${settings.enabled ? "bg-violet-50 border-violet-300 text-violet-700" : ""}`}
+        className={`rounded-full gap-2 ${settings.enabled ? "bg-violet-50 dark:bg-violet-500/15 border-violet-300 text-violet-700 dark:text-violet-200" : ""}`}
       >
         {settings.enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         {settings.enabled ? "Voice On" : "Voice"}
@@ -59,7 +59,7 @@ export function VoiceSettingsPanel({ onToggle }: VoiceSettingsPanelProps) {
         <button
           title="Voice settings"
           onClick={() => setOpen((o) => !o)}
-          className="p-1.5 rounded-full border border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-100 transition-colors text-[11px] font-bold"
+          className="p-1.5 rounded-full border border-violet-200 dark:border-violet-400/30 bg-violet-50 dark:bg-violet-500/15 text-violet-600 hover:bg-violet-100 dark:bg-violet-500/20 transition-colors text-[11px] font-bold"
         >
           🎙
         </button>
@@ -92,7 +92,7 @@ export function VoiceSettingsPanel({ onToggle }: VoiceSettingsPanelProps) {
                     className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
                       settings.lang === lang
                         ? "bg-violet-600 text-white border-violet-600"
-                        : "bg-white text-violet-700 border-violet-200 hover:border-violet-400"
+                        : "bg-white text-violet-700 dark:text-violet-200 border-violet-200 dark:border-violet-400/30 hover:border-violet-400"
                     }`}
                   >
                     {lang === "en" ? "🇬🇧 English" : "🇮🇳 Hindi"}
@@ -114,7 +114,7 @@ export function VoiceSettingsPanel({ onToggle }: VoiceSettingsPanelProps) {
                     className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
                       settings.gender === g
                         ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-white text-emerald-700 border-emerald-200 hover:border-emerald-400"
+                        : "bg-white text-emerald-700 dark:text-emerald-200 border-emerald-200 dark:border-emerald-400/30 hover:border-emerald-400"
                     }`}
                   >
                     {g === "female" ? "👩 Female" : "👨 Male"}
@@ -141,7 +141,7 @@ export function VoiceSettingsPanel({ onToggle }: VoiceSettingsPanelProps) {
                         }}
                         className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all ${
                           isSelected
-                            ? "bg-violet-100 text-violet-800 font-bold border border-violet-300"
+                            ? "bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-200 font-bold border border-violet-300"
                             : "hover:bg-muted text-foreground"
                         }`}
                       >

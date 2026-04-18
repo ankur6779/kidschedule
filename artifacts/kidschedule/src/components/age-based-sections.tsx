@@ -15,18 +15,18 @@ interface SkillFocusSectionProps {
 
 export function SkillFocusSection({ group, childName }: SkillFocusSectionProps) {
   const skills = SKILL_FOCUS_BY_GROUP[group];
-  const colors = ["bg-blue-50 border-blue-200", "bg-purple-50 border-purple-200", "bg-amber-50 border-amber-200", "bg-emerald-50 border-emerald-200"];
+  const colors = ["bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-400/30", "bg-purple-50 dark:bg-purple-500/15 border-purple-200 dark:border-purple-400/30", "bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-400/30", "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-200 dark:border-emerald-400/30"];
 
   return (
-    <Card className="rounded-3xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-purple-50 shadow-none">
+    <Card className="rounded-3xl border-2 border-violet-200 dark:border-violet-400/30 bg-gradient-to-br from-violet-50 dark:from-violet-500/15 to-purple-50 dark:to-purple-500/15 shadow-none">
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-2xl">🧠</span>
           <div>
-            <h3 className="font-quicksand text-base font-bold text-violet-900">
+            <h3 className="font-quicksand text-base font-bold text-violet-900 dark:text-violet-100">
               Skills to Focus on for {childName}
             </h3>
-            <p className="text-xs text-violet-700">Age-appropriate development activities for today</p>
+            <p className="text-xs text-violet-700 dark:text-violet-200">Age-appropriate development activities for today</p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -86,15 +86,15 @@ export function StorySection({ group, childName }: StorySectionProps) {
   if (!story) return null;
 
   return (
-    <Card className="rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 shadow-none">
+    <Card className="rounded-3xl border-2 border-amber-200 dark:border-amber-400/30 bg-gradient-to-br from-amber-50 dark:from-amber-500/15 to-orange-50 dark:to-orange-500/15 shadow-none">
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-4">
           <span className="text-2xl">📖</span>
           <div>
-            <h3 className="font-quicksand text-base font-bold text-amber-900">
+            <h3 className="font-quicksand text-base font-bold text-amber-900 dark:text-amber-100">
               Story Time for {childName}
             </h3>
-            <p className="text-xs text-amber-700">Age-appropriate moral stories</p>
+            <p className="text-xs text-amber-700 dark:text-amber-200">Age-appropriate moral stories</p>
           </div>
         </div>
 
@@ -108,7 +108,7 @@ export function StorySection({ group, childName }: StorySectionProps) {
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
                   i === activeIdx
                     ? "bg-amber-600 text-white border-amber-600"
-                    : "bg-white text-amber-700 border-amber-200 hover:border-amber-400"
+                    : "bg-white text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-400/30 hover:border-amber-400"
                 }`}
               >
                 {s.emoji} {s.title}
@@ -118,15 +118,15 @@ export function StorySection({ group, childName }: StorySectionProps) {
         )}
 
         {/* Story content */}
-        <div className="bg-white rounded-2xl p-4 border border-amber-100">
+        <div className="bg-white rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-bold text-lg text-amber-900">
+            <h4 className="font-bold text-lg text-amber-900 dark:text-amber-100">
               {story.emoji} {story.title}
             </h4>
             <Button
               size="sm"
               variant="outline"
-              className={`rounded-full h-8 px-3 transition-all ${speaking ? "bg-amber-100 border-amber-400 text-amber-700" : "border-amber-200 text-amber-700 hover:bg-amber-50"}`}
+              className={`rounded-full h-8 px-3 transition-all ${speaking ? "bg-amber-100 dark:bg-amber-500/20 border-amber-400 text-amber-700 dark:text-amber-200" : "border-amber-200 dark:border-amber-400/30 text-amber-700 dark:text-amber-200 hover:bg-amber-50 dark:bg-amber-500/15"}`}
               onClick={handleSpeak}
             >
               {speaking ? (
@@ -139,9 +139,9 @@ export function StorySection({ group, childName }: StorySectionProps) {
           <p className="text-sm text-foreground leading-relaxed mb-4 italic">
             "{story.story}"
           </p>
-          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200">
-            <p className="text-xs font-bold text-amber-800 mb-1">💡 Moral of the Story</p>
-            <p className="text-sm text-amber-900 font-medium">{story.moral}</p>
+          <div className="bg-amber-50 dark:bg-amber-500/15 rounded-xl p-3 border border-amber-200 dark:border-amber-400/30">
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-200 mb-1">💡 Moral of the Story</p>
+            <p className="text-sm text-amber-900 dark:text-amber-100 font-medium">{story.moral}</p>
           </div>
         </div>
 
@@ -169,19 +169,19 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
   const doneCount = Object.values(checked).filter(Boolean).length;
 
   return (
-    <Card className="rounded-3xl border-2 border-rose-200 bg-rose-50 shadow-none">
+    <Card className="rounded-3xl border-2 border-rose-200 dark:border-rose-400/30 bg-rose-50 dark:bg-rose-500/15 shadow-none">
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">💝</span>
             <div>
-              <h3 className="font-quicksand text-base font-bold text-rose-900">
+              <h3 className="font-quicksand text-base font-bold text-rose-900 dark:text-rose-100">
                 Your Parent Tasks
               </h3>
-              <p className="text-xs text-rose-700">Things you can do for {childName} today</p>
+              <p className="text-xs text-rose-700 dark:text-rose-200">Things you can do for {childName} today</p>
             </div>
           </div>
-          <div className="text-xs font-bold text-rose-800 bg-white rounded-full px-3 py-1 border border-rose-200">
+          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 bg-white rounded-full px-3 py-1 border border-rose-200 dark:border-rose-400/30">
             {doneCount}/{tasks.length} done
           </div>
         </div>
@@ -191,7 +191,7 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
               key={t.task}
               onClick={() => toggle(i)}
               className={`w-full flex items-start gap-3 rounded-2xl p-3 border-2 transition-all text-left ${
-                checked[i] ? "bg-rose-100 border-rose-300 opacity-75" : "bg-white border-rose-100 hover:border-rose-300"
+                checked[i] ? "bg-rose-100 dark:bg-rose-500/20 border-rose-300 opacity-75" : "bg-white border-rose-100 dark:border-rose-400/30 hover:border-rose-300"
               }`}
             >
               <div className={`mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
@@ -201,7 +201,7 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
               </div>
               <span className="text-xl shrink-0 mt-0.5">{t.emoji}</span>
               <div className="flex-1">
-                <p className={`text-sm font-medium ${checked[i] ? "line-through text-muted-foreground" : "text-rose-900"}`}>{t.task}</p>
+                <p className={`text-sm font-medium ${checked[i] ? "line-through text-muted-foreground" : "text-rose-900 dark:text-rose-100"}`}>{t.task}</p>
                 <p className="text-xs text-rose-600 mt-0.5">⏱ {t.time}</p>
               </div>
             </button>
@@ -209,7 +209,7 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
         </div>
         {doneCount === tasks.length && doneCount > 0 && (
           <div className="mt-4 text-center">
-            <p className="text-sm font-bold text-rose-700">🌟 Amazing! You're a star parent today!</p>
+            <p className="text-sm font-bold text-rose-700 dark:text-rose-200">🌟 Amazing! You're a star parent today!</p>
           </div>
         )}
       </CardContent>

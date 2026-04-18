@@ -273,13 +273,13 @@ export function InfantSleepTracker({ childName, ageMonths }: InfantSleepTrackerP
 
       {/* ── Prediction card (shown once there's data) ─────── */}
       {predNextSleep && pattern && (
-        <Card className="rounded-3xl border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50 overflow-hidden">
+        <Card className="rounded-3xl border-2 border-indigo-200 dark:border-indigo-400/30 bg-gradient-to-br from-indigo-50 dark:from-indigo-500/15 to-purple-50 dark:to-purple-500/15 overflow-hidden">
           <CardContent className="p-5 space-y-3">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-1">🔮 Next Predicted Sleep</p>
-                <p className="text-2xl font-extrabold text-indigo-800">{formatTime12(predNextSleep)}</p>
-                <p className="text-sm text-indigo-700 mt-0.5">
+                <p className="text-2xl font-extrabold text-indigo-800 dark:text-indigo-200">{formatTime12(predNextSleep)}</p>
+                <p className="text-sm text-indigo-700 dark:text-indigo-200 mt-0.5">
                   Based on last wake-up at <strong>{formatTime12(lastWakeTime)}</strong> + avg {fmtDur(pattern.avgWakeWindow)} wake window
                 </p>
               </div>
@@ -287,29 +287,29 @@ export function InfantSleepTracker({ childName, ageMonths }: InfantSleepTrackerP
             </div>
 
             {predFreeMins && predFreeMins > 0 && (
-              <div className="bg-white/60 rounded-2xl px-4 py-2.5 border border-indigo-100">
+              <div className="bg-white/60 rounded-2xl px-4 py-2.5 border border-indigo-100 dark:border-indigo-400/30">
                 <p className="text-xs font-bold text-indigo-600 mb-1">⏱️ Estimated Nap Duration</p>
-                <p className="font-bold text-indigo-800">~{fmtDur(predFreeMins)}</p>
+                <p className="font-bold text-indigo-800 dark:text-indigo-200">~{fmtDur(predFreeMins)}</p>
               </div>
             )}
 
             {/* Parent productivity suggestion */}
             {predFreeMins && predFreeMins >= 30 && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3">
-                <p className="text-xs font-bold text-emerald-700 mb-1.5">💪 Your Free Time Window</p>
-                <p className="text-sm text-emerald-800">
+              <div className="bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-400/30 rounded-2xl px-4 py-3">
+                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-200 mb-1.5">💪 Your Free Time Window</p>
+                <p className="text-sm text-emerald-800 dark:text-emerald-200">
                   You may get <strong>~{fmtDur(predFreeMins)}</strong> to yourself. Consider:
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {predFreeMins >= 60 && (
-                    <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium">💤 Rest</span>
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-2.5 py-1 rounded-full font-medium">💤 Rest</span>
                   )}
                   {predFreeMins >= 45 && (
-                    <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium">💻 Work</span>
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-2.5 py-1 rounded-full font-medium">💻 Work</span>
                   )}
-                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium">🍽️ Eat a meal</span>
+                  <span className="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-2.5 py-1 rounded-full font-medium">🍽️ Eat a meal</span>
                   {predFreeMins >= 30 && (
-                    <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-medium">🏠 Light tasks</span>
+                    <span className="text-xs bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 px-2.5 py-1 rounded-full font-medium">🏠 Light tasks</span>
                   )}
                 </div>
               </div>
@@ -341,10 +341,10 @@ export function InfantSleepTracker({ childName, ageMonths }: InfantSleepTrackerP
             {/* Consistency badge */}
             <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium ${
               pattern.consistency === "consistent"
-                ? "bg-green-50 text-green-800 border border-green-200"
+                ? "bg-green-50 dark:bg-green-500/15 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-400/30"
                 : pattern.consistency === "somewhat"
-                ? "bg-amber-50 text-amber-800 border border-amber-200"
-                : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-400/30"
+                : "bg-red-50 dark:bg-red-500/15 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-400/30"
             }`}>
               <TrendingUp className="h-4 w-4 flex-shrink-0" />
               {pattern.consistency === "consistent" && "✅ Sleep timing is consistent — great job!"}
@@ -367,7 +367,7 @@ export function InfantSleepTracker({ childName, ageMonths }: InfantSleepTrackerP
               {todayEntry ? "Update Today's Sleep Log" : "Log Today's Sleep"}
             </span>
             {todayEntry && (
-              <Badge className="bg-green-100 text-green-800 text-xs border-green-200 px-2 py-0.5 rounded-full">
+              <Badge className="bg-green-100 dark:bg-green-500/20 text-green-800 dark:text-green-200 text-xs border-green-200 dark:border-green-400/30 px-2 py-0.5 rounded-full">
                 ✓ Logged
               </Badge>
             )}
