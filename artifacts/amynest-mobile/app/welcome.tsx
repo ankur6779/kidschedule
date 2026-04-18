@@ -321,12 +321,22 @@ const styles = StyleSheet.create({
   navLogoCircle: {
     width: 36, height: 36, borderRadius: 999,
     overflow: "hidden",
-    backgroundColor: "#fff",
-    borderWidth: 1.5, borderColor: "rgba(255,255,255,0.4)",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1.5, borderColor: "rgba(255,255,255,0.18)",
   },
   navLogoImg: { width: 36, height: 36 },
-  navBrandText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
-  navBrandAccent: { color: "#C4B5FD" },
+  navBrandText: {
+    color: "#E9E7FF",
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: -0.2,
+    textShadowColor: "rgba(168,85,247,0.35)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 8,
+  },
+  navBrandAccent: {
+    color: "#A855F7",
+  },
   navSignIn: { color: "rgba(255,255,255,0.7)", fontSize: 14, fontFamily: "Inter_600SemiBold", paddingHorizontal: 10, paddingVertical: 6 },
 
   /* hero */
