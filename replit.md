@@ -102,9 +102,32 @@ Standalone YouTube Shorts / Instagram Reels-style vertical video player that str
 - **Frontend**: React, full-screen scroll-snap feed, IntersectionObserver autoplay, mute-by-default, lazy loading in batches of 5
 - **Video cache**: In-memory, 10-minute TTL; shuffled once on first load; handles 3000+ videos
 
+## AmyNest Mobile App (artifacts/amynest-mobile)
+
+Expo React Native app (iOS + Android) mirroring the web product.
+
+- **Preview path**: `/amynest-mobile/`
+- **Bundle ID**: `com.amynest.ai` (iOS + Android)
+- **Auth**: `@clerk/clerk-expo` with `expo-secure-store` token cache
+- **Navigation**: 5-tab Expo Router — Home, Children, Routines, Coach, Profile
+- **Theme**: Indigo/purple (`#6366F1` primary, `#A855F7` accent, `#F8F7FF` background)
+- **Fonts**: `@expo-google-fonts/inter` (400/500/600/700)
+- **API**: connects to existing Express API server via `EXPO_PUBLIC_DOMAIN`; uses `setBaseUrl` + `setAuthTokenGetter` from `@workspace/api-client-react`
+- **Screens**:
+  - `app/sign-in.tsx`, `app/sign-up.tsx` — Clerk email auth
+  - `app/onboarding.tsx` — Amy chat-style onboarding (child profiles + parent info)
+  - `app/(tabs)/index.tsx` — Home dashboard with today's timeline + quick actions
+  - `app/(tabs)/children.tsx` — Children list + `app/children/[id].tsx` detail/edit + `app/children/new.tsx` add
+  - `app/(tabs)/routines.tsx` — Routine list + `app/routines/[id].tsx` detail with checkable items
+  - `app/(tabs)/coach.tsx` — Amy Coach: goal selection → AI-generated parenting plan
+  - `app/(tabs)/profile.tsx` — Parent profile view/edit + sign out
+- **Key hooks**: `hooks/useAuthFetch.ts`, `hooks/useColors.ts`
+- **Constants**: `constants/colors.ts` — AmyNest design tokens
+
 ## Environment Variables
 
 - `AI_INTEGRATIONS_OPENAI_BASE_URL` — auto-set by Replit AI Integrations
 - `AI_INTEGRATIONS_OPENAI_API_KEY` — auto-set by Replit AI Integrations
 - `DATABASE_URL` — auto-set by Replit database
 - `GOOGLE_API_KEY` — required for Reels app; Google Drive API key (add via Secrets tab)
+- `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` — Clerk publishable key for mobile app (same as `VITE_CLERK_PUBLISHABLE_KEY`)
