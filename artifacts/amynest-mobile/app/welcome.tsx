@@ -44,9 +44,7 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
 
   const floatY = useRef(new Animated.Value(0)).current;
-  const bounceY = useRef(new Animated.Value(0)).current;
-  const pulseScale = useRef(new Animated.Value(1)).current;
-  const pulseOpacity = useRef(new Animated.Value(0.6)).current;
+  const colorAnim = useRef(new Animated.Value(0)).current;
   const fadeIn = useRef(new Animated.Value(0)).current;
   const slideUp = useRef(new Animated.Value(24)).current;
 
@@ -58,22 +56,7 @@ export default function WelcomeScreen() {
       ]),
     ).start();
     Animated.loop(
-      Animated.sequence([
-        Animated.timing(bounceY, { toValue: -6, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(bounceY, { toValue: 0, duration: 1300, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ]),
-    ).start();
-    Animated.loop(
-      Animated.parallel([
-        Animated.sequence([
-          Animated.timing(pulseScale, { toValue: 1.6, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseScale, { toValue: 1, duration: 0, useNativeDriver: true }),
-        ]),
-        Animated.sequence([
-          Animated.timing(pulseOpacity, { toValue: 0, duration: 1800, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-          Animated.timing(pulseOpacity, { toValue: 0.6, duration: 0, useNativeDriver: true }),
-        ]),
-      ]),
+      Animated.timing(colorAnim, { toValue: 4, duration: 4000, easing: Easing.linear, useNativeDriver: false }),
     ).start();
     Animated.parallel([
       Animated.timing(fadeIn, { toValue: 1, duration: 800, useNativeDriver: true }),
@@ -81,17 +64,17 @@ export default function WelcomeScreen() {
     ]).start();
   }, []);
 
+  const titleColor = colorAnim.interpolate({
+    inputRange: [0, 1, 2, 3, 4],
+    outputRange: ["#7B3FF2", "#FF4ECD", "#4FC3F7", "#FFD166", "#7B3FF2"],
+  });
+
   const tap = () => {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
   const handleStart = () => {
     tap();
-    router.push("/sign-up");
-  };
-
-  const handleMascot = () => {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push("/sign-up");
   };
 
@@ -141,46 +124,16 @@ export default function WelcomeScreen() {
               <Text style={styles.badgeText}>AI-Powered Parenting Coach</Text>
             </View>
 
-            {/* Logo + Mascot row */}
-            <View style={styles.logoMascotRow}>
-              {/* Big floating logo */}
-              <Animated.View style={[styles.bigLogoWrap, { transform: [{ translateY: floatY }] }]}>
-                <View style={styles.bigLogoGlow} />
-                <Image source={LOGO} style={styles.bigLogoImg} resizeMode="contain" />
-              </Animated.View>
+            {/* Floating logo — centered */}
+            <Animated.View style={[styles.bigLogoWrap, { transform: [{ translateY: floatY }] }]}>
+              <View style={styles.bigLogoGlow} />
+              <Image source={LOGO} style={styles.bigLogoImg} resizeMode="contain" />
+            </Animated.View>
 
-              {/* Amy mascot — clickable */}
-              <TouchableOpacity onPress={handleMascot} activeOpacity={0.85} testID="link-amy-mascot">
-                <View style={styles.mascotWrap}>
-                  <Animated.View
-                    pointerEvents="none"
-                    style={[
-                      styles.mascotPulse,
-                      { transform: [{ scale: pulseScale }], opacity: pulseOpacity },
-                    ]}
-                  />
-                  <Animated.View style={[{ transform: [{ translateY: bounceY }] }]}>
-                    <LinearGradient
-                      colors={["#FFFFFF", "#E0E7FF"]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={styles.mascotCircle}
-                    >
-                      <Text style={styles.mascotEmoji}>🤖</Text>
-                    </LinearGradient>
-                  </Animated.View>
-                  <View style={styles.mascotTooltip}>
-                    <Text style={styles.mascotTooltipText}>💬 Talk to Amy AI</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Headline */}
-            <Text style={styles.title}>
-              Where Smart {""}
-              <Text style={styles.titleAccent}>Parenting</Text> Begins
-            </Text>
+            {/* Headline — color cycling */}
+            <Animated.Text style={[styles.title, { color: titleColor }]}>
+              Where Smart Parenting Begins
+            </Animated.Text>
 
             {/* Subtext */}
             <Text style={styles.subtitle}>
@@ -328,15 +281,14 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
   },
 
-  /* Logo + Mascot row */
-  logoMascotRow: {
-    flexDirection: "row",
+  /* Logo */
+  bigLogoWrap: {
+    width: 144,
+    height: 144,
     alignItems: "center",
     justifyContent: "center",
-    gap: 16,
     marginBottom: 28,
   },
-  bigLogoWrap: { width: 144, height: 144, alignItems: "center", justifyContent: "center" },
   bigLogoGlow: {
     position: "absolute",
     width: 170,
@@ -347,45 +299,8 @@ const styles = StyleSheet.create({
   },
   bigLogoImg: { width: 144, height: 144, borderRadius: 28 },
 
-  /* Mascot */
-  mascotWrap: { width: 88, height: 88, alignItems: "center", justifyContent: "center" },
-  mascotPulse: {
-    position: "absolute",
-    width: 80,
-    height: 80,
-    borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.55)",
-  },
-  mascotCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 999,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#A855F7",
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 12,
-  },
-  mascotEmoji: { fontSize: 38 },
-  mascotTooltip: {
-    position: "absolute",
-    bottom: -32,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.95)",
-  },
-  mascotTooltipText: {
-    color: "#0f0c29",
-    fontSize: 10,
-    fontFamily: "Inter_700Bold",
-  },
-
   /* Headline */
   title: {
-    color: "#fff",
     fontSize: 40,
     lineHeight: 44,
     fontFamily: "Inter_700Bold",
@@ -394,7 +309,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingHorizontal: 8,
   },
-  titleAccent: { color: "#C4B5FD" },
   subtitle: {
     color: "rgba(255,255,255,0.75)",
     fontSize: 15,
