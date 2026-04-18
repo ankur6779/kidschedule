@@ -141,15 +141,20 @@ function SignUpPage() {
 function useOnboardingStatus() {
   const { isSignedIn } = useAuth();
   const authFetch = useAuthFetch();
+  const localDone = localStorage.getItem("onboardingComplete") === "true";
   return useQuery({
     queryKey: ["onboarding-status"],
     queryFn: async () => {
+      if (localDone) return { onboardingComplete: true };
       const res = await authFetch("/api/onboarding");
       if (!res.ok) return { onboardingComplete: false };
-      return res.json() as Promise<{ onboardingComplete: boolean }>;
+      const data = await res.json() as { onboardingComplete: boolean };
+      if (data.onboardingComplete) localStorage.setItem("onboardingComplete", "true");
+      return data;
     },
     enabled: !!isSignedIn,
-    staleTime: 1000 * 60 * 5,
+    staleTime: localDone ? Infinity : 0,
+    initialData: localDone ? { onboardingComplete: true } : undefined,
   });
 }
 

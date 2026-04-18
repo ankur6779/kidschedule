@@ -1,0 +1,156 @@
+Fix and redesign the AmyNest AI onboarding flow with the following strict requirements:
+
+---------------------------------------
+🧠 CORE PROBLEM TO FIX:
+1. After completing onboarding, user is redirected back to first page → FIX THIS
+2. Current onboarding is chat-based → CHANGE to structured premium screens
+3. Child + Parent data should be collected via UI screens (not chat inputs)
+4. Flow should be sequential and automatic (no manual routing bugs)
+
+---------------------------------------
+🎯 NEW ONBOARDING FLOW (STRICT)
+
+Step 1 → Child Profile Screen
+Step 2 → Parent Profile Screen
+Step 3 → AI Processing Screen
+Step 4 → Success Animation → Redirect to Dashboard
+
+---------------------------------------
+📱 STEP 1: CHILD PROFILE SCREEN
+
+UI:
+- Card-based premium layout
+- Fields (NOT chat bubbles):
+
+1. Child Name (input)
+2. Age Group (buttons):
+   - 1–3 yrs
+   - 4–6 yrs
+   - 7–10 yrs
+   - 10+ yrs
+
+3. Problems (multi-select chips):
+   - Screen time
+   - Tantrums
+   - Sleep issues
+   - Eating habits
+   - Focus
+   - Behaviour
+
+4. Add Another Child (button)
+
+👉 Store:
+children = []
+
+👉 On Next:
+Save data → move to Step 2 automatically
+
+---------------------------------------
+📱 STEP 2: PARENT PROFILE SCREEN
+
+UI:
+- Same premium card layout
+
+Fields:
+1. Who manages child?
+   - Mother / Father / Both / Grandparents
+
+2. Main concern (text OR select)
+
+3. Routine consistency:
+   - Low / Medium / High
+
+👉 On Next:
+Save → move to Step 3 automatically
+
+---------------------------------------
+⚙️ STEP 3: AI PROCESSING SCREEN
+
+UI:
+- Full screen loader
+- Gradient animation
+- Text:
+  "Amy is creating a personalized plan for your child..."
+
+- Add typing animation or progress dots
+
+Duration: 2–3 sec
+
+---------------------------------------
+🎉 STEP 4: SUCCESS + REDIRECT
+
+UI:
+- Smooth animation (fade + scale)
+- Message:
+  "Your personalized plan is ready!"
+
+👉 THEN:
+- Set onboardingComplete = true
+- Redirect to: /dashboard
+
+---------------------------------------
+🔐 CRITICAL FIX (IMPORTANT)
+
+Implement persistent state:
+
+const userProfile = {
+  children: [],
+  parent: {},
+  onboardingComplete: false
+};
+
+Save in:
+- localStorage
+- OR database
+
+---------------------------------------
+🚫 FIX REDIRECT BUG
+
+On app load:
+
+IF onboardingComplete === true:
+   redirect("/dashboard")
+
+ELSE:
+   redirect("/onboarding")
+
+---------------------------------------
+🔄 FIX LOOP ISSUE
+
+Make sure:
+- onboardingComplete is set ONLY after Step 4
+- Do NOT reset state on refresh
+- Use localStorage.getItem() on load
+
+---------------------------------------
+🎨 UI IMPROVEMENTS
+
+- Glassmorphism cards
+- Rounded corners (20px+)
+- Soft purple gradient background
+- Smooth transitions (Framer Motion)
+- Button hover + tap animations
+- Progress bar at top (Step 1 → Step 2 → Step 3)
+
+---------------------------------------
+⚙️ ROUTING STRUCTURE
+
+/onboarding/child
+/onboarding/parent
+/onboarding/loading
+/dashboard
+
+---------------------------------------
+✨ EXTRA
+
+- Auto transition between steps (no reload)
+- Maintain state globally
+- Prevent user from going back to onboarding after completion
+
+---------------------------------------
+FINAL RESULT:
+
+A clean, structured onboarding (NOT chat-based),
+no looping bug,
+smooth transition to dashboard,
+premium UI experience.
