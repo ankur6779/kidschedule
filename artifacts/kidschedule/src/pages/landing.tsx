@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
-import logoImg from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
+import logoImg from "@assets/file_000000008c0c71fa81e22bfda886c9e8_1776489641690.png";
 
 /* ─── data ───────────────────────────────────────────────────────── */
 const STRUGGLES = [
@@ -167,8 +167,8 @@ export default function LandingPage() {
           <img
             src={logoImg}
             alt="AmyNest AI"
-            className="h-24 w-24 rounded-full object-cover shadow-2xl ring-4 ring-white"
-            style={{ filter: "drop-shadow(0 8px 32px rgba(99,102,241,0.35))" }}
+            className="h-28 w-28 rounded-2xl object-contain"
+            style={{ filter: "drop-shadow(0 8px 32px rgba(99,102,241,0.25))" }}
           />
         </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import amyLogo from "@assets/AmyNest_logo_with_nurturing_design_1775845143817.png";
+import amyLogo from "@assets/file_000000008c0c71fa81e22bfda886c9e8_1776489641690.png";
 
 interface Worksheet {
   id: string;
