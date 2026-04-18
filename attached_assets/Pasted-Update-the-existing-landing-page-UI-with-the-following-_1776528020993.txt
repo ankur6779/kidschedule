@@ -1,0 +1,88 @@
+Update the existing landing page UI with the following changes. Do NOT redesign anything else. Only apply these improvements with premium quality.
+
+----------------------------------------
+
+1. MASCOT CHANGE (IMPORTANT)
+
+- Replace the current robot mascot 🤖 with a cute "Amy AI" face avatar
+- Use a soft, friendly, circular cartoon-style face (same as existing Amy AI branding)
+- Add a gradient circular background (purple → pink → soft blue)
+- Add soft glow behind the avatar
+
+ANIMATION:
+- Add subtle floating animation (up-down loop)
+- Add pulse effect (scale 1 → 1.05 → 1)
+
+----------------------------------------
+
+2. FLOATING POSITION (CHAT BUTTON)
+
+- Move the Amy AI avatar to bottom-right corner
+- Position: fixed
+  bottom: 24px
+  right: 20px
+
+- Add label tooltip above it:
+  "Talk to Amy AI"
+
+TOOLTIP STYLE:
+- Rounded pill
+- White or glass background
+- Soft shadow
+- Small arrow pointing to avatar
+
+INTERACTION:
+- On click → open chat / onboarding
+- On hover:
+  - Slight scale up
+  - Glow increase
+
+----------------------------------------
+
+3. HEADING ANIMATION
+
+Text:
+"Where Smart Parenting Begins"
+
+Apply animated color-changing effect:
+
+- Colors to cycle:
+  - Purple (#7B3FF2)
+  - Pink (#FF4ECD)
+  - Blue (#4FC3F7)
+  - Soft Gold (#FFD166)
+
+ANIMATION RULES:
+- Smooth transition
+- Change color every 1 second
+- Infinite loop
+- No flicker
+
+IMPLEMENTATION:
+- Use CSS keyframes or Tailwind animation
+- Ensure text remains readable on dark background
+
+----------------------------------------
+
+4. PREMIUM TOUCHES
+
+- Ensure everything matches dark theme
+- Add glow effects but keep it subtle
+- Maintain clean spacing
+- Smooth animations (no harsh movement)
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT change layout
+- Do NOT add extra buttons
+- Keep performance optimized
+- Mobile responsive
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated React + Tailwind code
+- Clean and reusable components
