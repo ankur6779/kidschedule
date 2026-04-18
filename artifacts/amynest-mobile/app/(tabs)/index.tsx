@@ -127,11 +127,24 @@ function HeroGreeting({
       <View style={styles.heroTopRow}>
         <View style={styles.heroBrandRow}>
           <AmyAvatar size={28} />
-          <Text style={styles.heroBrand}>AmyNest <Text style={{ color: "#FF9FE0" }}>AI</Text></Text>
+          <Text style={styles.heroBrand}>Amy Nest</Text>
+          <LinearGradient
+            colors={["#7B3FF2", "#FF4ECD"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.aiBadge}
+          >
+            <Text style={styles.aiBadgeText}>AI</Text>
+          </LinearGradient>
         </View>
-        <TouchableOpacity onPress={onMenu} hitSlop={10} style={styles.menuBtn} activeOpacity={0.8}>
-          <Ionicons name="menu" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
+        <View style={styles.heroRightRow}>
+          <View style={styles.heroFaceRing}>
+            <AmyFace size={26} />
+          </View>
+          <TouchableOpacity onPress={onMenu} hitSlop={10} style={styles.menuBtn} activeOpacity={0.8}>
+            <Ionicons name="menu" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
       <Text style={styles.heroEyebrow}>{getGreeting().toUpperCase()}</Text>
       <Text style={styles.heroTitle}>
@@ -357,7 +370,104 @@ function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }
   );
 }
 
-// ─── Amy AI Avatar (cute animated face) ──────────────────────────────────
+// ─── Amy AI Avatar (cute animated face with blinking) ────────────────────
+function AmyFace({ size }: { size: number }) {
+  const blink = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    const seq = Animated.loop(
+      Animated.sequence([
+        Animated.delay(2200),
+        Animated.timing(blink, { toValue: 0.05, duration: 90, useNativeDriver: true }),
+        Animated.timing(blink, { toValue: 1, duration: 110, useNativeDriver: true }),
+        Animated.delay(180),
+        Animated.timing(blink, { toValue: 0.05, duration: 90, useNativeDriver: true }),
+        Animated.timing(blink, { toValue: 1, duration: 110, useNativeDriver: true }),
+      ])
+    );
+    seq.start();
+    return () => seq.stop();
+  }, [blink]);
+
+  const eyeW = Math.max(2, Math.round(size * 0.13));
+  const eyeH = Math.max(2, Math.round(size * 0.16));
+  const eyeGap = Math.round(size * 0.22);
+  const cheekSize = Math.max(2, Math.round(size * 0.11));
+  const smileW = Math.round(size * 0.32);
+  const smileH = Math.max(2, Math.round(size * 0.16));
+  const smileBorder = Math.max(1.2, size * 0.045);
+
+  return (
+    <View
+      style={{
+        width: size, height: size, borderRadius: size / 2,
+        backgroundColor: "#FFE0BC",
+        alignItems: "center", justifyContent: "center",
+        overflow: "hidden",
+      }}
+    >
+      {/* eyes row */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: eyeGap,
+          marginTop: -size * 0.06,
+        }}
+      >
+        <Animated.View
+          style={{
+            width: eyeW, height: eyeH, borderRadius: eyeW / 2,
+            backgroundColor: "#1A1530",
+            transform: [{ scaleY: blink }],
+          }}
+        />
+        <Animated.View
+          style={{
+            width: eyeW, height: eyeH, borderRadius: eyeW / 2,
+            backgroundColor: "#1A1530",
+            transform: [{ scaleY: blink }],
+          }}
+        />
+      </View>
+      {/* cheeks */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: size * 0.55,
+          left: size * 0.12,
+          width: cheekSize, height: cheekSize, borderRadius: cheekSize / 2,
+          backgroundColor: "rgba(255,150,180,0.65)",
+        }}
+      />
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: size * 0.55,
+          right: size * 0.12,
+          width: cheekSize, height: cheekSize, borderRadius: cheekSize / 2,
+          backgroundColor: "rgba(255,150,180,0.65)",
+        }}
+      />
+      {/* smile */}
+      <View
+        style={{
+          marginTop: size * 0.08,
+          width: smileW, height: smileH,
+          borderBottomLeftRadius: smileW,
+          borderBottomRightRadius: smileW,
+          borderColor: "#7A3A2A",
+          borderWidth: smileBorder,
+          borderTopWidth: 0,
+          borderLeftWidth: smileBorder * 0.9,
+          borderRightWidth: smileBorder * 0.9,
+        }}
+      />
+    </View>
+  );
+}
+
 function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: boolean }) {
   const float = useRef(new Animated.Value(0)).current;
   const pulse = useRef(new Animated.Value(1)).current;
@@ -422,19 +532,7 @@ function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: 
           elevation: 8,
         }}
       >
-        <View
-          style={{
-            width: inner,
-            height: inner,
-            borderRadius: inner / 2,
-            backgroundColor: "#FFE4F1",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-          }}
-        >
-          <Text style={{ fontSize: inner * 0.62, lineHeight: inner }}>🐣</Text>
-        </View>
+        <AmyFace size={inner} />
       </LinearGradient>
     </Animated.View>
   );
@@ -1317,7 +1415,21 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   heroBrandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF", letterSpacing: 0.2 },
+  aiBadge: {
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 999,
+    shadowColor: "#FF4ECD", shadowOpacity: 0.5, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 4,
+  },
+  aiBadgeText: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#FFFFFF", letterSpacing: 1.2 },
+  heroRightRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  heroFaceRing: {
+    width: 36, height: 36, borderRadius: 18,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.14)",
+    shadowColor: "#7B3FF2", shadowOpacity: 0.55, shadowRadius: 10, shadowOffset: { width: 0, height: 0 }, elevation: 6,
+  },
   menuBtn: {
     width: 36, height: 36, borderRadius: 12,
     alignItems: "center", justifyContent: "center",

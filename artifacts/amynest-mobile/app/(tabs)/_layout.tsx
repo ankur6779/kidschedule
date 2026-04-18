@@ -1,6 +1,6 @@
 import { BlurView } from "expo-blur";
 import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
@@ -40,11 +40,11 @@ function TabItem({
 }) {
   const meta = TAB_META[routeKey];
   const isPrimary = routeKey === "coach";
-  const baseScale = isPrimary ? 1.18 : 1;
-  const focusedScale = isPrimary ? 1.22 : 1.08;
+  const baseScale = isPrimary ? 1.15 : 1;
+  const focusedScale = isPrimary ? 1.18 : 1.08;
   const scale = useRef(new Animated.Value(focused ? focusedScale : baseScale)).current;
   const glow = useRef(new Animated.Value(focused || isPrimary ? 1 : 0)).current;
-  const lift = useRef(new Animated.Value(isPrimary ? -10 : 0)).current;
+  const lift = useRef(new Animated.Value(isPrimary ? -26 : 0)).current;
   const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -111,26 +111,35 @@ function TabItem({
         ]}
       >
         {/* Active / primary gradient glow halo behind icon */}
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            isPrimary ? styles.glowWrapPrimary : styles.glowWrap,
-            { opacity: glow },
-          ]}
-        >
+        {isPrimary ? (
           <LinearGradient
             colors={["#7B3FF2", "#FF4ECD"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={isPrimary ? styles.glowGradientPrimary : styles.glowGradient}
-          />
-        </Animated.View>
-
-        <Ionicons
-          name={focused || isPrimary ? meta.iconActive : meta.icon}
-          size={isPrimary ? 26 : focused ? 24 : 22}
-          color={focused || isPrimary ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
-        />
+            style={styles.primaryDisc}
+          >
+            <MaterialCommunityIcons name="brain" size={28} color="#FFFFFF" />
+          </LinearGradient>
+        ) : (
+          <>
+            <Animated.View
+              pointerEvents="none"
+              style={[styles.glowWrap, { opacity: glow }]}
+            >
+              <LinearGradient
+                colors={["#7B3FF2", "#FF4ECD"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.glowGradient}
+              />
+            </Animated.View>
+            <Ionicons
+              name={focused ? meta.iconActive : meta.icon}
+              size={focused ? 24 : 22}
+              color={focused ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
+            />
+          </>
+        )}
 
         {/* Active dot indicator (hidden for primary which uses ring) */}
         {!isPrimary && (
@@ -236,14 +245,14 @@ const styles = StyleSheet.create({
     maxWidth: 460,
     borderRadius: 32,
     shadowColor: "#7B3FF2",
-    shadowOpacity: 0.35,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.45,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 10 },
     elevation: 16,
     backgroundColor: "rgba(11,11,26,0.6)",
-    overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
+    overflow: "visible",
   },
   barBlur: {
     width: "100%",
@@ -257,12 +266,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 10,
     backgroundColor: "rgba(20,20,43,0.55)",
+    overflow: "visible",
   },
   itemHit: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     height: 48,
+    overflow: "visible",
   },
   itemInner: {
     width: 48,
@@ -270,13 +281,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "visible",
   },
   itemInnerPrimary: {
     shadowColor: "#FF4ECD",
-    shadowOpacity: 0.55,
-    shadowRadius: 18,
+    shadowOpacity: 0.7,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
+    elevation: 18,
   },
   glowWrap: {
     ...StyleSheet.absoluteFillObject,
@@ -288,21 +300,14 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     opacity: 0.85,
   },
-  glowWrapPrimary: {
-    position: "absolute",
-    top: -6,
-    bottom: -6,
-    left: -6,
-    right: -6,
+  primaryDisc: {
+    width: 60,
+    height: 60,
     borderRadius: 30,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.18)",
-  },
-  glowGradientPrimary: {
-    flex: 1,
-    borderRadius: 30,
-    opacity: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "rgba(11,11,26,0.95)",
   },
   activeDot: {
     position: "absolute",

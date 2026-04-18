@@ -1,0 +1,118 @@
+Update the mobile app UI and generate required assets/images with the following exact specifications:
+
+----------------------------------------
+
+1. AMY COACH ICON (BRAIN – NOT CROPPED)
+
+- Replace current center icon with a clean "brain" icon
+- Style: modern, minimal, rounded lines (not sharp)
+- Color: white icon on glowing gradient background
+
+BACKGROUND:
+- Circular gradient: purple (#7B3FF2) → pink (#FF4ECD)
+- Strong glow effect
+
+IMPORTANT:
+- The icon must FLOAT above the bottom taskbar
+- It should NOT be cropped or cut
+- Half of the circle should come outside (overflow visible)
+
+IMPLEMENTATION NOTE:
+- Use absolute positioning
+- Set overflow: visible on parent container
+
+----------------------------------------
+
+2. BOTTOM TASKBAR FIX
+
+- Make taskbar floating (not edge-attached)
+- Add bottom spacing (16–20px)
+- Rounded pill shape (radius 28px+)
+- Glassmorphism (blur + dark transparency)
+
+CENTER ITEM:
+- Amy Coach (brain icon)
+- Elevated above others
+- Scale: 1.15
+- Glow + shadow
+
+----------------------------------------
+
+3. AMY AI ICON (CUTE + BLINKING)
+
+- Replace existing icon with cute Amy AI face (provided reference)
+
+STYLE:
+- Soft cartoon face
+- Circular avatar
+- Gradient ring (purple + pink + blue)
+- Glow effect
+
+ANIMATION:
+- Eyes blinking every 2–3 seconds
+- Subtle floating animation
+- Light pulse effect
+
+TOOLTIP:
+- "Talk to Amy AI"
+
+----------------------------------------
+
+4. HEADER STRUCTURE (VERY IMPORTANT)
+
+Layout EXACTLY like:
+
+[ AmyNest Logo ]   Amy Nest   [ AI badge ]   [ Amy AI face icon ]
+
+DETAILS:
+
+- "Amy Nest":
+  - Premium font (semi-bold)
+  - White text
+
+- "AI" badge:
+  - Small pill
+  - Purple gradient background
+  - Rounded
+
+- Amy AI icon:
+  - Small circular face
+  - Eyes blinking (same animation)
+  - Slight glow
+  - Proper spacing (8px)
+
+----------------------------------------
+
+5. ANIMATIONS
+
+- Brain icon:
+  - Glow pulse
+  - Slight bounce on active
+
+- Amy AI face:
+  - Blink (scale Y or opacity trick)
+  - Smooth loop
+
+----------------------------------------
+
+6. VISUAL STYLE
+
+- Dark theme (#0B0B1A)
+- Premium gradients
+- Soft shadows
+- Clean spacing
+
+----------------------------------------
+
+7. OUTPUT REQUIRED
+
+- Updated UI code (React Native / Expo)
+- Image assets (brain icon + Amy AI face if needed)
+- Animation implementation
+
+----------------------------------------
+
+CONSTRAINT:
+
+- Do NOT redesign layout
+- Only enhance and fix visuals
