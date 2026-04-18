@@ -1,0 +1,143 @@
+Upgrade my landing page to keep "Amy Coach" as the main hero feature while also showcasing other important features (AI Routine, Parent Hub, Amy AI Assistant) in a structured and premium way.
+
+---
+
+## GOAL
+
+* Keep Amy Coach as HERO (main focus)
+* Reintroduce other features (AI Routine, Parent Hub, Amy AI Assistant)
+* Maintain clean, premium, non-cluttered UI
+* Improve product understanding for users
+
+---
+
+## HERO SECTION (KEEP AS IS)
+
+* Amy Coach remains primary
+* Strong headline + CTA
+* Do NOT add clutter here
+
+---
+
+## FEATURES OVERVIEW SECTION (NEW)
+
+Add a section below hero:
+
+Title:
+"Everything You Need for Smarter Parenting"
+
+Subtitle:
+"One platform. Multiple powerful tools designed for your child."
+
+---
+
+## FEATURE CARDS (IMPORTANT)
+
+Create 3–4 premium cards:
+
+1. Amy Coach (highlighted)
+   Title: Amy Coach
+   Description:
+   "Deep, personalized step-by-step plans to solve real parenting challenges."
+
+Badge: "Core Feature"
+
+---
+
+2. AI Routine
+   Title: Smart Daily Routine
+   Description:
+   "Create structured, personalized routines that help your child build strong habits."
+
+---
+
+3. Parent Hub
+   Title: Parent Hub
+   Description:
+   "Access activities, insights, and curated parenting guidance in one place."
+
+---
+
+4. Amy AI Assistant
+   Title: Quick AI Help
+   Description:
+   "Ask anything and get instant parenting advice anytime."
+
+---
+
+---
+
+## UI DESIGN FOR CARDS
+
+* Grid layout (2 per row on mobile)
+* Rounded cards
+* Soft gradient backgrounds (different for each)
+* Small icon on left/top
+* Subtle hover/tap animation
+
+---
+
+## VISUAL HIERARCHY
+
+* Amy Coach card slightly bigger or highlighted
+* Others smaller but consistent
+
+---
+
+## CTA SECTION (IMPORTANT)
+
+Below cards add:
+
+"Start with Amy Coach and explore more as you grow"
+
+Button:
+"Get Started"
+
+---
+
+## FLOW STRUCTURE
+
+1. Hero (Amy Coach)
+2. Problem hook
+3. Features overview (THIS SECTION)
+4. How it works
+5. Trust section
+6. Footer
+
+---
+
+## IMPORTANT RULES
+
+* Do NOT make page cluttered
+* Maintain spacing and readability
+* Keep Amy Coach dominant
+* Other features supportive
+
+---
+
+## FILES TO UPDATE
+
+* public/index.html
+* public/styles.css
+
+---
+
+## OUTPUT REQUIRED
+
+Provide:
+
+1. Updated HTML with feature section
+2. Clean responsive CSS
+3. Proper spacing and alignment
+4. Mobile-first layout
+
+---
+
+## FINAL RESULT
+
+* Amy Coach = main highlight
+* Other features visible and clear
+* User understands full product ecosystem
+* Landing page looks complete and premium
+
+---

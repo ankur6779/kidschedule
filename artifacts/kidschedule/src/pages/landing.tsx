@@ -1,25 +1,25 @@
 import { Link } from "wouter";
-import { ArrowRight, Sparkles, Brain, Calendar, LayoutGrid, MessageCircle } from "lucide-react";
+import { ArrowRight, Sparkles, Brain, Calendar, LayoutGrid, MessageCircle, Zap } from "lucide-react";
 import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
 
-const FEATURES = [
-  {
-    icon: Brain,
-    title: "AI Coach",
-    desc: "Deep, personalized step-by-step parenting plans rooted in child psychology — built just for your child.",
-    gradient: "linear-gradient(135deg,#A855F7,#6366F1)",
-  },
+const SECONDARY_FEATURES = [
   {
     icon: Calendar,
-    title: "Smart Routines",
-    desc: "Structured daily routines that help your child build strong, lasting habits effortlessly.",
+    title: "Smart Daily Routine",
+    desc: "Create structured, personalized routines that help your child build strong habits.",
     gradient: "linear-gradient(135deg,#06B6D4,#3B82F6)",
   },
   {
     icon: LayoutGrid,
     title: "Parent Hub",
-    desc: "Activities, insights, and curated parenting guidance — everything you need in one place.",
+    desc: "Access activities, insights, and curated parenting guidance in one place.",
     gradient: "linear-gradient(135deg,#EC4899,#F97316)",
+  },
+  {
+    icon: Zap,
+    title: "Quick AI Help",
+    desc: "Ask anything and get instant parenting advice anytime, right when you need it.",
+    gradient: "linear-gradient(135deg,#FFD166,#F97316)",
   },
 ];
 
@@ -203,34 +203,99 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
-              Everything you need to parent smarter
+              Everything You Need for Smarter Parenting
             </h2>
             <p className="text-white/60 text-base max-w-lg mx-auto">
-              Three powerful tools, one beautifully simple app — built around your family.
+              One platform. Multiple powerful tools designed for your child.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {FEATURES.map(({ icon: Icon, title, desc, gradient }) => (
+          {/* Amy Coach — highlighted hero card */}
+          <div
+            className="amy-glass-card rounded-3xl p-7 md:p-9 mb-5 relative overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(168,85,247,0.18) 0%, rgba(99,102,241,0.12) 60%, rgba(255,255,255,0.04) 100%)",
+              borderColor: "rgba(168,85,247,0.35)",
+            }}
+          >
+            <div
+              aria-hidden
+              className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-40 pointer-events-none"
+              style={{ background: "radial-gradient(circle,#A855F7,transparent 70%)" }}
+            />
+            <div className="relative flex flex-col md:flex-row md:items-center gap-5 md:gap-7">
+              <div
+                className="h-14 w-14 md:h-16 md:w-16 rounded-2xl flex items-center justify-center shrink-0"
+                style={{
+                  background: "linear-gradient(135deg,#A855F7,#6366F1)",
+                  boxShadow: "0 10px 30px rgba(168,85,247,0.45)",
+                }}
+              >
+                <Brain className="h-7 w-7 md:h-8 md:w-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <h3 className="font-quicksand font-bold text-xl md:text-2xl text-white">
+                    Amy Coach
+                  </h3>
+                  <span
+                    className="text-[10px] md:text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                    style={{
+                      background: "linear-gradient(135deg,#A855F7,#EC4899)",
+                      boxShadow: "0 4px 14px rgba(236,72,153,0.4)",
+                    }}
+                  >
+                    Core Feature
+                  </span>
+                </div>
+                <p className="text-white/75 text-sm md:text-base leading-relaxed">
+                  Deep, personalized step-by-step plans to solve real parenting challenges.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Secondary feature cards */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+            {SECONDARY_FEATURES.map(({ icon: Icon, title, desc, gradient }) => (
               <div
                 key={title}
-                className="amy-glass-card rounded-3xl p-7 flex flex-col gap-4"
+                className="amy-glass-card rounded-3xl p-5 md:p-7 flex flex-col gap-3 md:gap-4"
               >
                 <div
-                  className="h-12 w-12 rounded-2xl flex items-center justify-center"
+                  className="h-11 w-11 md:h-12 md:w-12 rounded-2xl flex items-center justify-center"
                   style={{
                     background: gradient,
-                    boxShadow: "0 8px 24px rgba(168,85,247,0.3)",
+                    boxShadow: "0 8px 24px rgba(168,85,247,0.25)",
                   }}
                 >
-                  <Icon className="h-6 w-6 text-white" />
+                  <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-quicksand font-bold text-lg text-white mb-2">{title}</h3>
-                  <p className="text-white/65 text-sm leading-relaxed">{desc}</p>
+                  <h3 className="font-quicksand font-bold text-base md:text-lg text-white mb-1.5 md:mb-2">
+                    {title}
+                  </h3>
+                  <p className="text-white/65 text-xs md:text-sm leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Mid CTA */}
+          <div className="text-center mt-12">
+            <p className="text-white/80 text-base md:text-lg mb-5 font-medium">
+              Start with Amy Coach and explore more as you grow.
+            </p>
+            <Link href="/sign-up">
+              <button
+                className="amy-cta inline-flex items-center gap-2 text-sm md:text-base font-bold px-7 md:px-8 py-3.5 md:py-4 rounded-2xl text-white"
+                data-testid="button-features-cta"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+              </button>
+            </Link>
           </div>
         </div>
       </section>
