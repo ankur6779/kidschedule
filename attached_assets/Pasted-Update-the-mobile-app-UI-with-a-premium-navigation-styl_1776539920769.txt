@@ -1,0 +1,160 @@
+Update the mobile app UI with a premium navigation style and interactive glow system.
+
+IMPORTANT:
+- Do NOT break layout
+- Maintain clean, stable UI
+- Focus on premium feel and interaction
+
+----------------------------------------
+
+1. BOTTOM TAB STRUCTURE
+
+Tabs (exact order):
+
+1. Dashboard
+2. Routine
+3. Amy Coach (HERO TAB)
+4. Parent Hub
+
+----------------------------------------
+
+2. AMY COACH = HERO TAB (3rd POSITION)
+
+- Must remain inside tab layout (NOT floating)
+- No absolute positioning
+- No overflow outside container
+
+STYLE:
+
+- Slightly bigger than others
+  Icon: 24px
+  Background circle: 46px–52px
+
+- Circular gradient background:
+  #7B3FF2 → #FF4ECD
+
+- Brain icon (white, clean, rounded)
+
+----------------------------------------
+
+3. HERO EFFECT
+
+- Slight lift:
+  transform: translateY(-6px)
+
+- Glow effect:
+  shadowColor: #7B3FF2
+  shadowOpacity: 0.7
+  shadowRadius: 20
+
+- Soft halo behind icon
+
+----------------------------------------
+
+4. ACTIVE STATE (AMY COACH)
+
+- Scale: 1.08
+- Glow pulse animation (subtle, smooth)
+- Brighter gradient
+
+----------------------------------------
+
+5. OTHER TABS
+
+- Smaller icons (20–22px)
+- No background circle
+- Opacity: 0.5 inactive
+- Active: white
+
+----------------------------------------
+
+6. TASKBAR DESIGN
+
+- Rounded pill shape (28px+)
+- Glassmorphism background
+- Floating container (optional, but stable)
+
+----------------------------------------
+
+7. GLOBAL PREMIUM GLOW INTERACTION (VERY IMPORTANT)
+
+Apply to ALL interactive elements:
+
+- Cards
+- Buttons
+- List items
+- Navigation tabs
+- Input fields
+
+----------------------------------------
+
+8. INTERACTION BEHAVIOR
+
+ON TOUCH (mobile):
+
+- Scale: 0.96
+- Add glow:
+
+  shadowColor: #7B3FF2
+  shadowOpacity: 0.5
+  shadowRadius: 15
+
+- Slight brightness increase
+
+ON RELEASE:
+
+- Smooth return to normal
+
+----------------------------------------
+
+9. CURSOR / HOVER (WEB SUPPORT)
+
+When cursor moves over elements:
+
+- Add soft glow (purple/pink)
+- Slight lift:
+
+  transform: scale(1.02)
+
+- Smooth transition (150–200ms)
+
+----------------------------------------
+
+10. CARD INTERACTION (ULTRA PREMIUM)
+
+When user touches a card:
+
+- Add outer glow (gradient tint)
+- Slight elevation (shadow increase)
+- Subtle depth effect
+
+----------------------------------------
+
+11. CONSISTENCY RULE
+
+- Same glow color across app
+- Same animation timing
+- No harsh transitions
+
+----------------------------------------
+
+12. PERFORMANCE
+
+- Use React Native Reanimated
+- Keep animations smooth (60fps)
+- Avoid heavy blur on all elements
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT redesign layout
+- Do NOT add floating center button
+- Keep UI minimal and premium
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated Expo / React Native code
+- Reusable GlowWrapper component

@@ -17,16 +17,15 @@ import { useColors } from "@/hooks/useColors";
 type TabKey = "index" | "routines" | "coach" | "hub";
 
 const TAB_META: Record<TabKey, { icon: keyof typeof Ionicons.glyphMap; iconActive: keyof typeof Ionicons.glyphMap; label: string }> = {
-  index:    { icon: "home-outline",     iconActive: "home",     label: "Home" },
-  routines: { icon: "calendar-outline", iconActive: "calendar", label: "Routines" },
+  index:    { icon: "home-outline",     iconActive: "home",     label: "Dashboard" },
+  routines: { icon: "calendar-outline", iconActive: "calendar", label: "Routine" },
   coach:    { icon: "sparkles-outline", iconActive: "sparkles", label: "Coach" },
   hub:      { icon: "book-outline",     iconActive: "book",     label: "Hub" },
 };
 
-const VISIBLE_TABS: string[] = ["index", "routines", "coach", "hub"];
-
-const BRAIN_SIZE = 64;
-const BRAIN_LIFT = 22;
+const VISIBLE_TABS: TabKey[] = ["index", "routines", "coach", "hub"];
+const COACH_DISC_SIZE = 50;
+const COACH_LIFT = 6;
 
 // ─── Regular Tab Item ──────────────────────────────────────────────────────
 function TabItem({
@@ -51,7 +50,7 @@ function TabItem({
     ]).start();
   }, [focused]);
 
-  const pressDown = () => Animated.spring(scale, { toValue: 0.88, useNativeDriver: true, friction: 5 }).start();
+  const pressDown = () => Animated.spring(scale, { toValue: 0.92, useNativeDriver: true, friction: 5 }).start();
   const pressUp = () => Animated.spring(scale, { toValue: focused ? 1.08 : 1, useNativeDriver: true, friction: 5 }).start();
 
   return (
@@ -64,13 +63,10 @@ function TabItem({
       hitSlop={8}
     >
       <Animated.View style={[styles.itemInner, { transform: [{ scale }] }]}>
-        <Animated.View pointerEvents="none" style={[styles.glowWrap, { opacity: glow }]}>
-          <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.glowGradient} />
-        </Animated.View>
         <Ionicons
           name={focused ? meta.iconActive : meta.icon}
-          size={focused ? 24 : 22}
-          color={focused ? "#FFFFFF" : "rgba(255,255,255,0.48)"}
+          size={focused ? 23 : 21}
+          color={focused ? "#FFFFFF" : "rgba(255,255,255,0.5)"}
         />
         <Animated.View
           style={[
@@ -86,8 +82,8 @@ function TabItem({
   );
 }
 
-// ─── Brain Coach Button ────────────────────────────────────────────────────
-function CoachBrainButton({
+// ─── Inline Coach Hero Tab ─────────────────────────────────────────────────
+function CoachHeroTab({
   focused,
   onPress,
   onLongPress,
@@ -97,23 +93,36 @@ function CoachBrainButton({
   onLongPress: () => void;
 }) {
   const pulse = useRef(new Animated.Value(1)).current;
-  const bounce = useRef(new Animated.Value(1)).current;
+  const bounce = useRef(new Animated.Value(focused ? 1.08 : 1)).current;
 
   useEffect(() => {
+    Animated.spring(bounce, {
+      toValue: focused ? 1.08 : 1,
+      useNativeDriver: true,
+      friction: 6,
+      tension: 120,
+    }).start();
+  }, [focused]);
+
+  useEffect(() => {
+    if (!focused) {
+      pulse.setValue(1);
+      return;
+    }
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.1, duration: 1100, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1.12, duration: 1100, useNativeDriver: true }),
         Animated.timing(pulse, { toValue: 1, duration: 1100, useNativeDriver: true }),
       ])
     );
     loop.start();
     return () => loop.stop();
-  }, []);
+  }, [focused]);
 
   const pressDown = () =>
-    Animated.spring(bounce, { toValue: 0.88, useNativeDriver: true, friction: 4 }).start();
+    Animated.spring(bounce, { toValue: 0.92, useNativeDriver: true, friction: 5 }).start();
   const pressUp = () =>
-    Animated.spring(bounce, { toValue: 1, useNativeDriver: true, friction: 4 }).start();
+    Animated.spring(bounce, { toValue: focused ? 1.08 : 1, useNativeDriver: true, friction: 5 }).start();
 
   return (
     <Pressable
@@ -124,18 +133,25 @@ function CoachBrainButton({
       style={styles.coachHit}
       hitSlop={6}
     >
-      <Animated.View style={[styles.coachGlowRing, { transform: [{ scale: pulse }] }]} />
-      <Animated.View style={{ transform: [{ scale: bounce }] }}>
+      {/* Soft halo behind icon */}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          styles.coachHalo,
+          {
+            opacity: focused ? 0.55 : 0.35,
+            transform: [{ scale: pulse }],
+          },
+        ]}
+      />
+      <Animated.View style={{ transform: [{ scale: bounce }, { translateY: -COACH_LIFT }] }}>
         <LinearGradient
-          colors={["#9B5FF5", "#7B3FF2", "#FF4ECD"]}
+          colors={focused ? ["#9B5FF5", "#7B3FF2", "#FF4ECD"] : ["#7B3FF2", "#FF4ECD"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[
-            styles.coachDisc,
-            focused && styles.coachDiscFocused,
-          ]}
+          style={styles.coachDisc}
         >
-          <MaterialCommunityIcons name="brain" size={30} color="#FFFFFF" />
+          <MaterialCommunityIcons name="brain" size={24} color="#FFFFFF" />
         </LinearGradient>
       </Animated.View>
     </Pressable>
@@ -148,8 +164,6 @@ function FloatingTabBar({ state, navigation }: any) {
   const bottomOffset = Math.max(insets.bottom, 12) + 8;
 
   const allRoutes = state.routes as Array<{ key: string; name: string }>;
-  // Only render the 4 visible tabs in the pill — others are hidden.
-  const routes = allRoutes.filter(r => VISIBLE_TABS.includes(r.name));
 
   const makeHandlers = (route: { key: string; name: string }, focused: boolean) => ({
     onPress: () => {
@@ -158,17 +172,6 @@ function FloatingTabBar({ state, navigation }: any) {
     },
     onLongPress: () => navigation.emit({ type: "tabLongPress", target: route.key }),
   });
-
-  const coachIdxAll = allRoutes.findIndex(r => r.name === "coach");
-  const coachRoute = allRoutes[coachIdxAll];
-  const coachFocused = state.index === coachIdxAll;
-  const coachHandlers = coachRoute ? makeHandlers(coachRoute, coachFocused) : { onPress: () => {}, onLongPress: () => {} };
-
-  // Non-coach visible routes for the pill
-  const nonCoach = routes.filter(r => r.name !== "coach");
-  // We expect 3 non-coach: split as left=[0], right=[1,2] → place coach center after first
-  const left = nonCoach.slice(0, 1);   // index/Home
-  const right = nonCoach.slice(1);     // routines, hub
 
   return (
     <View
@@ -182,61 +185,33 @@ function FloatingTabBar({ state, navigation }: any) {
           style={styles.barBlur}
         >
           <View style={styles.barInner}>
-            {left.map(route => {
+            {VISIBLE_TABS.map((tabName) => {
+              const route = allRoutes.find(r => r.name === tabName);
+              if (!route) return null;
               const focused = state.index === allRoutes.indexOf(route);
               const { onPress, onLongPress } = makeHandlers(route, focused);
+              if (tabName === "coach") {
+                return (
+                  <CoachHeroTab
+                    key={route.key}
+                    focused={focused}
+                    onPress={onPress}
+                    onLongPress={onLongPress}
+                  />
+                );
+              }
               return (
                 <TabItem
                   key={route.key}
-                  routeKey={route.name as TabKey}
+                  routeKey={tabName}
                   focused={focused}
                   onPress={onPress}
                   onLongPress={onLongPress}
                 />
               );
             })}
-
-            {/* second left slot — keep balance: render routines in left position too */}
-            {right.slice(0, 1).map(route => {
-              const focused = state.index === allRoutes.indexOf(route);
-              const { onPress, onLongPress } = makeHandlers(route, focused);
-              return (
-                <TabItem
-                  key={route.key}
-                  routeKey={route.name as TabKey}
-                  focused={focused}
-                  onPress={onPress}
-                  onLongPress={onLongPress}
-                />
-              );
-            })}
-
-            <View style={styles.coachSpacer} />
-
-            {right.slice(1).map(route => {
-              const focused = state.index === allRoutes.indexOf(route);
-              const { onPress, onLongPress } = makeHandlers(route, focused);
-              return (
-                <TabItem
-                  key={route.key}
-                  routeKey={route.name as TabKey}
-                  focused={focused}
-                  onPress={onPress}
-                  onLongPress={onLongPress}
-                />
-              );
-            })}
-
           </View>
         </BlurView>
-      </View>
-
-      <View style={styles.coachAbsoluteWrap} pointerEvents="box-none">
-        <CoachBrainButton
-          focused={coachFocused}
-          onPress={coachHandlers.onPress}
-          onLongPress={coachHandlers.onLongPress}
-        />
       </View>
     </View>
   );
@@ -253,8 +228,8 @@ export default function TabLayout() {
         sceneStyle: { backgroundColor: colors.background },
       }}
     >
-      <Tabs.Screen name="index"    options={{ title: "Home" }} />
-      <Tabs.Screen name="routines" options={{ title: "Routines" }} />
+      <Tabs.Screen name="index"    options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="routines" options={{ title: "Routine" }} />
       <Tabs.Screen name="coach"    options={{ title: "Coach" }} />
       <Tabs.Screen name="hub"      options={{ title: "Hub" }} />
       {/* Hidden from tab bar — accessible via drawer */}
@@ -265,8 +240,7 @@ export default function TabLayout() {
 }
 
 const PILL_PADDING_V = 10;
-const PILL_ITEM_H = 48;
-const PILL_H = PILL_ITEM_H + PILL_PADDING_V * 2;
+const PILL_ITEM_H = 52;
 
 const styles = StyleSheet.create({
   barWrap: {
@@ -274,7 +248,6 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     alignItems: "center",
-    overflow: "visible",
   },
   barShadow: {
     width: "100%",
@@ -299,60 +272,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
     paddingVertical: PILL_PADDING_V,
     backgroundColor: "rgba(20,20,43,0.5)",
-  },
-  coachSpacer: {
-    width: BRAIN_SIZE + 8,
-    height: PILL_ITEM_H,
-  },
-  coachAbsoluteWrap: {
-    position: "absolute",
-    top: -(BRAIN_SIZE / 2 - PILL_H / 2 + BRAIN_LIFT),
-    alignSelf: "center",
-    zIndex: 20,
-    elevation: 30,
-  },
-  coachHit: {
-    width: BRAIN_SIZE + 20,
-    height: BRAIN_SIZE + 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  coachGlowRing: {
-    position: "absolute",
-    width: BRAIN_SIZE + 24,
-    height: BRAIN_SIZE + 24,
-    borderRadius: (BRAIN_SIZE + 24) / 2,
-    backgroundColor: "transparent",
-    borderWidth: 2,
-    borderColor: "rgba(255,78,205,0.45)",
-    shadowColor: "#FF4ECD",
-    shadowOpacity: 0.7,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 12,
-  },
-  coachDisc: {
-    width: BRAIN_SIZE,
-    height: BRAIN_SIZE,
-    borderRadius: BRAIN_SIZE / 2,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 3,
-    borderColor: "rgba(11,11,26,0.9)",
-    shadowColor: "#7B3FF2",
-    shadowOpacity: 0.8,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 20,
-  },
-  coachDiscFocused: {
-    borderColor: "rgba(255,255,255,0.25)",
-    shadowColor: "#FF4ECD",
-    shadowOpacity: 0.95,
-    shadowRadius: 28,
   },
   itemHit: {
     flex: 1,
@@ -361,21 +283,11 @@ const styles = StyleSheet.create({
     height: PILL_ITEM_H,
   },
   itemInner: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
-  },
-  glowWrap: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
-    overflow: "hidden",
-  },
-  glowGradient: {
-    flex: 1,
-    borderRadius: 24,
-    opacity: 0.82,
   },
   activeDot: {
     position: "absolute",
@@ -389,5 +301,36 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 0 },
     elevation: 6,
+  },
+  coachHit: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    height: PILL_ITEM_H,
+  },
+  coachHalo: {
+    position: "absolute",
+    width: COACH_DISC_SIZE + 18,
+    height: COACH_DISC_SIZE + 18,
+    borderRadius: (COACH_DISC_SIZE + 18) / 2,
+    backgroundColor: "#7B3FF2",
+    top: (PILL_ITEM_H - (COACH_DISC_SIZE + 18)) / 2 - COACH_LIFT,
+    shadowColor: "#7B3FF2",
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 14,
+  },
+  coachDisc: {
+    width: COACH_DISC_SIZE,
+    height: COACH_DISC_SIZE,
+    borderRadius: COACH_DISC_SIZE / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#7B3FF2",
+    shadowOpacity: 0.7,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 18,
   },
 });
