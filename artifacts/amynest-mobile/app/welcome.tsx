@@ -294,7 +294,13 @@ export default function WelcomeScreen() {
                 colors={["#A855F7", "#EC4899"]}
                 style={styles.mascotBox}
               >
-                <Text style={styles.mascotEmoji}>🤖</Text>
+                <View style={styles.mascotFace}>
+                  <View style={styles.mascotEyeRow}>
+                    <View style={styles.mascotEye} />
+                    <View style={styles.mascotEye} />
+                  </View>
+                  <View style={styles.mascotBeak} />
+                </View>
                 <View style={styles.mascotBadge}>
                   <Text style={styles.mascotBadgeText}>AI</Text>
                 </View>
@@ -487,7 +493,10 @@ const styles = StyleSheet.create({
     elevation: 10,
     borderWidth: 2, borderColor: "rgba(255,255,255,0.3)",
   },
-  mascotEmoji: { fontSize: 30 },
+  mascotFace: { alignItems: "center", justifyContent: "center", gap: 5, marginTop: 2 },
+  mascotEyeRow: { flexDirection: "row", gap: 10 },
+  mascotEye: { width: 10, height: 10, borderRadius: 999, backgroundColor: "#1E1B4B" },
+  mascotBeak: { width: 14, height: 10, borderRadius: 999, backgroundColor: "#FBBF24" },
   mascotBadge: {
     position: "absolute",
     bottom: -4, right: -4,
