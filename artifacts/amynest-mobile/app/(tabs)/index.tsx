@@ -708,7 +708,6 @@ function SideDrawer({
               );
             })}
             <ThemeMenuRow />
-            <ThemeToggleRow />
           </ScrollView>
         </LinearGradient>
       </Animated.View>
