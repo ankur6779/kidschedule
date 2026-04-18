@@ -16,6 +16,8 @@ import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { ThemePalette } from "@/lib/theme";
+import { useTranslation } from "react-i18next";
+import { LanguageRow } from "@/components/LanguageRow";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -60,11 +62,11 @@ type BehaviorStat = {
 type ParentProfile = { name?: string };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
-function getGreeting(): string {
+function getGreetingKey(): string {
   const h = new Date().getHours();
-  if (h >= 5 && h < 12) return "Good Morning";
-  if (h >= 12 && h < 17) return "Good Afternoon";
-  return "Good Evening";
+  if (h >= 5 && h < 12) return "dashboard.good_morning";
+  if (h >= 12 && h < 17) return "dashboard.good_afternoon";
+  return "dashboard.good_evening";
 }
 
 function formatDate(dateStr: string): string {
@@ -123,6 +125,7 @@ function HeroGreeting({
   displayName, hasChildren, onMenu, onAskAmy,
 }: { displayName: string; hasChildren: boolean; onMenu: () => void; onAskAmy: () => void }) {
   const styles = useThemedStyles();
+  const { t } = useTranslation();
   return (
     <LinearGradient
       colors={["rgba(123,63,242,0.30)", "rgba(255,78,205,0.22)", "rgba(20,20,43,0.0)"] as const}
@@ -162,14 +165,12 @@ function HeroGreeting({
           <Ionicons name="menu" size={22} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
-      <Text style={styles.heroEyebrow}>{getGreeting().toUpperCase()}</Text>
+      <Text style={styles.heroEyebrow}>{t(getGreetingKey()).toUpperCase()}</Text>
       <Text style={styles.heroTitle}>
-        👋 Hi{displayName ? `, ${displayName}` : ""}, let's make today easier
+        👋 {displayName ? t("dashboard.greeting_with_name", { name: displayName }) : t("dashboard.greeting_no_name")}
       </Text>
       <Text style={styles.heroSub}>
-        {hasChildren
-          ? "We've planned your child's day for you ❤️"
-          : "Let's set up your child's first routine 🌟"}
+        {hasChildren ? `${t("dashboard.planned_for_you")} ❤️` : `${t("dashboard.setup_first")} 🌟`}
       </Text>
     </LinearGradient>
   );
@@ -182,11 +183,12 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
   onAdd: () => void;
 }) {
   const styles = useThemedStyles();
+  const { t } = useTranslation();
   if (children.length === 0) return null;
   return (
     <View style={{ marginBottom: 18 }}>
       <View style={styles.stripHeader}>
-        <Text style={styles.stripEyebrow}>YOUR LITTLE ONES</Text>
+        <Text style={styles.stripEyebrow}>{t("dashboard.your_little_ones").toUpperCase()}</Text>
       </View>
       <FlatList
         horizontal
@@ -199,7 +201,7 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
             return (
               <TouchableOpacity style={styles.childAddCard} onPress={onAdd} testID="add-child-chip">
                 <Text style={styles.childAddPlus}>➕</Text>
-                <Text style={styles.childAddText}>Add child</Text>
+                <Text style={styles.childAddText}>{t("dashboard.add_child")}</Text>
               </TouchableOpacity>
             );
           }
@@ -220,7 +222,7 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
                   <Text style={styles.childAge}>{formatAge(c.age, c.ageMonths)}</Text>
                 </View>
               </View>
-              <Text style={styles.childTagline} numberOfLines={1}>Personalised for {c.name}</Text>
+              <Text style={styles.childTagline} numberOfLines={1}>{t("dashboard.personalised_for", { name: c.name })}</Text>
             </TouchableOpacity>
           );
         }}
@@ -237,6 +239,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
   onSeeAll: () => void;
 }) {
   const styles = useThemedStyles();
+  const { t } = useTranslation();
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
 
@@ -244,8 +247,8 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
     return (
       <LinearGradient colors={["rgba(79,195,247,0.18)", "rgba(123,63,242,0.18)"] as const} style={styles.timelineEmpty}>
         <Text style={{ fontSize: 32 }}>🗓️</Text>
-        <Text style={styles.timelineEmptyTitle}>No plan for today yet</Text>
-        <Text style={styles.timelineEmptySub}>Tap below to create today's routine in one tap.</Text>
+        <Text style={styles.timelineEmptyTitle}>{t("dashboard.no_plan_today")}</Text>
+        <Text style={styles.timelineEmptySub}>{t("dashboard.no_plan_subtitle")}</Text>
         <TouchableOpacity onPress={onGenerate} activeOpacity={0.9}>
           <LinearGradient
             colors={["#A855F7", "#EC4899"] as const}
@@ -254,7 +257,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
             style={styles.timelineEmptyBtn}
           >
             <Ionicons name="sparkles" size={16} color="#fff" />
-            <Text style={styles.timelineEmptyBtnText}>Plan My Child's Day</Text>
+            <Text style={styles.timelineEmptyBtnText}>{t("dashboard.plan_my_day")}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </LinearGradient>
@@ -282,8 +285,8 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
     return (
       <LinearGradient colors={["rgba(16,185,129,0.18)", "rgba(79,195,247,0.14)"] as const} style={styles.timelineDone}>
         <Text style={{ fontSize: 28 }}>🌙</Text>
-        <Text style={styles.timelineDoneTitle}>Day complete!</Text>
-        <Text style={styles.timelineDoneSub}>Time to relax and recharge</Text>
+        <Text style={styles.timelineDoneTitle}>{t("dashboard.day_complete")}</Text>
+        <Text style={styles.timelineDoneSub}>{t("dashboard.day_complete_sub")}</Text>
       </LinearGradient>
     );
   }
@@ -298,7 +301,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
       >
         <View style={styles.timelineHeaderLeft}>
           <Ionicons name="time-outline" size={16} color="#7C3AED" />
-          <Text style={styles.timelineHeaderTitle}>Today's Timeline</Text>
+          <Text style={styles.timelineHeaderTitle}>{t("dashboard.todays_timeline")}</Text>
         </View>
         <TouchableOpacity onPress={onSeeAll} style={styles.timelineHeaderRight}>
           <Text style={styles.timelineHeaderLink}>View all</Text>
@@ -558,22 +561,23 @@ function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: 
 }
 
 // ─── Side Drawer (right slide-in nav) ─────────────────────────────────────
-const DRAWER_ITEMS: { key: string; label: string; icon: keyof typeof Ionicons.glyphMap; route: string }[] = [
-  { key: "dashboard",   label: "Dashboard",     icon: "home-outline",          route: "/(tabs)/index" },
-  { key: "hub",         label: "Parenting Hub", icon: "book-outline",          route: "/(tabs)/hub" },
-  { key: "coach",       label: "Amy Coach",     icon: "sparkles-outline",      route: "/(tabs)/coach" },
-  { key: "children",    label: "Children",      icon: "people-outline",        route: "/(tabs)/children" },
-  { key: "routines",    label: "Routines",      icon: "calendar-outline",      route: "/(tabs)/routines" },
-  { key: "progress",    label: "Progress",      icon: "trending-up-outline",   route: "/progress" },
-  { key: "behavior",    label: "Behavior",      icon: "happy-outline",         route: "/behavior" },
-  { key: "amy",         label: "Amy AI",        icon: "chatbubbles-outline",   route: "/amy-ai" },
-  { key: "babysitters", label: "Babysitters",   icon: "heart-outline",         route: "/babysitters" },
-  { key: "profile",     label: "Profile",       icon: "person-outline",        route: "/(tabs)/profile" },
+const DRAWER_ITEMS: { key: string; labelKey: string; icon: keyof typeof Ionicons.glyphMap; route: string }[] = [
+  { key: "dashboard",   labelKey: "nav.dashboard",     icon: "home-outline",          route: "/(tabs)/index" },
+  { key: "hub",         labelKey: "nav.parenting_hub", icon: "book-outline",          route: "/(tabs)/hub" },
+  { key: "coach",       labelKey: "nav.amy_coach",     icon: "sparkles-outline",      route: "/(tabs)/coach" },
+  { key: "children",    labelKey: "nav.children",      icon: "people-outline",        route: "/(tabs)/children" },
+  { key: "routines",    labelKey: "nav.routines",      icon: "calendar-outline",      route: "/(tabs)/routines" },
+  { key: "progress",    labelKey: "nav.progress",      icon: "trending-up-outline",   route: "/progress" },
+  { key: "behavior",    labelKey: "nav.behavior",      icon: "happy-outline",         route: "/behavior" },
+  { key: "amy",         labelKey: "nav.amy_ai",        icon: "chatbubbles-outline",   route: "/amy-ai" },
+  { key: "babysitters", labelKey: "nav.babysitters",   icon: "heart-outline",         route: "/babysitters" },
+  { key: "profile",     labelKey: "nav.profile",       icon: "person-outline",        route: "/(tabs)/profile" },
 ];
 
 function ThemeToggleRow() {
   const styles = useThemedStyles();
   const { mode, toggleTheme } = useTheme();
+  const { t } = useTranslation();
   const isDark = mode === "dark";
   return (
     <TouchableOpacity
@@ -584,7 +588,7 @@ function ThemeToggleRow() {
       <View style={[styles.drawerItem, { justifyContent: "space-between", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 14, marginTop: 4 }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? "#A78BFA" : "#F59E0B"} />
-          <Text style={styles.drawerItemLabel}>{isDark ? "Dark mode" : "Light mode"}</Text>
+          <Text style={styles.drawerItemLabel}>{isDark ? t("nav.dark_mode") : t("nav.light_mode")}</Text>
         </View>
         <View style={{
           width: 42, height: 24, borderRadius: 12,
@@ -608,13 +612,14 @@ function ThemeToggleRow() {
 function ThemeMenuRow() {
   const styles = useThemedStyles();
   const { mode, toggleTheme } = useTheme();
+  const { t } = useTranslation();
   const isDark = mode === "dark";
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={toggleTheme} style={{ marginTop: 6 }}>
       <View style={[styles.drawerItem, { justifyContent: "space-between" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? "#A78BFA" : "#F59E0B"} />
-          <Text style={styles.drawerItemLabel}>{isDark ? "Dark mode" : "Light mode"}</Text>
+          <Text style={styles.drawerItemLabel}>{isDark ? t("nav.dark_mode") : t("nav.light_mode")}</Text>
         </View>
         <View style={{
           width: 42, height: 24, borderRadius: 12,
@@ -639,6 +644,7 @@ function SideDrawer({
   open, onClose, activeKey, onNavigate,
 }: { open: boolean; onClose: () => void; activeKey: string; onNavigate: (route: string) => void }) {
   const styles = useThemedStyles();
+  const { t } = useTranslation();
   const screenW = Dimensions.get("window").width;
   const drawerW = Math.min(300, screenW * 0.82);
   const tx = useRef(new Animated.Value(drawerW)).current;
@@ -696,17 +702,18 @@ function SideDrawer({
                       style={[styles.drawerItem, styles.drawerItemActive]}
                     >
                       <Ionicons name={item.icon} size={18} color="#FFFFFF" />
-                      <Text style={[styles.drawerItemLabel, { color: "#FFFFFF" }]}>{item.label}</Text>
+                      <Text style={[styles.drawerItemLabel, { color: "#FFFFFF" }]}>{t(item.labelKey)}</Text>
                     </LinearGradient>
                   ) : (
                     <View style={styles.drawerItem}>
                       <Ionicons name={item.icon} size={18} color="rgba(255,255,255,0.7)" />
-                      <Text style={styles.drawerItemLabel}>{item.label}</Text>
+                      <Text style={styles.drawerItemLabel}>{t(item.labelKey)}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
               );
             })}
+            <LanguageRow />
             <ThemeMenuRow />
           </ScrollView>
         </LinearGradient>

@@ -66,10 +66,11 @@ export default function AssistantPage() {
     setLoading(true);
 
     try {
+      const { default: i18nInstance } = await import("@/i18n");
       const res = await authFetch("/api/ai/assistant-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text }),
+        body: JSON.stringify({ question: text, language: i18nInstance.language || "en" }),
       });
       if (!res.ok) throw new Error("Failed to get response");
       const data = await res.json();

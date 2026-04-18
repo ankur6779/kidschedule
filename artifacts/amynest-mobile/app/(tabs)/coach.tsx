@@ -198,10 +198,11 @@ export default function CoachScreen() {
       triggers: payload.triggers, routine: payload.routine,
     };
     try {
+      const { default: i18nInstance } = await import("@/i18n");
       const res = await authFetch("/api/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, language: i18nInstance.language || "en" }),
       });
       if (!res.ok) throw new Error(`Server ${res.status}`);
       const data = (await res.json()) as { plan: Plan; sessionId: string };

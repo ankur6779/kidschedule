@@ -42,15 +42,24 @@ router.post("/ai/assistant-ai", async (req, res): Promise<void> => {
   }
 
   const { question, childName, childAge } = parsed.data;
+  const langRaw = typeof req.body?.language === "string" ? req.body.language.toLowerCase().split("-")[0] : "en";
+  const language: "en" | "hi" | "hinglish" = langRaw === "hi" ? "hi" : langRaw === "hinglish" ? "hinglish" : "en";
 
   try {
     const { openai } = await import("@workspace/integrations-openai-ai-server");
+
+    const langDirective =
+      language === "hi"
+        ? "\nIMPORTANT: Respond ENTIRELY in Hindi (Devanagari script). Use natural, warm conversational Hindi. Do not mix English."
+        : language === "hinglish"
+        ? "\nIMPORTANT: Respond in Hinglish — Roman-script Hindi mixed naturally with common English words (e.g. 'Aapke bachche ke liye routine set karna important hai'). Keep it warm and conversational."
+        : "";
 
     const systemPrompt = `You are Amy, a warm and knowledgeable parenting expert and child development specialist.
 You give practical, evidence-based parenting advice with genuine empathy and zero judgment.
 Your responses are conversational, warm, and deeply actionable — never generic or preachy.
 Keep responses to 3-4 clear paragraphs. Be specific and age-appropriate.
-Always acknowledge the parent's feelings first before giving advice.`;
+Always acknowledge the parent's feelings first before giving advice.${langDirective}`;
 
     const childContext = childName
       ? `My child ${childName}${childAge ? ` (${childAge} years old)` : ""}: `

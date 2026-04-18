@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,6 +21,7 @@ export default function SignUpScreen() {
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,8 +109,8 @@ export default function SignUpScreen() {
 
           {step === "form" ? (
             <>
-              <Text style={styles.title}>Create account</Text>
-              <Text style={styles.subtitle}>Start your AI parenting journey</Text>
+              <Text style={styles.title}>{t("auth.create_account")}</Text>
+              <Text style={styles.subtitle}>{t("auth.sign_up_subtitle")}</Text>
 
               <View style={styles.form}>
                 {/* Google button */}
@@ -126,7 +128,7 @@ export default function SignUpScreen() {
                       <Ionicons name="logo-google" size={20} color="#EA4335" />
                     )}
                     <Text style={styles.googleBtnText}>
-                      {googleLoading ? "Connecting…" : "Continue with Google"}
+                      {googleLoading ? t("auth.connecting") : t("auth.continue_with_google")}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -134,13 +136,13 @@ export default function SignUpScreen() {
                 {/* Divider */}
                 <View style={styles.dividerRow}>
                   <View style={styles.divider} />
-                  <Text style={styles.dividerText}>or sign up with email</Text>
+                  <Text style={styles.dividerText}>{t("auth.or_email_signup")}</Text>
                   <View style={styles.divider} />
                 </View>
 
                 {/* First Name */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>First Name</Text>
+                  <Text style={styles.label}>{t("auth.first_name")}</Text>
                   <View style={styles.inputWrap}>
                     <Ionicons name="person-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                     <TextInput
@@ -156,7 +158,7 @@ export default function SignUpScreen() {
 
                 {/* Email */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Email</Text>
+                  <Text style={styles.label}>{t("auth.email")}</Text>
                   <View style={styles.inputWrap}>
                     <Ionicons name="mail-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                     <TextInput
@@ -174,7 +176,7 @@ export default function SignUpScreen() {
 
                 {/* Password */}
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Password</Text>
+                  <Text style={styles.label}>{t("auth.password")}</Text>
                   <View style={styles.inputWrap}>
                     <Ionicons name="lock-closed-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                     <TextInput
@@ -205,27 +207,27 @@ export default function SignUpScreen() {
                   >
                     {loading
                       ? <ActivityIndicator size="small" color="#fff" />
-                      : <Text style={styles.primaryBtnText}>Create Account</Text>
+                      : <Text style={styles.primaryBtnText}>{t("auth.create_account")}</Text>
                     }
                   </LinearGradient>
                 </TouchableOpacity>
 
                 <View style={styles.footer}>
-                  <Text style={styles.footerText}>Already have an account? </Text>
+                  <Text style={styles.footerText}>{t("auth.have_account")} </Text>
                   <Link href="/sign-in" asChild>
-                    <TouchableOpacity><Text style={styles.linkText}>Sign In</Text></TouchableOpacity>
+                    <TouchableOpacity><Text style={styles.linkText}>{t("auth.sign_in")}</Text></TouchableOpacity>
                   </Link>
                 </View>
               </View>
             </>
           ) : (
             <>
-              <Text style={styles.title}>Check your email</Text>
-              <Text style={styles.subtitle}>We sent a code to{"\n"}{email}</Text>
+              <Text style={styles.title}>{t("auth.check_email")}</Text>
+              <Text style={styles.subtitle}>{t("auth.verify_subtitle")}{"\n"}{email}</Text>
 
               <View style={styles.form}>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Verification Code</Text>
+                  <Text style={styles.label}>{t("auth.verification_code")}</Text>
                   <View style={styles.inputWrap}>
                     <Ionicons name="key-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                     <TextInput
@@ -252,7 +254,7 @@ export default function SignUpScreen() {
                   >
                     {loading
                       ? <ActivityIndicator size="small" color="#fff" />
-                      : <Text style={styles.primaryBtnText}>Verify Email</Text>
+                      : <Text style={styles.primaryBtnText}>{t("auth.verify_email")}</Text>
                     }
                   </LinearGradient>
                 </TouchableOpacity>

@@ -319,6 +319,11 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Nunito', 'Noto Sans Devanagari', sans-serif;
+  }
+
+  :lang(hi), [lang="hi"] {
+    font-family: 'Noto Sans Devanagari', 'Nunito', sans-serif;
   }
 
   .dark body {
@@ -327,7 +332,7 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Quicksand', sans-serif;
+    font-family: 'Quicksand', 'Noto Sans Devanagari', sans-serif;
   }
 }
 

@@ -41,10 +41,11 @@ export default function AmyAIScreen() {
     setMessages(m => [...m, userMsg]);
     setLoading(true);
     try {
+      const { default: i18nInstance } = await import("@/i18n");
       const res = await authFetch("/api/ai/assistant-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed }),
+        body: JSON.stringify({ question: trimmed, language: i18nInstance.language || "en" }),
       });
       const data = await res.json().catch(() => ({}));
       const answer: string = data?.answer ?? "Sorry, I couldn't get a response. Please try again.";

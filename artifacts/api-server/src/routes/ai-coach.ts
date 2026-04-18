@@ -33,6 +33,7 @@ interface CoachInput {
   goal?: string;        // goal id slug
   ageGroup?: string;    // "2-4" | "5-7" | "8-10"
   severity?: string;    // "mild" | "moderate" | "severe"
+  language?: "en" | "hi" | "hinglish";
   triggers?: string[];
   routine?: string;
 }
@@ -67,7 +68,8 @@ function buildCacheKey(input: CoachInput): string {
   const triggers = (input.triggers ?? []).map(norm).filter(Boolean).sort().join("-");
   // Namespace is part of the raw key so a version bump (v2 → v3) produces a
   // completely different cacheKey — old rows can never be served to the new schema.
-  const raw = `${NAMESPACE}_${norm(input.goal)}_${norm(input.ageGroup)}_${norm(input.severity)}_${triggers}_${norm(input.routine)}`;
+  const lang = input.language === "hi" || input.language === "hinglish" ? input.language : "en";
+  const raw = `${NAMESPACE}_${lang}_${norm(input.goal)}_${norm(input.ageGroup)}_${norm(input.severity)}_${triggers}_${norm(input.routine)}`;
   return createHash("sha1").update(raw).digest("hex");
 }
 
@@ -527,10 +529,14 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
     res.status(400).json({ error: "invalid goal", validGoals: GOAL_IDS });
     return;
   }
+  const langRawIn = typeof raw.language === "string" ? raw.language.toLowerCase().split("-")[0] : "en";
+  const inputLang: "en" | "hi" | "hinglish" =
+    langRawIn === "hi" ? "hi" : langRawIn === "hinglish" ? "hinglish" : "en";
   const input: CoachInput = {
     goal,
     ageGroup: clip(raw.ageGroup, 30) || "5-7",
     severity: clip(raw.severity, 30) || "moderate",
+    language: inputLang,
     triggers: Array.isArray(raw.triggers)
       ? raw.triggers.filter((t): t is string => typeof t === "string").slice(0, 8).map((t) => clip(t, 50))
       : [],
@@ -568,11 +574,19 @@ router.post("/ai-coach", async (req, res): Promise<void> => {
   const { getGoalPromptSection } = await import("../lib/goal-prompts.js");
   const goalBrief = getGoalPromptSection(input.goal!, goalLabel!);
 
+  const language: "en" | "hi" | "hinglish" = input.language ?? "en";
+  const langDirective =
+    language === "hi"
+      ? "\nIMPORTANT: Write ALL string VALUES (title, root_cause, summary, wins[].title, objective, deep_explanation, actions, example, mistake_to_avoid, micro_task, duration, science_reference) in natural Hindi (Devanagari script). Keep JSON keys in English."
+      : language === "hinglish"
+      ? "\nIMPORTANT: Write ALL string VALUES in Hinglish (Roman-script Hindi mixed with English words, e.g. 'Bachche ko calm karne ke liye sleep routine set karein'). Keep JSON keys in English."
+      : "";
+
   const systemPrompt = `You are a specialist child psychologist and parenting coach who adapts your expertise to the SPECIFIC parenting goal in front of you.
 You give parents DEEP, complete, step-by-step solutions — never short generic tips.
 Every win you write must feel like a complete module a parent can implement and see results from.
 When the goal is about sleep, write like a paediatric sleep consultant. When it's about tantrums, write like a co-regulation specialist. When it's about screen time, write like a behavioural-addiction expert. Mirror the requested expertise precisely.
-You ALWAYS return valid JSON only. No markdown, no commentary, no code fences, no preamble.`;
+You ALWAYS return valid JSON only. No markdown, no commentary, no code fences, no preamble.${langDirective}`;
 
   const userPrompt = `Build a complete 12-win behaviour-change plan for this parenting goal.
 

@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -20,6 +21,7 @@ export default function SignInScreen() {
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -86,8 +88,8 @@ export default function SignInScreen() {
             </LinearGradient>
           </View>
 
-          <Text style={styles.title}>Welcome back</Text>
-          <Text style={styles.subtitle}>Sign in to continue your parenting journey</Text>
+          <Text style={styles.title}>{t("auth.welcome_back")}</Text>
+          <Text style={styles.subtitle}>{t("auth.sign_in_subtitle")}</Text>
 
           <View style={styles.form}>
             {/* Google button */}
@@ -105,7 +107,7 @@ export default function SignInScreen() {
                   <Ionicons name="logo-google" size={20} color="#EA4335" />
                 )}
                 <Text style={styles.googleBtnText}>
-                  {googleLoading ? "Connecting…" : "Continue with Google"}
+                  {googleLoading ? t("auth.connecting") : t("auth.continue_with_google")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -113,13 +115,13 @@ export default function SignInScreen() {
             {/* Divider */}
             <View style={styles.dividerRow}>
               <View style={styles.divider} />
-              <Text style={styles.dividerText}>or sign in with email</Text>
+              <Text style={styles.dividerText}>{t("auth.or_email")}</Text>
               <View style={styles.divider} />
             </View>
 
             {/* Email */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t("auth.email")}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                 <TextInput
@@ -138,7 +140,7 @@ export default function SignInScreen() {
 
             {/* Password */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>{t("auth.password")}</Text>
               <View style={styles.inputWrap}>
                 <Ionicons name="lock-closed-outline" size={18} color="rgba(255,255,255,0.4)" style={styles.inputIcon} />
                 <TextInput
@@ -172,16 +174,16 @@ export default function SignInScreen() {
               >
                 {loading
                   ? <ActivityIndicator size="small" color="#fff" />
-                  : <Text style={styles.primaryBtnText}>Sign In</Text>
+                  : <Text style={styles.primaryBtnText}>{t("auth.sign_in")}</Text>
                 }
               </LinearGradient>
             </TouchableOpacity>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
+              <Text style={styles.footerText}>{t("auth.no_account")} </Text>
               <Link href="/sign-up" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.linkText}>Sign Up</Text>
+                  <Text style={styles.linkText}>{t("auth.sign_up")}</Text>
                 </TouchableOpacity>
               </Link>
             </View>
