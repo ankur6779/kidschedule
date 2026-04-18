@@ -21,6 +21,7 @@ import {
   Microscope,
 } from "lucide-react";
 import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const COACH_HIGHLIGHTS = [
   "Personalized plans for your child",
@@ -215,11 +216,14 @@ export default function LandingPage() {
             AmyNest <span className="amy-gradient-text">AI</span>
           </span>
         </div>
-        <Link href="/sign-in">
-          <button className="text-sm font-semibold text-white/70 hover:text-white transition-colors px-3 py-1.5">
-            Sign in
-          </button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+          <Link href="/sign-in">
+            <button className="text-sm font-semibold text-white/70 hover:text-white transition-colors px-3 py-1.5">
+              Sign in
+            </button>
+          </Link>
+        </div>
       </header>
 
       {/* HERO */}

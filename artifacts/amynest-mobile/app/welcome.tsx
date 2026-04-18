@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,16 @@ import {
   Platform,
   ScrollView,
   Image,
+  Modal,
+  Pressable,
 } from "react-native";
 import { useRouter, Link } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
+import { SUPPORTED_LANGUAGES, setLanguage, type LanguageCode } from "@/i18n";
 
 const LOGO = require("../assets/images/amynest-logo.png");
 
@@ -94,6 +98,9 @@ const TRUST_PILLARS: { icon: keyof typeof Ionicons.glyphMap; title: string; desc
 export default function WelcomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { i18n } = useTranslation();
+  const [langOpen, setLangOpen] = useState(false);
+  const currentLang = SUPPORTED_LANGUAGES.find(l => l.code === i18n.language) ?? SUPPORTED_LANGUAGES[0];
 
   const floatY = useRef(new Animated.Value(0)).current;
   const colorAnim = useRef(new Animated.Value(0)).current;
@@ -161,12 +168,54 @@ export default function WelcomeScreen() {
                 AmyNest <Text style={styles.navBrandAi}>AI</Text>
               </Text>
             </View>
-            <Link href="/sign-in" asChild>
-              <TouchableOpacity testID="link-sign-in" activeOpacity={0.7}>
-                <Text style={styles.navSignIn}>Sign in</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+              {/* Language picker pill */}
+              <TouchableOpacity
+                onPress={() => setLangOpen(true)}
+                activeOpacity={0.8}
+                style={styles.langPill}
+                testID="welcome-lang-btn"
+              >
+                <Ionicons name="globe-outline" size={13} color="rgba(196,181,253,0.9)" />
+                <Text style={styles.langPillText}>{currentLang.native}</Text>
               </TouchableOpacity>
-            </Link>
+              <Link href="/sign-in" asChild>
+                <TouchableOpacity testID="link-sign-in" activeOpacity={0.7}>
+                  <Text style={styles.navSignIn}>Sign in</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
           </View>
+
+          {/* Language selection modal */}
+          <Modal visible={langOpen} transparent animationType="fade" onRequestClose={() => setLangOpen(false)}>
+            <Pressable style={styles.langOverlay} onPress={() => setLangOpen(false)}>
+              <View style={styles.langSheet}>
+                <View style={styles.langSheetHandle} />
+                <Text style={styles.langSheetTitle}>Choose Language</Text>
+                {SUPPORTED_LANGUAGES.map((lang) => {
+                  const active = lang.code === i18n.language;
+                  return (
+                    <TouchableOpacity
+                      key={lang.code}
+                      onPress={() => {
+                        setLanguage(lang.code as LanguageCode);
+                        if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setLangOpen(false);
+                      }}
+                      activeOpacity={0.8}
+                      style={[styles.langOption, active && styles.langOptionActive]}
+                    >
+                      <Text style={[styles.langOptionText, active && styles.langOptionTextActive]}>
+                        {lang.native}
+                      </Text>
+                      {active && <Ionicons name="checkmark" size={16} color="#A78BFA" />}
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </Pressable>
+          </Modal>
 
           {/* HERO */}
           <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
@@ -458,6 +507,75 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_600SemiBold",
     paddingHorizontal: 12,
     paddingVertical: 6,
+  },
+  langPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  langPillText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
+    fontFamily: "Inter_600SemiBold",
+  },
+  langOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  langSheet: {
+    backgroundColor: "#14142B",
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 8,
+    width: 260,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  langSheetHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  langSheetTitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.45)",
+    fontFamily: "Inter_600SemiBold",
+    textAlign: "center",
+    marginBottom: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
+  langOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginHorizontal: 4,
+  },
+  langOptionActive: {
+    backgroundColor: "rgba(168,85,247,0.15)",
+  },
+  langOptionText: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.75)",
+    fontFamily: "Inter_500Medium",
+  },
+  langOptionTextActive: {
+    color: "#C4B5FD",
+    fontFamily: "Inter_600SemiBold",
   },
 
   /* HERO */
