@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -8,6 +8,40 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BrandLogo } from "@/components/brand-logo";
 import { AmyFab } from "@/components/amy-fab";
 import { AmyIcon } from "@/components/amy-icon";
+import { useTheme } from "@/contexts/theme-context";
+
+function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
+  const { mode, toggleTheme } = useTheme();
+  const isDark = mode === "dark";
+  return (
+    <button
+      type="button"
+      onClick={() => { toggleTheme(); onToggle?.(); }}
+      data-testid="button-theme-toggle"
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+    >
+      <span className="flex items-center gap-3">
+        {isDark
+          ? <Moon className="h-5 w-5 text-violet-400" />
+          : <Sun className="h-5 w-5 text-amber-500" />}
+        <span>{isDark ? "Dark mode" : "Light mode"}</span>
+      </span>
+      <span
+        className={`relative h-6 w-11 rounded-full border transition-colors ${
+          isDark
+            ? "bg-violet-500/40 border-violet-400/50"
+            : "bg-slate-200 border-slate-300"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full shadow-md transition-transform ${
+            isDark ? "translate-x-5 bg-violet-500" : "translate-x-0.5 bg-amber-500"
+          }`}
+        />
+      </span>
+    </button>
+  );
+}
 
 const NAV_ITEMS = [
   { href: "/dashboard",     label: "Dashboard",     icon: Home },
@@ -92,6 +126,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   {item.label}
                 </Link>
               ))}
+              <div className="mt-2 pt-2 border-t">
+                <ThemeToggleRow onToggle={closeSidebar} />
+              </div>
             </nav>
             <button
               onClick={handleSignOut}
@@ -126,6 +163,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 {item.label}
               </Link>
             ))}
+            <div className="mt-2 pt-2 border-t">
+              <ThemeToggleRow />
+            </div>
           </nav>
           {/* Desktop user / sign-out */}
           <div className="border-t p-4">
