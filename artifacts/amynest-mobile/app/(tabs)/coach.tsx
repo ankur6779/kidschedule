@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface GoalItem { id: string; title: string; emoji: string; bg: [string, string] }
@@ -113,6 +114,7 @@ export default function CoachScreen() {
 
   const [phase, setPhase] = useState<Phase>("goals");
   const [goalSearch, setGoalSearch] = useState("");
+  const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [goalId, setGoalId] = useState<string>("");
   const [qIndex, setQIndex] = useState(0);
@@ -317,6 +319,34 @@ export default function CoachScreen() {
               <Text style={styles.topTitle}>Search Goals</Text>
               <View style={{ width: 36 }} />
             </View>
+
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={() => router.push("/coach/premium" as never)}
+              accessibilityRole="button"
+              accessibilityLabel="Open Amy's premium guided wins"
+              testID="open-premium-coach"
+              style={{ marginTop: 12, marginBottom: 14, borderRadius: 20, overflow: "hidden" }}
+            >
+              <LinearGradient
+                colors={["#A855F7", "#EC4899"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{ flexDirection: "row", alignItems: "center", padding: 16, gap: 12 }}
+              >
+                <View style={{ width: 44, height: 44, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.20)", alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="sparkles" size={22} color="#fff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontSize: 15, fontWeight: "800" }}>Amy's Guided Wins</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 12.5, marginTop: 2 }}>
+                    Swipe through deep, expert-level wins
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+
             <View style={styles.searchBox}>
               <Ionicons name="search" size={16} color="#9CA3AF" />
               <TextInput
