@@ -344,10 +344,11 @@ const styles = StyleSheet.create({
     color: "#22C55E",
   },
   navAiBadge: {
+    marginLeft: 28,
     borderWidth: 1,
     borderColor: "rgba(168,85,247,0.45)",
     borderRadius: 999,
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 1,
     backgroundColor: "rgba(168,85,247,0.08)",
   },
