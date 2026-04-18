@@ -137,13 +137,14 @@ export default function WelcomeScreen() {
           ]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Top nav — premium brand */}
+          {/* Top nav — ULTRA premium brand */}
           <View style={styles.nav}>
             <View style={styles.navBrand}>
-              {/* Gradient ring logo */}
-              <View style={styles.navLogoRing}>
+              {/* Outer glow + gradient ring logo */}
+              <View style={styles.navLogoWrap}>
+                <View style={styles.navLogoOuterGlow} />
                 <LinearGradient
-                  colors={["#A855F7", "#EC4899", "#6366F1"]}
+                  colors={["#F472B6", "#A855F7", "#6366F1"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.navLogoGradientRing}
@@ -154,33 +155,46 @@ export default function WelcomeScreen() {
                 </LinearGradient>
               </View>
 
-              {/* Text + badge */}
+              {/* Text + badge stack */}
               <View style={styles.navWordStack}>
-                {/* "Amy Nest" gradient text row */}
                 <View style={styles.navTextRow}>
-                  <Text style={styles.navAmy}>Amy </Text>
+                  <Text style={styles.navAmy}>Amy</Text>
                   <Text style={styles.navNest}>Nest</Text>
+                  <LinearGradient
+                    colors={["#F472B6", "#A855F7", "#6366F1"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.navAiBadge}
+                  >
+                    <Ionicons name="sparkles" size={9} color="#fff" style={{ marginRight: 3 }} />
+                    <Text style={styles.navBrandAccent}>AI</Text>
+                  </LinearGradient>
                 </View>
-                {/* Premium AI pill */}
-                <LinearGradient
-                  colors={["#7C3AED", "#A855F7"]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.navAiBadge}
-                >
-                  <Text style={styles.navBrandAccent}>AI</Text>
-                </LinearGradient>
+                <Text style={styles.navTagline}>Your AI Parenting Coach</Text>
               </View>
             </View>
 
             <Link href="/sign-in" asChild>
-              <TouchableOpacity testID="link-sign-in">
-                <View style={styles.navSignInBtn}>
+              <TouchableOpacity testID="link-sign-in" activeOpacity={0.8}>
+                <LinearGradient
+                  colors={["rgba(168,85,247,0.25)", "rgba(99,102,241,0.18)"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.navSignInBtn}
+                >
                   <Text style={styles.navSignIn}>Sign in</Text>
-                </View>
+                  <Ionicons name="arrow-forward" size={12} color="#E9E7FF" style={{ marginLeft: 4 }} />
+                </LinearGradient>
               </TouchableOpacity>
             </Link>
           </View>
+          {/* gradient separator */}
+          <LinearGradient
+            colors={["transparent", "rgba(168,85,247,0.4)", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.navSeparator}
+          />
 
           <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
             {/* Badge */}
@@ -345,71 +359,107 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20 },
 
   /* nav */
-  nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8 },
-  navBrand: { flexDirection: "row", alignItems: "center", gap: 10 },
-  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 3 },
-  navTextRow: { flexDirection: "row", alignItems: "center" },
+  nav: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 0 },
+  navBrand: { flexDirection: "row", alignItems: "center", gap: 12 },
+  navWordStack: { flexDirection: "column", alignItems: "flex-start", gap: 2 },
+  navTextRow: { flexDirection: "row", alignItems: "center", gap: 1 },
   navAmy: {
-    color: "#E9E7FF",
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 0.2,
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontFamily: "Inter_800ExtraBold",
+    letterSpacing: -0.5,
   },
   navNest: {
-    fontSize: 16,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 0.2,
-    color: "#22C55E",
+    fontSize: 22,
+    fontFamily: "Inter_800ExtraBold",
+    letterSpacing: -0.5,
+    color: "#34D399",
+  },
+  navTagline: {
+    color: "rgba(196,181,253,0.75)",
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    marginTop: 1,
   },
 
   /* gradient ring logo */
-  navLogoRing: {
-    shadowColor: "#A855F7",
-    shadowOpacity: 0.6,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  navLogoGradientRing: {
-    width: 44, height: 44, borderRadius: 999,
-    padding: 2,
+  navLogoWrap: {
+    width: 52, height: 52,
     alignItems: "center", justifyContent: "center",
   },
-  navLogoInner: {
-    width: 38, height: 38, borderRadius: 999,
-    overflow: "hidden",
-    backgroundColor: "#fff",
+  navLogoOuterGlow: {
+    position: "absolute",
+    width: 64, height: 64, borderRadius: 999,
+    backgroundColor: "rgba(168,85,247,0.35)",
+    opacity: 0.9,
   },
-  navLogoImg: { width: 38, height: 38 },
+  navLogoGradientRing: {
+    width: 52, height: 52, borderRadius: 999,
+    padding: 2.5,
+    alignItems: "center", justifyContent: "center",
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.7,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+  navLogoInner: {
+    width: 47, height: 47, borderRadius: 999,
+    overflow: "hidden",
+    backgroundColor: "#0f0c29",
+    borderWidth: 1.5,
+    borderColor: "#0f0c29",
+  },
+  navLogoImg: { width: 47, height: 47 },
 
   /* premium AI pill */
   navAiBadge: {
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 999,
-    paddingHorizontal: 9,
-    paddingVertical: 2,
-    shadowColor: "#7C3AED",
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginLeft: 6,
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.7,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
+    elevation: 5,
   },
   navBrandAccent: {
     color: "#fff",
-    fontSize: 9,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 1.5,
+    fontSize: 10,
+    fontFamily: "Inter_800ExtraBold",
+    letterSpacing: 1.6,
   },
 
-  /* sign in glass btn */
+  /* sign in gradient btn */
   navSignInBtn: {
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(196,181,253,0.35)",
+    shadowColor: "#A855F7",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 5,
   },
-  navSignIn: { color: "rgba(255,255,255,0.8)", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  navSignIn: { color: "#E9E7FF", fontSize: 13, fontFamily: "Inter_700Bold", letterSpacing: 0.3 },
+
+  /* gradient separator under nav */
+  navSeparator: {
+    height: 1,
+    width: "100%",
+    marginTop: 14,
+    marginBottom: 8,
+    opacity: 0.6,
+  },
 
   /* hero */
   hero: { alignItems: "center", marginTop: 16, marginBottom: 32 },
