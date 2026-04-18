@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366F1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A855F7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="nestGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="100" fill="url(#bg)" />
+  <!-- Nest bowl -->
+  <ellipse cx="100" cy="128" rx="52" ry="20" fill="url(#nestGrad)" />
+  <ellipse cx="100" cy="124" rx="44" ry="14" fill="#065F46" opacity="0.4" />
+  <!-- Bird 1 (blue) -->
+  <ellipse cx="78" cy="100" rx="14" ry="20" fill="#60A5FA" />
+  <circle cx="78" cy="82" r="10" fill="#60A5FA" />
+  <circle cx="81" cy="80" r="3" fill="white" />
+  <circle cx="82" cy="80" r="1.5" fill="#1E3A5F" />
+  <!-- Bird 2 (yellow) -->
+  <ellipse cx="100" cy="96" rx="13" ry="18" fill="#FCD34D" />
+  <circle cx="100" cy="80" r="9" fill="#FCD34D" />
+  <circle cx="103" cy="78" r="2.5" fill="white" />
+  <circle cx="104" cy="78" r="1.2" fill="#78350F" />
+  <!-- Bird 3 (pink/purple - Amy AI with cap) -->
+  <ellipse cx="124" cy="98" rx="13" ry="18" fill="#E0E7FF" />
+  <circle cx="124" cy="82" r="10" fill="#E0E7FF" />
+  <!-- Cap -->
+  <ellipse cx="124" cy="74" rx="12" ry="4" fill="#7C3AED" />
+  <rect x="112" y="70" width="24" height="5" rx="2" fill="#7C3AED" />
+  <circle cx="131" cy="71" r="3" fill="#7C3AED" />
+  <!-- Cap brim shine -->
+  <rect x="113" y="71" width="10" height="2" rx="1" fill="#A78BFA" opacity="0.5" />
+  <!-- Amy AI eyes -->
+  <circle cx="127" cy="82" r="2.5" fill="white" />
+  <circle cx="128" cy="82" r="1.2" fill="#1E1B4B" />
+  <!-- Beak Amy -->
+  <path d="M124 86 L127 88 L121 88 Z" fill="#FCD34D" />
+  <!-- Star -->
+  <polygon points="100,52 102,58 108,58 103,62 105,68 100,64 95,68 97,62 92,58 98,58" fill="#FCD34D" />
+  <!-- Leaves on nest -->
+  <ellipse cx="55" cy="118" rx="10" ry="5" fill="#34D399" transform="rotate(-30 55 118)" />
+  <ellipse cx="145" cy="118" rx="10" ry="5" fill="#34D399" transform="rotate(30 145 118)" />
+</svg>

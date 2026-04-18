@@ -38,13 +38,90 @@ function stripBase(path: string): string {
     : path;
 }
 
+const clerkAppearance = {
+  options: {
+    logoPlacement: "inside" as const,
+    logoLinkUrl: basePath || "/",
+    logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
+  },
+  variables: {
+    colorPrimary: "#6366F1",
+    colorBackground: "#FAFAFA",
+    colorInputBackground: "#FFFFFF",
+    colorText: "#0F172A",
+    colorTextSecondary: "#64748B",
+    colorInputText: "#0F172A",
+    colorNeutral: "#94A3B8",
+    borderRadius: "12px",
+    fontFamily: "'Quicksand', 'Inter', sans-serif",
+    fontFamilyButtons: "'Quicksand', 'Inter', sans-serif",
+    fontSize: "15px",
+  },
+  elements: {
+    rootBox: "w-full",
+    cardBox: "shadow-2xl shadow-indigo-100/60 rounded-2xl w-full overflow-hidden border border-indigo-100",
+    card: "!shadow-none !border-0 !bg-white !rounded-none",
+    footer: "!shadow-none !border-0 !bg-slate-50 !rounded-none border-t border-slate-100",
+    headerTitle: { color: "#0F172A", fontWeight: "700", fontSize: "22px" },
+    headerSubtitle: { color: "#64748B", fontSize: "14px" },
+    socialButtonsBlockButtonText: { color: "#0F172A", fontWeight: "600" },
+    socialButtonsBlockButton: "border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors",
+    formFieldLabel: { color: "#374151", fontWeight: "600", fontSize: "13px" },
+    formFieldInput: "border-slate-200 focus:border-indigo-400 focus:ring-indigo-200 rounded-xl",
+    formButtonPrimary: "bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 !shadow-lg !shadow-indigo-200/50 rounded-xl font-semibold",
+    footerActionLink: { color: "#6366F1", fontWeight: "600" },
+    footerActionText: { color: "#64748B" },
+    footerAction: "py-3",
+    dividerText: { color: "#94A3B8", fontSize: "12px" },
+    dividerLine: "bg-slate-200",
+    logoBox: "flex justify-center mb-1",
+    logoImage: "h-14 w-14 object-contain",
+    identityPreviewEditButton: { color: "#6366F1" },
+    formFieldSuccessText: { color: "#10B981" },
+    alertText: { color: "#EF4444" },
+    alert: "rounded-xl",
+    otpCodeFieldInput: "border-slate-200 focus:border-indigo-400 rounded-xl",
+    formFieldRow: "mb-1",
+    main: "px-1",
+  },
+};
+
+const clerkLocalization = {
+  signIn: {
+    start: {
+      title: "Welcome back to AmyNest AI",
+      subtitle: "Sign in to your personal parenting coach",
+    },
+  },
+  signUp: {
+    start: {
+      title: "Join AmyNest AI",
+      subtitle: "Your AI-powered parenting coach, personalized for your family",
+    },
+  },
+};
+
+function AuthPageWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
+      style={{ background: "linear-gradient(160deg,#EEF2FF 0%,#F5F3FF 50%,#FDF2F8 100%)" }}
+    >
+      <div className="w-full max-w-md">
+        {children}
+      </div>
+      <p className="mt-6 text-xs text-slate-400">Where Smart Parenting Begins</p>
+    </div>
+  );
+}
+
 function SignInPage() {
   // To update login providers, app branding, or OAuth settings use the Auth
   // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <AuthPageWrapper>
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
-    </div>
+    </AuthPageWrapper>
   );
 }
 
@@ -52,9 +129,9 @@ function SignUpPage() {
   // To update login providers, app branding, or OAuth settings use the Auth
   // pane in the workspace toolbar. More information can be found in the Replit docs.
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <AuthPageWrapper>
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
-    </div>
+    </AuthPageWrapper>
   );
 }
 
@@ -131,6 +208,8 @@ function ClerkProviderWithRoutes() {
     <ClerkProvider
       publishableKey={clerkPubKey}
       proxyUrl={clerkProxyUrl}
+      appearance={clerkAppearance}
+      localization={clerkLocalization}
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
