@@ -182,7 +182,7 @@ export function DailyTips({
                   </span>
                 </div>
                 {isPersonalized && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-amber-700">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/80 dark:bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
                     <Sparkles className="h-3 w-3" />
                     Amy AI
                   </span>
@@ -204,7 +204,7 @@ export function DailyTips({
                   className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all ${
                     liked
                       ? "bg-emerald-500 text-white shadow-sm"
-                      : "bg-white/70 text-foreground hover:bg-white"
+                      : "bg-white/70 dark:bg-white/10 text-foreground hover:bg-white dark:hover:bg-white/15"
                   }`}
                   aria-pressed={liked}
                 >
@@ -216,7 +216,7 @@ export function DailyTips({
                   {canPersonalize && (
                     <button
                       onClick={() => handlePersonalize(cat)}
-                      className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2.5 py-1.5 text-[11px] font-bold text-amber-700 hover:bg-white transition-colors"
+                      className="inline-flex items-center gap-1 rounded-full bg-white/80 dark:bg-amber-500/20 px-2.5 py-1.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 hover:bg-white dark:hover:bg-amber-500/30 transition-colors"
                       title={ui.personalize}
                     >
                       <Sparkles className="h-3.5 w-3.5" />
@@ -225,7 +225,7 @@ export function DailyTips({
                   )}
                   <button
                     onClick={() => handleNext(cat)}
-                    className="inline-flex items-center gap-1 rounded-full bg-white/70 px-2.5 py-1.5 text-[11px] font-bold text-foreground hover:bg-white transition-colors"
+                    className="inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-white/10 px-2.5 py-1.5 text-[11px] font-bold text-foreground hover:bg-white dark:hover:bg-white/15 transition-colors"
                     title={ui.next}
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${isBusy ? "animate-spin" : ""}`} />
