@@ -537,15 +537,10 @@ export default function AICoachPage() {
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="font-quicksand text-2xl font-bold flex items-center gap-2">
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 text-white shadow-lg shadow-violet-500/30">
-                  <Brain className="h-4 w-4" />
-                </span>
-                <span>
-                  <span className="text-violet-300">Amy</span>{" "}
-                  <span className="text-white">Co-Parent</span>{" "}
-                  <span className="text-pink-300">AI</span>
-                </span>
+              <h1 className="font-quicksand text-2xl font-bold">
+                <span className="text-violet-300">Amy</span>{" "}
+                <span className="text-white">Co-Parent</span>{" "}
+                <span className="text-pink-300">AI</span>
               </h1>
               <p className="text-xs text-white/60 mt-0.5">Choose a goal — I'll build your 12-step science plan.</p>
             </div>
