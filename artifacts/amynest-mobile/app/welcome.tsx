@@ -158,8 +158,7 @@ export default function WelcomeScreen() {
               {/* Text + badge stack */}
               <View style={styles.navWordStack}>
                 <View style={styles.navTextRow}>
-                  <Text style={styles.navAmy}>Amy</Text>
-                  <Text style={styles.navNest}>Nest</Text>
+                  <Text style={styles.navAmy}>Amy Nest AI</Text>
                   <LinearGradient
                     colors={["#F472B6", "#A855F7", "#6366F1"]}
                     start={{ x: 0, y: 0 }}
@@ -167,7 +166,7 @@ export default function WelcomeScreen() {
                     style={styles.navAiBadge}
                   >
                     <Ionicons name="sparkles" size={9} color="#fff" style={{ marginRight: 3 }} />
-                    <Text style={styles.navBrandAccent}>AI</Text>
+                    <Text style={styles.navBrandAccent}>PREMIUM</Text>
                   </LinearGradient>
                 </View>
                 <Text style={styles.navTagline}>Your AI Parenting Coach</Text>
