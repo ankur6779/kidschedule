@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { ClerkProvider, SignIn, SignUp, Show, useClerk, useAuth } from "@clerk/react";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -23,6 +25,7 @@ import ProgressPage from "@/pages/progress";
 import ParentingHub from "@/pages/parenting-hub";
 import AmyCoachPage from "@/pages/ai-coach";
 import AmyCoachProgressPage from "@/pages/ai-coach-progress";
+import OnboardingPage from "@/pages/onboarding";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -135,11 +138,32 @@ function SignUpPage() {
   );
 }
 
+function useOnboardingStatus() {
+  const { isSignedIn } = useAuth();
+  const authFetch = useAuthFetch();
+  return useQuery({
+    queryKey: ["onboarding-status"],
+    queryFn: async () => {
+      const res = await authFetch("/api/onboarding");
+      if (!res.ok) return { onboardingComplete: false };
+      return res.json() as Promise<{ onboardingComplete: boolean }>;
+    },
+    enabled: !!isSignedIn,
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
 function HomeRedirect() {
+  const { data, isLoading } = useOnboardingStatus();
   return (
     <>
       <Show when="signed-in">
-        <Redirect to="/dashboard" />
+        {isLoading
+          ? null
+          : data?.onboardingComplete
+            ? <Redirect to="/dashboard" />
+            : <Redirect to="/onboarding" />
+        }
       </Show>
       <Show when="signed-out">
         <LandingPage />
@@ -149,12 +173,16 @@ function HomeRedirect() {
 }
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { data, isLoading } = useOnboardingStatus();
   return (
     <>
       <Show when="signed-in">
-        <Layout>
-          <Component />
-        </Layout>
+        {isLoading
+          ? null
+          : !data?.onboardingComplete
+            ? <Redirect to="/onboarding" />
+            : <Layout><Component /></Layout>
+        }
       </Show>
       <Show when="signed-out">
         <Redirect to="/sign-in" />
@@ -221,6 +249,14 @@ function ClerkProviderWithRoutes() {
             <Route path="/" component={HomeRedirect} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route path="/onboarding">
+              {() => (
+                <>
+                  <Show when="signed-in"><OnboardingPage /></Show>
+                  <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+                </>
+              )}
+            </Route>
             <Route path="/dashboard">
               {() => <ProtectedRoute component={Dashboard} />}
             </Route>

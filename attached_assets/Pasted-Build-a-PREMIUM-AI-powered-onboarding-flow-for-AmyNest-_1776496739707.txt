@@ -1,0 +1,177 @@
+Build a PREMIUM AI-powered onboarding flow for AmyNest AI with the following requirements:
+
+🧠 CORE GOAL:
+After first login, user should go through a personalized onboarding powered by "Amy Coach" (AI assistant), which collects:
+1. Child details (support multiple children)
+2. Parent details
+3. Primary parenting goals
+
+Only AFTER onboarding → unlock full app features.
+
+---
+
+🎯 UX FLOW (VERY IMPORTANT)
+
+Step 0: Splash + Branding
+- Show AmyNest logo with soft gradient animation (purple + pastel tones)
+- Add subtle pulse / glow animation
+- Text: "Welcome to AmyNest AI"
+- Subtext: "Let’s build a better routine for your child"
+- Duration: 2–3 sec
+
+---
+
+Step 1: AI Coach Intro Screen
+- Show friendly AI avatar (Amy Coach)
+- Chat-style UI (like WhatsApp / iMessage)
+- Message:
+  "Hi, I’m Amy — your parenting coach. I’ll quickly understand your child and create a personalized plan."
+
+- CTA: "Let’s start"
+
+---
+
+Step 2: Child Setup (MULTI-CHILD SUPPORT)
+
+AI asks questions one-by-one (chat bubbles UI):
+
+1. "What’s your child’s name?"
+   → input text
+
+2. "How old is your child?"
+   → options (1–3, 4–6, 7–10, 10+)
+
+3. "What challenges are you facing?"
+   → multi-select chips:
+      - Screen time
+      - Tantrums
+      - Sleep issues
+      - Eating habits
+      - Focus
+      - Behaviour
+
+4. "Add another child?" → Yes / No
+
+👉 If Yes → repeat flow
+
+Store all children in array:
+children: [{name, ageGroup, problems[]}]
+
+---
+
+Step 3: Parent Context
+
+AI asks:
+- "Who manages the child mostly?"
+  → Mother / Father / Both / Grandparents
+
+- "Your biggest concern right now?"
+  → free text OR suggestions
+
+- "Daily routine consistency?"
+  → Low / Medium / High
+
+Store:
+parentProfile: {}
+
+---
+
+Step 4: AI Personalization Engine
+
+After collecting data:
+- Show loading animation:
+  "Amy is creating a personalized plan..."
+
+- Use AI (mock or API) to generate:
+  - Priority goal
+  - Strategy structure
+  - First plan preview
+
+---
+
+Step 5: Personalized Result Screen
+
+Show:
+- Child name
+- Main problem
+- “Your first goal: Reduce Screen Time”
+- Progress path (6–7 steps preview)
+
+CTA:
+👉 "Start with Amy Coach"
+
+---
+
+🎨 UI REQUIREMENTS (IMPORTANT)
+
+- Use glassmorphism cards
+- Rounded corners (20px+)
+- Smooth transitions (Framer Motion if React)
+- Chat bubbles animated
+- Soft gradient background (purple / peach)
+- Micro interactions on button clicks
+- Typing animation for AI messages
+
+---
+
+⚙️ TECH IMPLEMENTATION
+
+- Framework: React + Tailwind
+- State: useState or Zustand
+- Store onboarding data in localStorage / DB
+
+Structure:
+- /onboarding
+- /components/AmyChatUI.jsx
+- /components/ProgressLoader.jsx
+
+---
+
+💾 DATA STRUCTURE
+
+userProfile = {
+  children: [
+    {
+      name: "",
+      ageGroup: "",
+      problems: []
+    }
+  ],
+  parent: {
+    caregiver: "",
+    concern: "",
+    routineLevel: ""
+  },
+  onboardingComplete: true
+}
+
+---
+
+🔐 LOGIC
+
+IF onboardingComplete = false
+→ redirect to onboarding
+
+ELSE
+→ go to dashboard
+
+---
+
+✨ EXTRA (MAKE IT PREMIUM)
+
+- Add typing dots animation for AI
+- Add subtle sound (optional)
+- Add progress indicator (top bar)
+- Smooth page transitions
+
+---
+
+🚫 DO NOT:
+- Show all questions at once
+- Use boring forms
+- Skip animations
+
+---
+
+FINAL RESULT:
+A conversational, AI-driven onboarding that feels like a real assistant, not a form.

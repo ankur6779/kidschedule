@@ -10,6 +10,7 @@ import aiRouter from "./ai";
 import aiCoachRouter from "./ai-coach";
 import reelsRouter from "./reels";
 import worksheetsRouter from "./worksheets";
+import onboardingRouter from "./onboarding";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -18,6 +19,7 @@ router.use(healthRouter);
 router.use("/reels", reelsRouter);
 router.use(worksheetsRouter);
 router.use(requireAuth);
+router.use(onboardingRouter);
 router.use(childrenRouter);
 router.use(routinesRouter);
 router.use(behaviorsRouter);
