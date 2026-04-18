@@ -550,18 +550,10 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
 
       {/* ── Primary CTA ──────────────────────────────────────── */}
       <div className="w-full space-y-3">
-        <Link href="/children/new">
-          <button className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+        <Link href="/amy-coach">
+          <button className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
             <Sparkles className="h-5 w-5" />
-            ✨ Create Your First Child Profile
-          </button>
-        </Link>
-
-        {/* ── AI Coach CTA ───────────────────────────────────── */}
-        <Link href="/ai-coach">
-          <button className="w-full h-12 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-sm shadow-md hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
-            <Sparkles className="h-4 w-4" />
-            AI Parenting Coach — get a plan now
+            ✨ Experience Now
           </button>
         </Link>
 
@@ -576,7 +568,7 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
 
       {/* ── Bottom note ──────────────────────────────────────── */}
       <p className="text-xs text-muted-foreground text-center mt-6 pb-4">
-        Takes less than 1 minute to set up · Works for ages 0–15 years
+        Works for ages 0–15 years · Science-backed parenting plans
       </p>
     </div>
   );
