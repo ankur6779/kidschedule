@@ -227,8 +227,6 @@ function FloatingTabBar({ state, navigation }: any) {
               );
             })}
 
-            {/* fourth (visual right) slot empty filler if needed - actually we only have 4 tabs (3 non-coach), so we add a placeholder for symmetry */}
-            <View style={styles.itemHit} pointerEvents="none" />
           </View>
         </BlurView>
       </View>

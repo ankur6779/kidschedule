@@ -118,8 +118,8 @@ function computeStreak(routines: Routine[]): number {
 
 // ─── Hero Greeting ────────────────────────────────────────────────────────
 function HeroGreeting({
-  displayName, hasChildren, onMenu,
-}: { displayName: string; hasChildren: boolean; onMenu: () => void }) {
+  displayName, hasChildren, onMenu, onAskAmy,
+}: { displayName: string; hasChildren: boolean; onMenu: () => void; onAskAmy: () => void }) {
   return (
     <LinearGradient
       colors={["rgba(123,63,242,0.30)", "rgba(255,78,205,0.22)", "rgba(20,20,43,0.0)"] as const}
@@ -139,15 +139,25 @@ function HeroGreeting({
           >
             <Text style={styles.aiBadgeText}>AI</Text>
           </LinearGradient>
-        </View>
-        <View style={styles.heroRightRow}>
-          <View style={styles.heroFaceRing}>
-            <AmyFace size={26} />
-          </View>
-          <TouchableOpacity onPress={onMenu} hitSlop={10} style={styles.menuBtn} activeOpacity={0.8}>
-            <Ionicons name="menu" size={22} color="#FFFFFF" />
+          <TouchableOpacity
+            onPress={onAskAmy}
+            hitSlop={8}
+            activeOpacity={0.8}
+            style={styles.amyAiHeaderBtn}
+          >
+            <LinearGradient
+              colors={["#7B3FF2", "#FF4ECD"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.amyAiHeaderBtnGrad}
+            >
+              <AmyFace size={15} />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity onPress={onMenu} hitSlop={10} style={styles.menuBtn} activeOpacity={0.8}>
+          <Ionicons name="menu" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
       </View>
       <Text style={styles.heroEyebrow}>{getGreeting().toUpperCase()}</Text>
       <Text style={styles.heroTitle}>
@@ -989,6 +999,7 @@ export default function HomeScreen() {
             displayName={displayName}
             hasChildren={(childrenList.length ?? 0) > 0}
             onMenu={() => setDrawerOpen(true)}
+            onAskAmy={() => router.push("/amy-ai")}
           />
 
           <View style={{ height: 16 }} />
@@ -1440,6 +1451,14 @@ const styles = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(255,255,255,0.06)",
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
+  },
+  amyAiHeaderBtn: {
+    borderRadius: 14, overflow: "hidden",
+    shadowColor: "#FF4ECD", shadowOpacity: 0.5, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 6,
+  },
+  amyAiHeaderBtnGrad: {
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: "center", justifyContent: "center",
   },
 
   /* DRAWER */
