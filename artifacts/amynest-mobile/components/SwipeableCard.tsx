@@ -9,9 +9,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 
-const THRESHOLD = 92;
+const THRESHOLD = 100;
 const COMPLETE_COLOR = "#22C55E";
 const DELETE_COLOR = "#EF4444";
+const SKIP_COLOR = "#EF4444";
 const SPRING = { damping: 18, stiffness: 200, mass: 0.7 } as const;
 
 function hImpact() { if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); }
@@ -23,7 +24,8 @@ export type SwipeableCardProps = {
   onTap?: () => void;
   onLongPress?: () => void;
   onSwipeRight?: () => void; // mark complete
-  onSwipeLeft?: () => void;  // delete (animates out before firing)
+  onSwipeLeft?: () => void;  // skip or delete (see leftActionMode)
+  leftActionMode?: "skip" | "delete"; // skip = pulse + snap back; delete = slide out + collapse
   disableSwipeRight?: boolean;
   disableSwipeLeft?: boolean;
   borderRadius?: number;
@@ -32,6 +34,7 @@ export type SwipeableCardProps = {
 
 export default function SwipeableCard({
   children, onTap, onLongPress, onSwipeRight, onSwipeLeft,
+  leftActionMode = "skip",
   disableSwipeRight, disableSwipeLeft, borderRadius = 18, glowColor = "#7B3FF2",
 }: SwipeableCardProps) {
   const tx = useSharedValue(0);
@@ -87,12 +90,24 @@ export default function SwipeableCard({
         );
         runOnJS(fireRight)();
       } else if (dx < -THRESHOLD && !disableSwipeLeft && onSwipeLeft) {
-        // slide out + collapse
-        tx.value = withTiming(-520, { duration: 220 });
-        opacity.value = withTiming(0, { duration: 200 });
-        collapse.value = withDelay(160, withTiming(0, { duration: 200 }, (done) => {
-          if (done) runOnJS(fireLeft)();
-        }));
+        if (leftActionMode === "delete") {
+          tx.value = withTiming(-520, { duration: 220 });
+          opacity.value = withTiming(0, { duration: 200 });
+          collapse.value = withDelay(160, withTiming(0, { duration: 200 }, (done) => {
+            if (done) runOnJS(fireLeft)();
+          }));
+        } else {
+          // skip: pulse + snap back, item stays in list
+          tx.value = withSequence(
+            withTiming(-180, { duration: 140 }),
+            withDelay(40, withSpring(0, { damping: 14, stiffness: 220 })),
+          );
+          scale.value = withSequence(
+            withTiming(1.04, { duration: 130 }),
+            withSpring(1, SPRING),
+          );
+          runOnJS(fireLeft)();
+        }
       } else {
         tx.value = withSpring(0, { damping: 16, stiffness: 240 });
       }
@@ -185,7 +200,7 @@ export default function SwipeableCard({
             style={[StyleSheet.absoluteFillObject, { borderRadius }]}
           />
           <Animated.View style={leftIconStyle}>
-            <Ionicons name="trash" size={24} color="#FFFFFF" />
+            <Ionicons name={leftActionMode === "delete" ? "trash" : "play-skip-forward"} size={24} color="#FFFFFF" />
           </Animated.View>
         </Animated.View>
       </View>

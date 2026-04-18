@@ -12,6 +12,7 @@ import { BlurView } from "expo-blur";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
+import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
@@ -395,7 +396,7 @@ export default function RoutineDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient colors={["#0B0B1A", "#14142B", "#1B1B3A"]} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
+      <LinearGradient colors={["#0F172A", "#1E293B", "#0F172A"]} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 8 }]}>
@@ -460,6 +461,8 @@ export default function RoutineDetailScreen() {
                 </BlurView>
               </View>
 
+              <AmyAISuggests stats={stats} title={routine.title} />
+
               <View style={styles.activitiesHeaderRow}>
                 <Text style={styles.sectionTitle}>ACTIVITIES</Text>
                 <TouchableOpacity onPress={() => setAddOpen(true)} style={styles.addBtn} activeOpacity={0.85}>
@@ -469,6 +472,7 @@ export default function RoutineDetailScreen() {
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
+              <Text style={styles.swipeHint}>← Swipe to skip   •   Swipe to complete →</Text>
             </View>
           }
           ListEmptyComponent={
@@ -477,16 +481,33 @@ export default function RoutineDetailScreen() {
             </View>
           }
           renderItem={({ item, index }) => (
-            <SwipeableCard
-              onTap={() => handleTap(index)}
-              onLongPress={() => setActionItem(index)}
-              onSwipeRight={() => setItemStatus(index, item.status === "completed" ? "pending" : "completed")}
-              onSwipeLeft={() => deleteItem(index)}
-              borderRadius={18}
-              glowColor={item.status === "completed" ? "#10B981" : "#7B3FF2"}
+            <Animated.View
+              entering={FadeIn.delay(index * 35).duration(280)}
+              style={styles.timelineRow}
             >
-              <ItemCard item={item} />
-            </SwipeableCard>
+              <View style={styles.railCol}>
+                <View style={[styles.railLine, index === 0 && { top: 16 }, index === items.length - 1 && { bottom: "50%" }]} />
+                <View style={[
+                  styles.railDot,
+                  item.status === "completed" && { backgroundColor: "#22C55E", borderColor: "#22C55E" },
+                  item.status === "skipped" && { backgroundColor: "#475569", borderColor: "#475569" },
+                  item.status === "delayed" && { backgroundColor: "#F59E0B", borderColor: "#F59E0B" },
+                ]} />
+              </View>
+              <View style={styles.timelineCard}>
+                <SwipeableCard
+                  onTap={() => handleTap(index)}
+                  onLongPress={() => setActionItem(index)}
+                  onSwipeRight={() => setItemStatus(index, item.status === "completed" ? "pending" : "completed")}
+                  onSwipeLeft={() => setItemStatus(index, item.status === "skipped" ? "pending" : "skipped")}
+                  leftActionMode="skip"
+                  borderRadius={18}
+                  glowColor={item.status === "completed" ? "#22C55E" : "#8B5CF6"}
+                >
+                  <ItemCard item={item} />
+                </SwipeableCard>
+              </View>
+            </Animated.View>
           )}
           ItemSeparatorComponent={null}
         />
@@ -689,6 +710,29 @@ function Stat({ num, label, color }: { num: number; label: string; color: string
 }
 function Divider() { return <View style={styles.statDivider} />; }
 
+function AmyAISuggests({ stats, title }: { stats: { done: number; total: number; remaining: number; skipped: number; pct: number }; title: string }) {
+  const tip = useMemo(() => {
+    if (stats.total === 0) return "Add a few activities and I'll help you optimize the day.";
+    if (stats.pct === 100) return `Incredible work — every activity in "${title}" is done. Time to celebrate with your little one!`;
+    if (stats.pct >= 75) return `You're crushing it — ${stats.remaining} more to wrap up the day. Keep the momentum.`;
+    if (stats.skipped >= 3) return `Several activities were skipped. Tap any to reschedule, or I can regenerate the rest of the day.`;
+    if (stats.pct >= 40) return `Nice rhythm so far. Long-press any activity to delay it without breaking the schedule.`;
+    return `Swipe right to mark complete, swipe left to skip. I'll auto-shift later activities for you.`;
+  }, [stats.pct, stats.remaining, stats.skipped, stats.total, title]);
+
+  return (
+    <View style={styles.aiCard}>
+      <View style={styles.aiBadge}>
+        <Ionicons name="sparkles" size={18} color="#A78BFA" />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.aiLabel}>AMY AI SUGGESTS</Text>
+        <Text style={styles.aiText}>{tip}</Text>
+      </View>
+    </View>
+  );
+}
+
 function ItemCard({ item }: { item: RoutineItem }) {
   const catKey = item.category?.toLowerCase() ?? "default";
   const catColor = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.default;
@@ -809,7 +853,29 @@ const styles = StyleSheet.create({
   addBtnGrad: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 14 },
   addBtnText: { color: "#FFFFFF", fontSize: 12, fontWeight: "700" },
 
-  itemCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 },
+  itemCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, backgroundColor: "#1E293B", minHeight: 76 },
+  timelineRow: { flexDirection: "row", alignItems: "stretch" },
+  railCol: { width: 22, alignItems: "center", paddingTop: 0, position: "relative" },
+  railLine: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: "rgba(139,92,246,0.22)", borderRadius: 1 },
+  railDot: {
+    width: 11, height: 11, borderRadius: 6,
+    backgroundColor: "#0F172A",
+    borderWidth: 2, borderColor: "#8B5CF6",
+    marginTop: 30,
+    shadowColor: "#8B5CF6", shadowOpacity: 0.7, shadowRadius: 4, shadowOffset: { width: 0, height: 0 },
+  },
+  timelineCard: { flex: 1, marginLeft: 10, marginBottom: 10 },
+  swipeHint: { color: "rgba(148,163,184,0.6)", fontSize: 10.5, fontWeight: "500", textAlign: "center", marginTop: 2, marginBottom: 8, letterSpacing: 0.4 },
+  aiCard: {
+    marginTop: 16, borderRadius: 18, padding: 14, flexDirection: "row", gap: 12,
+    backgroundColor: "rgba(139,92,246,0.10)", borderWidth: 1, borderColor: "rgba(139,92,246,0.35)",
+  },
+  aiBadge: {
+    width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(139,92,246,0.25)", borderWidth: 1, borderColor: "rgba(139,92,246,0.5)",
+  },
+  aiLabel: { color: "#A78BFA", fontSize: 10, fontWeight: "800", letterSpacing: 1.2, marginBottom: 2 },
+  aiText: { color: "#FFFFFF", fontSize: 13, lineHeight: 18, fontWeight: "500" },
   timeCol: { width: 56, borderRightWidth: 1, paddingRight: 10, gap: 3 },
   timeText: { fontSize: 12, fontWeight: "800" },
   durationRow: { flexDirection: "row", alignItems: "center", gap: 3 },

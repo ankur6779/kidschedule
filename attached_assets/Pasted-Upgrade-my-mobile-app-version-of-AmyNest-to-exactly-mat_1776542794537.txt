@@ -1,0 +1,144 @@
+Upgrade my mobile app version of "AmyNest" to exactly match the web app routine experience with swipe cards, images, and dark theme.
+
+IMPORTANT:
+- Replicate web routine UI behavior in mobile app
+- Ensure smooth gestures and performance
+- Apply modern dark theme design
+- Mobile-first implementation (not web copy)
+
+--------------------------------
+1. Web → Mobile Parity (Core 🔥)
+--------------------------------
+- Match EXACT features from web:
+  - Routine cards
+  - Images/icons
+  - Status badges
+  - Actions (complete/skip)
+
+- But redesign layout for mobile usability
+
+--------------------------------
+2. Dark Theme System (Important 🔥🔥)
+--------------------------------
+Apply dark theme:
+
+- Background: #0F172A (dark navy)
+- Card: #1E293B
+- Text:
+  - Primary: #FFFFFF
+  - Secondary: #94A3B8
+
+- Accent:
+  - Green: #22C55E (complete)
+  - Red: #EF4444 (skip)
+  - Purple: #8B5CF6 (Amy AI)
+
+--------------------------------
+3. Routine Card Design (Mobile Optimized)
+--------------------------------
+Each card:
+
+LEFT:
+- Time (bold)
+- Duration (small)
+
+RIGHT:
+- Image (50–60px)
+- Title (max 2 lines)
+- Description (max 2 lines)
+- Category badge
+
+--------------------------------
+4. Swipe Gesture (Core Feature 🔥🔥)
+--------------------------------
+- Use proper mobile gesture library:
+
+For React Native:
+→ react-native-gesture-handler
+→ react-native-reanimated
+
+Swipe RIGHT:
+→ Complete task
+→ Green background + ✔️ icon
+
+Swipe LEFT:
+→ Skip task
+→ Red background + ⏭ icon
+
+--------------------------------
+5. Swipe Animation (Premium Feel 🔥)
+--------------------------------
+- Smooth easing animation
+- Card follows finger
+- Snap back if not enough swipe
+- Threshold: 100px
+
+--------------------------------
+6. Background Action Layer
+--------------------------------
+Behind card show:
+
+LEFT SIDE:
+- Skip icon (⏭)
+- Red background
+
+RIGHT SIDE:
+- Check icon (✔️)
+- Green background
+
+--------------------------------
+7. Timeline Layout (Like Web)
+--------------------------------
+- Vertical line on left
+- Dot for each task
+- Card aligned to timeline
+
+--------------------------------
+8. Image Handling
+--------------------------------
+- Load optimized images
+- Use:
+  - resizeMode: cover
+  - lazy loading
+
+--------------------------------
+9. Amy AI Integration
+--------------------------------
+Top section:
+
+“Amy AI Suggests”
+→ Short dynamic text
+
+--------------------------------
+10. Performance Optimization
+--------------------------------
+- Use FlatList
+- Key extractor
+- Memoized components
+
+--------------------------------
+11. Mobile UX Rules
+--------------------------------
+- Minimum touch height: 60px
+- Proper spacing between cards
+- No overflow
+
+--------------------------------
+12. Animation Enhancements
+--------------------------------
+- Fade-in cards
+- Swipe bounce effect
+
+--------------------------------
+13. Keep it simple
+--------------------------------
+- No backend changes
+- Use existing routine data
+
+--------------------------------
+Return:
+Fully working mobile app routine with:
+- Web parity
+- Swipe gestures
+- Dark theme
+- Smooth UI
