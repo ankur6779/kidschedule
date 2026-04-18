@@ -59,26 +59,6 @@ export default function LandingPage() {
           75%  { color: #FFD166 }
           100% { color: #7B3FF2 }
         }
-        @keyframes amyChatPulse {
-          0%, 100% {
-            box-shadow:
-              0 0 0 0 rgba(168,85,247,0.55),
-              0 12px 36px rgba(168,85,247,0.45);
-          }
-          50% {
-            box-shadow:
-              0 0 0 16px rgba(168,85,247,0),
-              0 16px 44px rgba(236,72,153,0.55);
-          }
-        }
-        @keyframes amyChatFloat {
-          0%, 100% { transform: translateY(0) }
-          50% { transform: translateY(-6px) }
-        }
-        @keyframes amyTipBounce {
-          0%, 100% { transform: translateY(0) }
-          50% { transform: translateY(-3px) }
-        }
         .amy-float { animation: amyFloat 5s ease-in-out infinite }
         .amy-bounce { animation: amyBounce 2.6s ease-in-out infinite }
         .amy-pulse { animation: amyPulse 2.8s ease-out infinite }
@@ -285,98 +265,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* FLOATING AMY AI CHAT BUTTON — bottom-right */}
-      <Link
-        href="/sign-up"
-        className="amy-chat-fab fixed z-50 group"
-        style={{ bottom: 24, right: 20 }}
-        data-testid="link-amy-chat-fab"
-        aria-label="Talk to Amy AI"
-      >
-          {/* Tooltip */}
-          <div
-            className="amy-chat-tooltip absolute right-0 whitespace-nowrap text-xs font-bold px-3.5 py-2 rounded-full"
-            style={{
-              bottom: "calc(100% + 14px)",
-              background: "rgba(255,255,255,0.96)",
-              color: "#0f0c29",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.4) inset",
-              animation: "amyTipBounce 2.6s ease-in-out infinite",
-            }}
-          >
-            💬 Talk to Amy AI
-            {/* arrow */}
-            <span
-              className="absolute"
-              style={{
-                right: 22,
-                bottom: -5,
-                width: 10,
-                height: 10,
-                background: "rgba(255,255,255,0.96)",
-                transform: "rotate(45deg)",
-                boxShadow: "2px 2px 4px rgba(0,0,0,0.08)",
-              }}
-            />
-          </div>
-
-          {/* Soft outer glow */}
-          <span
-            aria-hidden
-            className="absolute inset-0 rounded-full -z-10"
-            style={{
-              background: "radial-gradient(circle, rgba(168,85,247,0.55), transparent 70%)",
-              filter: "blur(18px)",
-              transform: "scale(1.4)",
-            }}
-          />
-
-          {/* Avatar */}
-          <div
-            className="amy-chat-avatar relative h-16 w-16 md:h-[68px] md:w-[68px] rounded-full flex items-center justify-center text-3xl md:text-[32px] select-none overflow-hidden"
-            style={{
-              background:
-                "conic-gradient(from 200deg, #7B3FF2, #FF4ECD, #4FC3F7, #7B3FF2)",
-              padding: 3,
-              animation:
-                "amyChatFloat 3.4s ease-in-out infinite, amyChatPulse 2.8s ease-out infinite",
-            }}
-          >
-            <div
-              className="h-full w-full rounded-full flex items-center justify-center"
-              style={{
-                background:
-                  "radial-gradient(circle at 30% 30%, #FFFFFF 0%, #F3E8FF 55%, #E9D5FF 100%)",
-              }}
-            >
-              <span style={{ filter: "drop-shadow(0 2px 4px rgba(124,58,237,0.25))" }}>
-                😊
-              </span>
-            </div>
-          </div>
-      </Link>
-
-      <style>{`
-        .amy-chat-fab .amy-chat-tooltip {
-          opacity: 0;
-          transform: translateY(4px);
-          transition: opacity .25s ease, transform .25s ease;
-          pointer-events: none;
-        }
-        .amy-chat-fab:hover .amy-chat-tooltip,
-        .amy-chat-fab:focus .amy-chat-tooltip {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        .amy-chat-fab .amy-chat-avatar {
-          transition: transform .3s ease, filter .3s ease;
-        }
-        .amy-chat-fab:hover .amy-chat-avatar {
-          transform: scale(1.08);
-          filter: drop-shadow(0 0 24px rgba(236,72,153,0.7));
-        }
-      `}</style>
 
       {/* FOOTER */}
       <footer className="relative z-10 px-5 py-8 border-t border-white/10 text-center">
