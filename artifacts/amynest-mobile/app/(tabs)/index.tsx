@@ -2,17 +2,20 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, FlatList, Platform, ActivityIndicator,
-  Modal, Pressable, Animated, Dimensions, Easing,
+  Modal, Pressable, Animated, Dimensions, Easing, Image,
 } from "react-native";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+
 import Svg, { Circle } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+
+const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
 type Colors = ReturnType<typeof useColors>;
 
@@ -126,7 +129,7 @@ function HeroGreeting({
     >
       <View style={styles.heroTopRow}>
         <View style={styles.heroBrandRow}>
-          <AmyAvatar size={28} />
+          <Image source={LOGO_IMG} style={styles.heroLogo} resizeMode="contain" />
           <Text style={styles.heroBrand}>Amy Nest</Text>
           <LinearGradient
             colors={["#7B3FF2", "#FF4ECD"]}
@@ -583,7 +586,7 @@ function SideDrawer({
         >
           <View style={styles.drawerHeader}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <AmyAvatar size={34} />
+              <Image source={LOGO_IMG} style={{ width: 38, height: 38, borderRadius: 10 }} resizeMode="contain" />
               <View>
                 <Text style={styles.drawerBrand}>AmyNest</Text>
                 <Text style={styles.drawerBrandSub}>AI Parenting Coach</Text>
@@ -1415,6 +1418,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   heroBrandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  heroLogo: { width: 30, height: 30, borderRadius: 8 },
   heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF", letterSpacing: 0.2 },
   aiBadge: {
     paddingHorizontal: 8, paddingVertical: 3,

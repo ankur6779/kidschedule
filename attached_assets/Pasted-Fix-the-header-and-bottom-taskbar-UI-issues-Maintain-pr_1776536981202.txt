@@ -1,0 +1,123 @@
+Fix the header and bottom taskbar UI issues. Maintain premium design and correct all visual bugs.
+
+----------------------------------------
+
+PART 1: HEADER FIX (LOGO BASED)
+
+- Replace emoji with actual Amy Nest logo image
+- Structure:
+
+[Logo]  Amy Nest  [AI badge]  [Amy AI face icon]  [menu]
+
+RULES:
+- MUST use image asset (no emoji)
+- Proper spacing (8–10px)
+- Dark glass background
+- Premium alignment
+
+Amy AI icon:
+- Cute face
+- Blinking eyes animation (every 2–3s)
+- Subtle glow
+
+----------------------------------------
+
+PART 2: TASKBAR FIX (VERY IMPORTANT)
+
+PROBLEM:
+- Center "Amy Coach" icon is getting CUT / CROPPED
+
+ROOT CAUSE:
+- Parent container is clipping (overflow hidden)
+
+----------------------------------------
+
+SOLUTION:
+
+1. ALLOW OVERFLOW
+
+- Set parent container:
+  overflow: visible
+
+IMPORTANT:
+- This must be applied to:
+  - Bottom tab container
+  - Parent wrapper
+
+----------------------------------------
+
+2. CENTER ICON (AMY COACH – BRAIN)
+
+- Use brain icon (clean, rounded style)
+- Place inside circular gradient background
+
+STYLE:
+- Size: 64px–72px
+- Gradient: purple (#7B3FF2) → pink (#FF4ECD)
+- Strong glow
+
+----------------------------------------
+
+3. FLOATING POSITION (KEY FIX)
+
+- Move icon ABOVE taskbar
+
+Use:
+- position: absolute
+- top: -20px to -30px (so it comes out)
+
+----------------------------------------
+
+4. ELEVATION
+
+- Add zIndex: 10+ (or higher than taskbar)
+- Add shadow + glow
+
+----------------------------------------
+
+5. TASKBAR DESIGN
+
+- Floating bar (not attached to bottom)
+- Margin bottom: 16px
+- Rounded pill shape (radius 28px+)
+- Glassmorphism (blur + transparency)
+
+----------------------------------------
+
+6. ACTIVE STATE (AMY COACH)
+
+- Scale: 1.1
+- Glow pulse animation
+- Slight bounce on tap
+
+----------------------------------------
+
+7. OTHER ICONS
+
+- Keep minimal
+- Opacity: 0.5 inactive
+- No overflow issues
+
+----------------------------------------
+
+8. ANIMATIONS
+
+Brain icon:
+- Glow pulse
+- Smooth floating feel
+
+----------------------------------------
+
+CONSTRAINTS:
+
+- Do NOT redesign layout
+- Fix ONLY visual issues
+- Ensure NO clipping anywhere
+- Maintain premium UI
+
+----------------------------------------
+
+OUTPUT:
+
+- Updated Expo / React Native code
+- Clean component structure
