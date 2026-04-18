@@ -143,7 +143,7 @@ export default function WelcomeScreen() {
                 <Image source={LOGO} style={styles.navLogoImg} resizeMode="cover" />
               </View>
               <Text style={styles.navBrandText}>
-                AmyNest <Text style={styles.navBrandAccent}>AI</Text>
+                Amy<Text style={styles.navNestAccent}>Nest</Text> <Text style={styles.navBrandAccent}>AI</Text>
               </Text>
             </View>
             <Link href="/sign-in" asChild>
@@ -333,6 +333,9 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(168,85,247,0.35)",
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 8,
+  },
+  navNestAccent: {
+    color: "#22C55E",
   },
   navBrandAccent: {
     color: "#A855F7",
