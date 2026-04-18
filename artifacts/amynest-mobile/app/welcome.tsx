@@ -18,7 +18,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LOGO = require("../assets/images/amynest-logo.png");
-const AVATAR = require("../assets/images/amynest-logo.png");
+const AVATAR = require("../assets/images/amynest-logo-face.png");
 
 const FEATURES = [
   {

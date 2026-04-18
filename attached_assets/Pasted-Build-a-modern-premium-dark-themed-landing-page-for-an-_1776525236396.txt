@@ -1,0 +1,109 @@
+Build a modern, premium dark-themed landing page for an AI product called "Amy AI".
+
+Tech stack:
+- React (with Vite)
+- Tailwind CSS
+- Framer Motion for animations
+
+Design style:
+- Apple-level minimal + futuristic
+- Dark UI (#0B0B1A background)
+- Neon purple (#7B3FF2) + pink glow accents
+- Smooth gradients, glassmorphism, soft shadows
+
+----------------------------------------
+
+SECTION 1: HERO
+
+- Full screen hero section
+- Headline: "Meet Amy AI – Your Smart Parenting Companion"
+- Subtext: AI-powered assistant for parents to guide kids' growth, habits, and learning
+- 1 primary CTA button: "Get Started"
+- 1 secondary CTA: "See How It Works"
+
+Right side:
+- Add a cute circular AI avatar (Amy AI)
+- Use soft gradient ring (purple + pink)
+- Add floating animation (up-down smooth loop)
+- Add glow effect behind avatar
+
+----------------------------------------
+
+SECTION 2: FLOATING AI BUTTON (IMPORTANT)
+
+Create a floating chatbot trigger at bottom-right:
+
+- Circular button with cute avatar
+- Label on top: "Amy AI"
+- Pulse animation (scale effect)
+- Glow shadow
+
+On click:
+- Open a modal / chat panel
+- Show message: "Hi, I’m Amy 👋 How can I help you today?"
+
+----------------------------------------
+
+SECTION 3: FEATURES
+
+3–4 cards with icons:
+
+- Smart Parenting Guidance
+- Daily Routine Planner
+- Child Development Insights
+- AI-powered Recommendations
+
+Cards:
+- Glass effect (blur background)
+- Hover animation (lift + glow)
+
+----------------------------------------
+
+SECTION 4: SOCIAL PROOF
+
+- Add testimonials (2–3 cards)
+- Simple clean layout
+
+----------------------------------------
+
+SECTION 5: FINAL CTA
+
+- Big centered CTA:
+"Start Your Parenting Journey with Amy AI"
+
+Button: Get Started
+
+----------------------------------------
+
+ANIMATIONS
+
+- Use Framer Motion
+- Fade-in on scroll
+- Floating animation for avatar
+- Button hover scale
+- Smooth transitions
+
+----------------------------------------
+
+CONSTRAINTS
+
+- Only 2 CTA buttons on page (no clutter)
+- Mobile responsive
+- Clean spacing and typography
+- No unnecessary text
+
+----------------------------------------
+
+EXTRA
+
+- Use a cute placeholder avatar image
+- Add subtle background gradient blobs
+- Make UI extremely polished and modern
+
+----------------------------------------
+
+OUTPUT
+
+- Complete working React code
+- Component-based structure
+- Clean and readable code
