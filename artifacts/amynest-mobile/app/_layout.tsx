@@ -197,6 +197,7 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [fontTimeout, setFontTimeout] = useState(false);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -204,7 +205,18 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  useEffect(() => {
+    const timer = setTimeout(() => setFontTimeout(true), 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (fontTimeout) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontTimeout]);
+
+  if (!fontsLoaded && !fontError && !fontTimeout) return null;
 
   const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
