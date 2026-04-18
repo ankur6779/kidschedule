@@ -139,7 +139,7 @@ export default function WelcomeScreen() {
         >
           {/* Top nav — ULTRA premium brand */}
           <View style={styles.nav}>
-              <View style={styles.navBrand}>
+            <View style={styles.navBrand}>
               <View style={styles.navLogoWrap}>
                 <View style={styles.navLogoOuterGlow} />
                 <LinearGradient
@@ -154,9 +154,20 @@ export default function WelcomeScreen() {
                 </LinearGradient>
               </View>
 
-              {/* Text + badge stack */}
               <View style={styles.navWordStack}>
-                <Text style={styles.navAmy}>Amy Nest AI - Where Smart Parenting begins</Text>
+                <View style={styles.navTextRow}>
+                  <Text style={styles.navAmy}>Amy</Text>
+                  <Text style={styles.navNest}>Nest</Text>
+                </View>
+                <LinearGradient
+                  colors={["#F472B6", "#A855F7", "#6366F1"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.navAiBadge}
+                >
+                  <Ionicons name="sparkles" size={9} color="#fff" style={{ marginRight: 3 }} />
+                  <Text style={styles.navBrandAccent}>AI</Text>
+                </LinearGradient>
               </View>
             </View>
 
