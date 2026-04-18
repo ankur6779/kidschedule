@@ -431,18 +431,19 @@ export default function AICoachPage() {
           <div className="space-y-6">
             {filteredCategories.map((cat) => (
               <section key={cat.id}>
-                <h2 className="font-quicksand font-bold text-xs uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5 px-1">
+                <h2 className="font-quicksand font-bold text-xs uppercase tracking-wide text-white/50 mb-2 flex items-center gap-1.5 px-1">
                   <span>{cat.emoji}</span> {cat.title}
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {cat.items.map((g) => (
                     <button key={g.id} onClick={() => handlePickGoal(g.id)}
-                      className={`bg-gradient-to-br ${g.gradient} rounded-2xl p-4 border-2 border-transparent hover:border-violet-400 hover:shadow-md active:scale-[0.98] transition-all text-left flex items-center gap-3`}
+                      className="relative rounded-2xl p-4 border border-white/10 text-left backdrop-blur-md hover:border-violet-400/50 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center gap-3 overflow-hidden"
+                      style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%)", boxShadow: "0 0 15px rgba(139,92,246,0.1), inset 0 1px 0 rgba(255,255,255,0.05)" }}
                     >
                       <span className="text-2xl shrink-0">{g.emoji}</span>
                       <div>
-                        <p className="font-quicksand font-bold text-sm text-foreground leading-tight">{g.title}</p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Tap to start →</p>
+                        <p className="font-quicksand font-bold text-sm text-white leading-tight">{g.title}</p>
+                        <p className="text-[11px] text-white/40 mt-0.5">Tap to start →</p>
                       </div>
                     </button>
                   ))}
@@ -450,7 +451,7 @@ export default function AICoachPage() {
               </section>
             ))}
             {totalMatches === 0 && (
-              <p className="text-center py-8 text-sm text-muted-foreground">No goals match "{goalSearch}"</p>
+              <p className="text-center py-8 text-sm text-white/40">No goals match "{goalSearch}"</p>
             )}
           </div>
         </div>
@@ -473,12 +474,14 @@ export default function AICoachPage() {
             </Link>
           </div>
 
-          <div className={`bg-gradient-to-br ${activeCat.gradient} rounded-2xl p-4`}>
-            <div className="flex items-center gap-3">
+          <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/25 p-4"
+            style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.2) 0%,rgba(236,72,153,0.1) 100%)", boxShadow: "0 0 35px rgba(139,92,246,0.25), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
+            <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(139,92,246,0.3)" }} />
+            <div className="flex items-center gap-3 relative">
               <span className="text-4xl">{activeCat.emoji}</span>
               <div>
-                <h1 className="font-quicksand text-xl font-bold text-foreground">{activeCat.title}</h1>
-                <p className="text-xs text-muted-foreground">{activeCat.items.length} goals — pick one to start</p>
+                <h1 className="font-quicksand text-xl font-bold text-white">{activeCat.title}</h1>
+                <p className="text-xs text-white/50">{activeCat.items.length} goals — pick one to start</p>
               </div>
             </div>
           </div>
@@ -494,12 +497,13 @@ export default function AICoachPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {activeCat.items.map((g) => (
               <button key={g.id} onClick={() => handlePickGoal(g.id)}
-                className={`bg-gradient-to-br ${g.gradient} rounded-2xl p-5 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.98] transition-all text-left flex items-center gap-4`}
+                className="relative rounded-2xl p-5 border border-white/10 text-left backdrop-blur-md hover:border-violet-400/50 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center gap-4 overflow-hidden"
+                style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%)", boxShadow: "0 0 18px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.06)" }}
               >
                 <span className="text-3xl shrink-0">{g.emoji}</span>
                 <div className="flex-1">
-                  <p className="font-quicksand font-bold text-base text-foreground leading-tight">{g.title}</p>
-                  <p className="text-[11px] text-muted-foreground mt-1">Tap to start →</p>
+                  <p className="font-quicksand font-bold text-base text-white leading-tight">{g.title}</p>
+                  <p className="text-[11px] text-white/40 mt-1">Tap to start →</p>
                 </div>
               </button>
             ))}
@@ -522,14 +526,21 @@ export default function AICoachPage() {
           </Link>
         </div>
 
-        <div>
-          <h1 className="font-quicksand text-2xl font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-violet-500" />
-            AI Coach (Ask AMY)
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Choose a category to see goals — I'll build a science-backed 12-step plan.
-          </p>
+        {/* Premium hero panel */}
+        <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/20 p-5"
+          style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.25) 0%,rgba(236,72,153,0.12) 100%)", boxShadow: "0 0 50px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.08)" }}>
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(139,92,246,0.35)" }} />
+          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(236,72,153,0.2)" }} />
+          <div className="relative flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)", boxShadow: "0 0 20px rgba(139,92,246,0.5)" }}>
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="font-quicksand text-2xl font-bold text-white">AI Coach (Ask AMY)</h1>
+              <p className="text-xs text-white/60 mt-0.5">Choose a goal — I'll build your 12-step science plan.</p>
+            </div>
+          </div>
         </div>
 
         <div className="relative">
@@ -541,13 +552,19 @@ export default function AICoachPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {GOAL_CATEGORIES.map((cat) => (
+          {GOAL_CATEGORIES.map((cat, i) => (
             <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
-              className={`bg-gradient-to-br ${cat.gradient} rounded-2xl p-5 border-2 border-transparent hover:border-violet-400 hover:shadow-lg active:scale-[0.97] transition-all text-left`}
+              className="relative rounded-3xl p-5 border border-white/10 text-left backdrop-blur-md hover:border-violet-400/50 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)",
+                boxShadow: "0 0 20px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.06)",
+                animationDelay: `${i * 60}ms`,
+              }}
             >
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full blur-2xl opacity-50 pointer-events-none" style={{ background: "rgba(139,92,246,0.3)" }} />
               <span className="text-4xl block mb-3">{cat.emoji}</span>
-              <p className="font-quicksand font-bold text-base text-foreground leading-tight">{cat.title}</p>
-              <p className="text-[11px] text-muted-foreground mt-1">{cat.items.length} goals →</p>
+              <p className="font-quicksand font-bold text-base text-white leading-tight">{cat.title}</p>
+              <p className="text-[11px] text-white/40 mt-1">{cat.items.length} goals →</p>
             </button>
           ))}
         </div>
@@ -565,18 +582,19 @@ export default function AICoachPage() {
         </button>
 
         <div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+          <div className="flex items-center justify-between text-xs text-white/50 mb-1.5">
             <span className="font-semibold">Question {qIndex + 1} of {QUESTIONS.length}</span>
             <span>{selectedGoal?.title}</span>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all" style={{ width: `${progressPct}%` }} />
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all"
+              style={{ width: `${progressPct}%`, boxShadow: "0 0 8px rgba(139,92,246,0.7)" }} />
           </div>
         </div>
 
-        <h2 className="font-quicksand text-xl font-bold text-foreground">{currentQ.prompt}</h2>
+        <h2 className="font-quicksand text-xl font-bold text-white">{currentQ.prompt}</h2>
         {currentQ.type === "multi" && (
-          <p className="text-xs text-muted-foreground -mt-3">Pick any that apply</p>
+          <p className="text-xs text-white/40 -mt-3">Pick any that apply</p>
         )}
 
         <div className="space-y-2">
@@ -588,14 +606,13 @@ export default function AICoachPage() {
               <button
                 key={opt}
                 onClick={() => handleSelectOption(opt)}
-                className={`w-full text-left px-4 py-3.5 rounded-2xl border-2 transition-all flex items-center justify-between gap-3 ${
-                  selected
-                    ? "bg-violet-50 dark:bg-violet-500/15 border-violet-500 text-violet-900 dark:text-violet-100"
-                    : "bg-card border-border hover:border-violet-300"
-                }`}
+                className="w-full text-left px-4 py-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 backdrop-blur-sm"
+                style={selected
+                  ? { background: "linear-gradient(135deg,rgba(139,92,246,0.35) 0%,rgba(236,72,153,0.2) 100%)", border: "1px solid rgba(139,92,246,0.6)", color: "#fff", boxShadow: "0 0 20px rgba(139,92,246,0.25)" }
+                  : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}
               >
                 <span className="font-semibold text-sm">{opt}</span>
-                {selected && <Check className="h-5 w-5 text-violet-600 shrink-0" />}
+                {selected && <Check className="h-5 w-5 text-violet-300 shrink-0" />}
               </button>
             );
           })}
@@ -604,9 +621,10 @@ export default function AICoachPage() {
         <button
           onClick={handleNextQ}
           disabled={!isAnswered}
-          className="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-violet-600 to-pink-600 text-white disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg transition-all"
+          className="w-full py-4 rounded-2xl font-bold text-base text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)", boxShadow: isAnswered ? "0 0 30px rgba(139,92,246,0.5)" : "none" }}
         >
-          {qIndex < QUESTIONS.length - 1 ? "Next" : "Build My Plan ✨"}
+          {qIndex < QUESTIONS.length - 1 ? "Next →" : "Build My Plan ✨"}
         </button>
       </div>
     );
@@ -634,14 +652,14 @@ export default function AICoachPage() {
     return (
       <div style={{
         position: "fixed", inset: 0,
-        background: "linear-gradient(135deg, #faf5ff 0%, #fdf4ff 50%, #f0f9ff 100%)",
+        background: "linear-gradient(160deg, #0f0c29 0%, #1a1040 55%, #0c1220 100%)",
         zIndex: 50, display: "flex", flexDirection: "column",
       }}>
-        {/* Top bar — light theme */}
+        {/* Top bar — dark glass */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0, zIndex: 20,
           padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 100%)",
+          background: "linear-gradient(180deg, rgba(15,12,41,0.95) 0%, rgba(15,12,41,0) 100%)",
           backdropFilter: "blur(8px)",
         }}>
           <button
@@ -749,10 +767,11 @@ export default function AICoachPage() {
             onClick={() => goToCard(Math.max(0, activeIdx - 1))}
             disabled={activeIdx === 0}
             style={{
-              color: "#6d28d9",
-              background: "rgba(255,255,255,0.85)",
-              boxShadow: "0 2px 8px rgba(139,92,246,0.15)",
-              borderRadius: 999, padding: "10px 16px", border: "1px solid rgba(139,92,246,0.2)",
+              color: "#c4b5fd",
+              background: "rgba(255,255,255,0.08)",
+              backdropFilter: "blur(8px)",
+              boxShadow: "0 0 15px rgba(139,92,246,0.15)",
+              borderRadius: 999, padding: "10px 16px", border: "1px solid rgba(139,92,246,0.3)",
               cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1,
               display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
             }}
@@ -807,18 +826,22 @@ function WinCard({
         flex: "0 0 100%", width: "100%", height: "100vh",
         scrollSnapAlign: "start", position: "relative",
         background: isExtension
-          ? "linear-gradient(135deg, #fef3c7 0%, #fce7f3 50%, #ede9fe 100%)"
-          : "linear-gradient(135deg, #faf5ff 0%, #fdf4ff 50%, #f0f9ff 100%)",
+          ? "linear-gradient(135deg, #1a0f2e 0%, #2d1b4e 50%, #1a1040 100%)"
+          : "linear-gradient(160deg, #0f0c29 0%, #1a1040 55%, #0c1220 100%)",
         overflow: "hidden",
       }}
     >
+      {/* Ambient glow orbs */}
+      <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, borderRadius: "50%", background: isExtension ? "rgba(245,158,11,0.15)" : "rgba(139,92,246,0.2)", filter: "blur(60px)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: 80, left: -40, width: 160, height: 160, borderRadius: "50%", background: isExtension ? "rgba(236,72,153,0.12)" : "rgba(236,72,153,0.15)", filter: "blur(50px)", pointerEvents: "none" }} />
+
       {/* Scrollable content — full card */}
       <div style={{
         position: "absolute", inset: 0,
         padding: "92px 22px 130px",
         overflowY: "auto",
         WebkitOverflowScrolling: "touch",
-        color: "#1f2937",
+        color: "#f8f8ff",
       }}>
         {/* Win counter chip */}
         <div style={{
@@ -839,26 +862,26 @@ function WinCard({
         {isFirst && planTitle && (
           <div style={{
             marginBottom: 18, paddingBottom: 16,
-            borderBottom: "1px solid rgba(139,92,246,0.18)",
+            borderBottom: "1px solid rgba(255,255,255,0.1)",
           }}>
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, color: "#7c3aed", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.2, color: "#a78bfa", marginBottom: 4 }}>
               YOUR PLAN
             </p>
-            <h2 style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.2, marginBottom: 8, fontFamily: "Quicksand, sans-serif", color: "#1e1b4b" }}>
+            <h2 style={{ fontSize: 19, fontWeight: 800, lineHeight: 1.2, marginBottom: 8, fontFamily: "Quicksand, sans-serif", color: "#fff" }}>
               {planTitle}
             </h2>
             {planRootCause && (
               <div style={{
-                background: "rgba(244,114,182,0.1)", border: "1px solid rgba(244,114,182,0.3)",
+                background: "rgba(244,114,182,0.1)", border: "1px solid rgba(244,114,182,0.25)",
                 borderRadius: 12, padding: 12, marginTop: 8, marginBottom: 8,
               }}>
-                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#be185d", marginBottom: 4 }}>
+                <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#f9a8d4", marginBottom: 4 }}>
                   🧠 ROOT CAUSE
                 </p>
-                <p style={{ fontSize: 12.5, lineHeight: 1.55, color: "#4c1d3a" }}>{planRootCause}</p>
+                <p style={{ fontSize: 12.5, lineHeight: 1.55, color: "rgba(255,255,255,0.75)" }}>{planRootCause}</p>
               </div>
             )}
-            <p style={{ fontSize: 12.5, color: "#4b5563", lineHeight: 1.5 }}>
+            <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
               {planSummary}
             </p>
           </div>
@@ -868,12 +891,12 @@ function WinCard({
         <h3 style={{
           fontSize: 24, fontWeight: 800, lineHeight: 1.15,
           marginBottom: 6, fontFamily: "Quicksand, sans-serif",
-          color: "#1e1b4b",
+          color: "#fff",
         }}>
           {win.title}
         </h3>
         <p style={{
-          fontSize: 13.5, color: "#7c3aed",
+          fontSize: 13.5, color: "#c4b5fd",
           marginBottom: 16, lineHeight: 1.4, fontWeight: 600,
         }}>
           {win.objective}
@@ -882,14 +905,14 @@ function WinCard({
         {/* WHY THIS WORKS */}
         {win.deep_explanation && (
           <div style={{
-            background: "rgba(255,255,255,0.7)", border: "1px solid rgba(99,102,241,0.18)",
+            background: "rgba(255,255,255,0.05)", border: "1px solid rgba(99,102,241,0.25)",
             borderRadius: 14, padding: 14, marginBottom: 14,
-            boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
+            boxShadow: "0 0 20px rgba(99,102,241,0.1)",
           }}>
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#4338ca", marginBottom: 6 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#a5b4fc", marginBottom: 6 }}>
               🔬 WHY THIS WORKS
             </p>
-            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: "#1f2937" }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.6, color: "rgba(255,255,255,0.8)" }}>
               {win.deep_explanation}
             </p>
           </div>
@@ -897,16 +920,16 @@ function WinCard({
 
         {/* DO THIS */}
         <div style={{
-          background: "rgba(255,255,255,0.7)", border: "1px solid rgba(139,92,246,0.18)",
+          background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)",
           borderRadius: 14, padding: 14, marginBottom: 14,
-          boxShadow: "0 1px 3px rgba(15,23,42,0.04)",
+          boxShadow: "0 0 20px rgba(139,92,246,0.15)",
         }}>
-          <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#7c3aed", marginBottom: 10 }}>
+          <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#c4b5fd", marginBottom: 10 }}>
             ✅ DO THIS
           </p>
           <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
             {win.actions.map((a, i) => (
-              <li key={i} style={{ fontSize: 13.5, lineHeight: 1.5, display: "flex", gap: 10, color: "#1f2937" }}>
+              <li key={i} style={{ fontSize: 13.5, lineHeight: 1.5, display: "flex", gap: 10, color: "rgba(255,255,255,0.85)" }}>
                 <span style={{
                   flexShrink: 0, width: 22, height: 22, borderRadius: 999,
                   background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
@@ -923,13 +946,13 @@ function WinCard({
         {/* REAL EXAMPLE */}
         {win.example && (
           <div style={{
-            background: "rgba(220,252,231,0.8)", border: "1px solid rgba(34,197,94,0.35)",
+            background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)",
             borderRadius: 14, padding: 12, marginBottom: 12,
           }}>
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#15803d", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#86efac", marginBottom: 4 }}>
               💬 REAL EXAMPLE
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.55, color: "#14532d", fontStyle: "italic" }}>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.75)", fontStyle: "italic" }}>
               {win.example}
             </p>
           </div>
@@ -938,13 +961,13 @@ function WinCard({
         {/* MISTAKE TO AVOID */}
         {win.mistake_to_avoid && (
           <div style={{
-            background: "rgba(254,226,226,0.7)", border: "1px solid rgba(248,113,113,0.4)",
+            background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)",
             borderRadius: 14, padding: 12, marginBottom: 12,
           }}>
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#b91c1c", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#fca5a5", marginBottom: 4 }}>
               ⚠️ MISTAKE TO AVOID
             </p>
-            <p style={{ fontSize: 13, lineHeight: 1.55, color: "#7f1d1d" }}>
+            <p style={{ fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.75)" }}>
               {win.mistake_to_avoid}
             </p>
           </div>
@@ -953,14 +976,15 @@ function WinCard({
         {/* MICRO-TASK */}
         {win.micro_task && (
           <div style={{
-            background: "linear-gradient(135deg, rgba(167,139,250,0.18), rgba(236,72,153,0.15))",
-            border: "1px solid rgba(167,139,250,0.5)",
+            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(236,72,153,0.15))",
+            border: "1px solid rgba(167,139,250,0.4)",
             borderRadius: 14, padding: 14, marginBottom: 12,
+            boxShadow: "0 0 20px rgba(139,92,246,0.2)",
           }}>
-            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#6d28d9", marginBottom: 4 }}>
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1, color: "#c4b5fd", marginBottom: 4 }}>
               🎯 DO THIS TODAY (under 5 min)
             </p>
-            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#1e1b4b", fontWeight: 600 }}>
+            <p style={{ fontSize: 13.5, lineHeight: 1.5, color: "#fff", fontWeight: 600 }}>
               {win.micro_task}
             </p>
           </div>
@@ -970,7 +994,8 @@ function WinCard({
         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
           <span style={{
             fontSize: 11, padding: "4px 10px", borderRadius: 999,
-            background: "rgba(139,92,246,0.12)", color: "#6d28d9", fontWeight: 700,
+            background: "rgba(139,92,246,0.2)", color: "#c4b5fd", fontWeight: 700,
+            border: "1px solid rgba(139,92,246,0.3)",
           }}>
             ⏱ {win.duration}
           </span>
@@ -978,9 +1003,9 @@ function WinCard({
 
         {win.science_reference && (
           <p style={{
-            fontSize: 11, color: "#6b7280", lineHeight: 1.5,
+            fontSize: 11, color: "rgba(255,255,255,0.4)", lineHeight: 1.5,
             marginBottom: 14, fontStyle: "italic",
-            paddingLeft: 10, borderLeft: "2px solid rgba(139,92,246,0.3)",
+            paddingLeft: 10, borderLeft: "2px solid rgba(139,92,246,0.4)",
           }}>
             📚 Based on: {win.science_reference}
           </p>
@@ -988,12 +1013,12 @@ function WinCard({
 
         {/* Mark-as-done feedback */}
         <div style={{
-          background: "rgba(255,255,255,0.85)",
-          border: "1px solid rgba(139,92,246,0.25)",
+          background: "rgba(255,255,255,0.05)",
+          border: "1px solid rgba(255,255,255,0.1)",
           borderRadius: 16, padding: 14, marginBottom: 8,
-          boxShadow: "0 4px 12px rgba(139,92,246,0.08)",
+          boxShadow: "0 0 20px rgba(139,92,246,0.1)",
         }}>
-          <p style={{ fontSize: 13, fontWeight: 700, color: "#1e1b4b", marginBottom: 10 }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 10 }}>
             How did this win go?
           </p>
           <div style={{ display: "flex", gap: 6 }}>
