@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import type { ThemePalette } from "@/lib/theme";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -121,6 +122,7 @@ function computeStreak(routines: Routine[]): number {
 function HeroGreeting({
   displayName, hasChildren, onMenu, onAskAmy,
 }: { displayName: string; hasChildren: boolean; onMenu: () => void; onAskAmy: () => void }) {
+  const styles = useThemedStyles();
   return (
     <LinearGradient
       colors={["rgba(123,63,242,0.30)", "rgba(255,78,205,0.22)", "rgba(20,20,43,0.0)"] as const}
@@ -179,6 +181,7 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
   onPressChild: (id: number) => void;
   onAdd: () => void;
 }) {
+  const styles = useThemedStyles();
   if (children.length === 0) return null;
   return (
     <View style={{ marginBottom: 18 }}>
@@ -233,6 +236,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
   onOpen: (id: number) => void;
   onSeeAll: () => void;
 }) {
+  const styles = useThemedStyles();
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
 
@@ -359,6 +363,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
 // ─── Streak Card ──────────────────────────────────────────────────────────
 function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }) {
+  const styles = useThemedStyles();
   const isHot = streak >= 3;
   const isWarm = streak > 0 && streak < 3;
   const grad = isHot
@@ -567,6 +572,7 @@ const DRAWER_ITEMS: { key: string; label: string; icon: keyof typeof Ionicons.gl
 ];
 
 function ThemeToggleRow() {
+  const styles = useThemedStyles();
   const { mode, toggleTheme } = useTheme();
   const isDark = mode === "dark";
   return (
@@ -602,6 +608,7 @@ function ThemeToggleRow() {
 function SideDrawer({
   open, onClose, activeKey, onNavigate,
 }: { open: boolean; onClose: () => void; activeKey: string; onNavigate: (route: string) => void }) {
+  const styles = useThemedStyles();
   const screenW = Dimensions.get("window").width;
   const drawerW = Math.min(300, screenW * 0.82);
   const tx = useRef(new Animated.Value(drawerW)).current;
@@ -680,6 +687,7 @@ function SideDrawer({
 
 // ─── Floating Amy AI button ───────────────────────────────────────────────
 function AmyFAB({ onPress, bottomOffset }: { onPress: () => void; bottomOffset: number }) {
+  const styles = useThemedStyles();
   return (
     <View pointerEvents="box-none" style={[styles.fabWrap, { bottom: bottomOffset }]}>
       <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.fabHit}>
@@ -704,6 +712,7 @@ function StatCard({ label, value, sub, icon, gradient, accent, onPress }: {
   accent: string;
   onPress?: () => void;
 }) {
+  const styles = useThemedStyles();
   return (
     <TouchableOpacity activeOpacity={onPress ? 0.85 : 1} onPress={onPress} style={styles.statCardWrap}>
       <LinearGradient colors={gradient} style={styles.statCard}>
@@ -722,6 +731,7 @@ function StatCard({ label, value, sub, icon, gradient, accent, onPress }: {
 
 // ─── Amy AI Suggests ──────────────────────────────────────────────────────
 function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const styles = useThemedStyles();
   const todayStr = new Date().toISOString().slice(0, 10);
   const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
   const allItems = todayRoutines.flatMap((r) => r.items);
@@ -792,6 +802,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
 
 // ─── Parent Score Card ────────────────────────────────────────────────────
 function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const styles = useThemedStyles();
   const last7 = routines.slice(0, 7);
   const items = last7.flatMap((r) => r.items);
   const total = items.length;
@@ -877,6 +888,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
   onAddChild: () => void;
   onCoach: () => void;
 }) {
+  const styles = useThemedStyles();
   const features = [
     { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: "rgba(99,102,241,0.14)", border: "rgba(99,102,241,0.35)", grad: ["#3B82F6", "#6366F1"] as const },
     { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "rgba(16,185,129,0.14)", border: "rgba(16,185,129,0.35)", grad: ["#10B981", "#14B8A6"] as const },
@@ -951,6 +963,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────
 export default function HomeScreen() {
+  const styles = useThemedStyles();
   const { user } = useUser();
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -1237,7 +1250,19 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: ThemePalette) {
+  const isLight = theme.mode === "light";
+  const cardBg = isLight ? "#FFFFFF" : "#14142B";
+  const cardBorder = isLight ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.08)";
+  const subtleSurface = isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,0.04)";
+  const headerOverlay = isLight ? "rgba(15,23,42,0.03)" : "rgba(244,244,245,0.4)";
+  const rowOverlay = isLight ? "rgba(15,23,42,0.04)" : "rgba(244,244,245,0.5)";
+  const onCardPrimary = isLight ? "#0F172A" : "#FFFFFF";
+  const onCardSecondary = isLight ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.7)";
+  const onCardMuted = isLight ? "rgba(15,23,42,0.45)" : "rgba(255,255,255,0.6)";
+  const onScreenSecondary = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.6)";
+
+  return StyleSheet.create({
   container: { flex: 1 },
 
   /* HERO */
@@ -1268,7 +1293,7 @@ const styles = StyleSheet.create({
 
   /* CHILDREN STRIP */
   stripHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 4, marginBottom: 8 },
-  stripEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "rgba(255,255,255,0.6)" },
+  stripEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: onScreenSecondary },
   childCard: {
     minWidth: 180,
     borderRadius: 22,
@@ -1297,33 +1322,34 @@ const styles = StyleSheet.create({
   /* TIMELINE */
   timelineRowWrap: { flexDirection: "row", gap: 10, marginBottom: 16, alignItems: "stretch" },
   timelineCard: {
-    backgroundColor: "#14142B", borderRadius: 22, overflow: "hidden",
-    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
+    backgroundColor: cardBg, borderRadius: 22, overflow: "hidden",
+    borderWidth: 1, borderColor: cardBorder,
+    shadowColor: "#000", shadowOpacity: isLight ? 0.06 : 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
   },
   timelineHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 12, paddingHorizontal: 14 },
   timelineHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
-  timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   timelineHeaderRight: { flexDirection: "row", alignItems: "center", gap: 4 },
   timelineHeaderLink: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#7C3AED" },
   timelineRow: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    backgroundColor: "rgba(244,244,245,0.5)", borderRadius: 16, padding: 10,
+    backgroundColor: rowOverlay, borderRadius: 16, padding: 10,
   },
   timelineRowCurrent: { backgroundColor: "transparent", shadowColor: "#A855F7", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
   timelineTime: { width: 56, alignItems: "center", gap: 4 },
-  timelineTimeText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(31,41,55,0.7)" },
+  timelineTimeText: { fontSize: 11, fontFamily: "Inter_700Bold", color: onCardSecondary },
   timelineNowBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
   timelineNowText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#fff", letterSpacing: 0.5 },
   timelineNextBadge: { backgroundColor: "#EDE9FE", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
   timelineNextText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#6D28D9", letterSpacing: 0.5 },
-  timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(113,113,122,0.9)", marginTop: 2 },
+  timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: onCardSecondary, marginTop: 2 },
   timelineEmpty: {
     borderRadius: 22, padding: 20, alignItems: "center", gap: 8,
     borderWidth: 1.5, borderStyle: "dashed", borderColor: "#BFDBFE",
   },
-  timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  timelineEmptySub: { fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", fontFamily: "Inter_400Regular" },
+  timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: theme.text.primary },
+  timelineEmptySub: { fontSize: 11, color: theme.text.secondary, textAlign: "center", fontFamily: "Inter_400Regular" },
   timelineEmptyBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
   timelineEmptyBtnText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 13 },
   timelineDone: { borderRadius: 22, padding: 18, alignItems: "center", gap: 4 },
@@ -1339,7 +1365,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     minHeight: 150,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
+    borderColor: cardBorder,
     shadowColor: "#7B3FF2",
     shadowOpacity: 0.25,
     shadowRadius: 14,
@@ -1363,57 +1389,57 @@ const styles = StyleSheet.create({
 
   /* AMY CARD */
   amyCard: {
-    backgroundColor: "#14142B", borderRadius: 18, overflow: "hidden", marginBottom: 16,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16,
+    borderWidth: 1, borderColor: cardBorder,
   },
-  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: cardBorder },
   amyHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#A855F7", alignItems: "center", justifyContent: "center" },
-  amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  amySub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
+  amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  amySub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   amyTip: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
   amyTipText: { flex: 1, fontSize: 12, lineHeight: 17, fontFamily: "Inter_500Medium" },
 
   /* SCORE */
-  scoreCard: { backgroundColor: "#14142B", borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" },
-  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
-  scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  scoreSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
+  scoreCard: { backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: cardBorder },
+  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: cardBorder },
+  scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  scoreSub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   scoreBody: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
   scoreRingWrap: { width: 70, height: 70, alignItems: "center", justifyContent: "center" },
   scoreRingCenter: { position: "absolute", alignItems: "center", justifyContent: "center" },
   scoreGrade: { fontSize: 20, fontFamily: "Inter_700Bold", lineHeight: 22 },
-  scoreOf: { fontSize: 9, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_500Medium" },
-  scoreBetter: { fontSize: 12, fontFamily: "Inter_500Medium", color: "#FFFFFF" },
+  scoreOf: { fontSize: 9, color: onCardMuted, fontFamily: "Inter_500Medium" },
+  scoreBetter: { fontSize: 12, fontFamily: "Inter_500Medium", color: onCardPrimary },
   scoreRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
-  scoreRowLabel: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
-  scoreRowValue: { fontSize: 11, color: "#FFFFFF", fontFamily: "Inter_700Bold" },
-  scoreBar: { height: 5, backgroundColor: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden", marginBottom: 6 },
+  scoreRowLabel: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular" },
+  scoreRowValue: { fontSize: 11, color: onCardPrimary, fontFamily: "Inter_700Bold" },
+  scoreBar: { height: 5, backgroundColor: subtleSurface, borderRadius: 3, overflow: "hidden", marginBottom: 6 },
   scoreBarFill: { height: "100%", borderRadius: 3 },
 
   /* LIST CARDS */
-  listCard: { backgroundColor: "#14142B", borderRadius: 18, marginBottom: 16, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", overflow: "hidden" },
-  listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "rgba(244,244,245,0.4)", borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.05)" },
+  listCard: { backgroundColor: cardBg, borderRadius: 18, marginBottom: 16, borderWidth: 1, borderColor: cardBorder, overflow: "hidden" },
+  listHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: headerOverlay, borderBottomWidth: 1, borderBottomColor: cardBorder },
   listHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  listSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 1 },
+  listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  listSub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   listLink: { flexDirection: "row", alignItems: "center", gap: 4 },
   listLinkText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#A855F7" },
   listEmpty: { alignItems: "center", padding: 24, gap: 8 },
-  listEmptyText: { fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_500Medium" },
+  listEmptyText: { fontSize: 13, color: onCardMuted, fontFamily: "Inter_500Medium" },
   listEmptyLink: { fontSize: 13, color: "#A855F7", fontFamily: "Inter_700Bold", marginTop: 4 },
-  listRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
-  listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
+  listRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: cardBorder },
+  listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
   listRowMeta: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
   listChildPill: { backgroundColor: "rgba(168,85,247,0.10)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
   listChildPillText: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7C3AED" },
-  listRowDate: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
-  listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  listRowDone: { fontSize: 9, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
+  listRowDate: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular" },
+  listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  listRowDone: { fontSize: 9, color: onCardMuted, fontFamily: "Inter_400Regular" },
 
   /* BEHAVIOR */
-  behaviorRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: "rgba(0,0,0,0.04)" },
-  behaviorChild: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginBottom: 8 },
+  behaviorRow: { padding: 14, borderBottomWidth: 1, borderBottomColor: cardBorder },
+  behaviorChild: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary, marginBottom: 8 },
   behaviorStats: { flexDirection: "row", gap: 8 },
   behaviorChip: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, paddingVertical: 8, borderRadius: 10 },
   behaviorChipText: { fontSize: 13, fontFamily: "Inter_700Bold" },
@@ -1441,8 +1467,8 @@ const styles = StyleSheet.create({
   onbDividerText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)" },
   onbFeature: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 },
   onbFeatureIcon: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  onbFeatureLabel: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF" },
-  onbFeatureDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.7)", marginTop: 2 },
+  onbFeatureLabel: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  onbFeatureDesc: { fontSize: 11, fontFamily: "Inter_400Regular", color: onCardSecondary, marginTop: 2 },
   onbPrimary: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     paddingVertical: 16, borderRadius: 18, marginBottom: 10,
@@ -1451,11 +1477,11 @@ const styles = StyleSheet.create({
   onbPrimaryText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
   onbSecondary: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "#14142B", marginBottom: 14,
+    paddingVertical: 14, borderRadius: 18, borderWidth: 1.5, borderColor: cardBorder,
+    backgroundColor: cardBg, marginBottom: 14,
   },
-  onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.85)" },
-  onbFooter: { fontSize: 11, color: "rgba(255,255,255,0.6)", textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
+  onbSecondaryText: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
+  onbFooter: { fontSize: 11, color: onScreenSecondary, textAlign: "center", fontFamily: "Inter_400Regular", marginBottom: 8 },
 
   /* HERO TOP ROW (brand + menu) */
   heroTopRow: {
@@ -1466,7 +1492,7 @@ const styles = StyleSheet.create({
   },
   heroBrandRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   heroLogo: { width: 30, height: 30, borderRadius: 8 },
-  heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: "#FFFFFF", letterSpacing: 0.2 },
+  heroBrand: { fontSize: 16, fontFamily: "Inter_700Bold", color: theme.text.primary, letterSpacing: 0.2 },
   aiBadge: {
     paddingHorizontal: 8, paddingVertical: 3,
     borderRadius: 999,
@@ -1477,15 +1503,15 @@ const styles = StyleSheet.create({
   heroFaceRing: {
     width: 36, height: 36, borderRadius: 18,
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.14)",
+    backgroundColor: subtleSurface,
+    borderWidth: 1, borderColor: cardBorder,
     shadowColor: "#7B3FF2", shadowOpacity: 0.55, shadowRadius: 10, shadowOffset: { width: 0, height: 0 }, elevation: 6,
   },
   menuBtn: {
     width: 36, height: 36, borderRadius: 12,
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: subtleSurface,
+    borderWidth: 1, borderColor: cardBorder,
   },
   amyAiHeaderBtn: {
     borderRadius: 14, overflow: "hidden",
@@ -1549,4 +1575,10 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
   },
   fabTooltipText: { fontSize: 10, fontFamily: "Inter_600SemiBold", color: "rgba(255,255,255,0.85)" },
-});
+  });
+}
+
+function useThemedStyles() {
+  const { theme } = useTheme();
+  return useMemo(() => makeStyles(theme), [theme]);
+}

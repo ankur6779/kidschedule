@@ -1,5 +1,6 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
 import { paletteFor, ThemeMode, ThemePalette } from "@/lib/theme";
 
 const STORAGE_KEY = "@amynest:theme";
@@ -17,16 +18,22 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [mode, setModeState] = useState<ThemeMode>("dark");
   const [isReady, setIsReady] = useState(false);
+  const userTouchedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
     AsyncStorage.getItem(STORAGE_KEY)
       .then((stored) => {
         if (cancelled) return;
+        if (userTouchedRef.current) return;
         if (stored === "light" || stored === "dark") setModeState(stored);
       })
       .catch(() => { /* ignore */ })
-      .finally(() => { if (!cancelled) setIsReady(true); });
+      .finally(() => {
+        if (cancelled) return;
+        setIsReady(true);
+        SplashScreen.hideAsync().catch(() => { /* ignore */ });
+      });
     return () => { cancelled = true; };
   }, []);
 
@@ -35,11 +42,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setMode = useCallback((next: ThemeMode) => {
+    userTouchedRef.current = true;
     setModeState(next);
     persist(next);
   }, [persist]);
 
   const toggleTheme = useCallback(() => {
+    userTouchedRef.current = true;
     setModeState((cur) => {
       const next: ThemeMode = cur === "dark" ? "light" : "dark";
       persist(next);
@@ -54,6 +63,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMode,
     isReady,
   }), [mode, toggleTheme, setMode, isReady]);
+
+  if (!isReady) return null;
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

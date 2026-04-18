@@ -1,9 +1,13 @@
 import colors from "@/constants/colors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 /**
- * Returns the design tokens for the AmyNest premium dark theme.
- * The app is dark-only — system color scheme is intentionally ignored.
+ * Returns the design tokens for the current theme (light or dark).
+ * Reads the active mode from ThemeContext so screens automatically reflow
+ * when the user toggles the theme in the side drawer.
  */
 export function useColors() {
-  return { ...colors.dark, radius: colors.radius };
+  const { mode } = useTheme();
+  const palette = mode === "light" ? colors.light : colors.dark;
+  return { ...palette, radius: colors.radius };
 }
