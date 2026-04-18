@@ -18,6 +18,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const LOGO = require("../assets/images/amynest-logo.png");
+const AVATAR = require("../assets/images/amynest-logo.png");
 
 const FEATURES = [
   {
@@ -294,13 +295,7 @@ export default function WelcomeScreen() {
                 colors={["#A855F7", "#EC4899"]}
                 style={styles.mascotBox}
               >
-                <View style={styles.mascotFace}>
-                  <View style={styles.mascotEyeRow}>
-                    <View style={styles.mascotEye} />
-                    <View style={styles.mascotEye} />
-                  </View>
-                  <View style={styles.mascotBeak} />
-                </View>
+                <Image source={AVATAR} style={styles.mascotAvatar} resizeMode="cover" />
                 <View style={styles.mascotBadge}>
                   <Text style={styles.mascotBadgeText}>AI</Text>
                 </View>
@@ -493,25 +488,7 @@ const styles = StyleSheet.create({
     elevation: 10,
     borderWidth: 2, borderColor: "rgba(255,255,255,0.3)",
   },
-  mascotFace: { alignItems: "center", justifyContent: "center", gap: 5, marginTop: 2 },
-  mascotEyeRow: { flexDirection: "row", gap: 10 },
-  mascotEye: {
-    width: 9,
-    height: 9,
-    borderRadius: 999,
-    backgroundColor: "#1E1B4B",
-    shadowColor: "#fff",
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  mascotBeak: {
-    width: 12,
-    height: 9,
-    borderRadius: 999,
-    backgroundColor: "#FBBF24",
-    transform: [{ translateY: -1 }],
-  },
+  mascotAvatar: { width: 58, height: 58, borderRadius: 999 },
   mascotBadge: {
     position: "absolute",
     bottom: -4, right: -4,
