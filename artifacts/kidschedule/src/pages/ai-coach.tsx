@@ -537,7 +537,10 @@ export default function AICoachPage() {
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="font-quicksand text-2xl font-bold text-white">AI Coach (Ask AMY)</h1>
+              <h1 className="font-quicksand text-2xl font-bold">
+                <span className="text-violet-300">AI</span>{" "}
+                <span className="text-white">Coach</span>
+              </h1>
               <p className="text-xs text-white/60 mt-0.5">Choose a goal — I'll build your 12-step science plan.</p>
             </div>
           </div>
