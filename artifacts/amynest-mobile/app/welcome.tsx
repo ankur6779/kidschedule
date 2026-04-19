@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, setLanguage, type LanguageCode } from "@/i18n";
+import colors, { brand, brandAlpha } from "@/constants/colors";
 
 const LOGO = require("../assets/images/amynest-logo.png");
 
@@ -32,10 +33,10 @@ const COACH_HIGHLIGHT_KEYS = [
 const PROBLEMS: { icon: keyof typeof Ionicons.glyphMap; labelKey: string; color: string }[] = [
   { icon: "flame", labelKey: "landing.problem_tantrums", color: "#EF4444" },
   { icon: "phone-portrait", labelKey: "landing.problem_screen", color: "#06B6D4" },
-  { icon: "moon", labelKey: "landing.problem_sleep", color: "#6366F1" },
+  { icon: "moon", labelKey: "landing.problem_sleep", color: brand.indigo500 },
   { icon: "ear-outline", labelKey: "landing.problem_listening", color: "#F97316" },
   { icon: "restaurant", labelKey: "landing.problem_eating", color: "#EC4899" },
-  { icon: "locate", labelKey: "landing.problem_focus", color: "#A855F7" },
+  { icon: "locate", labelKey: "landing.problem_focus", color: brand.purple500 },
 ];
 
 const SECONDARY_FEATURES: { icon: keyof typeof Ionicons.glyphMap; titleKey: string; descKey: string; gradient: readonly [string, string] }[] = [
@@ -101,7 +102,7 @@ export default function WelcomeScreen() {
 
   const titleColor = colorAnim.interpolate({
     inputRange: [0, 1, 2, 3, 4],
-    outputRange: ["#7B3FF2", "#FF4ECD", "#4FC3F7", "#FFD166", "#7B3FF2"],
+    outputRange: [brand.primary, "#FF4ECD", "#4FC3F7", "#FFD166", brand.primary],
   });
 
   const tap = () => {
@@ -185,7 +186,7 @@ export default function WelcomeScreen() {
                       <Text style={[styles.langOptionText, active && styles.langOptionTextActive]}>
                         {lang.native}
                       </Text>
-                      {active && <Ionicons name="checkmark" size={16} color="#A78BFA" />}
+                      {active && <Ionicons name="checkmark" size={16} color={brand.violet400} />}
                     </TouchableOpacity>
                   );
                 })}
@@ -197,7 +198,7 @@ export default function WelcomeScreen() {
           <Animated.View style={[styles.hero, { opacity: fadeIn, transform: [{ translateY: slideUp }] }]}>
             {/* Glass badge */}
             <View style={styles.badge}>
-              <Ionicons name="sparkles" size={12} color="#C4B5FD" />
+              <Ionicons name="sparkles" size={12} color={brand.violet300} />
               <Text style={styles.badgeText}>{t("landing.badge")}</Text>
             </View>
 
@@ -220,7 +221,7 @@ export default function WelcomeScreen() {
             {/* Primary CTA */}
             <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-hero-cta" style={styles.ctaWrap}>
               <LinearGradient
-                colors={["#A855F7", "#EC4899"]}
+                colors={[brand.purple500, "#EC4899"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
@@ -281,7 +282,7 @@ export default function WelcomeScreen() {
             <View style={styles.coachCard}>
               <View style={styles.coachHeaderRow}>
                 <LinearGradient
-                  colors={["#A855F7", "#6366F1"] as const}
+                  colors={[brand.purple500, brand.indigo500] as const}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.coachIcon}
@@ -292,7 +293,7 @@ export default function WelcomeScreen() {
                   <View style={styles.coachTitleRow}>
                     <Text style={styles.coachTitle}>Amy Coach</Text>
                     <LinearGradient
-                      colors={["#A855F7", "#EC4899"] as const}
+                      colors={[brand.purple500, "#EC4899"] as const}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={styles.corePill}
@@ -306,7 +307,7 @@ export default function WelcomeScreen() {
               <View style={styles.coachBullets}>
                 {COACH_HIGHLIGHT_KEYS.map((key) => (
                   <View key={key} style={styles.coachBullet}>
-                    <Ionicons name="checkmark-circle" size={18} color="#C4B5FD" />
+                    <Ionicons name="checkmark-circle" size={18} color={brand.violet300} />
                     <Text style={styles.coachBulletText}>{t(key)}</Text>
                   </View>
                 ))}
@@ -335,7 +336,7 @@ export default function WelcomeScreen() {
             <Text style={styles.midCtaText}>{t("landing.mid_cta")}</Text>
             <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-features-cta" style={[styles.ctaWrap, { marginTop: 14 }]}>
               <LinearGradient
-                colors={["#A855F7", "#EC4899"] as const}
+                colors={[brand.purple500, "#EC4899"] as const}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={[styles.cta, { minWidth: 220, paddingVertical: 14 }]}
@@ -358,7 +359,7 @@ export default function WelcomeScreen() {
             {STEPS.map((s, idx) => (
               <View key={s.titleKey} style={styles.stepCard}>
                 <LinearGradient
-                  colors={["#A855F7", "#EC4899"] as const}
+                  colors={[brand.purple500, "#EC4899"] as const}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.stepNumber}
@@ -366,7 +367,7 @@ export default function WelcomeScreen() {
                   <Text style={styles.stepNumberText}>{idx + 1}</Text>
                 </LinearGradient>
                 <LinearGradient
-                  colors={["#A855F7", "#6366F1"] as const}
+                  colors={[brand.purple500, brand.indigo500] as const}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.stepIcon}
@@ -389,7 +390,7 @@ export default function WelcomeScreen() {
             {TRUST_PILLARS.map((pillar) => (
               <View key={pillar.titleKey} style={styles.trustCard}>
                 <View style={styles.trustCardIcon}>
-                  <Ionicons name={pillar.icon} size={18} color="#C4B5FD" />
+                  <Ionicons name={pillar.icon} size={18} color={brand.violet300} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.trustCardTitle}>{t(pillar.titleKey)}</Text>
@@ -402,7 +403,7 @@ export default function WelcomeScreen() {
           {/* FINAL CTA */}
           <View style={styles.finalCtaCard}>
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={[brand.purple500, "#EC4899"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.finalCtaIcon}
@@ -413,7 +414,7 @@ export default function WelcomeScreen() {
             <Text style={styles.finalCtaSub}>{t("landing.final_cta_sub")}</Text>
             <TouchableOpacity onPress={handleStart} activeOpacity={0.9} testID="button-final-cta" style={styles.ctaWrap}>
               <LinearGradient
-                colors={["#A855F7", "#EC4899"]}
+                colors={[brand.purple500, "#EC4899"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.cta}
@@ -446,7 +447,7 @@ const styles = StyleSheet.create({
   /* Glow blobs */
   blobsContainer: { ...StyleSheet.absoluteFillObject, overflow: "hidden" },
   blob: { position: "absolute", borderRadius: 9999 },
-  blob1: { width: 420, height: 420, top: -120, left: -120, backgroundColor: "rgba(168,85,247,0.30)" },
+  blob1: { width: 420, height: 420, top: -120, left: -120, backgroundColor: brandAlpha.purple500_30 },
   blob2: { width: 480, height: 480, top: 280, right: -160, backgroundColor: "rgba(59,130,246,0.25)" },
   blob3: { width: 360, height: 360, bottom: -60, left: 40, backgroundColor: "rgba(236,72,153,0.20)" },
 
@@ -468,7 +469,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.3,
   },
   navBrandAi: {
-    color: "#A855F7",
+    color: brand.purple500,
     fontFamily: "Inter_700Bold",
   },
   navSignIn: {
@@ -536,7 +537,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   langOptionActive: {
-    backgroundColor: "rgba(168,85,247,0.15)",
+    backgroundColor: brandAlpha.purple500_15,
   },
   langOptionText: {
     fontSize: 15,
@@ -544,7 +545,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
   },
   langOptionTextActive: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontFamily: "Inter_600SemiBold",
   },
 
@@ -581,7 +582,7 @@ const styles = StyleSheet.create({
     width: 170,
     height: 170,
     borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.45)",
+    backgroundColor: brandAlpha.purple500_45,
     opacity: 0.7,
   },
   bigLogoImg: { width: 144, height: 144, borderRadius: 999 },
@@ -617,7 +618,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 18,
     minWidth: 280,
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOpacity: 0.5,
     shadowRadius: 22,
     shadowOffset: { width: 0, height: 10 },
@@ -638,7 +639,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   signInLineEmphasis: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontFamily: "Inter_700Bold",
     textDecorationLine: "underline",
   },
@@ -729,9 +730,9 @@ const styles = StyleSheet.create({
 
   /* COACH CARD */
   coachCard: {
-    backgroundColor: "rgba(168,85,247,0.10)",
+    backgroundColor: brandAlpha.purple500_10,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.35)",
+    borderColor: brandAlpha.purple500_35,
     borderRadius: 24,
     padding: 22,
     marginBottom: 16,
@@ -749,7 +750,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOpacity: 0.45,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -903,9 +904,9 @@ const styles = StyleSheet.create({
 
   /* TRUST */
   trustWrap: {
-    backgroundColor: "rgba(99,102,241,0.10)",
+    backgroundColor: brandAlpha.indigo500_10,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.25)",
+    borderColor: brandAlpha.purple500_25,
     borderRadius: 26,
     padding: 22,
     marginBottom: 18,
@@ -915,11 +916,11 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 16,
-    backgroundColor: "#6366F1",
+    backgroundColor: brand.indigo500,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
-    shadowColor: "#6366F1",
+    shadowColor: brand.indigo500,
     shadowOpacity: 0.5,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -959,9 +960,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "rgba(168,85,247,0.20)",
+    backgroundColor: brandAlpha.purple500_20,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.35)",
+    borderColor: brandAlpha.purple500_35,
     alignItems: "center",
     justifyContent: "center",
   },

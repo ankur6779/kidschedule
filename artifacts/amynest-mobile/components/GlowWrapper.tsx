@@ -9,6 +9,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { brand } from "@/constants/colors";
 
 type GlowWrapperProps = Omit<PressableProps, "style" | "children"> & {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ const intensityMap = {
 export default function GlowWrapper({
   children,
   style,
-  glowColor = "#7B3FF2",
+  glowColor = brand.primary,
   pressScale = 0.96,
   hoverScale = 1.02,
   borderRadius = 16,

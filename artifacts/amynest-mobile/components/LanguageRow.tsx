@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, setLanguage, type LanguageCode } from "@/i18n";
+import { brand } from "@/constants/colors";
 
 export function LanguageRow() {
   const { t, i18n } = useTranslation();
@@ -18,7 +19,7 @@ export function LanguageRow() {
         style={styles.row}
       >
         <View style={styles.rowLeft}>
-          <Ionicons name="globe-outline" size={18} color="#A78BFA" />
+          <Ionicons name="globe-outline" size={18} color={brand.violet400} />
           <Text style={styles.label}>{t("nav.language")}</Text>
         </View>
         <View style={styles.rowRight}>
@@ -54,7 +55,7 @@ export function LanguageRow() {
                         style={styles.option}
                       >
                         <Text style={[styles.optionText, { color: "#FFFFFF" }]}>{lang.native}</Text>
-                        <Ionicons name="checkmark" size={20} color="#A78BFA" />
+                        <Ionicons name="checkmark" size={20} color={brand.violet400} />
                       </LinearGradient>
                     ) : (
                       <View style={styles.option}>

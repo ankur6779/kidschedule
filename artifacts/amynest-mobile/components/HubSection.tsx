@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { brand } from "@/constants/colors";
 
 type Props = {
   title: string;
@@ -36,7 +37,7 @@ export default function HubSection({
             style={styles.actionBtn}
           >
             <Text style={styles.actionText}>{actionLabel}</Text>
-            <Ionicons name="chevron-forward" size={14} color="#7C3AED" />
+            <Ionicons name="chevron-forward" size={14} color={brand.violet600} />
           </TouchableOpacity>
         )}
       </View>
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   actionText: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 13,
     fontWeight: "700",
   },

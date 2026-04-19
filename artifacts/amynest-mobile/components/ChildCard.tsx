@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import ProgressRing from "./ProgressRing";
+import { brand, brandAlpha } from "@/constants/colors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -39,7 +40,7 @@ export default function ChildCard({
         <View style={styles.row}>
           <View style={{ flex: 1, paddingRight: 12 }}>
             <View style={styles.agePill}>
-              <Ionicons name="happy" size={11} color="#7C3AED" />
+              <Ionicons name="happy" size={11} color={brand.violet600} />
               <Text style={styles.ageText}>{ageGroup}</Text>
             </View>
             <Text style={styles.childName}>{childName}</Text>
@@ -51,10 +52,10 @@ export default function ChildCard({
             size={120}
             stroke={11}
             progress={progress}
-            trackColor="rgba(124,58,237,0.12)"
-            gradientFrom="#C4B5FD"
-            gradientTo="#7C3AED"
-            labelColor="#5B21B6"
+            trackColor={brandAlpha.violet600_12}
+            gradientFrom={brand.violet300}
+            gradientTo={brand.violet600}
+            labelColor={brand.violet800}
           />
         </View>
 
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 26,
     overflow: "hidden",
-    shadowColor: "#7C3AED",
+    shadowColor: brand.violet600,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.14,
     shadowRadius: 18,
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     backgroundColor: "#fff",
     borderWidth: 1.5,
-    borderColor: "#EDE9FE",
+    borderColor: brand.violet100,
   },
   row: {
     flexDirection: "row",
@@ -109,14 +110,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     alignSelf: "flex-start",
-    backgroundColor: "#EDE9FE",
+    backgroundColor: brand.violet100,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 8,
   },
   ageText: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -147,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#7C3AED",
+    backgroundColor: brand.violet600,
     paddingVertical: 14,
     borderRadius: 16,
   },

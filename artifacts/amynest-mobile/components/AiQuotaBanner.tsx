@@ -3,15 +3,8 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSubscriptionStore, selectAiRemaining, selectIsPremium } from "@/store/useSubscriptionStore";
+import { brand } from "@/constants/colors";
 
-/**
- * Compact banner that surfaces the user's remaining Amy AI queries for the
- * day. Hidden for premium users.
- *
- * - 0 remaining → red "Limit reached · Upgrade"
- * - 1–2 remaining → amber "N left today · Upgrade"
- * - 3+ remaining → muted, no CTA
- */
 export default function AiQuotaBanner() {
   const router = useRouter();
   const isPremium = useSubscriptionStore(selectIsPremium);
@@ -76,7 +69,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   cta: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 12,
     fontWeight: "800",
   },

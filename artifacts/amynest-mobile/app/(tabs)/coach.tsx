@@ -16,6 +16,7 @@ import { useRouter } from "expo-router";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import { useTranslation } from "react-i18next";
+import colors, { brand, brandAlpha } from "@/constants/colors";
 import {
   INFANT_PROBLEMS,
   isInfantProblemId,
@@ -48,7 +49,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
       { id: "handle-aggression",    title: "Handle Aggression",    emoji: "✋", bg: ["#FEE2E2", "#FECACA"] },
       { id: "reduce-defiance",      title: "Reduce Defiance",      emoji: "🛑", bg: ["#FEF3C7", "#FED7AA"] },
       { id: "emotional-regulation", title: "Emotional Regulation", emoji: "💗", bg: ["#FCE7F3", "#FBCFE8"] },
-      { id: "separation-anxiety",   title: "Separation Anxiety",   emoji: "🫂", bg: ["#EDE9FE", "#DDD6FE"] },
+      { id: "separation-anxiety",   title: "Separation Anxiety",   emoji: "🫂", bg: [brand.violet100, brand.violet200] },
     ],
   },
   {
@@ -56,7 +57,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
     items: [
       { id: "balance-screen-time",          title: "Balance Screen Time",        emoji: "📱", bg: ["#E0F2FE", "#BFDBFE"] },
       { id: "reduce-mobile-addiction",      title: "Reduce Mobile Addiction",    emoji: "📵", bg: ["#DBEAFE", "#C7D2FE"] },
-      { id: "improve-focus-span",           title: "Improve Focus Span",         emoji: "🎯", bg: ["#EDE9FE", "#FBCFE8"] },
+      { id: "improve-focus-span",           title: "Improve Focus Span",         emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
       { id: "reduce-shorts-overuse",        title: "Reduce Shorts Overuse",      emoji: "🎬", bg: ["#FFE4E6", "#FECACA"] },
       { id: "reduce-instant-gratification", title: "Reduce Instant Gratification",emoji: "⏳", bg: ["#FEF3C7", "#FDE68A"] },
     ],
@@ -72,19 +73,19 @@ const GOAL_CATEGORIES: GoalCategory[] = [
     ],
   },
   {
-    id: "sleep", title: "Sleep", emoji: "😴", bg: ["#E0E7FF", "#EDE9FE"],
+    id: "sleep", title: "Sleep", emoji: "😴", bg: [brand.indigo100, brand.violet100],
     items: [
-      { id: "improve-sleep-patterns",   title: "Improve Sleep",        emoji: "😴", bg: ["#E0E7FF", "#DDD6FE"] },
-      { id: "fix-bedtime-resistance",   title: "Bedtime Resistance",   emoji: "🛏️", bg: ["#EDE9FE", "#E0E7FF"] },
-      { id: "stop-night-waking",        title: "Stop Night Waking",    emoji: "🌙", bg: ["#DBEAFE", "#E0E7FF"] },
-      { id: "consistent-sleep-routine", title: "Consistent Routine",   emoji: "🕘", bg: ["#EDE9FE", "#DDD6FE"] },
-      { id: "reduce-late-sleeping",     title: "Reduce Late Sleep",    emoji: "⏰", bg: ["#E0E7FF", "#DBEAFE"] },
+      { id: "improve-sleep-patterns",   title: "Improve Sleep",        emoji: "😴", bg: [brand.indigo100, brand.violet200] },
+      { id: "fix-bedtime-resistance",   title: "Bedtime Resistance",   emoji: "🛏️", bg: [brand.violet100, brand.indigo100] },
+      { id: "stop-night-waking",        title: "Stop Night Waking",    emoji: "🌙", bg: ["#DBEAFE", brand.indigo100] },
+      { id: "consistent-sleep-routine", title: "Consistent Routine",   emoji: "🕘", bg: [brand.violet100, brand.violet200] },
+      { id: "reduce-late-sleeping",     title: "Reduce Late Sleep",    emoji: "⏰", bg: [brand.indigo100, "#DBEAFE"] },
     ],
   },
   {
-    id: "learning", title: "Learning", emoji: "📚", bg: ["#EDE9FE", "#FCE7F3"],
+    id: "learning", title: "Learning", emoji: "📚", bg: [brand.violet100, "#FCE7F3"],
     items: [
-      { id: "boost-concentration",        title: "Boost Concentration",  emoji: "🎯", bg: ["#EDE9FE", "#FBCFE8"] },
+      { id: "boost-concentration",        title: "Boost Concentration",  emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
       { id: "build-study-discipline",     title: "Study Discipline",     emoji: "📖", bg: ["#DBEAFE", "#BFDBFE"] },
       { id: "increase-learning-interest", title: "Learning Interest",    emoji: "💡", bg: ["#FEF3C7", "#FDE68A"] },
       { id: "reduce-homework-resistance", title: "Homework Resistance",  emoji: "✏️", bg: ["#CCFBF1", "#A7F3D0"] },
@@ -104,7 +105,7 @@ const GOAL_CATEGORIES: GoalCategory[] = [
     id: "parenting-challenges", title: "Parenting", emoji: "💝", bg: ["#FEF3C7", "#FED7AA"],
     items: [
       { id: "manage-grandparents-interference", title: "Grandparents",         emoji: "👵", bg: ["#FFE4E6", "#FBCFE8"] },
-      { id: "align-parenting-between-parents",  title: "Align Co-Parenting",   emoji: "🤝", bg: ["#EDE9FE", "#DDD6FE"] },
+      { id: "align-parenting-between-parents",  title: "Align Co-Parenting",   emoji: "🤝", bg: [brand.violet100, brand.violet200] },
       { id: "handle-working-parent-guilt",      title: "Working Parent Guilt", emoji: "💼", bg: ["#E0F2FE", "#BFDBFE"] },
       { id: "set-consistent-family-rules",      title: "Family Rules",         emoji: "📋", bg: ["#FEF3C7", "#FED7AA"] },
     ],
@@ -374,7 +375,7 @@ export default function CoachScreen() {
               style={{ marginTop: 12, marginBottom: 14, borderRadius: 20, overflow: "hidden" }}
             >
               <LinearGradient
-                colors={["#A855F7", "#EC4899"]}
+                colors={[brand.purple500, "#EC4899"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={{ flexDirection: "row", alignItems: "center", padding: 16, gap: 12 }}
@@ -484,7 +485,7 @@ export default function CoachScreen() {
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
           <View style={styles.heroRow}>
             <View style={styles.heroBadge}>
-              <Ionicons name="sparkles" size={20} color="#7C3AED" />
+              <Ionicons name="sparkles" size={20} color={brand.violet600} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.heroTitle}>Amy Coach</Text>
@@ -543,7 +544,7 @@ export default function CoachScreen() {
             </View>
             <View style={styles.qProgressBar}>
               <LinearGradient
-                colors={["#8B5CF6", "#EC4899"]}
+                colors={[brand.violet500, "#EC4899"]}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={[styles.qProgressFill, { width: `${qProgress}%` }]}
               />
@@ -566,7 +567,7 @@ export default function CoachScreen() {
                   style={[styles.qOption, selected && styles.qOptionSelected]}
                 >
                   <Text style={[styles.qOptionText, selected && styles.qOptionTextSelected]}>{opt}</Text>
-                  {selected && <Ionicons name="checkmark" size={20} color="#7C3AED" />}
+                  {selected && <Ionicons name="checkmark" size={20} color={brand.violet600} />}
                 </TouchableOpacity>
               );
             })}
@@ -577,7 +578,7 @@ export default function CoachScreen() {
             style={{ marginTop: 24, opacity: isAnswered ? 1 : 0.4 }}
           >
             <LinearGradient
-              colors={["#7C3AED", "#EC4899"]}
+              colors={[brand.violet600, "#EC4899"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               style={styles.qNextBtn}
             >
@@ -603,9 +604,9 @@ export default function CoachScreen() {
           </Text>
           <TouchableOpacity
             onPress={() => setPhase("goals")}
-            style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: "rgba(139,92,246,0.25)" }}
+            style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: brandAlpha.violet500_25 }}
           >
-            <Text style={{ color: "#ddd6fe", fontWeight: "700" }}>← Back to topics</Text>
+            <Text style={{ color: brand.violetMist, fontWeight: "700" }}>← Back to topics</Text>
           </TouchableOpacity>
         </View>
       );
@@ -706,17 +707,17 @@ export default function CoachScreen() {
 
           {/* (C) Amy AI Insight */}
           <LinearGradient
-            colors={["rgba(139,92,246,0.22)", "rgba(236,72,153,0.12)"]}
+            colors={[brandAlpha.violet500_22, "rgba(236,72,153,0.12)"]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
             style={{
               borderRadius: 18, padding: 14,
-              borderWidth: 1, borderColor: "rgba(139,92,246,0.4)",
+              borderWidth: 1, borderColor: brandAlpha.violet500_40,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
-              <Ionicons name="sparkles" size={14} color="#ddd6fe" />
+              <Ionicons name="sparkles" size={14} color={brand.violetMist} />
               <Text style={{
-                color: "#ddd6fe", fontSize: 11,
+                color: brand.violetMist, fontSize: 11,
                 fontWeight: "800", letterSpacing: 1,
               }}>
                 AMY AI INSIGHT
@@ -769,7 +770,7 @@ export default function CoachScreen() {
   if (phase === "loading") {
     return (
       <LinearGradient
-        colors={["#4C1D95", "#581C87", "#831843"]}
+        colors={[brand.violet900, brand.purple900, "#831843"]}
         style={[styles.loaderScreen, { paddingTop: topPad, paddingBottom: botPad }]}
       >
         <View style={{ alignItems: "center", paddingHorizontal: 32 }}>
@@ -793,11 +794,11 @@ export default function CoachScreen() {
         {/* Top bar */}
         <View style={styles.resultTopBar}>
           <TouchableOpacity onPress={handleStartOver} style={styles.iconBtn}>
-            <Ionicons name="arrow-back" size={18} color="#6D28D9" />
+            <Ionicons name="arrow-back" size={18} color={brand.violet700} />
           </TouchableOpacity>
 
           <LinearGradient
-            colors={["#8B5CF6", "#EC4899"]}
+            colors={[brand.violet500, "#EC4899"]}
             start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
             style={styles.progressPill}
           >
@@ -805,7 +806,7 @@ export default function CoachScreen() {
           </LinearGradient>
 
           <TouchableOpacity onPress={handleShare} style={styles.iconBtn}>
-            <Ionicons name="share-outline" size={16} color="#6D28D9" />
+            <Ionicons name="share-outline" size={16} color={brand.violet700} />
           </TouchableOpacity>
         </View>
 
@@ -816,7 +817,7 @@ export default function CoachScreen() {
               key={i} onPress={() => goToCard(i)}
               style={[
                 styles.dot,
-                { backgroundColor: i <= activeIdx ? "#8B5CF6" : "rgba(139,92,246,0.2)" },
+                { backgroundColor: i <= activeIdx ? brand.violet500 : brandAlpha.violet500_20 },
               ]}
             />
           ))}
@@ -863,7 +864,7 @@ export default function CoachScreen() {
             disabled={activeIdx === 0}
             style={[styles.prevBtn, activeIdx === 0 && { opacity: 0.4 }]}
           >
-            <Ionicons name="arrow-back" size={14} color="#6D28D9" />
+            <Ionicons name="arrow-back" size={14} color={brand.violet700} />
             <Text style={styles.prevBtnText}>Prev</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -873,7 +874,7 @@ export default function CoachScreen() {
             style={{ opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1 }}
           >
             <LinearGradient
-              colors={["#8B5CF6", "#EC4899"]}
+              colors={[brand.violet500, "#EC4899"]}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               style={styles.nextBtn}
             >
@@ -914,7 +915,7 @@ function WinCard({
       >
         {/* Win counter chip */}
         <LinearGradient
-          colors={isExtension ? ["#F59E0B", "#EC4899"] : ["#8B5CF6", "#EC4899"]}
+          colors={isExtension ? ["#F59E0B", "#EC4899"] : [brand.violet500, "#EC4899"]}
           start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
           style={styles.winChip}
         >
@@ -948,12 +949,12 @@ function WinCard({
         ) : null}
 
         <View style={styles.section}>
-          <Text style={[styles.sectionEyebrow, { color: "#7C3AED" }]}>✅ DO THIS</Text>
+          <Text style={[styles.sectionEyebrow, { color: brand.violet600 }]}>✅ DO THIS</Text>
           <View style={{ gap: 10, marginTop: 4 }}>
             {w.actions.map((a, i) => (
               <View key={i} style={styles.actionRow}>
                 <LinearGradient
-                  colors={["#8B5CF6", "#EC4899"]}
+                  colors={[brand.violet500, "#EC4899"]}
                   start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                   style={styles.actionDot}
                 >
@@ -1111,9 +1112,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 14, borderRadius: 16,
     backgroundColor: "#14142B", borderWidth: 2, borderColor: "rgba(255,255,255,0.08)",
   },
-  qOptionSelected: { backgroundColor: "#F5F3FF", borderColor: "#8B5CF6" },
+  qOptionSelected: { backgroundColor: brand.violet50, borderColor: brand.violet500 },
   qOptionText: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#FFFFFF", flex: 1 },
-  qOptionTextSelected: { color: "#5B21B6" },
+  qOptionTextSelected: { color: brand.violet800 },
 
   qNextBtn: { paddingVertical: 16, borderRadius: 16, alignItems: "center", justifyContent: "center" },
   qNextText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
@@ -1148,8 +1149,8 @@ const styles = StyleSheet.create({
   winChip: { alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 5, borderRadius: 999, marginBottom: 10 },
   winChipText: { color: "#fff", fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 0.5 },
 
-  planHeaderBox: { marginBottom: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "rgba(139,92,246,0.18)" },
-  planHeaderEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: "#7C3AED", marginBottom: 4 },
+  planHeaderBox: { marginBottom: 18, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: brandAlpha.violet500_18 },
+  planHeaderEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1.2, color: brand.violet600, marginBottom: 4 },
   planHeaderTitle: { fontSize: 19, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 23 },
   rootCauseBox: { backgroundColor: "rgba(244,114,182,0.1)", borderWidth: 1, borderColor: "rgba(244,114,182,0.3)", borderRadius: 12, padding: 12, marginTop: 10, marginBottom: 8 },
   rootCauseEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#BE185D", marginBottom: 4 },
@@ -1157,10 +1158,10 @@ const styles = StyleSheet.create({
   planSummaryText: { fontSize: 12.5, color: "rgba(255,255,255,0.7)", lineHeight: 19 },
 
   winTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 28, marginBottom: 6 },
-  winObjective: { fontSize: 13.5, color: "#7C3AED", lineHeight: 19, fontFamily: "Inter_600SemiBold", marginBottom: 16 },
+  winObjective: { fontSize: 13.5, color: brand.violet600, lineHeight: 19, fontFamily: "Inter_600SemiBold", marginBottom: 16 },
 
   section: {
-    backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(99,102,241,0.25)",
+    backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: brandAlpha.indigo500_25,
     borderRadius: 14, padding: 14, marginBottom: 14,
   },
   sectionEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, marginBottom: 6 },
@@ -1175,20 +1176,20 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(167,139,250,0.5)",
     borderRadius: 14, padding: 14, marginBottom: 12,
   },
-  microTaskEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: "#6D28D9", marginBottom: 4 },
+  microTaskEyebrow: { fontSize: 10, fontFamily: "Inter_700Bold", letterSpacing: 1, color: brand.violet700, marginBottom: 4 },
   microTaskBody: { fontSize: 13.5, lineHeight: 19, color: "#FFFFFF", fontFamily: "Inter_600SemiBold" },
 
-  durationChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: "rgba(139,92,246,0.12)" },
-  durationChipText: { fontSize: 11, color: "#6D28D9", fontFamily: "Inter_700Bold" },
+  durationChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, backgroundColor: brandAlpha.violet500_12 },
+  durationChipText: { fontSize: 11, color: brand.violet700, fontFamily: "Inter_700Bold" },
 
   scienceRef: {
     fontSize: 11, color: "rgba(255,255,255,0.6)", lineHeight: 17, marginBottom: 14,
-    fontStyle: "italic", paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: "rgba(139,92,246,0.3)",
+    fontStyle: "italic", paddingLeft: 10, borderLeftWidth: 2, borderLeftColor: brandAlpha.violet500_30,
     marginTop: 8,
   },
 
   feedbackBox: {
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(139,92,246,0.35)",
+    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: brandAlpha.violet500_35,
     borderRadius: 16, padding: 14, marginBottom: 8,
   },
   feedbackTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginBottom: 10 },
@@ -1206,7 +1207,7 @@ const styles = StyleSheet.create({
   extBanner: {
     position: "absolute", bottom: 80, alignSelf: "center",
     flexDirection: "row", alignItems: "center", gap: 8,
-    backgroundColor: "rgba(99,102,241,0.95)", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999,
+    backgroundColor: brandAlpha.indigo500_95, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999,
   },
   extBannerText: { color: "#fff", fontSize: 12.5, fontFamily: "Inter_700Bold" },
 
@@ -1216,10 +1217,10 @@ const styles = StyleSheet.create({
   },
   prevBtn: {
     flexDirection: "row", alignItems: "center", gap: 6,
-    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: "rgba(139,92,246,0.2)",
+    backgroundColor: "rgba(255,255,255,0.85)", borderWidth: 1, borderColor: brandAlpha.violet500_20,
     paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999,
   },
-  prevBtnText: { color: "#6D28D9", fontSize: 13, fontFamily: "Inter_600SemiBold" },
+  prevBtnText: { color: brand.violet700, fontSize: 13, fontFamily: "Inter_600SemiBold" },
   nextBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999 },
   nextBtnText: { color: "#fff", fontSize: 13, fontFamily: "Inter_700Bold" },
 });

@@ -11,14 +11,15 @@ import {
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import colors, { brand } from "@/constants/colors";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const FEATURES = [
-  { emoji: "🧠", label: "Amy AI Routines", desc: "Smart daily schedules for your child's age.", glow: "#6366F1", grad: ["#6366F1", "#4F46E5"] as [string, string] },
+  { emoji: "🧠", label: "Amy AI Routines", desc: "Smart daily schedules for your child's age.", glow: brand.indigo500, grad: [brand.indigo500, "#4F46E5"] as [string, string] },
   { emoji: "📊", label: "Progress Tracking", desc: "Streaks, milestones & growth in one view.", glow: "#10B981", grad: ["#10B981", "#059669"] as [string, string] },
   { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities to keep kids engaged.", glow: "#F59E0B", grad: ["#F59E0B", "#D97706"] as [string, string] },
-  { emoji: "🏆", label: "Behavior Tracker", desc: "Reward positive habits and celebrate wins.", glow: "#8B5CF6", grad: ["#8B5CF6", "#7C3AED"] as [string, string] },
+  { emoji: "🏆", label: "Behavior Tracker", desc: "Reward positive habits and celebrate wins.", glow: brand.violet500, grad: [brand.violet500, brand.violet600] as [string, string] },
   { emoji: "❤️", label: "Parenting Tips", desc: "Expert tips, sleep guides, and insights.", glow: "#EC4899", grad: ["#EC4899", "#DB2777"] as [string, string] },
   { emoji: "🧩", label: "Life Skills Mode", desc: "Challenges that level up as your child grows.", glow: "#14B8A6", grad: ["#14B8A6", "#0D9488"] as [string, string] },
 ];
@@ -99,7 +100,7 @@ export function ProfileLockScreen({ sectionName }: { sectionName?: string }) {
             style={styles.primaryBtnWrap}
           >
             <LinearGradient
-              colors={["#7B3FF2", "#FF4ECD"]}
+              colors={[colors.light.primary, colors.light.accent]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.primaryBtn}
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     width: 130,
     height: 130,
     borderRadius: 65,
-    backgroundColor: "#7B3FF2",
+    backgroundColor: colors.light.primary,
     opacity: 0.35,
   },
   avatar: {
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.2)",
   },
   tag: {
-    color: "#A78BFA",
+    color: brand.violet400,
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 2,
@@ -248,7 +249,7 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: "rgba(139,92,246,0.4)",
+    backgroundColor: `${brand.violet500}40`,
   },
   dividerText: {
     color: "rgba(165,180,252,0.6)",
@@ -266,7 +267,7 @@ const styles = StyleSheet.create({
   primaryBtnWrap: {
     borderRadius: 18,
     overflow: "hidden",
-    shadowColor: "#7B3FF2",
+    shadowColor: colors.light.primary,
     shadowOpacity: 0.55,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },

@@ -24,6 +24,7 @@ import InsightCard from "@/components/InsightCard";
 import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
 import { useAppDataRefresh } from "@/hooks/useAppDataRefresh";
+import colors, { brand, brandAlpha } from "@/constants/colors";
 
 type Filter = "all" | "behavior" | "sleep" | "focus";
 
@@ -33,7 +34,7 @@ const QUICK_ACTIONS = [
     title: "Start Amy Coach",
     description: "Guided wins for today's challenges",
     icon: "sparkles" as const,
-    gradient: ["#A855F7", "#EC4899"] as const,
+    gradient: [brand.purple500, "#EC4899"] as const,
     route: "/coach/premium",
   },
   {
@@ -60,7 +61,7 @@ const ACTIVITIES = [
     title: "Brain Activities",
     count: "12 activities",
     icon: "bulb" as const,
-    gradient: ["#A855F7", "#EC4899"] as const,
+    gradient: [brand.purple500, "#EC4899"] as const,
     tag: "focus" as Filter,
   },
   {
@@ -76,7 +77,7 @@ const ACTIVITIES = [
     title: "Learning Games",
     count: "15 games",
     icon: "game-controller" as const,
-    gradient: ["#06B6D4", "#6366F1"] as const,
+    gradient: ["#06B6D4", brand.indigo500] as const,
     tag: "focus" as Filter,
   },
   {
@@ -97,7 +98,7 @@ const INSIGHTS = [
       "Resistance is rarely defiance — it's overwhelm or disconnection. Three tiny shifts that make instructions land instantly.",
     category: "BEHAVIOR",
     readMinutes: 4,
-    accent: ["#A855F7", "#EC4899"] as const,
+    accent: [brand.purple500, "#EC4899"] as const,
     tag: "behavior" as Filter,
   },
   {
@@ -117,7 +118,7 @@ const INSIGHTS = [
       "Consistent wind-down beats strict bedtime. The 4-step pre-sleep ritual that resets even the most resistant sleeper.",
     category: "SLEEP",
     readMinutes: 5,
-    accent: ["#6366F1", "#8B5CF6"] as const,
+    accent: [brand.indigo500, brand.violet500] as const,
     tag: "sleep" as Filter,
   },
   {
@@ -138,7 +139,7 @@ const RECOMMENDATIONS = [
     title: "Improve focus plan",
     description: "A 14-day plan to grow your child's attention span — gently.",
     icon: "rocket" as const,
-    gradient: ["#A855F7", "#EC4899"] as const,
+    gradient: [brand.purple500, "#EC4899"] as const,
     tag: "focus" as Filter,
   },
   {
@@ -192,7 +193,7 @@ export default function PremiumHubScreen() {
       description: i.description,
       category: "INSIGHT",
       readMinutes: 3,
-      accent: ["#A855F7", "#EC4899"] as const,
+      accent: [brand.purple500, "#EC4899"] as const,
       tag: "behavior" as Filter,
     }));
     return [...liveMapped, ...INSIGHTS];
@@ -205,7 +206,7 @@ export default function PremiumHubScreen() {
       description: r.description,
       tag: (r.type === "coach" ? "behavior" : r.type === "routine" ? "sleep" : "focus") as Filter,
       icon: (r.type === "coach" ? "sparkles" : r.type === "routine" ? "calendar" : "leaf") as keyof typeof Ionicons.glyphMap,
-      gradient: ["#A855F7", "#EC4899"] as readonly [string, string],
+      gradient: [brand.purple500, "#EC4899"] as readonly [string, string],
     }));
     return [...liveMapped, ...RECOMMENDATIONS];
   }, [liveRecsRaw]);
@@ -247,13 +248,13 @@ export default function PremiumHubScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <LinearGradient
-        colors={["#FAF5FF", "#EFF6FF", "#FFFBEB"]}
+        colors={[brand.violet50, "#EFF6FF", "#FFFBEB"]}
         locations={[0, 0.5, 1]}
         style={styles.bg}
       >
         {/* Decorative blobs */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={[styles.blob, { top: -40, left: -50, backgroundColor: "rgba(168,85,247,0.16)" }]} />
+          <View style={[styles.blob, { top: -40, left: -50, backgroundColor: brandAlpha.purple500_16 }]} />
           <View style={[styles.blob, { top: 280, right: -70, backgroundColor: "rgba(236,72,153,0.12)", width: 280, height: 280 }]} />
         </View>
 
@@ -261,7 +262,7 @@ export default function PremiumHubScreen() {
           contentContainerStyle={{ paddingTop: insets.top + 14, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={brand.violet600} />
           }
         >
           {/* HEADER */}
@@ -278,7 +279,7 @@ export default function PremiumHubScreen() {
               style={styles.avatarBtn}
             >
               <LinearGradient
-                colors={["#A855F7", "#EC4899"]}
+                colors={[brand.purple500, "#EC4899"]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={styles.avatar}
@@ -327,7 +328,7 @@ export default function PremiumHubScreen() {
                     accessibilityLabel={`Filter by ${c.label}`}
                     accessibilityState={{ selected: active }}
                   >
-                    <Ionicons name={c.icon} size={13} color={active ? "#fff" : "#7C3AED"} />
+                    <Ionicons name={c.icon} size={13} color={active ? "#fff" : brand.violet600} />
                     <Text style={[styles.chipText, active && { color: "#fff" }]}>{c.label}</Text>
                   </TouchableOpacity>
                 );
@@ -472,7 +473,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   eyebrow: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
@@ -540,14 +541,14 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.85)",
     borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.25)",
+    borderColor: brandAlpha.violet600_25,
   },
   chipActive: {
-    backgroundColor: "#7C3AED",
-    borderColor: "#7C3AED",
+    backgroundColor: colors.light.primary,
+    borderColor: colors.light.primary,
   },
   chipText: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 13,
     fontWeight: "700",
   },

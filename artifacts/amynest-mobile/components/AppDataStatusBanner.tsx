@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-nati
 import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "@/store/useAppStore";
 import { useNetworkStore, selectIsOnline } from "@/store/useNetworkStore";
+import { brand } from "@/constants/colors";
 
 function formatRelative(ts: number | null): string {
   if (!ts) return "";
@@ -26,7 +27,6 @@ export default function AppDataStatusBanner() {
   const syncing = useAppStore((s) => s.syncing);
   const isOnline = useNetworkStore(selectIsOnline);
 
-  // Offline mode (highest priority)
   if (!isOnline) {
     return (
       <View style={[styles.banner, styles.offline]}>
@@ -41,7 +41,6 @@ export default function AppDataStatusBanner() {
     );
   }
 
-  // Actively syncing queued actions
   if (syncing) {
     return (
       <View style={[styles.banner, styles.syncing]}>
@@ -70,7 +69,7 @@ export default function AppDataStatusBanner() {
   if (status === "refreshing" && hasData) {
     return (
       <View style={[styles.banner, styles.muted]}>
-        <ActivityIndicator size="small" color="#7C3AED" />
+        <ActivityIndicator size="small" color={brand.violet600} />
         <Text style={styles.mutedText}>Refreshing…</Text>
       </View>
     );

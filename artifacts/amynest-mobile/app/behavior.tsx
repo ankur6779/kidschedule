@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import colors, { brand } from "@/constants/colors";
 import {
   QUICK_BEHAVIORS, QUICK_BEHAVIOR_KEYS, TRIGGERS, TRIGGER_KEYS,
   SOLUTIONS, SITUATION_HELP, UI_LABELS, buildAmyInsights, computeScore, scoreLabel,
@@ -322,7 +323,7 @@ export default function BehaviorScreen() {
 
         {/* BLOCK 2: Today Summary */}
         <Block
-          icon={<LinearGradient colors={["#3B82F6", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="stats-chart" size={18} color="#fff" /></LinearGradient>}
+          icon={<LinearGradient colors={["#3B82F6", brand.violet500]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="stats-chart" size={18} color="#fff" /></LinearGradient>}
           title={L.todaySummary}
           subtitle={`${todayLogs.length} ${L.loggedToday}`}
           open={openBlock === "summary"}
@@ -353,12 +354,12 @@ export default function BehaviorScreen() {
 
         {/* BLOCK 3: Amy Insights */}
         <Block
-          icon={<LinearGradient colors={["#7C3AED", "#EC4899"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="bulb" size={18} color="#fff" /></LinearGradient>}
+          icon={<LinearGradient colors={[brand.violet600, "#EC4899"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="bulb" size={18} color="#fff" /></LinearGradient>}
           title={L.amyInsights}
           subtitle={insights.length > 0 ? `${insights.length} pattern${insights.length > 1 ? "s" : ""} detected` : "Log more to unlock"}
           open={openBlock === "insights"}
           onToggle={() => toggle("insights")}
-          accentColor="#7C3AED"
+          accentColor={brand.violet600}
         >
           {insights.length === 0 ? (
             <Text style={styles.emptyText}>{L.noInsights}</Text>
@@ -372,7 +373,7 @@ export default function BehaviorScreen() {
 
         {/* BLOCK 4: Weekly Trends */}
         <Block
-          icon={<LinearGradient colors={["#0EA5E9", "#6366F1"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="bar-chart" size={18} color="#fff" /></LinearGradient>}
+          icon={<LinearGradient colors={["#0EA5E9", brand.indigo500]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.iconGrad}><Ionicons name="bar-chart" size={18} color="#fff" /></LinearGradient>}
           title={L.weeklyTrends}
           subtitle="Last 7 days at a glance"
           open={openBlock === "trends"}
@@ -465,7 +466,7 @@ export default function BehaviorScreen() {
             {situationKey && SITUATION_HELP[situationKey][lang].map((tip, i) => (
               <View key={i} style={styles.sitTipRow}>
                 <View style={styles.sitTipNum}>
-                  <Text style={{ color: "#7C3AED", fontSize: 11, fontWeight: "900" }}>{i + 1}</Text>
+                  <Text style={{ color: brand.violet600, fontSize: 11, fontWeight: "900" }}>{i + 1}</Text>
                 </View>
                 <Text style={styles.sitTipText}>{tip}</Text>
               </View>
@@ -491,7 +492,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14,
     backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  childChipSel: { backgroundColor: "#7B3FF2", borderColor: "#FF4ECD" },
+  childChipSel: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
   childChipText: { color: "rgba(255,255,255,0.8)", fontWeight: "700", fontSize: 13 },
 
   quickHelpBtn: {
@@ -505,7 +506,7 @@ const styles = StyleSheet.create({
   block: {
     borderRadius: 20, borderWidth: 1, overflow: "hidden",
     backgroundColor: "rgba(255,255,255,0.05)",
-    shadowColor: "#7B3FF2", shadowOpacity: 0.2, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
+    shadowColor: colors.light.primary, shadowOpacity: 0.2, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
   blockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  triggerChipSel: { backgroundColor: "#7B3FF2", borderColor: "#FF4ECD" },
+  triggerChipSel: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
   triggerChipText: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: "600" },
 
   logRow: {
@@ -557,7 +558,7 @@ const styles = StyleSheet.create({
   scoreNum: { color: "#fff", fontSize: 42, fontWeight: "900" },
   scoreLabel: { color: "rgba(255,255,255,0.8)", fontSize: 14, fontWeight: "700", marginTop: 2 },
   scoreBg: { width: "100%", height: 6, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.12)", marginTop: 10, overflow: "hidden" },
-  scoreFill: { height: "100%", borderRadius: 999, backgroundColor: "#7B3FF2" },
+  scoreFill: { height: "100%", borderRadius: 999, backgroundColor: colors.light.primary },
 
   countCard: { flex: 1, alignItems: "center", padding: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1 },
   countNum: { fontSize: 26, fontWeight: "900" },
@@ -575,7 +576,7 @@ const styles = StyleSheet.create({
 
   langRow: { flexDirection: "row", borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" },
   langBtn: { paddingHorizontal: 9, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.05)" },
-  langBtnActive: { backgroundColor: "#7B3FF2" },
+  langBtnActive: { backgroundColor: colors.light.primary },
   langBtnText: { color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "700" },
 
   situModal: {
@@ -589,7 +590,7 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 8, borderRadius: 12, alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
   },
-  sitTabActive: { backgroundColor: "#7B3FF2", borderColor: "#FF4ECD" },
+  sitTabActive: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
   sitTabText: { color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: "700" },
 
   sitTipRow: {

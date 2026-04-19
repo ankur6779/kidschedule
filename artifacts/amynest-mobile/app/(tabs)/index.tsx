@@ -20,6 +20,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageRow } from "@/components/LanguageRow";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
+import { brand, brandAlpha } from "@/constants/colors";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -91,7 +92,7 @@ function getAgeGroupInfo(age: number): { emoji: string; bg: string; color: strin
   if (age <= 3) return { emoji: "🧒", bg: "#FEF3C7", color: "#B45309" };
   if (age <= 6) return { emoji: "🧒", bg: "#DCFCE7", color: "#15803D" };
   if (age <= 10) return { emoji: "🧑", bg: "#DBEAFE", color: "#1D4ED8" };
-  return { emoji: "🧑‍🎓", bg: "#EDE9FE", color: "#6D28D9" };
+  return { emoji: "🧑‍🎓", bg: brand.violet100, color: brand.violet700 };
 }
 
 function pct(done: number, total: number): number {
@@ -140,7 +141,7 @@ function HeroGreeting({
           <Image source={LOGO_IMG} style={styles.heroLogo} resizeMode="contain" />
           <Text style={styles.heroBrand}>Amy Nest</Text>
           <LinearGradient
-            colors={["#7B3FF2", "#FF4ECD"]}
+            colors={[brand.primary, "#FF4ECD"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.aiBadge}
@@ -154,7 +155,7 @@ function HeroGreeting({
             style={styles.amyAiHeaderBtn}
           >
             <LinearGradient
-              colors={["#7B3FF2", "#FF4ECD"]}
+              colors={[brand.primary, "#FF4ECD"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.amyAiHeaderBtnGrad}
@@ -253,7 +254,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
         <Text style={styles.timelineEmptySub}>{t("dashboard.no_plan_subtitle")}</Text>
         <TouchableOpacity onPress={onGenerate} activeOpacity={0.9}>
           <LinearGradient
-            colors={["#7C3AED", "#A855F7"] as const}
+            colors={[brand.primary, brand.purple500] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.timelineEmptyBtn}
@@ -297,12 +298,12 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
     <View style={styles.timelineCard}>
       <View style={styles.timelineHeader}>
         <View style={styles.timelineHeaderLeft}>
-          <Ionicons name="time-outline" size={16} color="#7C3AED" />
+          <Ionicons name="time-outline" size={16} color={brand.violet600} />
           <Text style={styles.timelineHeaderTitle}>{t("dashboard.todays_timeline")}</Text>
         </View>
         <TouchableOpacity onPress={onSeeAll} style={styles.timelineHeaderRight}>
           <Text style={styles.timelineHeaderLink}>View all</Text>
-          <Ionicons name="arrow-forward" size={12} color="#7C3AED" />
+          <Ionicons name="arrow-forward" size={12} color={brand.violet600} />
         </TouchableOpacity>
       </View>
       <View style={{ padding: 10, gap: 8 }}>
@@ -523,7 +524,7 @@ function AmyAvatar({ size = 28, animated = false }: { size?: number; animated?: 
       }}
     >
       <LinearGradient
-        colors={["#7B3FF2", "#FF4ECD", "#4FC3F7"]}
+        colors={[brand.primary, "#FF4ECD", "#4FC3F7"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -572,7 +573,7 @@ function ThemeToggleRow() {
     >
       <View style={[styles.drawerItem, { justifyContent: "space-between", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)", paddingTop: 14, marginTop: 4 }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? "#A78BFA" : "#F59E0B"} />
+          <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? brand.violet400 : "#F59E0B"} />
           <Text style={styles.drawerItemLabel}>{isDark ? t("nav.dark_mode") : t("nav.light_mode")}</Text>
         </View>
         <View style={{
@@ -583,9 +584,9 @@ function ThemeToggleRow() {
         }}>
           <View style={{
             width: 18, height: 18, borderRadius: 9,
-            backgroundColor: isDark ? "#7B3FF2" : "#F59E0B",
+            backgroundColor: isDark ? brand.primary : "#F59E0B",
             transform: [{ translateX: isDark ? 18 : 0 }],
-            shadowColor: isDark ? "#7B3FF2" : "#F59E0B",
+            shadowColor: isDark ? brand.primary : "#F59E0B",
             shadowOpacity: 0.6, shadowRadius: 6,
           }} />
         </View>
@@ -603,7 +604,7 @@ function ThemeMenuRow() {
     <TouchableOpacity activeOpacity={0.85} onPress={toggleTheme} style={{ marginTop: 6 }}>
       <View style={[styles.drawerItem, { justifyContent: "space-between" }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? "#A78BFA" : "#F59E0B"} />
+          <Ionicons name={isDark ? "moon" : "sunny"} size={18} color={isDark ? brand.violet400 : "#F59E0B"} />
           <Text style={styles.drawerItemLabel}>{isDark ? t("nav.dark_mode") : t("nav.light_mode")}</Text>
         </View>
         <View style={{
@@ -614,9 +615,9 @@ function ThemeMenuRow() {
         }}>
           <View style={{
             width: 18, height: 18, borderRadius: 9,
-            backgroundColor: isDark ? "#7B3FF2" : "#F59E0B",
+            backgroundColor: isDark ? brand.primary : "#F59E0B",
             transform: [{ translateX: isDark ? 18 : 0 }],
-            shadowColor: isDark ? "#7B3FF2" : "#F59E0B",
+            shadowColor: isDark ? brand.primary : "#F59E0B",
             shadowOpacity: 0.6, shadowRadius: 6,
           }} />
         </View>
@@ -681,7 +682,7 @@ function SideDrawer({
                 >
                   {active ? (
                     <LinearGradient
-                      colors={["#7B3FF2", "#FF4ECD"]}
+                      colors={[brand.primary, "#FF4ECD"]}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={[styles.drawerItem, styles.drawerItemActive]}
@@ -738,7 +739,7 @@ function StatCard({ label, value, sub, icon, onPress }: {
       <View style={styles.statCard}>
         <View style={styles.statTopRow}>
           <Text style={styles.statLabel}>{label}</Text>
-          <Ionicons name={icon} size={14} color="#7C3AED" />
+          <Ionicons name={icon} size={14} color={brand.violet600} />
         </View>
         <View style={styles.statBottom}>
           <Text style={styles.statValue}>{value}</Text>
@@ -763,7 +764,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
   const suggestions: { emoji: string; text: string; bg: string; border: string; color: string }[] = [];
 
   if (total === 0) {
-    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", bg: "rgba(99,102,241,0.16)", border: "rgba(99,102,241,0.35)", color: "#C7D2FE" });
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", bg: brandAlpha.indigo500_16, border: brandAlpha.indigo500_35, color: "#C7D2FE" });
   } else if (p < 30 && hour >= 14) {
     suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", bg: "rgba(245,158,11,0.16)", border: "rgba(245,158,11,0.35)", color: "#FDE68A" });
   } else if (p >= 80) {
@@ -837,7 +838,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
   return (
     <View style={styles.scoreCard}>
       <View style={styles.scoreHeader}>
-        <Ionicons name="sparkles" size={14} color="#7C3AED" />
+        <Ionicons name="sparkles" size={14} color={brand.violet600} />
         <View style={{ flex: 1 }}>
           <Text style={styles.scoreTitle}>Your Parent Score</Text>
           <Text style={styles.scoreSub}>Based on last 7 days</Text>
@@ -866,7 +867,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
         </View>
         <View style={{ flex: 1, gap: 8 }}>
           <Text style={styles.scoreBetter}>
-            Better than <Text style={{ color: "#A855F7", fontFamily: "Inter_700Bold" }}>{percentile}%</Text> of parents!
+            Better than <Text style={{ color: brand.purple500, fontFamily: "Inter_700Bold" }}>{percentile}%</Text> of parents!
           </Text>
           <View>
             <View style={styles.scoreRow}>
@@ -874,7 +875,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
               <Text style={styles.scoreRowValue}>{completionRate}%</Text>
             </View>
             <View style={styles.scoreBar}>
-              <View style={[styles.scoreBarFill, { width: `${completionRate}%`, backgroundColor: "#A855F7" }]} />
+              <View style={[styles.scoreBarFill, { width: `${completionRate}%`, backgroundColor: brand.purple500 }]} />
             </View>
           </View>
           <View>
@@ -883,7 +884,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
               <Text style={styles.scoreRowValue}>{daysActive}/7</Text>
             </View>
             <View style={styles.scoreBar}>
-              <View style={[styles.scoreBarFill, { width: `${(daysActive / 7) * 100}%`, backgroundColor: "#7C3AED" }]} />
+              <View style={[styles.scoreBarFill, { width: `${(daysActive / 7) * 100}%`, backgroundColor: brand.primary }]} />
             </View>
           </View>
         </View>
@@ -900,17 +901,17 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
 }) {
   const styles = useThemedStyles();
   const features = [
-    { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: "rgba(99,102,241,0.14)", border: "rgba(99,102,241,0.35)", grad: ["#3B82F6", "#6366F1"] as const },
+    { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: brandAlpha.indigo500_14, border: brandAlpha.indigo500_35, grad: ["#3B82F6", brand.indigo500] as const },
     { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "rgba(16,185,129,0.14)", border: "rgba(16,185,129,0.35)", grad: ["#10B981", "#14B8A6"] as const },
     { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", bg: "rgba(249,115,22,0.14)", border: "rgba(249,115,22,0.35)", grad: ["#F97316", "#F59E0B"] as const },
-    { emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", bg: "rgba(168,85,247,0.16)", border: "rgba(168,85,247,0.4)", grad: ["#A855F7", "#9333EA"] as const },
+    { emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", bg: brandAlpha.purple500_16, border: brandAlpha.purple500_40, grad: [brand.purple500, brand.purple600] as const },
     { emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", bg: "rgba(244,63,94,0.14)", border: "rgba(244,63,94,0.35)", grad: ["#F43F5E", "#EC4899"] as const },
   ];
 
   return (
     <View style={{ paddingHorizontal: 4 }}>
       <LinearGradient
-        colors={["#2563EB", "#6366F1", "#7C3AED"] as const}
+        colors={["#2563EB", brand.indigo500, brand.primary] as const}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.onbHero}
@@ -951,7 +952,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
 
       <TouchableOpacity onPress={onCoach} activeOpacity={0.9}>
         <LinearGradient
-          colors={["#6366F1", "#A855F7"] as const}
+          colors={[brand.indigo500, brand.purple500] as const}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.onbPrimary}
@@ -1076,7 +1077,7 @@ export default function HomeScreen() {
             style={{ borderRadius: 22, overflow: "hidden", marginBottom: 16 }}
           >
             <LinearGradient
-              colors={["#5B21B6", "#7C3AED"]}
+              colors={[brand.violet800, brand.primary]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{ flexDirection: "row", alignItems: "center", padding: 18, gap: 14 }}
@@ -1157,7 +1158,7 @@ export default function HomeScreen() {
           <View style={styles.listCard}>
             <View style={styles.listHeader}>
               <View style={styles.listHeaderLeft}>
-                <Ionicons name="calendar" size={16} color="#A855F7" />
+                <Ionicons name="calendar" size={16} color={brand.purple500} />
                 <View>
                   <Text style={styles.listTitle}>Recent Routines</Text>
                   <Text style={styles.listSub}>Latest generated schedules</Text>
@@ -1165,7 +1166,7 @@ export default function HomeScreen() {
               </View>
               <TouchableOpacity onPress={() => router.push("/(tabs)/routines")} style={styles.listLink}>
                 <Text style={styles.listLinkText}>View all</Text>
-                <Ionicons name="arrow-forward" size={12} color="#A855F7" />
+                <Ionicons name="arrow-forward" size={12} color={brand.purple500} />
               </TouchableOpacity>
             </View>
             {recentRoutines.length === 0 ? (
@@ -1257,7 +1258,7 @@ export default function HomeScreen() {
           {/* Big primary CTA */}
           <TouchableOpacity onPress={() => router.push("/(tabs)/coach")} activeOpacity={0.9} style={{ marginTop: 4 }}>
             <LinearGradient
-              colors={["#7C3AED", "#A855F7"] as const}
+              colors={[brand.primary, brand.purple500] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.bigCta}
@@ -1367,24 +1368,24 @@ function makeStyles(theme: ThemePalette) {
   timelineHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 8 },
   timelineHeaderTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   timelineHeaderRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  timelineHeaderLink: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  timelineHeaderLink: { fontSize: 11, fontFamily: "Inter_700Bold", color: brand.violet600 },
   timelineRow: {
     flexDirection: "row", alignItems: "center", gap: 10,
     backgroundColor: rowOverlay, borderRadius: 16, padding: 10,
   },
-  timelineRowCurrent: { backgroundColor: "#7C3AED" },
+  timelineRowCurrent: { backgroundColor: brand.primary },
   timelineTime: { width: 56, alignItems: "center", gap: 4 },
   timelineTimeText: { fontSize: 11, fontFamily: "Inter_700Bold", color: onCardSecondary },
   timelineNowBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
   timelineNowText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#fff", letterSpacing: 0.5 },
-  timelineNextBadge: { backgroundColor: "#EDE9FE", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
-  timelineNextText: { fontSize: 8, fontFamily: "Inter_700Bold", color: "#6D28D9", letterSpacing: 0.5 },
+  timelineNextBadge: { backgroundColor: brand.violet100, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
+  timelineNextText: { fontSize: 8, fontFamily: "Inter_700Bold", color: brand.violet700, letterSpacing: 0.5 },
   timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
   timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: onCardSecondary, marginTop: 2 },
   timelineEmpty: {
     borderRadius: 16, padding: 20, alignItems: "center", gap: 8,
-    borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(124,58,237,0.30)",
-    backgroundColor: isLight ? "rgba(124,58,237,0.03)" : "rgba(124,58,237,0.08)",
+    borderWidth: 1.5, borderStyle: "dashed", borderColor: brandAlpha.violet600_30,
+    backgroundColor: isLight ? brandAlpha.violet600_03 : brandAlpha.violet600_08,
   },
   timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: theme.text.primary },
   timelineEmptySub: { fontSize: 11, color: theme.text.secondary, textAlign: "center", fontFamily: "Inter_400Regular" },
@@ -1392,10 +1393,10 @@ function makeStyles(theme: ThemePalette) {
   timelineEmptyBtnText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 13 },
   timelineDone: {
     borderRadius: 16, padding: 18, alignItems: "center", gap: 4,
-    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)",
-    backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)",
+    borderWidth: 1.5, borderColor: brandAlpha.violet600_22,
+    backgroundColor: isLight ? brandAlpha.violet600_04 : brandAlpha.violet600_10,
   },
-  timelineDoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: isLight ? "#4C1D95" : "#C4B5FD" },
+  timelineDoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: isLight ? brand.violet900 : brand.violet300 },
   timelineDoneSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: isLight ? "rgba(76,29,149,0.65)" : "rgba(196,181,253,0.75)" },
 
   /* STREAK */
@@ -1408,11 +1409,11 @@ function makeStyles(theme: ThemePalette) {
     minHeight: 150,
     backgroundColor: cardBg,
     borderWidth: 1.5,
-    borderColor: "rgba(124,58,237,0.22)",
+    borderColor: brandAlpha.violet600_22,
   },
   streakEmoji: { fontSize: 26, marginBottom: 2 },
-  streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30, color: "#7C3AED" },
-  streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2, color: isLight ? "#4C1D95" : "#C4B5FD" },
+  streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30, color: brand.violet600 },
+  streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2, color: isLight ? brand.violet900 : brand.violet300 },
   streakSub: { fontSize: 9, fontFamily: "Inter_500Medium", marginTop: 4, textAlign: "center", color: isLight ? "rgba(76,29,149,0.6)" : "rgba(196,181,253,0.7)" },
 
   /* STATS */
@@ -1421,30 +1422,30 @@ function makeStyles(theme: ThemePalette) {
   statCard: {
     borderRadius: 16, padding: 14, minHeight: 92, justifyContent: "space-between",
     backgroundColor: cardBg,
-    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.18)",
+    borderWidth: 1.5, borderColor: brandAlpha.violet600_18,
   },
   statTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  statLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: isLight ? "#4C1D95" : "#C4B5FD" },
+  statLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: isLight ? brand.violet900 : brand.violet300 },
   statBottom: { flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 6 },
-  statValue: { fontSize: 26, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  statValue: { fontSize: 26, fontFamily: "Inter_700Bold", color: brand.violet600 },
   statSub: { fontSize: 10, fontFamily: "Inter_500Medium", color: isLight ? "rgba(76,29,149,0.65)" : "rgba(196,181,253,0.75)" },
 
   /* AMY CARD */
   amyCard: {
     backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16,
-    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)",
+    borderWidth: 1.5, borderColor: brandAlpha.violet600_22,
   },
-  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "rgba(124,58,237,0.15)", backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)" },
+  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: brandAlpha.violet600_15, backgroundColor: isLight ? brandAlpha.violet600_04 : brandAlpha.violet600_10 },
   amyHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#7C3AED", alignItems: "center", justifyContent: "center" },
+  amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: brand.primary, alignItems: "center", justifyContent: "center" },
   amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   amySub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   amyTip: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
   amyTipText: { flex: 1, fontSize: 12, lineHeight: 17, fontFamily: "Inter_500Medium" },
 
   /* SCORE */
-  scoreCard: { backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)" },
-  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: "rgba(124,58,237,0.15)", backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)" },
+  scoreCard: { backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1.5, borderColor: brandAlpha.violet600_22 },
+  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: brandAlpha.violet600_15, backgroundColor: isLight ? brandAlpha.violet600_04 : brandAlpha.violet600_10 },
   scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   scoreSub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   scoreBody: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
@@ -1466,15 +1467,15 @@ function makeStyles(theme: ThemePalette) {
   listTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   listSub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   listLink: { flexDirection: "row", alignItems: "center", gap: 4 },
-  listLinkText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "#A855F7" },
+  listLinkText: { fontSize: 11, fontFamily: "Inter_700Bold", color: brand.purple500 },
   listEmpty: { alignItems: "center", padding: 24, gap: 8 },
   listEmptyText: { fontSize: 13, color: onCardMuted, fontFamily: "Inter_500Medium" },
-  listEmptyLink: { fontSize: 13, color: "#A855F7", fontFamily: "Inter_700Bold", marginTop: 4 },
+  listEmptyLink: { fontSize: 13, color: brand.purple500, fontFamily: "Inter_700Bold", marginTop: 4 },
   listRow: { flexDirection: "row", alignItems: "center", gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: cardBorder },
   listRowTitle: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
   listRowMeta: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
-  listChildPill: { backgroundColor: "rgba(168,85,247,0.10)", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
-  listChildPillText: { fontSize: 10, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  listChildPill: { backgroundColor: brandAlpha.purple500_10, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999 },
+  listChildPillText: { fontSize: 10, fontFamily: "Inter_700Bold", color: brand.violet600 },
   listRowDate: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular" },
   listRowPct: { fontSize: 12, fontFamily: "Inter_700Bold", color: onCardPrimary },
   listRowDone: { fontSize: 9, color: onCardMuted, fontFamily: "Inter_400Regular" },
@@ -1490,14 +1491,14 @@ function makeStyles(theme: ThemePalette) {
   bigCta: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     paddingVertical: 16, borderRadius: 22,
-    shadowColor: "#7C3AED", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+    shadowColor: brand.violet600, shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
   },
   bigCtaText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
 
   /* ONBOARDING */
   onbHero: {
     borderRadius: 26, padding: 26, alignItems: "center", marginBottom: 22,
-    shadowColor: "#6366F1", shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 10,
+    shadowColor: brand.indigo500, shadowOpacity: 0.35, shadowRadius: 20, shadowOffset: { width: 0, height: 10 }, elevation: 10,
   },
   onbHeroEmoji: { marginBottom: 12 },
   onbHeroEyebrow: { fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2, color: "#BFDBFE", marginBottom: 6 },
@@ -1514,7 +1515,7 @@ function makeStyles(theme: ThemePalette) {
   onbPrimary: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     paddingVertical: 16, borderRadius: 18, marginBottom: 10,
-    shadowColor: "#A855F7", shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+    shadowColor: brand.purple500, shadowOpacity: 0.4, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
   },
   onbPrimaryText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
   onbSecondary: {
@@ -1547,7 +1548,7 @@ function makeStyles(theme: ThemePalette) {
     alignItems: "center", justifyContent: "center",
     backgroundColor: subtleSurface,
     borderWidth: 1, borderColor: cardBorder,
-    shadowColor: "#7B3FF2", shadowOpacity: 0.55, shadowRadius: 10, shadowOffset: { width: 0, height: 0 }, elevation: 6,
+    shadowColor: brand.primary, shadowOpacity: 0.55, shadowRadius: 10, shadowOffset: { width: 0, height: 0 }, elevation: 6,
   },
   menuBtn: {
     width: 36, height: 36, borderRadius: 12,

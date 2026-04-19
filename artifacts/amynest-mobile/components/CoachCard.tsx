@@ -5,6 +5,7 @@ import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn } from "react-native-reanimated";
 import ActionButtons, { type ActionResult } from "./ActionButtons";
+import { brand, brandAlpha } from "@/constants/colors";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 export const CARD_HEIGHT = SCREEN_H;
@@ -84,12 +85,12 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
 
             {/* Objective */}
             <View style={styles.objectiveBox}>
-              <Ionicons name="flag" size={14} color="#7C3AED" />
+              <Ionicons name="flag" size={14} color={brand.violet600} />
               <Text style={styles.objectiveText}>{win.objective}</Text>
             </View>
 
             {/* Deep explanation */}
-            <SectionHeader icon="book-outline" label="WHY THIS WORKS" color="#6366F1" />
+            <SectionHeader icon="book-outline" label="WHY THIS WORKS" color={brand.indigo500} />
             <Text style={styles.bodyText}>{win.explanation}</Text>
 
             {/* Actions */}
@@ -156,7 +157,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.6)",
-    shadowColor: "#7C3AED",
+    shadowColor: brand.violet600,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.18,
     shadowRadius: 30,
@@ -207,17 +208,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
-    backgroundColor: "rgba(124,58,237,0.08)",
+    backgroundColor: brandAlpha.violet600_08,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 22,
     borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.18)",
+    borderColor: brandAlpha.violet600_18,
   },
   objectiveText: {
     flex: 1,
-    color: "#5B21B6",
+    color: brand.violet800,
     fontSize: 13.5,
     fontWeight: "600",
     lineHeight: 19,

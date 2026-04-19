@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import type { Plan } from "@/services/subscriptionApi";
+import { brand } from "@/constants/colors";
 
 const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
   ai_quota: {
@@ -132,7 +133,7 @@ export default function PaywallScreen() {
           {/* Hero */}
           <View style={styles.hero}>
             <LinearGradient
-              colors={["#7B3FF2", "#FF4ECD"]}
+              colors={[brand.primary, "#FF4ECD"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.heroIcon}
@@ -170,7 +171,7 @@ export default function PaywallScreen() {
                       {p.badge && (
                         <View style={styles.badgeWrap}>
                           <LinearGradient
-                            colors={["#7B3FF2", "#FF4ECD"]}
+                            colors={[brand.primary, "#FF4ECD"]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
                             style={styles.badge}
@@ -230,7 +231,7 @@ export default function PaywallScreen() {
             }
           >
             <LinearGradient
-              colors={["#7B3FF2", "#FF4ECD"]}
+              colors={[brand.primary, "#FF4ECD"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.primary}

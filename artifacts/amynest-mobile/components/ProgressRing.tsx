@@ -7,6 +7,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import { brand, brandAlpha } from "@/constants/colors";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -25,9 +26,9 @@ export default function ProgressRing({
   size = 140,
   stroke = 12,
   progress,
-  trackColor = "rgba(124,58,237,0.12)",
-  gradientFrom = "#C4B5FD",
-  gradientTo = "#7C3AED",
+  trackColor = brandAlpha.violet600_12,
+  gradientFrom = brand.violet300,
+  gradientTo = brand.violet600,
   centerSubtext,
   labelColor,
 }: Props) {

@@ -19,6 +19,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useColors } from "@/hooks/useColors";
+import colors, { brand, brandAlpha } from "@/constants/colors";
 import {
   HANDLER_TYPES,
   type HandlerKey,
@@ -161,7 +162,7 @@ export default function GenerateRoutineScreen() {
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#A855F7" />
+        <ActivityIndicator size="large" color={brand.purple500} />
       </View>
     );
   }
@@ -182,7 +183,7 @@ export default function GenerateRoutineScreen() {
             style={{ marginTop: 18 }}
           >
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={[brand.purple500, "#EC4899"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.primaryBtn}
@@ -261,7 +262,7 @@ export default function GenerateRoutineScreen() {
                 <Ionicons
                   name="calendar-outline"
                   size={14}
-                  color={active ? "#fff" : "#7C3AED"}
+                  color={active ? "#fff" : brand.violet600}
                 />
                 <Text style={[styles.dateChipText, active && { color: "#fff" }]}>
                   {opt.label}
@@ -388,7 +389,7 @@ export default function GenerateRoutineScreen() {
           style={{ marginTop: 24, opacity: isFormValid && !isGenerating ? 1 : 0.6 }}
         >
           <LinearGradient
-            colors={["#A855F7", "#EC4899"]}
+            colors={[brand.purple500, "#EC4899"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.primaryBtn}
@@ -426,13 +427,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#A855F7",
+    backgroundColor: brand.purple500,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 4,
   },
-  heroTitle: { fontSize: 18, fontWeight: "800", color: "#581C87" },
-  heroSub: { fontSize: 13, color: "#7C3AED" },
+  heroTitle: { fontSize: 18, fontWeight: "800", color: brand.purple900 },
+  heroSub: { fontSize: 13, color: brand.violet600 },
   sectionLabel: {
     fontSize: 13,
     fontWeight: "800",
@@ -452,7 +453,7 @@ const styles = StyleSheet.create({
     alignItems: "baseline",
     gap: 6,
   },
-  chipActive: { backgroundColor: "#A855F7", borderColor: "#A855F7" },
+  chipActive: { backgroundColor: brand.purple500, borderColor: brand.purple500 },
   chipText: { fontSize: 14, fontWeight: "700", color: "rgba(255,255,255,0.85)" },
   chipTextActive: { color: "#fff" },
   chipMeta: { fontSize: 11, color: "rgba(255,255,255,0.45)" },
@@ -461,14 +462,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: 2,
-    borderColor: "#E9D5FF",
-    backgroundColor: "#FAF5FF",
+    borderColor: brand.violet200,
+    backgroundColor: brand.violet50,
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  dateChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
-  dateChipText: { fontSize: 14, fontWeight: "700", color: "#6D28D9" },
+  dateChipActive: { backgroundColor: colors.light.primary, borderColor: colors.light.primary },
+  dateChipText: { fontSize: 14, fontWeight: "700", color: brand.violet700 },
   dateHint: { fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: -8, marginBottom: 16, marginLeft: 2 },
   moodGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   moodCard: {
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#14142B",
     alignItems: "center",
   },
-  toggleChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
+  toggleChipActive: { backgroundColor: colors.light.primary, borderColor: colors.light.primary },
   toggleChipText: { fontSize: 13, fontWeight: "700", color: "rgba(255,255,255,0.85)" },
   handlerGrid: {
     flexDirection: "row",

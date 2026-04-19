@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
+import { brand, brandAlpha } from "@/constants/colors";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 
@@ -111,13 +112,13 @@ function smartCascade(items: RoutineItem[], fromIndex: number, delayMinutes: num
 const CATEGORY_COLORS: Record<string, string> = {
   morning: "#F59E0B", morning_routine: "#F59E0B",
   meal: "#10B981", tiffin: "#F59E0B",
-  school: "#6366F1", travel: "#818CF8",
-  homework: "#8B5CF6", study: "#8B5CF6",
+  school: brand.indigo500, travel: "#818CF8",
+  homework: brand.violet500, study: brand.violet500,
   play: "#F97316", exercise: "#84CC16",
   family: "#EC4899", bonding: "#F472B6",
   creative: "#14B8A6", outdoor: "#84CC16",
   self_care: "#06B6D4", hygiene: "#EC4899",
-  rest: "#6B7280", "wind-down": "#A78BFA",
+  rest: "#6B7280", "wind-down": brand.violet400,
   sleep: "#4338CA", screen: "#06B6D4",
   default: "#9CA3AF",
 };
@@ -428,7 +429,7 @@ export default function RoutineDetailScreen() {
 
       {isLoading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#7B3FF2" />
+          <ActivityIndicator size="large" color={brand.primary} />
         </View>
       ) : !routine ? (
         <View style={styles.center}>
@@ -451,7 +452,7 @@ export default function RoutineDetailScreen() {
                   <Text style={styles.childChipText}>{routine.childName}</Text>
                 </View>
                 <View style={styles.childChip}>
-                  <Ionicons name="list" size={11} color="#7B3FF2" />
+                  <Ionicons name="list" size={11} color={brand.primary} />
                   <Text style={styles.childChipText}>{stats.total} tasks</Text>
                 </View>
               </View>
@@ -466,7 +467,7 @@ export default function RoutineDetailScreen() {
                     <Stat num={stats.skipped} label="Skipped" color="rgba(255,255,255,0.5)" />
                   </View>
                   <View style={styles.progressOuter}>
-                    <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                       style={[styles.progressFill, { width: `${stats.pct}%` }]} />
                   </View>
                   <Text style={styles.progressLabel}>{stats.pct}% complete</Text>
@@ -478,7 +479,7 @@ export default function RoutineDetailScreen() {
               <View style={styles.activitiesHeaderRow}>
                 <Text style={styles.sectionTitle}>ACTIVITIES</Text>
                 <TouchableOpacity onPress={() => setAddOpen(true)} style={styles.addBtn} activeOpacity={0.85}>
-                  <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
+                  <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
                     <Ionicons name="add" size={14} color="#FFFFFF" />
                     <Text style={styles.addBtnText}>Add</Text>
                   </LinearGradient>
@@ -514,7 +515,7 @@ export default function RoutineDetailScreen() {
                   onSwipeLeft={() => setItemStatus(index, item.status === "skipped" ? "pending" : "skipped")}
                   leftActionMode="skip"
                   borderRadius={18}
-                  glowColor={item.status === "completed" ? "#22C55E" : "#8B5CF6"}
+                  glowColor={item.status === "completed" ? "#22C55E" : brand.violet500}
                 >
                   <ItemCard item={item} />
                 </SwipeableCard>
@@ -532,7 +533,7 @@ export default function RoutineDetailScreen() {
             <Ionicons
               name={toast.tone === "success" ? "checkmark-circle" : toast.tone === "warn" ? "alert-circle" : "information-circle"}
               size={18}
-              color={toast.tone === "success" ? "#10B981" : toast.tone === "warn" ? "#F59E0B" : "#7B3FF2"}
+              color={toast.tone === "success" ? "#10B981" : toast.tone === "warn" ? "#F59E0B" : brand.primary}
             />
             <Text style={styles.toastText}>{toast.msg}</Text>
           </BlurView>
@@ -579,7 +580,7 @@ export default function RoutineDetailScreen() {
                 <ActionRow icon="play-skip-forward" iconColor="#9CA3AF" label="Skip"
                   onPress={() => setItemStatus(actionItem, "skipped")}
                   active={items[actionItem]?.status === "skipped"} />
-                <ActionRow icon="refresh" iconColor="#7B3FF2" label="Reset to pending"
+                <ActionRow icon="refresh" iconColor={brand.primary} label="Reset to pending"
                   onPress={() => setItemStatus(actionItem, "pending")}
                   active={!items[actionItem]?.status || items[actionItem]?.status === "pending"} />
                 <ActionRow icon="create-outline" iconColor="#60A5FA" label="Edit time / activity"
@@ -667,7 +668,7 @@ export default function RoutineDetailScreen() {
           <Pressable style={styles.actionSheet} onPress={e => e.stopPropagation()}>
             <View style={styles.actionHandle} />
             <Text style={styles.actionTitle}>Routine actions</Text>
-            <ActionRow icon="sparkles" iconColor="#7B3FF2" label={regenLoading ? "Regenerating…" : "Regenerate day with AI"}
+            <ActionRow icon="sparkles" iconColor={brand.primary} label={regenLoading ? "Regenerating…" : "Regenerate day with AI"}
               onPress={partialRegen} />
             <ActionRow icon="share-outline" iconColor="#10B981" label="Share routine" onPress={shareRoutine} />
             <ActionRow icon="trash-outline" iconColor="#FF4ECD" label="Delete routine" onPress={confirmDelete} />
@@ -735,7 +736,7 @@ function AmyAISuggests({ stats, title }: { stats: { done: number; total: number;
   return (
     <View style={styles.aiCard}>
       <View style={styles.aiBadge}>
-        <Ionicons name="sparkles" size={18} color="#A78BFA" />
+        <Ionicons name="sparkles" size={18} color={brand.violet400} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.aiLabel}>AMY AI SUGGESTS</Text>
@@ -816,7 +817,7 @@ function ActionRow({ icon, iconColor, label, onPress, active }: {
     >
       <Ionicons name={icon} size={20} color={iconColor} />
       <Text style={styles.actionRowText}>{label}</Text>
-      {active && <Ionicons name="checkmark" size={18} color="#7B3FF2" />}
+      {active && <Ionicons name="checkmark" size={18} color={brand.primary} />}
     </TouchableOpacity>
   );
 }
@@ -847,7 +848,7 @@ const styles = StyleSheet.create({
   statsCardWrap: {
     marginTop: 18, borderRadius: 22, overflow: "hidden",
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
-    shadowColor: "#7B3FF2", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
+    shadowColor: brand.primary, shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 },
   },
   statsCard: { padding: 18, gap: 14, backgroundColor: "rgba(20,20,43,0.55)" },
   statsRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-around" },
@@ -861,32 +862,32 @@ const styles = StyleSheet.create({
 
   activitiesHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 22, marginBottom: 10 },
   sectionTitle: { color: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: "700", letterSpacing: 1 },
-  addBtn: { borderRadius: 14, overflow: "hidden", shadowColor: "#7B3FF2", shadowOpacity: 0.5, shadowRadius: 8 },
+  addBtn: { borderRadius: 14, overflow: "hidden", shadowColor: brand.primary, shadowOpacity: 0.5, shadowRadius: 8 },
   addBtnGrad: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 14 },
   addBtnText: { color: "#FFFFFF", fontSize: 12, fontWeight: "700" },
 
   itemCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, backgroundColor: "#1E293B", minHeight: 76 },
   timelineRow: { flexDirection: "row", alignItems: "stretch" },
   railCol: { width: 22, alignItems: "center", paddingTop: 0, position: "relative" },
-  railLine: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: "rgba(139,92,246,0.22)", borderRadius: 1 },
+  railLine: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: brandAlpha.violet500_22, borderRadius: 1 },
   railDot: {
     width: 11, height: 11, borderRadius: 6,
     backgroundColor: "#0F172A",
-    borderWidth: 2, borderColor: "#8B5CF6",
+    borderWidth: 2, borderColor: brand.violet500,
     marginTop: 30,
-    shadowColor: "#8B5CF6", shadowOpacity: 0.7, shadowRadius: 4, shadowOffset: { width: 0, height: 0 },
+    shadowColor: brand.violet500, shadowOpacity: 0.7, shadowRadius: 4, shadowOffset: { width: 0, height: 0 },
   },
   timelineCard: { flex: 1, marginLeft: 10, marginBottom: 10 },
   swipeHint: { color: "rgba(148,163,184,0.6)", fontSize: 10.5, fontWeight: "500", textAlign: "center", marginTop: 2, marginBottom: 8, letterSpacing: 0.4 },
   aiCard: {
     marginTop: 16, borderRadius: 18, padding: 14, flexDirection: "row", gap: 12,
-    backgroundColor: "rgba(139,92,246,0.10)", borderWidth: 1, borderColor: "rgba(139,92,246,0.35)",
+    backgroundColor: brandAlpha.violet500_10, borderWidth: 1, borderColor: brandAlpha.violet500_35,
   },
   aiBadge: {
     width: 38, height: 38, borderRadius: 12, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(139,92,246,0.25)", borderWidth: 1, borderColor: "rgba(139,92,246,0.5)",
+    backgroundColor: brandAlpha.violet500_25, borderWidth: 1, borderColor: brandAlpha.violet500_50,
   },
-  aiLabel: { color: "#A78BFA", fontSize: 10, fontWeight: "800", letterSpacing: 1.2, marginBottom: 2 },
+  aiLabel: { color: brand.violet400, fontSize: 10, fontWeight: "800", letterSpacing: 1.2, marginBottom: 2 },
   aiText: { color: "#FFFFFF", fontSize: 13, lineHeight: 18, fontWeight: "500" },
   timeCol: { width: 56, borderRightWidth: 1, paddingRight: 10, gap: 3 },
   timeText: { fontSize: 12, fontWeight: "800" },
@@ -940,7 +941,7 @@ const styles = StyleSheet.create({
   addIconCircle: {
     width: 44, height: 44, borderRadius: 22, alignSelf: "center",
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "#7B3FF2", marginBottom: 4,
+    backgroundColor: brand.primary, marginBottom: 4,
     shadowColor: "#FF4ECD", shadowOpacity: 0.5, shadowRadius: 10,
   },
   editTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700", textAlign: "center" },
@@ -957,7 +958,7 @@ const styles = StyleSheet.create({
   confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: "center" },
   confirmCancel: { backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.10)" },
   confirmCancelText: { color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: "600" },
-  confirmPrimary: { backgroundColor: "#7B3FF2" },
+  confirmPrimary: { backgroundColor: brand.primary },
   confirmPrimaryText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
 
   confirmCard: {
@@ -991,7 +992,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
   },
   undoText: { color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: "600", flex: 1 },
-  undoBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: "#7B3FF2" },
+  undoBtn: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, backgroundColor: brand.primary },
   undoBtnText: { color: "#FFFFFF", fontSize: 12, fontWeight: "800", letterSpacing: 0.6 },
 
   /* Full-screen overlay */

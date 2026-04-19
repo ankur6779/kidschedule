@@ -8,6 +8,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { brand } from "@/constants/colors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -95,7 +96,7 @@ export default function InsightCard({
             <Ionicons
               name={bookmarked ? "bookmark" : "bookmark-outline"}
               size={18}
-              color={bookmarked ? "#7C3AED" : "#9CA3AF"}
+              color={bookmarked ? brand.violet600 : "#9CA3AF"}
             />
           </Pressable>
         </View>

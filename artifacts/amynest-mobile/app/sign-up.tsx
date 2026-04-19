@@ -11,6 +11,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
+import { brand } from "@/constants/colors";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -102,7 +103,7 @@ export default function SignUpScreen() {
           <View style={styles.brandRow}>
             <Image source={LOGO} style={styles.logoBox} resizeMode="contain" />
             <Text style={styles.brandName}>AmyNest</Text>
-            <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBadge}>
+            <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBadge}>
               <Text style={styles.aiBadgeText}>AI</Text>
             </LinearGradient>
           </View>
@@ -200,7 +201,7 @@ export default function SignUpScreen() {
                   activeOpacity={0.85}
                 >
                   <LinearGradient
-                    colors={(loading || !email || !password || !firstName) ? ["#4B4B6B", "#4B4B6B"] : ["#7B3FF2", "#FF4ECD"]}
+                    colors={(loading || !email || !password || !firstName) ? ["#4B4B6B", "#4B4B6B"] : [brand.primary, "#FF4ECD"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.primaryBtn}
@@ -247,7 +248,7 @@ export default function SignUpScreen() {
                   activeOpacity={0.85}
                 >
                   <LinearGradient
-                    colors={(loading || !code) ? ["#4B4B6B", "#4B4B6B"] : ["#7B3FF2", "#FF4ECD"]}
+                    colors={(loading || !code) ? ["#4B4B6B", "#4B4B6B"] : [brand.primary, "#FF4ECD"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.primaryBtn}
@@ -321,11 +322,11 @@ const styles = StyleSheet.create({
   eyeBtn: { padding: 4 },
   primaryBtn: {
     height: 56, borderRadius: 16, alignItems: "center", justifyContent: "center",
-    shadowColor: "#7B3FF2", shadowOpacity: 0.5, shadowRadius: 18, shadowOffset: { width: 0, height: 6 },
+    shadowColor: brand.primary, shadowOpacity: 0.5, shadowRadius: 18, shadowOffset: { width: 0, height: 6 },
     elevation: 10,
   },
   primaryBtnText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
   footer: { flexDirection: "row", justifyContent: "center", alignItems: "center", marginTop: 4 },
   footerText: { color: "rgba(255,255,255,0.45)", fontFamily: "Inter_400Regular" },
-  linkText: { color: "#A78BFA", fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  linkText: { color: brand.violet400, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
 });

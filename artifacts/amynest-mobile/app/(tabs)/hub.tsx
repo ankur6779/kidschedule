@@ -19,6 +19,7 @@ import InfantHub from "@/components/InfantHub";
 import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
+import colors, { brand } from "@/constants/colors";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -103,7 +104,7 @@ export default function HubScreen() {
             onPress={() => router.push("/amy-ai")}
             style={styles.askAmyBtn}
           >
-            <LinearGradient colors={["#FFD27A", "#FF4ECD", "#7B3FF2"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.askAmyGrad}>
+            <LinearGradient colors={["#FFD27A", "#FF4ECD", brand.primary]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.askAmyGrad}>
               <Ionicons name="chatbubbles" size={14} color="#fff" />
               <Text style={styles.askAmyText}>Ask Amy</Text>
             </LinearGradient>
@@ -119,7 +120,7 @@ export default function HubScreen() {
           style={{ borderRadius: 22, overflow: "hidden" }}
         >
           <LinearGradient
-            colors={["#A855F7", "#EC4899", "#F97316"]}
+            colors={[brand.purple500, "#EC4899", "#F97316"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={{ flexDirection: "row", alignItems: "center", padding: 18, gap: 14 }}
@@ -206,7 +207,7 @@ export default function HubScreen() {
         <Section
           id="amy"
           icon={<MaterialCommunityIcons name="brain" size={20} color="#fff" />}
-          accent={["#7B3FF2", "#FF4ECD"]}
+          accent={[brand.primary, "#FF4ECD"]}
           title="Ask Amy AI"
           desc="Warm, practical parenting advice — instantly"
           open={openSection === "amy"}
@@ -260,7 +261,7 @@ export default function HubScreen() {
         <Section
           id="tips"
           icon={<Ionicons name="sparkles" size={20} color="#fff" />}
-          accent={["#A78BFA", "#7B3FF2"]}
+          accent={[brand.violet400, colors.light.primary]}
           title="Daily Tips"
           desc="Amy AI picks today's best tips"
           open={openSection === "tips"}
@@ -415,7 +416,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
   emptyDesc: { color: "rgba(255,255,255,0.6)", textAlign: "center", fontSize: 13 },
-  primaryBtn: { backgroundColor: "#7B3FF2", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 },
+  primaryBtn: { backgroundColor: brand.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 },
   primaryBtnText: { color: "#fff", fontWeight: "700" },
 
   chip: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
@@ -436,7 +437,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.10)",
     backgroundColor: "rgba(255,255,255,0.05)",
     overflow: "hidden",
-    shadowColor: "#7B3FF2",
+    shadowColor: brand.primary,
     shadowOpacity: 0.18,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },

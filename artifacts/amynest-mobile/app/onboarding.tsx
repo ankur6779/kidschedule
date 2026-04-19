@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
+import { brand, brandAlpha } from "@/constants/colors";
 
 type ChatRole = "amy" | "user";
 type ChatMsg = { id: string; role: ChatRole; text: string };
@@ -61,7 +62,7 @@ const WORK_TYPES: { label: string; value: string }[] = [
   { label: "Homemaker", value: "homemaker" },
 ];
 
-const PRIMARY = "#6366F1";
+const PRIMARY = brand.indigo500;
 
 export default function OnboardingScreen() {
   const colors = useColors();
@@ -622,14 +623,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 12,
-    backgroundColor: "rgba(99,102,241,0.08)",
+    backgroundColor: brandAlpha.indigo500_08,
     borderWidth: 1,
-    borderColor: "rgba(99,102,241,0.15)",
+    borderColor: brandAlpha.indigo500_15,
   },
   skipBtnText: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
-    color: "#6366F1",
+    color: brand.indigo500,
   },
   amyAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   amyName: { fontSize: 16, fontFamily: "Inter_700Bold" },

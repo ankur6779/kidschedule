@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import { brand } from "@/constants/colors";
 
 type Babysitter = { id: number; name: string; mobileNumber?: string; notes?: string; createdAt: string };
 
@@ -102,7 +103,7 @@ export default function BabysittersScreen() {
         )}
         {sitters.map(s => (
           <View key={s.id} style={styles.card}>
-            <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatar}>
+            <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatar}>
               <Text style={styles.avatarText}>{s.name[0]?.toUpperCase()}</Text>
             </LinearGradient>
             <View style={{ flex: 1 }}>
@@ -166,7 +167,7 @@ export default function BabysittersScreen() {
                   <Text style={{ color: "#fff", fontWeight: "700" }}>Cancel</Text>
                 </Pressable>
                 <Pressable onPress={handleAdd} disabled={saving} style={[styles.modalBtn, { flex: 1 }]}>
-                  <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.modalBtnGrad}>
+                  <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.modalBtnGrad}>
                     {saving ? <ActivityIndicator color="#fff" size="small" /> : <Text style={{ color: "#fff", fontWeight: "700" }}>Add Sitter</Text>}
                   </LinearGradient>
                 </Pressable>
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   emptyCard: { padding: 24, borderRadius: 24, alignItems: "center", gap: 10, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", borderStyle: "dashed", marginTop: 24 },
   emptyTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
   emptyDesc: { color: "rgba(255,255,255,0.6)", textAlign: "center", fontSize: 13 },
-  primaryBtn: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "#7B3FF2", paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
+  primaryBtn: { flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: brand.primary, paddingHorizontal: 18, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
   primaryBtnText: { color: "#fff", fontWeight: "700" },
 
   card: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" },

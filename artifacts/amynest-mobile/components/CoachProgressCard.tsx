@@ -11,6 +11,7 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import { brand, gradients } from "@/constants/colors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -19,7 +20,7 @@ type Props = {
   total: number;
   title: string;
   summary: string;
-  progress: number; // 0..1
+  progress: number;
   onContinue: () => void;
   delay?: number;
 };
@@ -61,7 +62,7 @@ export default function CoachProgressCard({
       >
         <View style={styles.headerRow}>
           <LinearGradient
-            colors={["#A855F7", "#7C3AED"]}
+            colors={gradients.violetToPurple}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.avatar}
@@ -84,7 +85,7 @@ export default function CoachProgressCard({
         <View style={styles.barTrack} onLayout={onTrackLayout}>
           <Animated.View style={[styles.barFillWrap, animatedBar]}>
             <LinearGradient
-              colors={["#A855F7", "#7C3AED"]}
+              colors={gradients.violetToPurple}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.barFill}
@@ -108,7 +109,7 @@ export default function CoachProgressCard({
           style={[styles.cta, style]}
         >
           <LinearGradient
-            colors={["#A855F7", "#7C3AED"]}
+            colors={gradients.violetToPurple}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ctaGrad}
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 22,
     overflow: "hidden",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.12)",
+    borderColor: `${brand.purple500}12`,
   },
   headerRow: {
     flexDirection: "row",
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   label: {
-    color: "#A855F7",
+    color: brand.purple500,
     fontSize: 10.5,
     fontWeight: "800",
     letterSpacing: 1.4,
@@ -165,13 +166,13 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   percentPill: {
-    backgroundColor: "rgba(168,85,247,0.12)",
+    backgroundColor: `${brand.purple500}12`,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
   },
   percentText: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 12.5,
     fontWeight: "800",
   },
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   barTrack: {
-    backgroundColor: "rgba(168,85,247,0.12)",
+    backgroundColor: `${brand.purple500}12`,
     height: 8,
     borderRadius: 4,
     overflow: "hidden",

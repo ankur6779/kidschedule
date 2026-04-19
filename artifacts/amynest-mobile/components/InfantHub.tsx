@@ -11,6 +11,7 @@ import {
   getAmyInsight,
   pickLang,
 } from "@workspace/infant-hub";
+import { brand, brandAlpha } from "@/constants/colors";
 
 type Props = {
   childName: string;
@@ -58,7 +59,7 @@ export default function InfantHub({ childName, ageMonths }: Props) {
   return (
     <View style={styles.card}>
       <LinearGradient
-        colors={["rgba(236,72,153,0.12)", "rgba(168,85,247,0.10)", "rgba(56,189,248,0.10)"]}
+        colors={["rgba(236,72,153,0.12)", brandAlpha.purple500_10, "rgba(56,189,248,0.10)"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.cardGrad}
@@ -102,7 +103,7 @@ export default function InfantHub({ childName, ageMonths }: Props) {
         {/* Amy AI insight */}
         <View style={styles.insightCard}>
           <View style={styles.insightHead}>
-            <MaterialCommunityIcons name="brain" size={16} color="#C084FC" />
+            <MaterialCommunityIcons name="brain" size={16} color={brand.purple400} />
             <Text style={styles.insightTitle}>{t("infant_hub.amy_suggests")}</Text>
           </View>
           <Text style={styles.insightBody}>
@@ -133,10 +134,10 @@ export default function InfantHub({ childName, ageMonths }: Props) {
               </Pressable>
               <Pressable
                 onPress={handleNext}
-                style={[styles.actionBtn, { backgroundColor: "rgba(168,85,247,0.18)", borderColor: "rgba(168,85,247,0.45)" }]}
+                style={[styles.actionBtn, { backgroundColor: `${brand.purple500}18`, borderColor: `${brand.purple500}45` }]}
               >
-                <Ionicons name="refresh" size={13} color="#C084FC" />
-                <Text style={[styles.actionTxt, { color: "#C084FC" }]}>{t("infant_hub.next_tip")}</Text>
+                <Ionicons name="refresh" size={13} color={brand.purple400} />
+                <Text style={[styles.actionTxt, { color: brand.purple400 }]}>{t("infant_hub.next_tip")}</Text>
               </Pressable>
               <Pressable
                 onPress={() => flashToast(t("infant_hub.tried_logged"))}
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.10)",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOpacity: 0.25,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -200,7 +201,7 @@ const styles = StyleSheet.create({
   tabActive: {
     backgroundColor: "rgba(255,255,255,0.16)",
     borderColor: "rgba(192,132,252,0.7)",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOpacity: 0.5,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
@@ -210,15 +211,15 @@ const styles = StyleSheet.create({
   tabLabelActive: { color: "#fff" },
 
   insightCard: {
-    backgroundColor: "rgba(168,85,247,0.18)",
-    borderColor: "rgba(168,85,247,0.4)",
+    backgroundColor: `${brand.purple500}18`,
+    borderColor: `${brand.purple500}40`,
     borderWidth: 1,
     borderRadius: 16,
     padding: 12,
     marginBottom: 12,
   },
   insightHead: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
-  insightTitle: { color: "#E9D5FF", fontWeight: "800", fontSize: 12 },
+  insightTitle: { color: brand.violet200, fontWeight: "800", fontSize: 12 },
   insightBody: { color: "#fff", fontSize: 13, lineHeight: 18 },
 
   tipCard: {

@@ -11,6 +11,7 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
+import { brand } from "@/constants/colors";
 
 type Message = { id: string; role: "user" | "amy"; text: string };
 
@@ -75,7 +76,7 @@ export default function AmyAIScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={22} color="#fff" />
         </Pressable>
-        <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.headerIcon}>
+        <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.headerIcon}>
           <MaterialCommunityIcons name="chat-processing" size={18} color="#fff" />
         </LinearGradient>
         <View style={{ flex: 1 }}>
@@ -99,7 +100,7 @@ export default function AmyAIScreen() {
           {messages.map(m => (
             <View key={m.id} style={[styles.bubbleRow, m.role === "user" ? styles.bubbleRowRight : styles.bubbleRowLeft]}>
               {m.role === "amy" && (
-                <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatarSm}>
+                <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatarSm}>
                   <MaterialCommunityIcons name="brain" size={14} color="#fff" />
                 </LinearGradient>
               )}
@@ -110,7 +111,7 @@ export default function AmyAIScreen() {
           ))}
           {loading && (
             <View style={styles.bubbleRowLeft}>
-              <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatarSm}>
+              <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.avatarSm}>
                 <MaterialCommunityIcons name="brain" size={14} color="#fff" />
               </LinearGradient>
               <View style={[styles.bubble, styles.bubbleAmy]}>
@@ -135,7 +136,7 @@ export default function AmyAIScreen() {
             disabled={!input.trim() || loading}
             style={[styles.sendBtn, (!input.trim() || loading) && { opacity: 0.5 }]}
           >
-            <LinearGradient colors={["#7B3FF2", "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.sendBtnGrad}>
+            <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.sendBtnGrad}>
               <Ionicons name="arrow-up" size={20} color="#fff" />
             </LinearGradient>
           </Pressable>
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   avatarSm: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
   bubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, maxWidth: "82%" },
   bubbleAmy: { backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", borderTopLeftRadius: 4 },
-  bubbleUser: { backgroundColor: "#7B3FF2", borderTopRightRadius: 4 },
+  bubbleUser: { backgroundColor: brand.primary, borderTopRightRadius: 4 },
   bubbleText: { color: "rgba(255,255,255,0.92)", fontSize: 14, lineHeight: 20 },
 
   inputBar: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 14, paddingTop: 10, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)", backgroundColor: "rgba(11,11,26,0.7)" },

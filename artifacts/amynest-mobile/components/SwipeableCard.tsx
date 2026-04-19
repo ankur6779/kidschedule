@@ -8,6 +8,7 @@ import Animated, {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { brand } from "@/constants/colors";
 
 const THRESHOLD = 100;
 const COMPLETE_COLOR = "#22C55E";
@@ -35,7 +36,7 @@ export type SwipeableCardProps = {
 export default function SwipeableCard({
   children, onTap, onLongPress, onSwipeRight, onSwipeLeft,
   leftActionMode = "skip",
-  disableSwipeRight, disableSwipeLeft, borderRadius = 18, glowColor = "#7B3FF2",
+  disableSwipeRight, disableSwipeLeft, borderRadius = 18, glowColor = brand.primary,
 }: SwipeableCardProps) {
   const tx = useSharedValue(0);
   const scale = useSharedValue(1);

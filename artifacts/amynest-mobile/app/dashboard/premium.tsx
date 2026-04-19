@@ -25,17 +25,18 @@ import RoutineCarousel from "@/components/RoutineCarousel";
 import CoachProgressCard from "@/components/CoachProgressCard";
 import HubSection from "@/components/HubSection";
 import InsightCard from "@/components/InsightCard";
+import { brand, gradients } from "@/constants/colors";
 
 const RECO_ACCENTS: readonly (readonly [string, string])[] = [
-  ["#7C3AED", "#A855F7"],
-  ["#6D28D9", "#8B5CF6"],
-  ["#5B21B6", "#7C3AED"],
+  gradients.deepVioletFlip,
+  gradients.darkViolet,
+  gradients.darkestViolet,
 ];
 
 const QUICK_ACTIONS = [
-  { id: "coach", label: "Amy Coach", icon: "sparkles" as const, route: "/coach/premium", gradient: ["#7C3AED", "#A855F7"] as const },
-  { id: "routine", label: "Routine", icon: "calendar" as const, route: "/routines/premium", gradient: ["#6D28D9", "#8B5CF6"] as const },
-  { id: "hub", label: "Parent Hub", icon: "grid" as const, route: "/hub/premium", gradient: ["#5B21B6", "#7C3AED"] as const },
+  { id: "coach", label: "Amy Coach", icon: "sparkles" as const, route: "/coach/premium", gradient: gradients.deepVioletFlip },
+  { id: "routine", label: "Routine", icon: "calendar" as const, route: "/routines/premium", gradient: gradients.darkViolet },
+  { id: "hub", label: "Parent Hub", icon: "grid" as const, route: "/hub/premium", gradient: gradients.darkestViolet },
 ];
 
 export default function PremiumDashboardScreen() {
@@ -92,7 +93,7 @@ export default function PremiumDashboardScreen() {
           contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={brand.violet600} />
           }
         >
           {/* Header */}
@@ -107,8 +108,8 @@ export default function PremiumDashboardScreen() {
           {/* Streak + daily goal strip */}
           <Animated.View entering={FadeInDown.duration(450).delay(40)} style={styles.stripRow}>
             <View style={styles.stripCard}>
-              <View style={[styles.stripIcon, { backgroundColor: "#7C3AED18" }]}>
-                <Ionicons name="flame" size={18} color="#7C3AED" />
+              <View style={[styles.stripIcon, { backgroundColor: `${brand.violet600}18` }]}>
+                <Ionicons name="flame" size={18} color={brand.violet600} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.stripValue}>{liveStreak}-day streak</Text>
@@ -116,11 +117,11 @@ export default function PremiumDashboardScreen() {
               </View>
             </View>
             <View style={styles.stripCard}>
-              <View style={[styles.stripIcon, { backgroundColor: goalReached ? "#6D28D918" : "#7C3AED18" }]}>
+              <View style={[styles.stripIcon, { backgroundColor: goalReached ? `${brand.violet700}18` : `${brand.violet600}18` }]}>
                 <Ionicons
                   name={goalReached ? "trophy" : "rocket"}
                   size={18}
-                  color={goalReached ? "#6D28D9" : "#7C3AED"}
+                  color={goalReached ? brand.violet700 : brand.violet600}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -250,7 +251,7 @@ export default function PremiumDashboardScreen() {
 const styles = StyleSheet.create({
   bg: {
     flex: 1,
-    backgroundColor: "#FAF5FF",
+    backgroundColor: brand.violet50,
   },
   stripRow: {
     flexDirection: "row",
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#EDE9FE",
+    borderColor: brand.violet100,
   },
   stripIcon: {
     width: 34,
@@ -290,7 +291,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   motivational: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 13,
     fontWeight: "700",
     fontStyle: "italic",
@@ -314,8 +315,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 9,
     borderWidth: 1,
-    borderColor: "#EDE9FE",
-    shadowColor: "#7C3AED",
+    borderColor: brand.violet100,
+    shadowColor: brand.violet600,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 10,

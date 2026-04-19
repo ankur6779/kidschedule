@@ -4,6 +4,7 @@
 // production builds, NOT in Expo Go. We require it lazily so the
 // import doesn't crash the JS bundle when the native module is missing.
 import { Platform } from "react-native";
+import { brand } from "@/constants/colors";
 
 export type RazorpaySuccess = {
   razorpay_payment_id: string;
@@ -53,7 +54,7 @@ export async function openCheckout(opts: CheckoutOpts): Promise<CheckoutResult> 
       subscription_id: opts.subscriptionId,
       name: "AmyNest AI",
       description: "AmyNest Premium",
-      theme: { color: "#7B3FF2" },
+      theme: { color: brand.primary },
       prefill: opts.prefill,
       notes: opts.notes,
     });

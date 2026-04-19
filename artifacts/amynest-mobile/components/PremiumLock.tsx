@@ -5,26 +5,17 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
+import colors, { brand } from "@/constants/colors";
 
 type Props = {
   children: React.ReactNode;
-  /** Tag describing what is locked (e.g. "personalized_coaching") */
   reason?: string;
-  /** Visible label on the unlock pill, defaults to "Premium Insight" */
   label?: string;
-  /** Override the call-to-action copy */
   cta?: string;
-  /** Wrap style */
   style?: ViewStyle;
-  /** When true, show the lock overlay even if user is premium (for previews) */
   forceLocked?: boolean;
 };
 
-/**
- * Wraps premium-only UI. For free users it dims/blurs the children and
- * shows an unlock CTA that opens the paywall. Premium users see the
- * children unmodified.
- */
 export default function PremiumLock({
   children,
   reason = "premium_feature",
@@ -48,7 +39,7 @@ export default function PremiumLock({
       <BlurView intensity={28} tint="light" style={StyleSheet.absoluteFill} pointerEvents="none" />
       <View style={styles.overlay} pointerEvents="box-none">
         <View style={styles.pill}>
-          <Ionicons name="lock-closed" size={11} color="#7C3AED" />
+          <Ionicons name="lock-closed" size={11} color={brand.violet600} />
           <Text style={styles.pillText}>{label}</Text>
         </View>
         <Pressable
@@ -58,7 +49,7 @@ export default function PremiumLock({
           style={({ pressed }) => [styles.ctaWrap, pressed && { opacity: 0.85 }]}
         >
           <LinearGradient
-            colors={["#7B3FF2", "#FF4ECD"]}
+            colors={[colors.light.primary, colors.light.accent]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.cta}
@@ -97,10 +88,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.25)",
+    borderColor: `${brand.violet600}25`,
   },
   pillText: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 0.4,
@@ -108,7 +99,7 @@ const styles = StyleSheet.create({
   },
   ctaWrap: {
     borderRadius: 999,
-    shadowColor: "#FF4ECD",
+    shadowColor: colors.light.accent,
     shadowOpacity: 0.4,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },

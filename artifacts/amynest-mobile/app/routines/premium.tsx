@@ -37,6 +37,7 @@ import RoutineCard, {
 import ProgressBar from "@/components/ProgressBar";
 import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
+import colors, { brand, brandAlpha } from "@/constants/colors";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const SIDE_PAD = (SCREEN_W - CARD_W) / 2;
@@ -48,7 +49,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Gentle morning brushing — 2 minutes per side, soft circular strokes.",
     duration: 5,
     icon: "sparkles",
-    gradient: ["#8B5CF6", "#6366F1"] as const,
+    gradient: [brand.violet500, brand.indigo500] as const,
     steps: [
       "Wet the toothbrush",
       "Apply a pea-sized amount of toothpaste",
@@ -66,7 +67,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Calm, prepared morning — clothes, bag, breakfast, and out the door.",
     duration: 25,
     icon: "school",
-    gradient: ["#A855F7", "#7C3AED"] as const,
+    gradient: [brand.purple500, colors.light.primary] as const,
     steps: [
       "Pick out clothes laid out the night before",
       "Get dressed and brush hair",
@@ -84,7 +85,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Focused 25-minute study with a short break — calm, distraction free.",
     duration: 30,
     icon: "book",
-    gradient: ["#7C3AED", "#A855F7"] as const,
+    gradient: [colors.light.primary, brand.purple500] as const,
     steps: [
       "Clear the desk of distractions",
       "Review today's homework list",
@@ -102,7 +103,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Free, screen-free creative play — imagination, movement, and fun.",
     duration: 45,
     icon: "happy",
-    gradient: ["#9333EA", "#8B5CF6"] as const,
+    gradient: [brand.purple600, brand.violet500] as const,
     steps: [
       "Choose between indoor or outdoor play",
       "Invite a sibling or friend (optional)",
@@ -120,7 +121,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Wind down ritual — bath, story, lights low, peaceful sleep.",
     duration: 30,
     icon: "moon",
-    gradient: ["#6366F1", "#8B5CF6"] as const,
+    gradient: [brand.indigo500, brand.violet500] as const,
     steps: [
       "Warm bath or wash face",
       "Change into pyjamas",
@@ -215,9 +216,9 @@ export default function PremiumRoutineScreen() {
       >
         {/* Decorative blobs */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={[styles.blob, { top: -80, left: -60, backgroundColor: "rgba(168,85,247,0.28)" }]} />
-          <View style={[styles.blob, { top: 240, right: -80, backgroundColor: "rgba(139,92,246,0.20)", width: 320, height: 320 }]} />
-          <View style={[styles.blob, { bottom: -60, left: 40, backgroundColor: "rgba(99,102,241,0.20)" }]} />
+          <View style={[styles.blob, { top: -80, left: -60, backgroundColor: brandAlpha.purple500_28 }]} />
+          <View style={[styles.blob, { top: 240, right: -80, backgroundColor: brandAlpha.violet500_20, width: 320, height: 320 }]} />
+          <View style={[styles.blob, { bottom: -60, left: 40, backgroundColor: brandAlpha.indigo500_20 }]} />
         </View>
 
         {/* HEADER */}
@@ -328,11 +329,11 @@ export default function PremiumRoutineScreen() {
               <Text style={styles.sheetTitle}>{activeRoutine.title}</Text>
               <View style={styles.sheetMetaRow}>
                 <View style={styles.sheetBadge}>
-                  <Ionicons name="time-outline" size={13} color="#C4B5FD" />
+                  <Ionicons name="time-outline" size={13} color={brand.violet300} />
                   <Text style={styles.sheetBadgeText}>{activeRoutine.duration} min</Text>
                 </View>
                 <View style={styles.sheetBadge}>
-                  <Ionicons name="list" size={13} color="#C4B5FD" />
+                  <Ionicons name="list" size={13} color={brand.violet300} />
                   <Text style={styles.sheetBadgeText}>{activeRoutine.steps.length} steps</Text>
                 </View>
               </View>
@@ -362,7 +363,7 @@ export default function PremiumRoutineScreen() {
                 }
               >
                 <LinearGradient
-                  colors={activeRoutine.completed ? ["#374151", "#1F2937"] : ["#A855F7", "#7C3AED"]}
+                  colors={activeRoutine.completed ? ["#374151", "#1F2937"] : [brand.purple500, colors.light.primary]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.completeBtn}
@@ -431,9 +432,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 999,
-    backgroundColor: "rgba(168,85,247,0.20)",
+    backgroundColor: brandAlpha.purple500_20,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.45)",
+    borderColor: brandAlpha.purple500_45,
     alignItems: "center",
   },
   progressPillText: {
@@ -460,7 +461,7 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     width: 22,
-    backgroundColor: "#C4B5FD",
+    backgroundColor: brand.violet300,
   },
   footerHint: {
     flexDirection: "row",
@@ -505,15 +506,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "rgba(168,85,247,0.15)",
+    backgroundColor: brandAlpha.purple500_15,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.30)",
+    borderColor: brandAlpha.purple500_30,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
   },
   sheetBadgeText: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontSize: 11.5,
     fontWeight: "700",
   },
@@ -541,14 +542,14 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: "rgba(168,85,247,0.20)",
+    backgroundColor: brandAlpha.purple500_20,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.40)",
+    borderColor: brandAlpha.purple500_40,
     alignItems: "center",
     justifyContent: "center",
   },
   stepNumText: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontSize: 12,
     fontWeight: "800",
   },
@@ -562,7 +563,7 @@ const styles = StyleSheet.create({
   completeBtnWrap: {
     marginTop: 26,
     borderRadius: 18,
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 16,

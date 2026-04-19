@@ -11,6 +11,7 @@ import {
   POINTS_BY_DIFFICULTY, pickDailyLifeSkillTasks, tasksFor,
   buildAmyLifeSkillInsight, uiLabel,
 } from "@workspace/life-skills";
+import { brand } from "@/constants/colors";
 
 interface DailyRecord { taskIds: string[]; done: string[]; skipped: string[] }
 interface ChildLifeSkillStats {
@@ -347,7 +348,7 @@ const styles = StyleSheet.create({
   tipText: { color: "rgba(255,255,255,0.85)", fontSize: 11, flex: 1, lineHeight: 16 },
 
   btn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, paddingVertical: 10, borderRadius: 12 },
-  btnPrimary: { backgroundColor: "#7B3FF2" },
+  btnPrimary: { backgroundColor: brand.primary },
   btnPrimaryText: { color: "#fff", fontWeight: "800", fontSize: 12 },
   btnGhost: { paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(255,255,255,0.18)" },
   btnGhostText: { color: "rgba(255,255,255,0.85)", fontWeight: "700", fontSize: 12 },

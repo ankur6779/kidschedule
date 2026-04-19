@@ -1,3 +1,5 @@
+import { brand } from "@/constants/colors";
+
 export type ThemeMode = "light" | "dark";
 
 export type ThemePalette = {
@@ -29,9 +31,9 @@ export const darkTheme: ThemePalette = {
     muted: "rgba(255,255,255,0.45)",
   },
   brand: {
-    primary: "#7B3FF2",
+    primary: brand.primary,
     accent: "#FF4ECD",
-    gradientStart: "#7B3FF2",
+    gradientStart: brand.primary,
     gradientEnd: "#FF4ECD",
   },
   status: {
@@ -40,7 +42,7 @@ export const darkTheme: ThemePalette = {
     danger: "#EF4444",
     info: "#06B6D4",
   },
-  glow: { color: "#7B3FF2", opacity: 0.5 },
+  glow: { color: brand.primary, opacity: 0.5 },
   gradient: ["#0B0B1A", "#14142B", "#1B1B3A"] as const,
 };
 
@@ -62,9 +64,9 @@ export const lightTheme: ThemePalette = {
     muted: "rgba(15,23,42,0.45)",
   },
   brand: {
-    primary: "#7B3FF2",
+    primary: brand.primary,
     accent: "#FF4ECD",
-    gradientStart: "#7B3FF2",
+    gradientStart: brand.primary,
     gradientEnd: "#FF4ECD",
   },
   status: {
@@ -73,8 +75,8 @@ export const lightTheme: ThemePalette = {
     danger: "#DC2626",
     info: "#0891B2",
   },
-  glow: { color: "#7B3FF2", opacity: 0.35 },
-  gradient: ["#F8FAFC", "#EEF2FF", "#FAF5FF"] as const,
+  glow: { color: brand.primary, opacity: 0.35 },
+  gradient: ["#F8FAFC", "#EEF2FF", brand.violet50] as const,
 };
 
 export function paletteFor(mode: ThemeMode): ThemePalette {

@@ -10,6 +10,7 @@ import Animated, {
   FadeIn,
 } from "react-native-reanimated";
 import type { RoutineTask } from "@/contexts/ProgressContext";
+import { brand, gradients } from "@/constants/colors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -33,7 +34,7 @@ function TaskCard({
   const isDone = task.done;
   const accent: readonly [string, string] = isDone
     ? ["#10B981", "#059669"]
-    : ["#A855F7", "#7C3AED"];
+    : gradients.violetToPurple;
 
   return (
     <Animated.View entering={FadeIn.duration(400).delay(index * 60)}>
@@ -68,9 +69,9 @@ function TaskCard({
               <Text style={[styles.statusText, { color: "#10B981" }]}>Completed</Text>
             </View>
           ) : (
-            <View style={[styles.statusPill, { backgroundColor: "#A855F718" }]}>
-              <Ionicons name="ellipse-outline" size={11} color="#A855F7" />
-              <Text style={[styles.statusText, { color: "#A855F7" }]}>Pending</Text>
+            <View style={[styles.statusPill, { backgroundColor: `${brand.purple500}18` }]}>
+              <Ionicons name="ellipse-outline" size={11} color={brand.purple500} />
+              <Text style={[styles.statusText, { color: brand.purple500 }]}>Pending</Text>
             </View>
           )}
         </View>

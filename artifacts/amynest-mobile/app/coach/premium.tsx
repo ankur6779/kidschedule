@@ -21,16 +21,17 @@ import ProgressBar from "@/components/ProgressBar";
 import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
 import { type ActionResult } from "@/components/ActionButtons";
+import { brand, gradients } from "@/constants/colors";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
 const ACCENTS: ReadonlyArray<readonly [string, string]> = [
-  ["#A855F7", "#7C3AED"],
-  ["#8B5CF6", "#6366F1"],
-  ["#7C3AED", "#A855F7"],
-  ["#9333EA", "#7C3AED"],
-  ["#6366F1", "#8B5CF6"],
-  ["#A855F7", "#9333EA"],
+  gradients.violetToPurple,
+  gradients.violetToIndigo,
+  gradients.deepVioletFlip,
+  gradients.purpleToDeep,
+  gradients.indigoToViolet,
+  gradients.purpleToPurple,
 ];
 
 const STARTER_WINS: Omit<CoachWin, "index" | "accent">[] = [
@@ -392,15 +393,15 @@ export default function PremiumCoachScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <LinearGradient
-        colors={["#FAF5FF", "#EFF6FF", "#FDF4FF"]}
+        colors={[brand.violet50, "#EFF6FF", "#FDF4FF"]}
         locations={[0, 0.5, 1]}
         style={styles.bg}
       >
         {/* Decorative blobs */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={[styles.blob, { top: -60, left: -40, backgroundColor: "rgba(168,85,247,0.18)" }]} />
-          <View style={[styles.blob, { top: 200, right: -60, backgroundColor: "rgba(139,92,246,0.14)", width: 280, height: 280 }]} />
-          <View style={[styles.blob, { bottom: -40, left: 30, backgroundColor: "rgba(99,102,241,0.16)" }]} />
+          <View style={[styles.blob, { top: -60, left: -40, backgroundColor: `${brand.purple500}18` }]} />
+          <View style={[styles.blob, { top: 200, right: -60, backgroundColor: `${brand.violet500}14`, width: 280, height: 280 }]} />
+          <View style={[styles.blob, { bottom: -40, left: 30, backgroundColor: `${brand.indigo500}16` }]} />
         </View>
 
         {/* TOP HEADER (always visible) */}
@@ -432,7 +433,7 @@ export default function PremiumCoachScreen() {
           )}
 
           <View style={styles.progressPill}>
-            <Ionicons name="sparkles" size={11} color="#7C3AED" />
+            <Ionicons name="sparkles" size={11} color={brand.violet600} />
             <Text style={styles.progressPillText}>{Math.round(progress * 100)}%</Text>
           </View>
         </View>
@@ -450,7 +451,7 @@ export default function PremiumCoachScreen() {
         {phase === "loading" && (
           <Animated.View entering={FadeIn.duration(400)} style={styles.center}>
             <View style={styles.loadingCircle}>
-              <ActivityIndicator size="large" color="#A855F7" />
+              <ActivityIndicator size="large" color={brand.purple500} />
             </View>
             <Text style={styles.loadingTitle}>Amy is thinking…</Text>
             <Text style={styles.loadingSub}>Curating your personal wins</Text>
@@ -461,7 +462,7 @@ export default function PremiumCoachScreen() {
         {phase === "intro" && (
           <Animated.View entering={FadeInUp.duration(500)} style={styles.center}>
             <LinearGradient
-              colors={["#A855F7", "#7C3AED"]}
+              colors={gradients.violetToPurple}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.amyAvatar}
@@ -567,14 +568,14 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "rgba(124,58,237,0.25)",
+    backgroundColor: `${brand.violet600}25`,
   },
   dotActive: {
     width: 18,
-    backgroundColor: "#7C3AED",
+    backgroundColor: brand.violet600,
   },
   dotsMore: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontSize: 10,
     fontWeight: "800",
     marginLeft: 4,
@@ -583,15 +584,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: "rgba(124,58,237,0.10)",
+    backgroundColor: `${brand.violet600}10`,
     borderWidth: 1,
-    borderColor: "rgba(124,58,237,0.30)",
+    borderColor: `${brand.violet600}30`,
     paddingHorizontal: 10,
     paddingVertical: 7,
     borderRadius: 999,
   },
   progressPillText: {
-    color: "#5B21B6",
+    color: brand.violet800,
     fontSize: 12.5,
     fontWeight: "800",
   },
@@ -614,11 +615,11 @@ const styles = StyleSheet.create({
     borderRadius: 44,
     backgroundColor: "rgba(255,255,255,0.85)",
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.25)",
+    borderColor: `${brand.purple500}25`,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 22,
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25,
     shadowRadius: 20,
@@ -642,7 +643,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 18,
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 16,
@@ -669,7 +670,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   caret: {
-    color: "#A855F7",
+    color: brand.purple500,
     fontWeight: "800",
   },
 });

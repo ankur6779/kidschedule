@@ -9,6 +9,7 @@ import Animated, {
   useAnimatedStyle,
   SharedValue,
 } from "react-native-reanimated";
+import { brand, gradients, brandAlpha } from "@/constants/colors";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 export const CARD_W = Math.round(SCREEN_W * 0.78);
@@ -78,7 +79,7 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
           {/* Top row: time badge + status */}
           <View style={styles.topRow}>
             <View style={styles.timeBadge}>
-              <Ionicons name="time-outline" size={13} color="#C4B5FD" />
+              <Ionicons name="time-outline" size={13} color={brand.violet300} />
               <Text style={styles.timeText}>{routine.duration} min</Text>
             </View>
             <View style={[styles.statusDot, routine.completed && styles.statusDotDone]}>
@@ -94,7 +95,7 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
           <View style={styles.iconWrap}>
             <View style={styles.iconGlow} />
             <LinearGradient
-              colors={["#A855F7", "#7C3AED"]}
+              colors={gradients.violetToPurple}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.iconCircle}
@@ -125,7 +126,7 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
               <Ionicons
                 name={routine.completed ? "checkmark-circle" : "play"}
                 size={18}
-                color={routine.completed ? "#10B981" : "#A855F7"}
+                color={routine.completed ? "#10B981" : brand.purple500}
               />
               <Text style={[styles.ctaText, routine.completed && { color: "#10B981" }]}>
                 {routine.completed ? "Completed" : "Start"}
@@ -141,7 +142,7 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
 const styles = StyleSheet.create({
   touchable: {
     borderRadius: 24,
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.35,
     shadowRadius: 20,
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: "rgba(26,15,46,0.96)",
     borderWidth: 1.5,
-    borderColor: "rgba(168,85,247,0.45)",
+    borderColor: brandAlpha.purple500_45,
   },
   cardCompleted: {
     borderColor: "rgba(16,185,129,0.50)",
@@ -168,15 +169,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "rgba(168,85,247,0.15)",
+    backgroundColor: brandAlpha.purple500_15,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.35)",
+    borderColor: brandAlpha.purple500_35,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
   },
   timeText: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontSize: 11.5,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -188,8 +189,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: "rgba(168,85,247,0.40)",
-    backgroundColor: "rgba(168,85,247,0.10)",
+    borderColor: brandAlpha.purple500_40,
+    backgroundColor: brandAlpha.purple500_10,
   },
   statusDotDone: {
     backgroundColor: "#10B981",
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: "rgba(168,85,247,0.18)",
+    backgroundColor: brandAlpha.purple500_18,
   },
   iconCircle: {
     width: 110,
@@ -232,19 +233,20 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   subtitle: {
-    color: "rgba(196,181,253,0.80)",
+    color: brand.violet300,
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 8,
+    opacity: 0.8,
   },
   cta: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "rgba(168,85,247,0.15)",
+    backgroundColor: brandAlpha.purple500_15,
     borderWidth: 1,
-    borderColor: "rgba(168,85,247,0.40)",
+    borderColor: brandAlpha.purple500_40,
     paddingVertical: 14,
     borderRadius: 16,
     marginTop: 4,
@@ -254,7 +256,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(16,185,129,0.35)",
   },
   ctaText: {
-    color: "#C4B5FD",
+    color: brand.violet300,
     fontSize: 15,
     fontWeight: "800",
     letterSpacing: 0.2,

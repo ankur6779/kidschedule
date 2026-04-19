@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { brand } from "@/constants/colors";
 
 type Props = {
   parentName: string;
@@ -26,7 +27,7 @@ export default function DashboardHeader({ parentName, childName, onProfilePress 
         hitSlop={8}
       >
         <LinearGradient
-          colors={["#A855F7", "#EC4899"]}
+          colors={[brand.purple500, "#EC4899"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.avatar}
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   childName: {
-    color: "#7C3AED",
+    color: brand.violet600,
     fontWeight: "700",
   },
   avatar: {
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A855F7",
+    shadowColor: brand.purple500,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
     shadowRadius: 10,

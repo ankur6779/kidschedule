@@ -18,6 +18,7 @@ import { useAppDataBootstrap } from "@/hooks/useAppData";
 import { useOfflineSyncBootstrap } from "@/hooks/useOfflineSync";
 import { useSubscriptionBootstrap } from "@/hooks/useSubscription";
 import "@/i18n";
+import { brand } from "@/constants/colors";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -146,7 +147,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   if (isAuthTransition) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0B0B1A" }}>
-        <ActivityIndicator size="large" color="#7B3FF2" />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     );
   }

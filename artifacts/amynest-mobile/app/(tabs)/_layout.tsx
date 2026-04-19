@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { brand } from "@/constants/colors";
 
 type TabKey = "index" | "routines" | "coach" | "hub";
 
@@ -146,7 +147,7 @@ function CoachHeroTab({
       />
       <Animated.View style={{ transform: [{ scale: bounce }, { translateY: -COACH_LIFT }] }}>
         <LinearGradient
-          colors={focused ? ["#9B5FF5", "#7B3FF2", "#FF4ECD"] : ["#7B3FF2", "#FF4ECD"]}
+          colors={focused ? [brand.primaryLight, brand.primary, "#FF4ECD"] : [brand.primary, "#FF4ECD"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.coachDisc}
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 460,
     borderRadius: 32,
-    shadowColor: "#7B3FF2",
+    shadowColor: brand.primary,
     shadowOpacity: 0.45,
     shadowRadius: 28,
     shadowOffset: { width: 0, height: 8 },
@@ -313,9 +314,9 @@ const styles = StyleSheet.create({
     width: COACH_DISC_SIZE + 18,
     height: COACH_DISC_SIZE + 18,
     borderRadius: (COACH_DISC_SIZE + 18) / 2,
-    backgroundColor: "#7B3FF2",
+    backgroundColor: brand.primary,
     top: (PILL_ITEM_H - (COACH_DISC_SIZE + 18)) / 2 - COACH_LIFT,
-    shadowColor: "#7B3FF2",
+    shadowColor: brand.primary,
     shadowOpacity: 0.7,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 0 },
@@ -327,7 +328,7 @@ const styles = StyleSheet.create({
     borderRadius: COACH_DISC_SIZE / 2,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#7B3FF2",
+    shadowColor: brand.primary,
     shadowOpacity: 0.7,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 4 },
