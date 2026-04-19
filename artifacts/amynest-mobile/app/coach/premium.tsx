@@ -25,12 +25,12 @@ import { type ActionResult } from "@/components/ActionButtons";
 const { height: SCREEN_H } = Dimensions.get("window");
 
 const ACCENTS: ReadonlyArray<readonly [string, string]> = [
-  ["#A855F7", "#EC4899"],
-  ["#06B6D4", "#3B82F6"],
-  ["#F97316", "#EF4444"],
-  ["#10B981", "#06B6D4"],
+  ["#A855F7", "#7C3AED"],
+  ["#8B5CF6", "#6366F1"],
+  ["#7C3AED", "#A855F7"],
+  ["#9333EA", "#7C3AED"],
   ["#6366F1", "#8B5CF6"],
-  ["#FACC15", "#F97316"],
+  ["#A855F7", "#9333EA"],
 ];
 
 const STARTER_WINS: Omit<CoachWin, "index" | "accent">[] = [
@@ -399,7 +399,7 @@ export default function PremiumCoachScreen() {
         {/* Decorative blobs */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           <View style={[styles.blob, { top: -60, left: -40, backgroundColor: "rgba(168,85,247,0.18)" }]} />
-          <View style={[styles.blob, { top: 200, right: -60, backgroundColor: "rgba(236,72,153,0.14)", width: 280, height: 280 }]} />
+          <View style={[styles.blob, { top: 200, right: -60, backgroundColor: "rgba(139,92,246,0.14)", width: 280, height: 280 }]} />
           <View style={[styles.blob, { bottom: -40, left: 30, backgroundColor: "rgba(99,102,241,0.16)" }]} />
         </View>
 
@@ -461,7 +461,7 @@ export default function PremiumCoachScreen() {
         {phase === "intro" && (
           <Animated.View entering={FadeInUp.duration(500)} style={styles.center}>
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={["#A855F7", "#7C3AED"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.amyAvatar}

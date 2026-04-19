@@ -61,7 +61,7 @@ export default function CoachProgressCard({
       >
         <View style={styles.headerRow}>
           <LinearGradient
-            colors={["#A855F7", "#EC4899"]}
+            colors={["#A855F7", "#7C3AED"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.avatar}
@@ -84,7 +84,7 @@ export default function CoachProgressCard({
         <View style={styles.barTrack} onLayout={onTrackLayout}>
           <Animated.View style={[styles.barFillWrap, animatedBar]}>
             <LinearGradient
-              colors={["#A855F7", "#EC4899"]}
+              colors={["#A855F7", "#7C3AED"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.barFill}
@@ -108,7 +108,7 @@ export default function CoachProgressCard({
           style={[styles.cta, style]}
         >
           <LinearGradient
-            colors={["#A855F7", "#EC4899"]}
+            colors={["#A855F7", "#7C3AED"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ctaGrad}

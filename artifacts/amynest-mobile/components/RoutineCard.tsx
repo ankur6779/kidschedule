@@ -74,19 +74,14 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
         accessibilityLabel={`${routine.title} routine, ${routine.duration} minutes, ${routine.completed ? "completed" : "pending"}`}
         accessibilityHint="Opens routine details"
       >
-        <LinearGradient
-          colors={routine.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.card}
-        >
+        <View style={[styles.card, routine.completed && styles.cardCompleted]}>
           {/* Top row: time badge + status */}
           <View style={styles.topRow}>
             <View style={styles.timeBadge}>
-              <Ionicons name="time-outline" size={13} color="#fff" />
+              <Ionicons name="time-outline" size={13} color="#C4B5FD" />
               <Text style={styles.timeText}>{routine.duration} min</Text>
             </View>
-            <View style={[styles.statusDot, { backgroundColor: routine.completed ? "#10B981" : "rgba(255,255,255,0.25)" }]}>
+            <View style={[styles.statusDot, routine.completed && styles.statusDotDone]}>
               {routine.completed ? (
                 <Ionicons name="checkmark" size={14} color="#fff" />
               ) : (
@@ -95,12 +90,17 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
             </View>
           </View>
 
-          {/* Floating Icon */}
+          {/* Floating Icon — violet gradient */}
           <View style={styles.iconWrap}>
             <View style={styles.iconGlow} />
-            <View style={styles.iconCircle}>
+            <LinearGradient
+              colors={["#A855F7", "#7C3AED"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.iconCircle}
+            >
               <Ionicons name={routine.icon} size={56} color="#fff" />
-            </View>
+            </LinearGradient>
           </View>
 
           {/* Spacer */}
@@ -125,14 +125,14 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
               <Ionicons
                 name={routine.completed ? "checkmark-circle" : "play"}
                 size={18}
-                color={routine.completed ? "#10B981" : routine.gradient[0]}
+                color={routine.completed ? "#10B981" : "#A855F7"}
               />
               <Text style={[styles.ctaText, routine.completed && { color: "#10B981" }]}>
                 {routine.completed ? "Completed" : "Start"}
               </Text>
             </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -141,7 +141,7 @@ export default function RoutineCard({ routine, index, scrollX, onPress, onToggle
 const styles = StyleSheet.create({
   touchable: {
     borderRadius: 24,
-    shadowColor: "#000",
+    shadowColor: "#A855F7",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.35,
     shadowRadius: 20,
@@ -152,6 +152,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 22,
     overflow: "hidden",
+    backgroundColor: "rgba(26,15,46,0.96)",
+    borderWidth: 1.5,
+    borderColor: "rgba(168,85,247,0.45)",
+  },
+  cardCompleted: {
+    borderColor: "rgba(16,185,129,0.50)",
   },
   topRow: {
     flexDirection: "row",
@@ -162,13 +168,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    backgroundColor: "rgba(168,85,247,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(168,85,247,0.35)",
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
   },
   timeText: {
-    color: "#fff",
+    color: "#C4B5FD",
     fontSize: 11.5,
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -180,13 +188,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.5)",
+    borderColor: "rgba(168,85,247,0.40)",
+    backgroundColor: "rgba(168,85,247,0.10)",
+  },
+  statusDotDone: {
+    backgroundColor: "#10B981",
+    borderColor: "#10B981",
   },
   pendingDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "rgba(255,255,255,0.6)",
+    backgroundColor: "rgba(196,181,253,0.6)",
   },
   iconWrap: {
     alignItems: "center",
@@ -198,17 +211,16 @@ const styles = StyleSheet.create({
     width: 160,
     height: 160,
     borderRadius: 80,
-    backgroundColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(168,85,247,0.18)",
   },
   iconCircle: {
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: "rgba(255,255,255,0.20)",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: "rgba(255,255,255,0.30)",
+    borderColor: "rgba(196,181,253,0.30)",
   },
   bottom: {
     gap: 8,
@@ -220,7 +232,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.4,
   },
   subtitle: {
-    color: "rgba(255,255,255,0.85)",
+    color: "rgba(196,181,253,0.80)",
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 8,
@@ -230,16 +242,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(168,85,247,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(168,85,247,0.40)",
     paddingVertical: 14,
     borderRadius: 16,
     marginTop: 4,
   },
   ctaCompleted: {
-    backgroundColor: "rgba(255,255,255,0.95)",
+    backgroundColor: "rgba(16,185,129,0.10)",
+    borderColor: "rgba(16,185,129,0.35)",
   },
   ctaText: {
-    color: "#1F2937",
+    color: "#C4B5FD",
     fontSize: 15,
     fontWeight: "800",
     letterSpacing: 0.2,

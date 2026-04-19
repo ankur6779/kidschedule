@@ -40,7 +40,7 @@ export default function ProgressBar({ progress, label, height = 8 }: Props) {
       <View style={[styles.track, { height, borderRadius: height / 2 }]}>
         <Animated.View style={[StyleSheet.absoluteFill, { borderRadius: height / 2, overflow: "hidden" }, fillStyle]}>
           <LinearGradient
-            colors={["#A855F7", "#EC4899"]}
+            colors={["#A855F7", "#7C3AED"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{ flex: 1, borderRadius: height / 2 }}

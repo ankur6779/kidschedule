@@ -48,7 +48,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Gentle morning brushing — 2 minutes per side, soft circular strokes.",
     duration: 5,
     icon: "sparkles",
-    gradient: ["#06B6D4", "#3B82F6"] as const,
+    gradient: ["#8B5CF6", "#6366F1"] as const,
     steps: [
       "Wet the toothbrush",
       "Apply a pea-sized amount of toothpaste",
@@ -66,7 +66,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Calm, prepared morning — clothes, bag, breakfast, and out the door.",
     duration: 25,
     icon: "school",
-    gradient: ["#A855F7", "#EC4899"] as const,
+    gradient: ["#A855F7", "#7C3AED"] as const,
     steps: [
       "Pick out clothes laid out the night before",
       "Get dressed and brush hair",
@@ -84,7 +84,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Focused 25-minute study with a short break — calm, distraction free.",
     duration: 30,
     icon: "book",
-    gradient: ["#F97316", "#EF4444"] as const,
+    gradient: ["#7C3AED", "#A855F7"] as const,
     steps: [
       "Clear the desk of distractions",
       "Review today's homework list",
@@ -102,7 +102,7 @@ const SAMPLE_ROUTINES: Routine[] = [
     description: "Free, screen-free creative play — imagination, movement, and fun.",
     duration: 45,
     icon: "happy",
-    gradient: ["#FFD166", "#F97316"] as const,
+    gradient: ["#9333EA", "#8B5CF6"] as const,
     steps: [
       "Choose between indoor or outdoor play",
       "Invite a sibling or friend (optional)",
@@ -216,7 +216,7 @@ export default function PremiumRoutineScreen() {
         {/* Decorative blobs */}
         <View pointerEvents="none" style={StyleSheet.absoluteFill}>
           <View style={[styles.blob, { top: -80, left: -60, backgroundColor: "rgba(168,85,247,0.28)" }]} />
-          <View style={[styles.blob, { top: 240, right: -80, backgroundColor: "rgba(236,72,153,0.20)", width: 320, height: 320 }]} />
+          <View style={[styles.blob, { top: 240, right: -80, backgroundColor: "rgba(139,92,246,0.20)", width: 320, height: 320 }]} />
           <View style={[styles.blob, { bottom: -60, left: 40, backgroundColor: "rgba(99,102,241,0.20)" }]} />
         </View>
 
@@ -362,7 +362,7 @@ export default function PremiumRoutineScreen() {
                 }
               >
                 <LinearGradient
-                  colors={activeRoutine.completed ? ["#374151", "#1F2937"] : ["#A855F7", "#EC4899"]}
+                  colors={activeRoutine.completed ? ["#374151", "#1F2937"] : ["#A855F7", "#7C3AED"]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.completeBtn}

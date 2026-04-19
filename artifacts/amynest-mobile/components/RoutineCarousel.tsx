@@ -32,8 +32,8 @@ function TaskCard({
 
   const isDone = task.done;
   const accent: readonly [string, string] = isDone
-    ? ["#10B981", "#06B6D4"]
-    : ["#A855F7", "#EC4899"];
+    ? ["#10B981", "#059669"]
+    : ["#A855F7", "#7C3AED"];
 
   return (
     <Animated.View entering={FadeIn.duration(400).delay(index * 60)}>
