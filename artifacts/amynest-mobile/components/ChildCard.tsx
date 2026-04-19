@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, StyleSheet, Pressable, Platform } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, {
@@ -17,7 +16,7 @@ type Props = {
   childName: string;
   ageGroup: string;
   focusGoal: string;
-  progress: number; // 0..1
+  progress: number;
   onContinue: () => void;
 };
 
@@ -36,20 +35,11 @@ export default function ChildCard({
       entering={FadeInDown.duration(550).delay(80)}
       style={styles.cardWrap}
     >
-      <LinearGradient
-        colors={["#7C3AED", "#A855F7", "#EC4899"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
-      >
-        {/* Decorative blobs */}
-        <View pointerEvents="none" style={[styles.blob, { top: -30, right: -30 }]} />
-        <View pointerEvents="none" style={[styles.blob, { bottom: -50, left: -20, opacity: 0.4 }]} />
-
+      <View style={styles.card}>
         <View style={styles.row}>
           <View style={{ flex: 1, paddingRight: 12 }}>
             <View style={styles.agePill}>
-              <Ionicons name="happy" size={11} color="#fff" />
+              <Ionicons name="happy" size={11} color="#7C3AED" />
               <Text style={styles.ageText}>{ageGroup}</Text>
             </View>
             <Text style={styles.childName}>{childName}</Text>
@@ -61,8 +51,10 @@ export default function ChildCard({
             size={120}
             stroke={11}
             progress={progress}
-            gradientFrom="#FFD27A"
-            gradientTo="#FF4ECD"
+            trackColor="rgba(124,58,237,0.12)"
+            gradientFrom="#C4B5FD"
+            gradientTo="#7C3AED"
+            labelColor="#5B21B6"
           />
         </View>
 
@@ -82,9 +74,9 @@ export default function ChildCard({
           accessibilityLabel={`Continue plan for ${childName}`}
         >
           <Text style={styles.ctaText}>Continue Plan</Text>
-          <Ionicons name="arrow-forward" size={16} color="#7C3AED" />
+          <Ionicons name="arrow-forward" size={16} color="#fff" />
         </AnimatedPressable>
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 }
@@ -95,21 +87,17 @@ const styles = StyleSheet.create({
     borderRadius: 26,
     overflow: "hidden",
     shadowColor: "#7C3AED",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 22,
-    elevation: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    elevation: 8,
   },
   card: {
     padding: 22,
     borderRadius: 26,
-  },
-  blob: {
-    position: "absolute",
-    width: 140,
-    height: 140,
-    borderRadius: 9999,
-    backgroundColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "#fff",
+    borderWidth: 1.5,
+    borderColor: "#EDE9FE",
   },
   row: {
     flexDirection: "row",
@@ -121,34 +109,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 5,
     alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "#EDE9FE",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 8,
   },
   ageText: {
-    color: "#fff",
+    color: "#7C3AED",
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.3,
   },
   childName: {
-    color: "#fff",
+    color: "#1F2937",
     fontSize: 26,
     fontWeight: "800",
     letterSpacing: -0.5,
     marginBottom: 14,
   },
   focusLabel: {
-    color: "rgba(255,255,255,0.7)",
+    color: "#9CA3AF",
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1.2,
     marginBottom: 4,
   },
   focusGoal: {
-    color: "#fff",
+    color: "#374151",
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: -0.2,
@@ -159,12 +147,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: "#fff",
+    backgroundColor: "#7C3AED",
     paddingVertical: 14,
     borderRadius: 16,
   },
   ctaText: {
-    color: "#7C3AED",
+    color: "#fff",
     fontSize: 15,
     fontWeight: "800",
     letterSpacing: -0.2,

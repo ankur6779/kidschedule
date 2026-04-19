@@ -27,15 +27,15 @@ import HubSection from "@/components/HubSection";
 import InsightCard from "@/components/InsightCard";
 
 const RECO_ACCENTS: readonly (readonly [string, string])[] = [
-  ["#A855F7", "#EC4899"],
-  ["#06B6D4", "#3B82F6"],
-  ["#F97316", "#EF4444"],
+  ["#7C3AED", "#A855F7"],
+  ["#6D28D9", "#8B5CF6"],
+  ["#5B21B6", "#7C3AED"],
 ];
 
 const QUICK_ACTIONS = [
-  { id: "coach", label: "Amy Coach", icon: "sparkles" as const, route: "/coach/premium", gradient: ["#A855F7", "#EC4899"] as const },
-  { id: "routine", label: "Routine", icon: "calendar" as const, route: "/routines/premium", gradient: ["#06B6D4", "#3B82F6"] as const },
-  { id: "hub", label: "Parent Hub", icon: "grid" as const, route: "/hub/premium", gradient: ["#10B981", "#06B6D4"] as const },
+  { id: "coach", label: "Amy Coach", icon: "sparkles" as const, route: "/coach/premium", gradient: ["#7C3AED", "#A855F7"] as const },
+  { id: "routine", label: "Routine", icon: "calendar" as const, route: "/routines/premium", gradient: ["#6D28D9", "#8B5CF6"] as const },
+  { id: "hub", label: "Parent Hub", icon: "grid" as const, route: "/hub/premium", gradient: ["#5B21B6", "#7C3AED"] as const },
 ];
 
 export default function PremiumDashboardScreen() {
@@ -63,7 +63,6 @@ export default function PremiumDashboardScreen() {
     [router],
   );
 
-  // Live data from unified /api/app-data
   const liveData = useAppStore((s) => s.data);
   const liveDashboard = liveData?.dashboard;
   const liveRecs = liveData?.recommendations ?? [];
@@ -88,17 +87,7 @@ export default function PremiumDashboardScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <LinearGradient
-        colors={["#FAF5FF", "#EFF6FF", "#FFF1F2"]}
-        locations={[0, 0.55, 1]}
-        style={styles.bg}
-      >
-        {/* Decorative blobs */}
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          <View style={[styles.blob, { top: -60, right: -60, backgroundColor: "rgba(168,85,247,0.18)" }]} />
-          <View style={[styles.blob, { top: 360, left: -80, backgroundColor: "rgba(236,72,153,0.12)", width: 280, height: 280 }]} />
-        </View>
-
+      <View style={styles.bg}>
         <ScrollView
           contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
@@ -118,8 +107,8 @@ export default function PremiumDashboardScreen() {
           {/* Streak + daily goal strip */}
           <Animated.View entering={FadeInDown.duration(450).delay(40)} style={styles.stripRow}>
             <View style={styles.stripCard}>
-              <View style={[styles.stripIcon, { backgroundColor: "#F9731618" }]}>
-                <Ionicons name="flame" size={18} color="#F97316" />
+              <View style={[styles.stripIcon, { backgroundColor: "#7C3AED18" }]}>
+                <Ionicons name="flame" size={18} color="#7C3AED" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.stripValue}>{liveStreak}-day streak</Text>
@@ -127,11 +116,11 @@ export default function PremiumDashboardScreen() {
               </View>
             </View>
             <View style={styles.stripCard}>
-              <View style={[styles.stripIcon, { backgroundColor: goalReached ? "#10B98118" : "#7C3AED18" }]}>
+              <View style={[styles.stripIcon, { backgroundColor: goalReached ? "#6D28D918" : "#7C3AED18" }]}>
                 <Ionicons
                   name={goalReached ? "trophy" : "rocket"}
                   size={18}
-                  color={goalReached ? "#10B981" : "#7C3AED"}
+                  color={goalReached ? "#6D28D9" : "#7C3AED"}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -253,18 +242,15 @@ export default function PremiumDashboardScreen() {
             </View>
           </HubSection>
         </ScrollView>
-      </LinearGradient>
+      </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1 },
-  blob: {
-    position: "absolute",
-    width: 240,
-    height: 240,
-    borderRadius: 9999,
+  bg: {
+    flex: 1,
+    backgroundColor: "#FAF5FF",
   },
   stripRow: {
     flexDirection: "row",
@@ -277,12 +263,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    backgroundColor: "rgba(255,255,255,0.85)",
+    backgroundColor: "#fff",
     paddingHorizontal: 12,
     paddingVertical: 11,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.04)",
+    borderColor: "#EDE9FE",
   },
   stripIcon: {
     width: 34,
@@ -328,10 +314,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 9,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.04)",
-    shadowColor: "#000",
+    borderColor: "#EDE9FE",
+    shadowColor: "#7C3AED",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.06,
     shadowRadius: 10,
     elevation: 3,
   },

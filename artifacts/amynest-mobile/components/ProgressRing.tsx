@@ -13,21 +13,23 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 type Props = {
   size?: number;
   stroke?: number;
-  progress: number; // 0..1
+  progress: number;
   trackColor?: string;
   gradientFrom?: string;
   gradientTo?: string;
   centerSubtext?: string;
+  labelColor?: string;
 };
 
 export default function ProgressRing({
   size = 140,
   stroke = 12,
   progress,
-  trackColor = "rgba(255,255,255,0.25)",
-  gradientFrom = "#FFD27A",
-  gradientTo = "#FF4ECD",
+  trackColor = "rgba(124,58,237,0.12)",
+  gradientFrom = "#C4B5FD",
+  gradientTo = "#7C3AED",
   centerSubtext,
+  labelColor,
 }: Props) {
   const clamped = Math.min(1, Math.max(0, progress));
   const radius = (size - stroke) / 2;
@@ -44,6 +46,8 @@ export default function ProgressRing({
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: circumference * (1 - animated.value),
   }));
+
+  const percentColor = labelColor ?? gradientTo;
 
   return (
     <View style={[styles.wrap, { width: size, height: size }]}>
@@ -77,11 +81,11 @@ export default function ProgressRing({
       </Svg>
 
       <View style={styles.center} pointerEvents="none">
-        <Text style={[styles.percent, { fontSize: size * 0.22 }]}>
+        <Text style={[styles.percent, { fontSize: size * 0.22, color: percentColor }]}>
           {Math.round(clamped * 100)}%
         </Text>
         {centerSubtext && (
-          <Text style={[styles.subtext, { fontSize: size * 0.085 }]} numberOfLines={1}>
+          <Text style={[styles.subtext, { fontSize: size * 0.085, color: percentColor }]} numberOfLines={1}>
             {centerSubtext}
           </Text>
         )}
@@ -101,12 +105,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   percent: {
-    color: "#fff",
     fontWeight: "800",
     letterSpacing: -0.5,
   },
   subtext: {
-    color: "rgba(255,255,255,0.85)",
     fontWeight: "600",
     marginTop: 2,
     letterSpacing: 0.2,
