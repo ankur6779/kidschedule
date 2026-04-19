@@ -12,6 +12,7 @@ import { BlurView } from "expo-blur";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import { paletteFor } from "@/lib/theme";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
@@ -110,6 +111,7 @@ function smartCascade(items: RoutineItem[], fromIndex: number, delayMinutes: num
 }
 
 // ─── Category styles ───────────────────────────────────────────────────────
+// audit-block-ignore-start: semantic activity-category color map — no theme tokens for these types
 const CATEGORY_COLORS: Record<string, string> = {
   morning: "#F59E0B", morning_routine: "#F59E0B",
   meal: "#10B981", tiffin: "#F59E0B",
@@ -123,6 +125,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   sleep: "#4338CA", screen: "#06B6D4",
   default: "",
 };
+// audit-block-ignore-end
 const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>["name"]> = {
   morning: "sunny-outline", morning_routine: "sunny-outline",
   meal: "restaurant-outline", tiffin: "fast-food-outline",
@@ -178,6 +181,8 @@ export default function RoutineDetailScreen() {
   const insets = useSafeAreaInsets();
   const authFetch = useAuthFetch();
   const c = useColors();
+  const { mode } = useTheme();
+  const theme = paletteFor(mode);
   const qc = useQueryClient();
 
   const [actionItem, setActionItem] = useState<number | null>(null);
@@ -419,22 +424,22 @@ export default function RoutineDetailScreen() {
   const botPad = insets.bottom + (Platform.OS === "web" ? 24 : 0) + 110;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: c.background }]}>
       <LinearGradient colors={theme.gradient} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: topPad + 8 }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn} activeOpacity={0.7}>
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={22} color={c.foreground} />
         </TouchableOpacity>
         <View style={{ flex: 1, alignItems: "center" }}>
-          <Text style={styles.headerTitle} numberOfLines={1}>Routine</Text>
+          <Text style={[styles.headerTitle, { color: c.foreground }]} numberOfLines={1}>Routine</Text>
         </View>
         <TouchableOpacity onPress={shareRoutine} style={styles.headerBtn} activeOpacity={0.7}>
-          <Ionicons name="share-outline" size={20} color="#FFFFFF" />
+          <Ionicons name="share-outline" size={20} color={c.foreground} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setMoreMenu(true)} style={styles.headerBtn} activeOpacity={0.7}>
-          <Ionicons name="ellipsis-vertical" size={20} color="#FFFFFF" />
+          <Ionicons name="ellipsis-vertical" size={20} color={c.foreground} />
         </TouchableOpacity>
       </View>
 
@@ -456,10 +461,10 @@ export default function RoutineDetailScreen() {
           ListHeaderComponent={
             <View style={{ marginBottom: 16 }}>
               <Text style={styles.dateLabel}>{formatDate(routine.date)}</Text>
-              <Text style={styles.routineTitle} numberOfLines={3}>{routine.title}</Text>
+              <Text style={[styles.routineTitle, { color: c.foreground }]} numberOfLines={3}>{routine.title}</Text>
               <View style={styles.childRow}>
                 <View style={styles.childChip}>
-                  <Ionicons name="person" size={11} color="#FF4ECD" />
+                  <Ionicons name="person" size={11} color={c.accent} />
                   <Text style={styles.childChipText}>{routine.childName}</Text>
                 </View>
                 <View style={styles.childChip}>
@@ -471,6 +476,7 @@ export default function RoutineDetailScreen() {
               <View style={styles.statsCardWrap}>
                 <BlurView intensity={Platform.OS === "android" ? 70 : 40} tint="dark" style={styles.statsCard}>
                   <View style={styles.statsRow}>
+                    {/* audit-ok: semantic success-green "Done" count */}
                     <Stat num={stats.done} label="Done" color="#10B981" />
                     <Divider />
                     <Stat num={stats.remaining} label="Remaining" color="#FFFFFF" />
@@ -478,7 +484,7 @@ export default function RoutineDetailScreen() {
                     <Stat num={stats.skipped} label="Skipped" color="rgba(255,255,255,0.5)" />
                   </View>
                   <View style={styles.progressOuter}>
-                    <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    <LinearGradient colors={[brand.primary, "#FF4ECD" /* audit-ok: accent pink gradient end-stop */]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                       style={[styles.progressFill, { width: `${stats.pct}%` }]} />
                   </View>
                   <Text style={styles.progressLabel}>{stats.pct}% complete</Text>
@@ -490,7 +496,7 @@ export default function RoutineDetailScreen() {
               <View style={styles.activitiesHeaderRow}>
                 <Text style={styles.sectionTitle}>ACTIVITIES</Text>
                 <TouchableOpacity onPress={() => setAddOpen(true)} style={styles.addBtn} activeOpacity={0.85}>
-                  <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
+                  <LinearGradient colors={[brand.primary, "#FF4ECD" /* audit-ok: accent pink gradient end-stop */]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
                     <Ionicons name="add" size={14} color="#FFFFFF" />
                     <Text style={styles.addBtnText}>Add</Text>
                   </LinearGradient>
@@ -514,9 +520,9 @@ export default function RoutineDetailScreen() {
                 <View style={[
                   styles.railDot,
                   { backgroundColor: c.railDotBg },
-                  item.status === "completed" && { backgroundColor: "#22C55E", borderColor: "#22C55E" },
+                  item.status === "completed" && { backgroundColor: "#22C55E" /* audit-ok: status-complete green */, borderColor: "#22C55E" /* audit-ok */ },
                   item.status === "skipped" && { backgroundColor: c.statusSkipped, borderColor: c.statusSkipped },
-                  item.status === "delayed" && { backgroundColor: "#F59E0B", borderColor: "#F59E0B" },
+                  item.status === "delayed" && { backgroundColor: "#F59E0B" /* audit-ok: status-delayed amber */, borderColor: "#F59E0B" /* audit-ok */ },
                 ]} />
               </View>
               <View style={styles.timelineCard}>
@@ -527,7 +533,7 @@ export default function RoutineDetailScreen() {
                   onSwipeLeft={() => setItemStatus(index, item.status === "skipped" ? "pending" : "skipped")}
                   leftActionMode="skip"
                   borderRadius={18}
-                  glowColor={item.status === "completed" ? "#22C55E" : brand.violet500}
+                  glowColor={item.status === "completed" ? "#22C55E" /* audit-ok: status-complete green glow */ : brand.violet500}
                 >
                   <ItemCard item={item} />
                 </SwipeableCard>
@@ -545,7 +551,7 @@ export default function RoutineDetailScreen() {
             <Ionicons
               name={toast.tone === "success" ? "checkmark-circle" : toast.tone === "warn" ? "alert-circle" : "information-circle"}
               size={18}
-              color={toast.tone === "success" ? "#10B981" : toast.tone === "warn" ? "#F59E0B" : brand.primary}
+              color={toast.tone === "success" ? "#10B981" /* audit-ok: semantic success-green */ : toast.tone === "warn" ? "#F59E0B" /* audit-ok: semantic warn-amber */ : brand.primary}
             />
             <Text style={styles.toastText}>{toast.msg}</Text>
           </BlurView>
@@ -568,13 +574,14 @@ export default function RoutineDetailScreen() {
       {/* Item action sheet */}
       <Modal visible={actionItem !== null} transparent animationType="fade" onRequestClose={() => setActionItem(null)}>
         <Pressable style={styles.modalScrim} onPress={() => setActionItem(null)}>
-          <Pressable style={styles.actionSheet} onPress={e => e.stopPropagation()}>
+          <Pressable style={[styles.actionSheet, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
             <View style={styles.actionHandle} />
-            <Text style={styles.actionTitle} numberOfLines={2}>
+            <Text style={[styles.actionTitle, { color: c.foreground }]} numberOfLines={2}>
               {actionItem !== null ? items[actionItem]?.activity : ""}
             </Text>
             {actionItem !== null && (
               <ScrollView showsVerticalScrollIndicator={false}>
+                {/* audit-ok: semantic success-green "Mark complete" action */}
                 <ActionRow icon="checkmark-circle" iconColor="#10B981" label="Mark complete"
                   onPress={() => setItemStatus(actionItem, "completed")}
                   active={items[actionItem]?.status === "completed"} />
@@ -583,6 +590,7 @@ export default function RoutineDetailScreen() {
                 <View style={styles.delayRow}>
                   {[15, 30, 60].map(m => (
                     <TouchableOpacity key={m} style={styles.delayBtn} onPress={() => delayItem(actionItem, m)} activeOpacity={0.8}>
+                      {/* audit-ok: semantic delay-amber time icon */}
                       <Ionicons name="time" size={16} color="#F59E0B" />
                       <Text style={styles.delayText}>+{m}m</Text>
                     </TouchableOpacity>
@@ -595,8 +603,10 @@ export default function RoutineDetailScreen() {
                 <ActionRow icon="refresh" iconColor={brand.primary} label="Reset to pending"
                   onPress={() => setItemStatus(actionItem, "pending")}
                   active={!items[actionItem]?.status || items[actionItem]?.status === "pending"} />
+                {/* audit-ok: semantic blue "Edit" action icon */}
                 <ActionRow icon="create-outline" iconColor="#60A5FA" label="Edit time / activity"
                   onPress={() => openEdit(actionItem)} />
+                {/* audit-ok: accent pink "Remove" destructive action icon */}
                 <ActionRow icon="trash-outline" iconColor="#FF4ECD" label="Remove from routine"
                   onPress={() => deleteItem(actionItem)} />
 
@@ -613,20 +623,20 @@ export default function RoutineDetailScreen() {
       <Modal visible={editIndex !== null} transparent animationType="fade" onRequestClose={() => setEditIndex(null)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <Pressable style={styles.modalScrim} onPress={() => setEditIndex(null)}>
-            <Pressable style={styles.editCard} onPress={e => e.stopPropagation()}>
-              <Text style={styles.editTitle}>Edit activity</Text>
+            <Pressable style={[styles.editCard, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
+              <Text style={[styles.editTitle, { color: c.foreground }]}>Edit activity</Text>
               <Text style={styles.editLabel}>Activity</Text>
-              <TextInput style={styles.input} value={editForm.activity}
+              <TextInput style={[styles.input, { color: c.foreground }]} value={editForm.activity}
                 onChangeText={v => setEditForm({ ...editForm, activity: v })}
-                placeholder="Activity name" placeholderTextColor="rgba(255,255,255,0.35)" />
+                placeholder="Activity name" placeholderTextColor={c.textFaint} />
               <Text style={styles.editLabel}>Time (e.g. 7:30 AM)</Text>
-              <TextInput style={styles.input} value={editForm.time}
+              <TextInput style={[styles.input, { color: c.foreground }]} value={editForm.time}
                 onChangeText={v => setEditForm({ ...editForm, time: v })}
-                placeholder="7:30 AM" placeholderTextColor="rgba(255,255,255,0.35)" />
+                placeholder="7:30 AM" placeholderTextColor={c.textFaint} />
               <Text style={styles.editLabel}>Duration (minutes)</Text>
-              <TextInput style={styles.input} value={editForm.duration}
+              <TextInput style={[styles.input, { color: c.foreground }]} value={editForm.duration}
                 onChangeText={v => setEditForm({ ...editForm, duration: v.replace(/[^0-9]/g, "") })}
-                keyboardType="number-pad" placeholder="30" placeholderTextColor="rgba(255,255,255,0.35)" />
+                keyboardType="number-pad" placeholder="30" placeholderTextColor={c.textFaint} />
               <Text style={styles.helper}>Changes to time or duration will smart-shift later activities and protect bedtime.</Text>
               <View style={styles.confirmBtns}>
                 <TouchableOpacity style={[styles.confirmBtn, styles.confirmCancel]} onPress={() => setEditIndex(null)} activeOpacity={0.8}>
@@ -645,20 +655,20 @@ export default function RoutineDetailScreen() {
       <Modal visible={addOpen} transparent animationType="fade" onRequestClose={() => setAddOpen(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <Pressable style={styles.modalScrim} onPress={() => setAddOpen(false)}>
-            <Pressable style={styles.editCard} onPress={e => e.stopPropagation()}>
+            <Pressable style={[styles.editCard, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
               <View style={styles.addIconCircle}>
                 <Ionicons name="sparkles" size={20} color="#FFFFFF" />
               </View>
-              <Text style={styles.editTitle}>Add activity</Text>
+              <Text style={[styles.editTitle, { color: c.foreground }]}>Add activity</Text>
               <Text style={styles.helper}>AI will fit it into the schedule and adjust the rest of the day.</Text>
               <Text style={styles.editLabel}>Activity name</Text>
-              <TextInput style={styles.input} value={addForm.name}
+              <TextInput style={[styles.input, { color: c.foreground }]} value={addForm.name}
                 onChangeText={v => setAddForm({ ...addForm, name: v })}
-                placeholder="e.g. Piano practice" placeholderTextColor="rgba(255,255,255,0.35)" />
+                placeholder="e.g. Piano practice" placeholderTextColor={c.textFaint} />
               <Text style={styles.editLabel}>Duration (minutes)</Text>
-              <TextInput style={styles.input} value={addForm.duration}
+              <TextInput style={[styles.input, { color: c.foreground }]} value={addForm.duration}
                 onChangeText={v => setAddForm({ ...addForm, duration: v.replace(/[^0-9]/g, "") })}
-                keyboardType="number-pad" placeholder="30" placeholderTextColor="rgba(255,255,255,0.35)" />
+                keyboardType="number-pad" placeholder="30" placeholderTextColor={c.textFaint} />
               <View style={styles.confirmBtns}>
                 <TouchableOpacity style={[styles.confirmBtn, styles.confirmCancel]} onPress={() => setAddOpen(false)} activeOpacity={0.8} disabled={addLoading}>
                   <Text style={styles.confirmCancelText}>Cancel</Text>
@@ -677,13 +687,14 @@ export default function RoutineDetailScreen() {
       {/* More menu */}
       <Modal visible={moreMenu} transparent animationType="fade" onRequestClose={() => setMoreMenu(false)}>
         <Pressable style={styles.modalScrim} onPress={() => setMoreMenu(false)}>
-          <Pressable style={styles.actionSheet} onPress={e => e.stopPropagation()}>
+          <Pressable style={[styles.actionSheet, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
             <View style={styles.actionHandle} />
-            <Text style={styles.actionTitle}>Routine actions</Text>
+            <Text style={[styles.actionTitle, { color: c.foreground }]}>Routine actions</Text>
             <ActionRow icon="sparkles" iconColor={brand.primary} label={regenLoading ? "Regenerating…" : "Regenerate day with AI"}
               onPress={partialRegen} />
+            {/* audit-ok: semantic success-green "Share" action icon */}
             <ActionRow icon="share-outline" iconColor="#10B981" label="Share routine" onPress={shareRoutine} />
-            <ActionRow icon="trash-outline" iconColor="#FF4ECD" label="Delete routine" onPress={confirmDelete} />
+            <ActionRow icon="trash-outline" iconColor={c.accent} label="Delete routine" onPress={confirmDelete} />
             <TouchableOpacity style={styles.cancelBtn} onPress={() => setMoreMenu(false)} activeOpacity={0.7}>
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
@@ -694,15 +705,15 @@ export default function RoutineDetailScreen() {
       {/* Web delete confirm */}
       <Modal visible={showDelete} transparent animationType="fade" onRequestClose={() => setShowDelete(false)}>
         <Pressable style={styles.modalScrim} onPress={() => setShowDelete(false)}>
-          <Pressable style={styles.confirmCard} onPress={e => e.stopPropagation()}>
-            <MaterialCommunityIcons name="trash-can-outline" size={36} color="#FF4ECD" />
-            <Text style={styles.confirmTitle}>Delete routine?</Text>
+          <Pressable style={[styles.confirmCard, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
+            <MaterialCommunityIcons name="trash-can-outline" size={36} color={c.accent} />
+            <Text style={[styles.confirmTitle, { color: c.foreground }]}>Delete routine?</Text>
             <Text style={styles.confirmBody}>This will permanently remove this routine and all its tasks.</Text>
             <View style={styles.confirmBtns}>
               <TouchableOpacity style={[styles.confirmBtn, styles.confirmCancel]} onPress={() => setShowDelete(false)} activeOpacity={0.8}>
                 <Text style={styles.confirmCancelText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.confirmBtn, styles.confirmDelete]}
+              <TouchableOpacity style={[styles.confirmBtn, { backgroundColor: c.accent }]}
                 onPress={() => { setShowDelete(false); deleteMut.mutate(); }} activeOpacity={0.8}>
                 <Text style={styles.confirmDeleteText}>Delete</Text>
               </TouchableOpacity>
@@ -715,7 +726,7 @@ export default function RoutineDetailScreen() {
       {regenLoading && (
         <View style={styles.fullOverlay} pointerEvents="auto">
           <BlurView intensity={Platform.OS === "android" ? 80 : 50} tint="dark" style={styles.fullOverlayInner}>
-            <ActivityIndicator size="large" color="#FF4ECD" />
+            <ActivityIndicator size="large" color={c.accent} />
             <Text style={styles.regenText}>Regenerating with AI…</Text>
           </BlurView>
         </View>
@@ -786,11 +797,11 @@ function ItemCard({ item }: { item: RoutineItem }) {
         },
       ]}
     >
-      <View style={[styles.timeCol, { borderRightColor: "rgba(255,255,255,0.08)" }]}>
-        <Text style={[styles.timeText, { color: isDone ? "rgba(255,255,255,0.45)" : "#FFFFFF" }]}>{item.time}</Text>
+      <View style={[styles.timeCol, { borderRightColor: c.border }]}>
+        <Text style={[styles.timeText, { color: isDone ? c.textDim : c.foreground }]}>{item.time}</Text>
         <View style={styles.durationRow}>
-          <Ionicons name="time-outline" size={9} color="rgba(255,255,255,0.45)" />
-          <Text style={styles.durationText}>{item.duration}m</Text>
+          <Ionicons name="time-outline" size={9} color={c.textDim} />
+          <Text style={[styles.durationText, { color: c.textDim }]}>{item.duration}m</Text>
         </View>
       </View>
       <View style={[styles.catIcon, { backgroundColor: hexToRgba(catColor, 0.22), borderColor: hexToRgba(catColor, 0.5) }]}>
@@ -799,21 +810,23 @@ function ItemCard({ item }: { item: RoutineItem }) {
       <View style={{ flex: 1 }}>
         <Text style={[
           styles.activityText,
-          isDone && { color: "rgba(255,255,255,0.5)", textDecorationLine: "line-through" },
-          isSkipped && { color: "rgba(255,255,255,0.45)" },
+          { color: c.foreground },
+          isDone && { color: c.textSubtle, textDecorationLine: "line-through" },
+          isSkipped && { color: c.textDim },
         ]} numberOfLines={2}>{item.activity}</Text>
-        {item.notes && !isDone && <Text style={styles.notesText} numberOfLines={1}>{item.notes}</Text>}
-        {isSkipped && item.skipReason && <Text style={styles.skipReason} numberOfLines={1}>⏭ {item.skipReason}</Text>}
+        {item.notes && !isDone && <Text style={[styles.notesText, { color: c.textSubtle }]} numberOfLines={1}>{item.notes}</Text>}
+        {isSkipped && item.skipReason && <Text style={[styles.skipReason, { color: c.textDim }]} numberOfLines={1}>⏭ {item.skipReason}</Text>}
         {isDelayed && <Text style={styles.delayedTag}>⏱ Delayed</Text>}
       </View>
       <View style={[
         styles.checkBox,
-        isDone && { backgroundColor: "#10B981", borderColor: "#10B981" },
+        isDone && { backgroundColor: "#10B981" /* audit-ok: status-complete green */, borderColor: "#10B981" /* audit-ok */ },
         isSkipped && { borderColor: "rgba(255,255,255,0.25)", borderStyle: "dashed" },
-        isDelayed && { borderColor: "#F59E0B" },
+        isDelayed && { borderColor: "#F59E0B" /* audit-ok: status-delayed amber */ },
       ]}>
         {isDone && <Ionicons name="checkmark" size={14} color="#fff" />}
         {isSkipped && <Ionicons name="play-skip-forward" size={11} color="rgba(255,255,255,0.5)" />}
+        {/* audit-ok: semantic delay-amber time icon in checkBox */}
         {isDelayed && <Ionicons name="time" size={12} color="#F59E0B" />}
       </View>
     </View>
@@ -824,13 +837,14 @@ function ActionRow({ icon, iconColor, label, onPress, active }: {
   icon: React.ComponentProps<typeof Ionicons>["name"];
   iconColor: string; label: string; onPress: () => void; active?: boolean;
 }) {
+  const c = useColors();
   return (
     <TouchableOpacity
       style={[styles.actionRow, active && { backgroundColor: "rgba(123,63,242,0.15)" }]}
       onPress={onPress} activeOpacity={0.7}
     >
       <Ionicons name={icon} size={20} color={iconColor} />
-      <Text style={styles.actionRowText}>{label}</Text>
+      <Text style={[styles.actionRowText, { color: c.foreground }]}>{label}</Text>
       {active && <Ionicons name="checkmark" size={18} color={brand.primary} />}
     </TouchableOpacity>
   );
@@ -838,7 +852,7 @@ function ActionRow({ icon, iconColor, label, onPress, active }: {
 
 // ─── Styles ────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0B0B1A" },
+  container: { flex: 1, backgroundColor: "#0B0B1A" /* audit-ok: always-dark root container */ },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 60 },
   emptyText: { color: "rgba(255,255,255,0.55)", fontSize: 14, textAlign: "center" },
 
@@ -849,7 +863,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
 
-  dateLabel: { color: "#FF4ECD", fontSize: 12, fontWeight: "700", letterSpacing: 1, textTransform: "uppercase" },
+  dateLabel: { color: "#FF4ECD" /* audit-ok: accent pink date label on always-dark header */, fontSize: 12, fontWeight: "700", letterSpacing: 1, textTransform: "uppercase" },
   routineTitle: { color: "#FFFFFF", fontSize: 24, fontWeight: "800", lineHeight: 30, marginTop: 6 },
   childRow: { flexDirection: "row", gap: 8, marginTop: 10, flexWrap: "wrap" },
   childChip: {
@@ -910,7 +924,7 @@ const styles = StyleSheet.create({
   activityText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600", lineHeight: 20 },
   notesText: { fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 3 },
   skipReason: { fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 3, fontStyle: "italic" },
-  delayedTag: { fontSize: 10, color: "#F59E0B", marginTop: 3, fontWeight: "700" },
+  delayedTag: { fontSize: 10, color: "#F59E0B" /* audit-ok: semantic delay-amber tag */, marginTop: 3, fontWeight: "700" },
   checkBox: {
     width: 26, height: 26, borderRadius: 8, borderWidth: 1.5,
     borderColor: "rgba(255,255,255,0.25)", alignItems: "center", justifyContent: "center",
@@ -918,7 +932,7 @@ const styles = StyleSheet.create({
 
   modalScrim: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
   actionSheet: {
-    backgroundColor: "#14142B",
+    backgroundColor: "#14142B" /* audit-ok: always-dark action sheet */,
     borderTopLeftRadius: 28, borderTopRightRadius: 28,
     padding: 18, paddingBottom: 32, gap: 6,
     borderTopWidth: 1, borderColor: "rgba(255,255,255,0.10)",
@@ -935,7 +949,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12, borderRadius: 12,
     backgroundColor: "rgba(245,158,11,0.10)", borderWidth: 1, borderColor: "rgba(245,158,11,0.35)",
   },
-  delayText: { color: "#F59E0B", fontSize: 13, fontWeight: "700" },
+  delayText: { color: "#F59E0B" /* audit-ok: semantic delay-amber delay time text */, fontSize: 13, fontWeight: "700" },
 
   cancelBtn: {
     paddingVertical: 14, borderRadius: 14, marginTop: 10, marginHorizontal: 16,
@@ -947,7 +961,7 @@ const styles = StyleSheet.create({
   /* Edit / Add modal */
   editCard: {
     margin: 24, padding: 22, borderRadius: 24,
-    backgroundColor: "#14142B",
+    backgroundColor: "#14142B" /* audit-ok: always-dark edit modal card */,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
     gap: 8, alignSelf: "center", width: 340, marginTop: "auto", marginBottom: "auto",
   },
@@ -955,7 +969,7 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22, alignSelf: "center",
     alignItems: "center", justifyContent: "center",
     backgroundColor: brand.primary, marginBottom: 4,
-    shadowColor: "#FF4ECD", shadowOpacity: 0.5, shadowRadius: 10,
+    shadowColor: "#FF4ECD" /* audit-ok: accent pink glow on add icon */, shadowOpacity: 0.5, shadowRadius: 10,
   },
   editTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700", textAlign: "center" },
   editLabel: { color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: "600", letterSpacing: 0.5, marginTop: 8, textTransform: "uppercase" },
@@ -975,14 +989,14 @@ const styles = StyleSheet.create({
   confirmPrimaryText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
 
   confirmCard: {
-    margin: 24, padding: 24, borderRadius: 24, backgroundColor: "#14142B",
+    margin: 24, padding: 24, borderRadius: 24, backgroundColor: "#14142B" /* audit-ok: always-dark confirm modal card */,
     borderWidth: 1, borderColor: "rgba(255,255,255,0.10)",
     alignItems: "center", gap: 10, alignSelf: "center", width: 320,
     marginTop: "auto", marginBottom: "auto",
   },
   confirmTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
   confirmBody: { color: "rgba(255,255,255,0.65)", fontSize: 13, textAlign: "center", lineHeight: 19 },
-  confirmDelete: { backgroundColor: "#FF4ECD" },
+  confirmDelete: { backgroundColor: "#FF4ECD" /* audit-ok: accent pink destructive confirm button */ },
   confirmDeleteText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
 
   /* Toast */

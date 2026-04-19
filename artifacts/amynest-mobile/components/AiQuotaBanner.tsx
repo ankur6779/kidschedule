@@ -19,11 +19,11 @@ export default function AiQuotaBanner() {
   const bannerStyle = exhausted
     ? { backgroundColor: c.statusErrorBg, borderColor: c.statusErrorBorder }
     : low
-    ? { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }
-    : { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder };
+    ? { backgroundColor: c.statusWarningBg, borderColor: c.statusWarningBorder }
+    : { backgroundColor: c.glass, borderColor: c.glassBorder };
 
-  const iconColor = exhausted ? c.statusErrorText : low ? c.statusWarnText : c.textSubtle;
-  const textColor = exhausted ? c.statusErrorText : low ? c.statusWarnText : c.textSubtle;
+  const iconColor = exhausted ? c.statusErrorText : low ? c.statusWarningText : c.textSubtle;
+  const textColor = exhausted ? c.statusErrorText : low ? c.statusWarningText : c.textSubtle;
 
   return (
     <Pressable

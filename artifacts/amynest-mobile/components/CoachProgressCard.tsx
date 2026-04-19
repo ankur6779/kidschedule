@@ -59,7 +59,7 @@ export default function CoachProgressCard({
   return (
     <Animated.View entering={FadeInDown.duration(500).delay(delay)} style={styles.cardWrap}>
       <LinearGradient
-        colors={["#FFFFFF", "#FAFAFF"]}
+        colors={[c.card, c.surfaceElevated]}
         style={styles.card}
       >
         <View style={styles.headerRow}>

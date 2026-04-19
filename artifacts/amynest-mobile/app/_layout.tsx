@@ -13,6 +13,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { useColors } from "@/hooks/useColors";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { useAppDataBootstrap } from "@/hooks/useAppData";
 import { useOfflineSyncBootstrap } from "@/hooks/useOfflineSync";
@@ -144,9 +145,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   const isCheckingOnboarding = isSignedIn && (onboardingStatus === "unknown" || onboardingStatus === "checking");
   const isAuthTransition = !isLoaded || isCheckingOnboarding;
 
+  const c = useColors();
+
   if (isAuthTransition) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0B0B1A" }}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: c.background }}>
         <ActivityIndicator size="large" color={brand.primary} />
       </View>
     );
@@ -156,8 +159,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 }
 
 function RootLayoutNav() {
+  const c = useColors();
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#0B0B1A" } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
       <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />
@@ -169,8 +173,8 @@ function RootLayoutNav() {
           headerShown: true,
           headerTitle: "Child Profile",
           headerBackTitle: "Back",
-          headerTintColor: "#FF4ECD",
-          headerStyle: { backgroundColor: "#0B0B1A" },
+          headerTintColor: c.accent,
+          headerStyle: { backgroundColor: c.background },
         }}
       />
       <Stack.Screen
@@ -179,8 +183,8 @@ function RootLayoutNav() {
           headerShown: true,
           headerTitle: "Add Child",
           headerBackTitle: "Back",
-          headerTintColor: "#FF4ECD",
-          headerStyle: { backgroundColor: "#0B0B1A" },
+          headerTintColor: c.accent,
+          headerStyle: { backgroundColor: c.background },
         }}
       />
       <Stack.Screen

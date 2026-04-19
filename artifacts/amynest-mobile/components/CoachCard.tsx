@@ -101,12 +101,12 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
             <Text style={[styles.bodyText, { color: c.textBody }]}>{win.explanation}</Text>
 
             {/* Actions */}
-            <SectionHeader icon="checkbox-outline" label="DO THIS" color="#059669" />
+            <SectionHeader icon="checkbox-outline" label="DO THIS" color={c.statusSuccessText} />
             <View style={{ gap: 10, marginTop: 4 }}>
               {win.actions.map((a, i) => (
                 <View key={i} style={styles.actionRow}>
                   <View style={[styles.actionDot, { backgroundColor: c.statusSuccessBg, borderColor: c.statusSuccessBorder }]}>
-                    <Text style={[styles.actionDotText, { color: c.behaviorGoodText }]}>{i + 1}</Text>
+                    <Text style={[styles.actionDotText, { color: c.statusSuccessText }]}>{i + 1}</Text>
                   </View>
                   <Text style={[styles.actionText, { color: c.textBody }]}>{a}</Text>
                 </View>
@@ -114,21 +114,21 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
             </View>
 
             {/* Example */}
-            <SectionHeader icon="chatbubble-ellipses-outline" label="REAL EXAMPLE" color="#0EA5E9" />
-            <View style={[styles.calloutBox, { backgroundColor: c.calloutBg, borderColor: c.calloutBorder }]}>
-              <Text style={[styles.calloutText, { color: c.textBody }]}>{win.example}</Text>
+            <SectionHeader icon="chatbubble-ellipses-outline" label="REAL EXAMPLE" color={c.highlight} />
+            <View style={[styles.calloutBox, { backgroundColor: c.statusInfoBg, borderColor: c.statusInfoBorder }]}>
+              <Text style={[styles.calloutText, { color: c.statusInfoText }]}>{win.example}</Text>
             </View>
 
             {/* Mistake */}
-            <SectionHeader icon="alert-circle-outline" label="AVOID THIS" color="#DC2626" />
+            <SectionHeader icon="alert-circle-outline" label="AVOID THIS" color={c.statusErrorText} />
             <View style={[styles.calloutBox, { backgroundColor: c.statusErrorBg, borderColor: c.statusErrorBorder }]}>
               <Text style={[styles.calloutText, { color: c.statusErrorText }]}>{win.mistake}</Text>
             </View>
 
             {/* Micro task */}
-            <SectionHeader icon="flash-outline" label="MICRO TASK FOR TODAY" color="#D97706" />
-            <View style={[styles.calloutBox, { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }]}>
-              <Text style={[styles.calloutText, { color: c.statusWarnText, fontWeight: "600" }]}>
+            <SectionHeader icon="flash-outline" label="MICRO TASK FOR TODAY" color={c.statusWarningText} />
+            <View style={[styles.calloutBox, { backgroundColor: c.statusWarningBg, borderColor: c.statusWarningBorder }]}>
+              <Text style={[styles.calloutText, { color: c.statusWarningText, fontWeight: "600" }]}>
                 {win.microTask}
               </Text>
             </View>

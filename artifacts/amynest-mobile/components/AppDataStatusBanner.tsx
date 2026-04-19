@@ -31,13 +31,13 @@ export default function AppDataStatusBanner() {
 
   if (!isOnline) {
     return (
-      <View style={[styles.banner, { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }]}>
-        <Ionicons name="cloud-offline" size={14} color={c.statusWarnText} />
-        <Text style={[styles.offlineText, { color: c.statusWarnText }]}>
+      <View style={[styles.banner, { backgroundColor: c.statusWarningBg, borderColor: c.statusWarningBorder }]}>
+        <Ionicons name="cloud-offline" size={14} color={c.statusWarningText} />
+        <Text style={[styles.offlineText, { color: c.statusWarningText }]}>
           Offline Mode{queueLength > 0 ? ` · ${queueLength} pending` : ""}
         </Text>
         {hasData && lastUpdated ? (
-          <Text style={[styles.offlineSub, { color: c.statusWarnText }]}>{formatRelative(lastUpdated)}</Text>
+          <Text style={[styles.offlineSub, { color: c.statusWarningText }]}>{formatRelative(lastUpdated)}</Text>
         ) : null}
       </View>
     );
@@ -70,7 +70,7 @@ export default function AppDataStatusBanner() {
 
   if (status === "refreshing" && hasData) {
     return (
-      <View style={[styles.banner, { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder }]}>
+      <View style={[styles.banner, { backgroundColor: c.glass, borderColor: c.glassBorder }]}>
         <ActivityIndicator size="small" color={brand.violet600} />
         <Text style={[styles.mutedText, { color: c.textSubtle }]}>Refreshing…</Text>
       </View>
@@ -79,7 +79,7 @@ export default function AppDataStatusBanner() {
 
   if (hasData && lastUpdated) {
     return (
-      <View style={[styles.banner, { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder }]}>
+      <View style={[styles.banner, { backgroundColor: c.glass, borderColor: c.glassBorder }]}>
         <Ionicons
           name={fromCache ? "save-outline" : "checkmark-circle-outline"}
           size={14}
