@@ -37,7 +37,7 @@ import {
   Clock,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776624005902.png";
+import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776624219075.png";
 import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776588039438.png";
 import { useTranslation } from "react-i18next";
 
@@ -325,6 +325,32 @@ export default function LandingPage() {
           width: max-content;
         }
         .marquee-track:hover { animation-play-state: paused }
+        @keyframes amyBlink {
+          0%, 92%, 100% { transform: scaleY(1) }
+          95% { transform: scaleY(0.08) }
+        }
+        .amy-eye {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          background: #1a1a2e;
+          border-radius: 50%;
+          border: 2px solid white;
+          animation: amyBlink 3.5s ease-in-out infinite;
+          transform-origin: center;
+        }
+        .amy-face-wrap {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg,#A855F7,#6366F1);
+          border-radius: 50%;
+          width: 26px;
+          height: 26px;
+          gap: 3px;
+          flex-shrink: 0;
+          box-shadow: 0 3px 10px rgba(168,85,247,0.5);
+        }
       `}</style>
 
       {/* Glow blobs */}
@@ -349,17 +375,38 @@ export default function LandingPage() {
 
       {/* NAV */}
       <header className="relative z-20 flex items-center justify-between px-5 py-4">
-        <div style={{ background: "transparent", display: "inline-flex" }}>
-          <img
-            src={logoImg}
-            alt="AmyNest AI"
-            className="h-14 w-auto object-contain"
-            style={{
-              mixBlendMode: "multiply",
-              filter: "drop-shadow(0 2px 12px rgba(168,85,247,0.5))",
-            }}
-          />
-        </div>
+        <Link href="/">
+          <div className="flex items-center gap-2 cursor-pointer">
+            <img
+              src={logoImg}
+              alt="AmyNest AI"
+              className="h-14 w-auto object-contain"
+              style={{
+                mixBlendMode: "screen",
+                filter: "drop-shadow(0 0 14px rgba(168,85,247,0.6)) brightness(1.1)",
+              }}
+            />
+            <div className="flex flex-col leading-tight hidden sm:flex">
+              <span
+                className="font-quicksand font-black text-base"
+                style={{
+                  background: "linear-gradient(90deg,#A855F7,#EC4899,#06B6D4)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                Amy Nest AI
+              </span>
+              <span className="flex items-center gap-1.5 text-[10px] text-white/50 font-medium">
+                <span className="amy-face-wrap">
+                  <span className="amy-eye" style={{ animationDelay: "0s" }} />
+                  <span className="amy-eye" style={{ animationDelay: "0.08s" }} />
+                </span>
+                AI Parenting Coach
+              </span>
+            </div>
+          </div>
+        </Link>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <Link href="/sign-in">
@@ -871,23 +918,43 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="relative z-10 px-5 py-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col items-center md:items-start gap-1">
-            <img
-              src={logoImg}
-              alt="AmyNest AI"
-              className="h-12 w-auto object-contain"
-              style={{
-                mixBlendMode: "multiply",
-                filter: "drop-shadow(0 2px 12px rgba(168,85,247,0.5))",
-              }}
-            />
-            <p className="text-xs text-white/40">{t("landing.footer_tagline")}</p>
+          <div className="flex flex-col items-center md:items-start gap-2">
+            <div className="flex items-center gap-2">
+              <img
+                src={logoImg}
+                alt="AmyNest AI"
+                className="h-12 w-auto object-contain"
+                style={{
+                  mixBlendMode: "screen",
+                  filter: "drop-shadow(0 0 12px rgba(168,85,247,0.55)) brightness(1.1)",
+                }}
+              />
+              <div className="flex flex-col leading-tight">
+                <span
+                  className="font-quicksand font-black text-sm"
+                  style={{
+                    background: "linear-gradient(90deg,#A855F7,#EC4899,#06B6D4)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  Amy Nest AI
+                </span>
+                <span className="flex items-center gap-1.5 text-[10px] text-white/45 font-medium">
+                  <span className="amy-face-wrap" style={{ width: "20px", height: "20px" }}>
+                    <span className="amy-eye" style={{ width: "7px", height: "7px", animationDelay: "1s" }} />
+                    <span className="amy-eye" style={{ width: "7px", height: "7px", animationDelay: "1.08s" }} />
+                  </span>
+                  Where Smart Parenting Begins
+                </span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-6 text-xs text-white/40">
             <Link href="/sign-up"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign Up</span></Link>
             <Link href="/sign-in"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign In</span></Link>
           </div>
-          <p className="text-xs text-white/30">© 2025 AmyNest AI. All rights reserved.</p>
+          <p className="text-xs text-white/30">© 202 AmyNest AI. All rights reserved.</p>
         </div>
       </footer>
     </div>
