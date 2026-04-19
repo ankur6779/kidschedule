@@ -11,6 +11,7 @@ import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 
 type Colors = ReturnType<typeof useColors>;
 
@@ -70,6 +71,7 @@ export default function ProfileScreen() {
   const authFetch = useAuthFetch();
   const qc = useQueryClient();
 
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [uploadingPic, setUploadingPic] = useState(false);
 
@@ -419,6 +421,21 @@ export default function ProfileScreen() {
           <Ionicons name="log-out-outline" size={20} color="#EF4444" />
           <Text style={styles.logoutText}>Sign Out</Text>
         </TouchableOpacity>
+
+        {/* Developer Tools — only visible in __DEV__ builds */}
+        {__DEV__ && (
+          <TouchableOpacity
+            style={[styles.devToolsBtn, { borderColor: colors.border }]}
+            onPress={() => {
+              Haptics.selectionAsync();
+              router.push("/dev/theme");
+            }}
+          >
+            <Ionicons name="color-palette-outline" size={18} color={colors.mutedForeground} />
+            <Text style={[styles.devToolsText, { color: colors.mutedForeground }]}>Developer Tools</Text>
+            <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" }} />
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -583,4 +600,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14, borderRadius: 16, borderWidth: 1,
   },
   logoutText: { color: "#EF4444", fontSize: 15, fontFamily: "Inter_600SemiBold" },
+
+  devToolsBtn: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    paddingVertical: 12, paddingHorizontal: 16,
+    borderRadius: 16, borderWidth: 1, marginTop: 8,
+  },
+  devToolsText: { fontSize: 14, fontFamily: "Inter_500Medium" },
 });
