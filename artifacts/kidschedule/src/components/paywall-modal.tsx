@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Rocket, Check, X, Smartphone, Zap } from "lucide-react";
+import { Sparkles, Check, X, Smartphone, Zap } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -170,10 +170,6 @@ export function PaywallModal() {
             <Smartphone className="h-3.5 w-3.5" />
             Continue in Mobile App instead
           </button>
-
-          <span className="hidden" aria-hidden="true">
-            <Rocket className="h-4 w-4" />
-          </span>
 
           {entitlements?.status === "free" && (
             <button

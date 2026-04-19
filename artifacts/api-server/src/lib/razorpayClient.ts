@@ -192,13 +192,14 @@ export function planEnv(): {
   };
 }
 
-/** Map our internal Plan code to Razorpay total_count (number of cycles
- *  Razorpay should attempt). We pick large multi-year counts so the
- *  subscription doesn't auto-complete; cancellation is the lifecycle event. */
+/** Map our internal Plan code to Razorpay total_count (number of billing
+ *  cycles Razorpay should attempt). One year of coverage per plan, after
+ *  which Razorpay marks the subscription `completed` and the user is
+ *  prompted to re-subscribe. Per task-5 spec. */
 export const TOTAL_COUNT_BY_PLAN: Record<"monthly" | "six_month" | "yearly", number> = {
-  monthly: 120,   // 10 years
-  six_month: 20,  // 10 years (each cycle = 6 months)
-  yearly: 10,     // 10 years
+  monthly: 12,   // 12 monthly cycles = 1 year
+  six_month: 2,  // 2 cycles = 1 year
+  yearly: 1,     // 1 cycle = 1 year
 };
 
 /** Reverse lookup: env-configured plan id -> our internal plan code. */
