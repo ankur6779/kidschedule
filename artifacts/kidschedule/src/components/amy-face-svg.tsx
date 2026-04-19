@@ -11,18 +11,19 @@ export function AmyFaceSVG({ size = 36, className = "" }: AmyFaceSVGProps) {
   useEffect(() => {
     const doBlink = () => {
       setBlink(true);
-      setTimeout(() => setBlink(false), 140);
+      setTimeout(() => setBlink(false), 130);
     };
-    // first blink after 1.5s, then every ~2.2s
-    const t = setTimeout(() => {
+    const first = setTimeout(() => {
       doBlink();
-      const interval = setInterval(doBlink, 2200);
+      const interval = setInterval(doBlink, 2000);
       return () => clearInterval(interval);
-    }, 1500);
-    return () => clearTimeout(t);
+    }, 1200);
+    return () => clearTimeout(first);
   }, []);
 
-  const eyeRy = blink ? 0.4 : 4;
+  const eyeRy = blink ? 0.35 : 4.2;
+  const eyeIrisRy = Math.min(eyeRy, 3);
+  const eyePupilRy = Math.min(eyeRy, 1.8);
 
   return (
     <svg
@@ -35,175 +36,142 @@ export function AmyFaceSVG({ size = 36, className = "" }: AmyFaceSVGProps) {
       style={{ flexShrink: 0 }}
     >
       <defs>
-        <radialGradient id="amyBg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#C084FC" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.15" />
+        <radialGradient id="amyGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#C084FC" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.08" />
         </radialGradient>
         <radialGradient id="amySkin" cx="45%" cy="38%" r="55%">
           <stop offset="0%" stopColor="#FFE0B2" />
           <stop offset="100%" stopColor="#FFCC80" />
         </radialGradient>
-        <radialGradient id="amyHair" cx="50%" cy="20%" r="60%">
-          <stop offset="0%" stopColor="#3E1C0A" />
-          <stop offset="100%" stopColor="#150700" />
+        <linearGradient id="amyCap" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#4C1D95" />
+          <stop offset="40%" stopColor="#7C3AED" />
+          <stop offset="100%" stopColor="#A855F7" />
+        </linearGradient>
+        <linearGradient id="amyCapVisor" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#6D28D9" />
+          <stop offset="100%" stopColor="#4C1D95" />
+        </linearGradient>
+        <radialGradient id="amyCapSheen" cx="35%" cy="20%" r="50%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
         </radialGradient>
-        <radialGradient id="amyEye" cx="35%" cy="30%" r="55%">
+        <radialGradient id="amyEyeIris" cx="35%" cy="30%" r="55%">
           <stop offset="0%" stopColor="#6B3012" />
           <stop offset="60%" stopColor="#2C1008" />
           <stop offset="100%" stopColor="#0D0400" />
         </radialGradient>
-        <radialGradient id="amyPupil" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#0D0400" />
-          <stop offset="100%" stopColor="#1A0800" />
-        </radialGradient>
         <radialGradient id="amyCheek" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FF8A9A" stopOpacity="0.6" />
+          <stop offset="0%" stopColor="#FF8A9A" stopOpacity="0.55" />
           <stop offset="100%" stopColor="#FF8A9A" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="amyBand" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#BDBDBD" />
-          <stop offset="50%" stopColor="#FAFAFA" />
-          <stop offset="100%" stopColor="#BDBDBD" />
-        </linearGradient>
       </defs>
 
       {/* Outer glow ring */}
-      <circle cx="32" cy="32" r="31" fill="url(#amyBg)" />
-      <circle cx="32" cy="32" r="30" stroke="#A855F7" strokeWidth="0.8" fill="none" opacity="0.5" />
+      <circle cx="32" cy="32" r="31" fill="url(#amyGlow)" />
+      <circle cx="32" cy="32" r="30" stroke="#A855F7" strokeWidth="0.7" fill="none" opacity="0.45" />
 
-      {/* Neck */}
-      <ellipse cx="32" cy="57" rx="7" ry="5" fill="url(#amySkin)" />
+      {/* Face — full round circle */}
+      <circle cx="32" cy="36" r="22" fill="url(#amySkin)" />
 
-      {/* Face */}
-      <ellipse cx="32" cy="38" rx="18" ry="19" fill="url(#amySkin)" />
-
-      {/* Hair — back layer */}
-      <ellipse cx="32" cy="25" rx="19" ry="16" fill="url(#amyHair)" />
-      {/* Hair — volume top */}
-      <ellipse cx="32" cy="18" rx="17" ry="13" fill="url(#amyHair)" />
-      {/* Hair — side curls */}
-      <ellipse cx="15" cy="36" rx="5.5" ry="11" fill="url(#amyHair)" />
-      <ellipse cx="49" cy="36" rx="5.5" ry="11" fill="url(#amyHair)" />
-      {/* Hair — front wave */}
+      {/* Cap dome — covers top of face */}
       <path
-        d="M 14 26 Q 20 19 32 17 Q 44 19 50 26"
-        stroke="#2C1008"
-        strokeWidth="2"
-        fill="none"
-        strokeLinecap="round"
+        d="M 11 33 Q 11 10 32 10 Q 53 10 53 33 Z"
+        fill="url(#amyCap)"
       />
-
-      {/* Headband */}
+      {/* Cap sheen / highlight */}
       <path
-        d="M 13.5 24 Q 32 13 50.5 24"
-        stroke="url(#amyBand)"
-        strokeWidth="3"
-        fill="none"
-        strokeLinecap="round"
+        d="M 16 28 Q 19 14 32 12 Q 44 14 47 22 Q 37 16 32 16 Q 22 16 16 28 Z"
+        fill="url(#amyCapSheen)"
       />
-
-      {/* Hair clips — colorful flowers/stars */}
-      {/* Green clip */}
-      <circle cx="18" cy="21" r="3.5" fill="#43A047" />
-      <circle cx="18" cy="21" r="2" fill="#66BB6A" />
-      <circle cx="18" cy="21" r="0.8" fill="#A5D6A7" />
-      {/* Yellow clip */}
-      <circle cx="24.5" cy="17.5" r="3.5" fill="#F9A825" />
-      <circle cx="24.5" cy="17.5" r="2" fill="#FFD54F" />
-      <circle cx="24.5" cy="17.5" r="0.8" fill="#FFF9C4" />
-      {/* Pink clip */}
-      <circle cx="31.5" cy="15.5" r="3.5" fill="#E91E8C" />
-      <circle cx="31.5" cy="15.5" r="2" fill="#F48FB1" />
-      <circle cx="31.5" cy="15.5" r="0.8" fill="#FCE4EC" />
-      {/* Orange clip */}
-      <circle cx="38.5" cy="17.5" r="3.5" fill="#E64A19" />
-      <circle cx="38.5" cy="17.5" r="2" fill="#FF7043" />
-      <circle cx="38.5" cy="17.5" r="0.8" fill="#FFCCBC" />
-      {/* Purple clip */}
-      <circle cx="45" cy="21" r="3.5" fill="#7B1FA2" />
-      <circle cx="45" cy="21" r="2" fill="#CE93D8" />
-      <circle cx="45" cy="21" r="0.8" fill="#F3E5F5" />
-
-      {/* Eyebrows */}
+      {/* Cap logo text — small "Ai" badge on front */}
+      <rect x="26" y="25" width="12" height="6" rx="3" fill="#EC4899" opacity="0.9" />
+      <text
+        x="32"
+        y="29.5"
+        textAnchor="middle"
+        dominantBaseline="middle"
+        fontSize="4.5"
+        fontWeight="bold"
+        fill="white"
+        fontFamily="sans-serif"
+        letterSpacing="0.3"
+      >
+        Amy
+      </text>
+      {/* Cap visor/brim */}
       <path
-        d="M 20 31 Q 24 28.5 28 30"
-        stroke="#3E1C0A"
-        strokeWidth="1.6"
-        fill="none"
-        strokeLinecap="round"
+        d="M 18 33 Q 32 36 46 33 Q 46 37 32 37 Q 18 37 18 33 Z"
+        fill="url(#amyCapVisor)"
       />
       <path
-        d="M 36 30 Q 40 28.5 44 31"
-        stroke="#3E1C0A"
-        strokeWidth="1.6"
+        d="M 18 33 Q 32 36 46 33"
+        stroke="#3B0D8F"
+        strokeWidth="0.8"
         fill="none"
-        strokeLinecap="round"
       />
 
-      {/* Left eye whites */}
-      <ellipse cx="24" cy="36.5" rx="5" ry={eyeRy} fill="white" style={{ transition: "ry 0.08s ease" }} />
-      {/* Left iris */}
-      <ellipse cx="24" cy="36.5" rx="3.5" ry={Math.min(eyeRy, 3.5)} fill="url(#amyEye)" style={{ transition: "ry 0.08s ease" }} />
-      {/* Left pupil */}
-      <ellipse cx="24" cy="36.5" rx="2" ry={Math.min(eyeRy, 2)} fill="url(#amyPupil)" style={{ transition: "ry 0.08s ease" }} />
-      {/* Left eye highlight */}
-      {!blink && <ellipse cx="22.8" cy="35.2" rx="1.1" ry="1" fill="white" opacity="0.9" />}
+      {/* LEFT EYE */}
+      {/* Sclera */}
+      <ellipse cx="24" cy="40" rx="5.5" ry={eyeRy} fill="white" style={{ transition: "ry 0.09s ease" }} />
+      {/* Iris */}
+      <ellipse cx="24" cy="40" rx="3.8" ry={eyeIrisRy} fill="url(#amyEyeIris)" style={{ transition: "ry 0.09s ease" }} />
+      {/* Pupil */}
+      <ellipse cx="24" cy="40" rx="2.2" ry={eyePupilRy} fill="#0D0400" style={{ transition: "ry 0.09s ease" }} />
+      {/* Highlight */}
+      {!blink && <ellipse cx="22.6" cy="38.5" rx="1.2" ry="1.1" fill="white" opacity="0.9" />}
 
-      {/* Right eye whites */}
-      <ellipse cx="40" cy="36.5" rx="5" ry={eyeRy} fill="white" style={{ transition: "ry 0.08s ease" }} />
-      {/* Right iris */}
-      <ellipse cx="40" cy="36.5" rx="3.5" ry={Math.min(eyeRy, 3.5)} fill="url(#amyEye)" style={{ transition: "ry 0.08s ease" }} />
-      {/* Right pupil */}
-      <ellipse cx="40" cy="36.5" rx="2" ry={Math.min(eyeRy, 2)} fill="url(#amyPupil)" style={{ transition: "ry 0.08s ease" }} />
-      {/* Right eye highlight */}
-      {!blink && <ellipse cx="38.8" cy="35.2" rx="1.1" ry="1" fill="white" opacity="0.9" />}
+      {/* RIGHT EYE */}
+      {/* Sclera */}
+      <ellipse cx="40" cy="40" rx="5.5" ry={eyeRy} fill="white" style={{ transition: "ry 0.09s ease" }} />
+      {/* Iris */}
+      <ellipse cx="40" cy="40" rx="3.8" ry={eyeIrisRy} fill="url(#amyEyeIris)" style={{ transition: "ry 0.09s ease" }} />
+      {/* Pupil */}
+      <ellipse cx="40" cy="40" rx="2.2" ry={eyePupilRy} fill="#0D0400" style={{ transition: "ry 0.09s ease" }} />
+      {/* Highlight */}
+      {!blink && <ellipse cx="38.6" cy="38.5" rx="1.2" ry="1.1" fill="white" opacity="0.9" />}
 
-      {/* Upper eyelashes — left */}
+      {/* Upper eyelashes */}
       {!blink && (
         <>
-          <line x1="20" y1="31.8" x2="18.5" y2="29.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="22" y1="31" x2="21.5" y2="28.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="24" y1="30.7" x2="24" y2="28" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="26" y1="31" x2="26.5" y2="28.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="28" y1="31.8" x2="29.5" y2="29.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          {/* Upper eyelashes — right */}
-          <line x1="36" y1="31.8" x2="34.5" y2="29.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="38" y1="31" x2="37.5" y2="28.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="40" y1="30.7" x2="40" y2="28" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="42" y1="31" x2="42.5" y2="28.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
-          <line x1="44" y1="31.8" x2="45.5" y2="29.5" stroke="#2C1008" strokeWidth="1.2" strokeLinecap="round" />
+          <line x1="19.5" y1="35.5" x2="18" y2="33.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="22" y1="34.7" x2="21.2" y2="32.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="24.5" y1="34.5" x2="24.5" y2="32" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="27" y1="34.7" x2="27.8" y2="32.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="28.5" y1="35.5" x2="30" y2="33.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="35.5" y1="35.5" x2="34" y2="33.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="37.5" y1="34.7" x2="36.7" y2="32.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="40" y1="34.5" x2="40" y2="32" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="42.5" y1="34.7" x2="43.2" y2="32.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
+          <line x1="44.5" y1="35.5" x2="46" y2="33.5" stroke="#2C1008" strokeWidth="1.1" strokeLinecap="round" />
         </>
       )}
 
       {/* Blush cheeks */}
-      <ellipse cx="18" cy="42" rx="5.5" ry="3.5" fill="url(#amyCheek)" />
-      <ellipse cx="46" cy="42" rx="5.5" ry="3.5" fill="url(#amyCheek)" />
+      <ellipse cx="17" cy="45" rx="5" ry="3.2" fill="url(#amyCheek)" />
+      <ellipse cx="47" cy="45" rx="5" ry="3.2" fill="url(#amyCheek)" />
 
-      {/* Nose — subtle dots */}
-      <ellipse cx="30" cy="41" rx="1" ry="0.8" fill="#D4956A" opacity="0.6" />
-      <ellipse cx="34" cy="41" rx="1" ry="0.8" fill="#D4956A" opacity="0.6" />
+      {/* Nose — two subtle dots */}
+      <ellipse cx="30.5" cy="45.5" rx="0.9" ry="0.75" fill="#D4956A" opacity="0.55" />
+      <ellipse cx="33.5" cy="45.5" rx="0.9" ry="0.75" fill="#D4956A" opacity="0.55" />
 
-      {/* Smile with teeth */}
+      {/* Smile */}
       <path
-        d="M 23 46 Q 32 53 41 46"
+        d="M 24 50 Q 32 57 40 50"
         stroke="#8B4513"
         strokeWidth="1.6"
         fill="none"
         strokeLinecap="round"
       />
-      {/* Teeth hint */}
-      <path
-        d="M 25 46.5 Q 32 50 39 46.5"
-        stroke="none"
-        fill="white"
-        opacity="0.75"
-      />
+      {/* Teeth */}
+      <path d="M 25.5 50.2 Q 32 54 38.5 50.2" fill="white" opacity="0.7" stroke="none" />
 
       {/* Gold earrings */}
-      <circle cx="13.5" cy="42" r="2" fill="#FFD700" />
-      <circle cx="13.5" cy="42" r="1" fill="#FFF176" />
-      <circle cx="50.5" cy="42" r="2" fill="#FFD700" />
-      <circle cx="50.5" cy="42" r="1" fill="#FFF176" />
+      <circle cx="10.8" cy="43" r="1.8" fill="#FFD700" />
+      <circle cx="10.8" cy="43" r="0.9" fill="#FFF59D" />
+      <circle cx="53.2" cy="43" r="1.8" fill="#FFD700" />
+      <circle cx="53.2" cy="43" r="0.9" fill="#FFF59D" />
     </svg>
   );
 }
