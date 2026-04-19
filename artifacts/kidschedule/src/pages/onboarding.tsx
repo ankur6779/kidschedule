@@ -74,12 +74,17 @@ const BG = "linear-gradient(160deg,#EEF2FF 0%,#F5F3FF 55%,#FDF2F8 100%)";
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function AmyAvatar({ size = 8 }: { size?: number }) {
+  const px = size * 4;
   return (
     <div
-      className={`w-${size} h-${size} rounded-full flex items-center justify-center shrink-0 shadow-md`}
-      style={{ background: GRAD, width: size * 4, height: size * 4 }}
+      className="rounded-full shrink-0 shadow-md overflow-hidden border-2 border-indigo-200"
+      style={{ width: px, height: px, background: GRAD, flexShrink: 0 }}
     >
-      <span style={{ fontSize: size * 2 }}>🤖</span>
+      <img
+        src="/amynest-logo.png"
+        alt="Amy"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
     </div>
   );
 }

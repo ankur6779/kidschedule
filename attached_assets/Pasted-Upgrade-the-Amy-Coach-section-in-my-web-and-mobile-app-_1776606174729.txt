@@ -1,0 +1,211 @@
+Upgrade the “Amy Coach” section in my web and mobile app "AmyNest" by adding a new topic:
+
+“👶 Infant Parent Problems (0–2 Years)”
+
+IMPORTANT:
+- Follow existing Amy Coach UI and interaction
+- Do NOT change existing structure
+- Add as a new topic card
+- Content must be research-based (pediatric + child development principles)
+- Keep language simple, actionable, and safe
+- No medical diagnosis tone
+
+--------------------------------
+1. Topic Structure (Core 🔥)
+--------------------------------
+Add new topic:
+
+Title:
+“Infant Parent Problems”
+
+Inside show problem-based categories:
+
+- Baby not sleeping
+- Excessive crying
+- Feeding issues
+- Teething discomfort
+- Not eating solids
+- Frequent night waking
+- Baby always irritable
+- Not reaching milestones
+- Separation anxiety
+- Overstimulation
+
+--------------------------------
+2. UI Behavior
+--------------------------------
+- Same as existing Amy Coach:
+  - Card → click → detail view
+- Show:
+  - Problem title
+  - Short description
+  - Amy AI solution
+
+--------------------------------
+3. Response Structure (Important 🔥)
+--------------------------------
+Each problem should return:
+
+(A) Possible Reason  
+(B) What You Can Do (2–3 steps)  
+(C) Amy AI Insight  
+(D) Reassurance line  
+
+--------------------------------
+4. DATASET (USE THIS 🔥🔥)
+--------------------------------
+
+infantProblems = [
+
+{
+title: "Baby not sleeping",
+reason: "Overtiredness, overstimulation, or irregular sleep timing",
+solution: [
+"Follow consistent sleep routine",
+"Reduce noise and light before sleep",
+"Watch sleep cues like rubbing eyes"
+],
+insight: "Babies need predictable sleep patterns to feel secure",
+reassure: "This is very common and improves with routine"
+},
+
+{
+title: "Excessive crying",
+reason: "Hunger, discomfort, tiredness, or need for attention",
+solution: [
+"Check feeding and diaper first",
+"Try gentle rocking or holding",
+"Use calm voice and eye contact"
+],
+insight: "Crying is the baby’s main way to communicate",
+reassure: "You are doing the right thing by responding calmly"
+},
+
+{
+title: "Feeding issues",
+reason: "Growth phase changes or distraction",
+solution: [
+"Feed in a calm environment",
+"Keep feeding timing consistent",
+"Avoid force feeding"
+],
+insight: "Appetite varies during development phases",
+reassure: "Small changes in feeding are normal"
+},
+
+{
+title: "Teething discomfort",
+reason: "Emerging teeth causing gum irritation",
+solution: [
+"Use clean teething toys",
+"Gently massage gums",
+"Offer cold (not frozen) items"
+],
+insight: "Teething can cause mild discomfort and irritability",
+reassure: "This phase will pass soon"
+},
+
+{
+title: "Not eating solids",
+reason: "Adjustment phase to new textures",
+solution: [
+"Introduce slowly",
+"Repeat foods multiple times",
+"Do not pressure the child"
+],
+insight: "Babies need time to accept new foods",
+reassure: "Repetition helps acceptance"
+},
+
+{
+title: "Frequent night waking",
+reason: "Sleep cycle transitions or hunger",
+solution: [
+"Keep night environment calm",
+"Avoid stimulation during night",
+"Maintain consistent bedtime"
+],
+insight: "Night waking is normal in early development",
+reassure: "Sleep improves gradually"
+},
+
+{
+title: "Baby always irritable",
+reason: "Overstimulation or tiredness",
+solution: [
+"Reduce noise and screen exposure",
+"Follow routine",
+"Give quiet time"
+],
+insight: "Babies need calm environments to regulate emotions",
+reassure: "This is manageable with small changes"
+},
+
+{
+title: "Not reaching milestones",
+reason: "Natural variation in development pace",
+solution: [
+"Encourage daily play",
+"Give tummy time",
+"Interact frequently"
+],
+insight: "Each baby develops at their own pace",
+reassure: "Observe gently, avoid panic"
+},
+
+{
+title: "Separation anxiety",
+reason: "Attachment development",
+solution: [
+"Practice short separation",
+"Reassure before leaving",
+"Return with calm behavior"
+],
+insight: "This shows strong bonding",
+reassure: "This phase is temporary"
+},
+
+{
+title: "Overstimulation",
+reason: "Too much noise, activity, or screen exposure",
+solution: [
+"Reduce environment stimulation",
+"Create calm routine",
+"Use soft lighting"
+],
+insight: "Babies process limited stimulation at a time",
+reassure: "Calm environment helps regulation"
+}
+
+]
+
+--------------------------------
+5. Amy AI Tone (Important)
+--------------------------------
+- Friendly
+- Supportive
+- Non-judgmental
+
+Example:
+“I’m here to help ❤️”
+
+--------------------------------
+6. Language Support
+--------------------------------
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+7. Performance
+--------------------------------
+- Use local dataset
+- No API needed
+
+--------------------------------
+Return:
+Working Amy Coach update with:
+- New Infant Parent Problems topic
+- Structured responses
+- Clean UI integration
+- Research-style content

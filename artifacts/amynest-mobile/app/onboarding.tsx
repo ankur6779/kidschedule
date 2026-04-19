@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
-  Platform, ActivityIndicator, KeyboardAvoidingView, Alert,
+  Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
@@ -181,9 +181,11 @@ export default function OnboardingScreen() {
   if (step === "saving") {
     return (
       <View style={[styles.doneContainer, { paddingTop: topPad, paddingBottom: botPad, backgroundColor: colors.background }]}>
-        <View style={[styles.amyBigBubble, { backgroundColor: PRIMARY }]}>
-          <Ionicons name="leaf" size={36} color="#fff" />
-        </View>
+        <Image
+          source={require("../assets/images/amynest-logo.png")}
+          style={styles.amyBigBubble}
+          resizeMode="cover"
+        />
         <Text style={[styles.doneTitle, { color: colors.foreground }]}>Amy is setting up your profile...</Text>
         <ActivityIndicator color={PRIMARY} style={{ marginTop: 16 }} />
       </View>
@@ -530,9 +532,11 @@ export default function OnboardingScreen() {
       <View style={[styles.topBar, { paddingTop: topPad + 8 }]}>
         <View style={[styles.amyRow, { justifyContent: "space-between" }]}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <View style={[styles.amyAvatar, { backgroundColor: PRIMARY }]}>
-              <Ionicons name="leaf" size={18} color="#fff" />
-            </View>
+            <Image
+              source={require("../assets/images/amynest-logo.png")}
+              style={styles.amyAvatar}
+              resizeMode="cover"
+            />
             <View>
               <Text style={[styles.amyName, { color: colors.foreground }]}>Amy</Text>
               <Text style={[styles.amyStatus, { color: "#10B981" }]}>Parenting Coach</Text>
@@ -559,9 +563,11 @@ export default function OnboardingScreen() {
         ListHeaderComponent={
           typing ? (
             <View style={[styles.msgRow, { justifyContent: "flex-start" }]}>
-              <View style={[styles.amyAvatar, { backgroundColor: PRIMARY, width: 28, height: 28 }]}>
-                <Ionicons name="leaf" size={12} color="#fff" />
-              </View>
+              <Image
+                source={require("../assets/images/amynest-logo.png")}
+                style={{ width: 28, height: 28, borderRadius: 14 }}
+                resizeMode="cover"
+              />
               <View style={[styles.typingBubble, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <View style={[styles.dot, { backgroundColor: PRIMARY }]} />
                 <View style={[styles.dot, { backgroundColor: PRIMARY }]} />
@@ -573,9 +579,11 @@ export default function OnboardingScreen() {
         renderItem={({ item: m }) => (
           <View style={[styles.msgRow, { justifyContent: m.role === "amy" ? "flex-start" : "flex-end" }]}>
             {m.role === "amy" && (
-              <View style={[styles.amyAvatar, { backgroundColor: PRIMARY, width: 28, height: 28 }]}>
-                <Ionicons name="leaf" size={12} color="#fff" />
-              </View>
+              <Image
+                source={require("../assets/images/amynest-logo.png")}
+                style={{ width: 28, height: 28, borderRadius: 14 }}
+                resizeMode="cover"
+              />
             )}
             <View style={[
               styles.bubble,
