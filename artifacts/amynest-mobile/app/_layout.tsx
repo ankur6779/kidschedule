@@ -187,6 +187,12 @@ function RootLayoutNav() {
         name="routines/[id]"
         options={{ headerShown: false }}
       />
+      {__DEV__ && (
+        <Stack.Screen
+          name="dev/theme"
+          options={{ headerShown: false }}
+        />
+      )}
     </Stack>
   );
 }
