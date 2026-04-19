@@ -159,6 +159,18 @@ const GOAL_CATEGORIES: GoalCategory[] = [
 
 const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
 
+// Goals whose parent category already implies an age → skip the ageGroup question
+const CATEGORY_IMPLIED_AGE: Record<string, string> = {
+  "toddler-behavior": "2–4 years",
+  "daily-skills":     "2–4 years",
+};
+// Build a fast lookup: goalId → implied age answer
+const GOAL_IMPLIED_AGE: Record<string, string> = {};
+GOAL_CATEGORIES.forEach((cat) => {
+  const implied = CATEGORY_IMPLIED_AGE[cat.id];
+  if (implied) cat.items.forEach((g) => { GOAL_IMPLIED_AGE[g.id] = implied; });
+});
+
 // ─── Question definitions ──────────────────────────────────────────────────
 type QuestionType = "single" | "multi";
 interface Question {
@@ -285,8 +297,15 @@ export default function AICoachPage() {
       setPhase("infantProblem");
       return;
     }
-    setQIndex(0);
-    setAnswers({});
+    const impliedAge = GOAL_IMPLIED_AGE[id];
+    if (impliedAge) {
+      // Age is already implied by the goal category — pre-fill and skip the age question
+      setAnswers({ ageGroup: impliedAge });
+      setQIndex(1);
+    } else {
+      setQIndex(0);
+      setAnswers({});
+    }
     setPhase("questions");
   };
 
@@ -317,7 +336,10 @@ export default function AICoachPage() {
   };
 
   const handleBackQ = () => {
-    if (qIndex > 0) setQIndex((i) => i - 1);
+    // If age was auto-skipped for this goal (qIndex 0 is hidden), going back from
+    // qIndex 1 should return to goals, not show the hidden age question.
+    const ageImplied = goalId ? !!GOAL_IMPLIED_AGE[goalId] : false;
+    if (qIndex > 0 && !(qIndex === 1 && ageImplied)) setQIndex((i) => i - 1);
     else setPhase("goals");
   };
 
@@ -724,7 +746,10 @@ export default function AICoachPage() {
 
   // ── PHASE: QUESTIONS ────────────────────────────────────────────────
   if (phase === "questions" && currentQ) {
-    const progressPct = ((qIndex + 1) / QUESTIONS.length) * 100;
+    const ageSkipped = goalId ? !!GOAL_IMPLIED_AGE[goalId] : false;
+    const visibleTotal = ageSkipped ? QUESTIONS.length - 1 : QUESTIONS.length;
+    const visibleNum   = ageSkipped ? qIndex : qIndex + 1;
+    const progressPct  = (visibleNum / visibleTotal) * 100;
     return (
       <div className="max-w-xl mx-auto px-4 py-6 space-y-6">
         <button onClick={handleBackQ} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
@@ -733,7 +758,7 @@ export default function AICoachPage() {
 
         <div>
           <div className="flex items-center justify-between text-xs text-white/50 mb-1.5">
-            <span className="font-semibold">Question {qIndex + 1} of {QUESTIONS.length}</span>
+            <span className="font-semibold">Question {visibleNum} of {visibleTotal}</span>
             <span>{selectedGoal?.title}</span>
           </div>
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
