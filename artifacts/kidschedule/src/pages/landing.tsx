@@ -23,7 +23,7 @@ import {
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776587201948.png";
-import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_02_56_PM_1776587585367.png";
+import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776588039438.png";
 import { useTranslation } from "react-i18next";
 
 const COACH_HIGHLIGHT_KEYS = [
@@ -211,23 +211,15 @@ export default function LandingPage() {
 
         {/* Big floating logo */}
         <div className="amy-fade-up-1 relative mb-8 flex items-center justify-center">
-          <div
-            className="amy-float relative w-80 h-64 md:w-[480px] md:h-80 overflow-hidden"
-            style={{ borderRadius: "50% / 40%" }}
-          >
+          <div className="amy-float">
             <img
               src={heroImg}
               alt="AmyNest AI"
-              className="block w-full h-full object-cover"
-            />
-            {/* Inner glow / edge fade */}
-            <div
-              aria-hidden
+              className="w-80 md:w-[520px] object-contain"
               style={{
-                position: "absolute",
-                inset: 0,
-                boxShadow: "inset 0 0 80px 40px #0f0c29",
-                pointerEvents: "none",
+                mixBlendMode: "screen",
+                filter:
+                  "drop-shadow(0 0 40px rgba(168,85,247,0.55)) drop-shadow(0 0 80px rgba(99,102,241,0.35))",
               }}
             />
           </div>
