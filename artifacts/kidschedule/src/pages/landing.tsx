@@ -450,9 +450,9 @@ export default function LandingPage() {
 
         <Link href="/sign-in">
           <p className="amy-fade-up-2 text-white/55 text-sm mb-5 hover:text-white/80 transition-colors cursor-pointer">
-            Already a Smart Parent?{" "}
+            Already a Smart Parent - Kindly sign in{" "}
             <span className="text-purple-300 font-semibold underline underline-offset-2">
-              Kindly Sign In
+              here
             </span>
           </p>
         </Link>
@@ -954,7 +954,7 @@ export default function LandingPage() {
             <Link href="/sign-up"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign Up</span></Link>
             <Link href="/sign-in"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign In</span></Link>
           </div>
-          <p className="text-xs text-white/30">© 202 AmyNest AI. All rights reserved.</p>
+          <p className="text-xs text-white/30">© 2026 AmyNest AI. All rights reserved.</p>
         </div>
       </footer>
     </div>
