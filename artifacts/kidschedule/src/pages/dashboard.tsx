@@ -9,7 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+
 import { getTotalPoints, getBadges, getRewards, redeemReward, type Reward } from "@/lib/rewards";
+
+const POLL_INTERVAL_MS = 30_000;
 
 type RoutineItem = {
   time: string;
@@ -148,6 +151,16 @@ function ChildrenStrip({ children }: { children: any[] }) {
   );
 }
 
+// ─── Live indicator dot ────────────────────────────────────────────────────
+function LiveDot() {
+  return (
+    <span className="relative inline-flex items-center h-2 w-2" aria-label="Live data">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+    </span>
+  );
+}
+
 // ─── Now / Next Timeline ───────────────────────────────────────────────────
 function NowNextTimeline({ routines }: { routines: Routine[] }) {
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -206,6 +219,7 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4 text-violet-500" />
           <span className="font-quicksand font-bold text-sm text-foreground">Today's Timeline</span>
+          <LiveDot />
         </div>
         <Link href="/routines" className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 flex items-center gap-0.5">
           View all <ArrowRight className="h-3 w-3 ml-0.5" />
@@ -646,25 +660,47 @@ export default function Dashboard() {
 
   const displayName = profileName || user?.firstName || user?.emailAddresses?.[0]?.emailAddress?.split("@")[0] || "";
 
-  const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
-    query: { queryKey: getGetDashboardSummaryQueryKey() }
+  const { data: summary, isLoading: loadingSummary, dataUpdatedAt: summaryUpdatedAt } = useGetDashboardSummary({
+    query: {
+      queryKey: getGetDashboardSummaryQueryKey(),
+      refetchInterval: POLL_INTERVAL_MS,
+      refetchOnWindowFocus: true,
+    }
   });
 
   const { data: routines, isLoading: loadingRoutines } = useGetRecentRoutines({
-    query: { queryKey: getGetRecentRoutinesQueryKey() }
+    query: {
+      queryKey: getGetRecentRoutinesQueryKey(),
+      refetchInterval: POLL_INTERVAL_MS,
+      refetchOnWindowFocus: true,
+    }
   });
 
-  const { data: allRoutines } = useListRoutines(undefined, {
-    query: { queryKey: getListRoutinesQueryKey() }
+  const { data: allRoutines, dataUpdatedAt: routinesUpdatedAt } = useListRoutines(undefined, {
+    query: {
+      queryKey: getListRoutinesQueryKey(),
+      refetchInterval: POLL_INTERVAL_MS,
+      refetchOnWindowFocus: true,
+    }
   });
 
   const { data: childrenList } = useListChildren({
-    query: { queryKey: getListChildrenQueryKey() }
+    query: {
+      queryKey: getListChildrenQueryKey(),
+      refetchInterval: POLL_INTERVAL_MS,
+      refetchOnWindowFocus: true,
+    }
   });
 
-  const { data: stats, isLoading: loadingStats } = useGetBehaviorStats({
-    query: { queryKey: getGetBehaviorStatsQueryKey() }
+  const { data: stats, isLoading: loadingStats, dataUpdatedAt: statsUpdatedAt } = useGetBehaviorStats({
+    query: {
+      queryKey: getGetBehaviorStatsQueryKey(),
+      refetchInterval: POLL_INTERVAL_MS,
+      refetchOnWindowFocus: true,
+    }
   });
+
+  const lastUpdated = Math.max(summaryUpdatedAt ?? 0, routinesUpdatedAt ?? 0, statsUpdatedAt ?? 0);
 
   const streak = computeStreak((allRoutines ?? []) as Routine[]);
 
@@ -698,6 +734,17 @@ export default function Dashboard() {
 
       {/* ── Hero Greeting ───────────────────────────────────────── */}
       <HeroGreeting displayName={displayName} hasChildren={(childrenList?.length ?? 0) > 0} />
+
+      {/* ── Live sync indicator ──────────────────────────────────── */}
+      {lastUpdated > 0 && (
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <LiveDot />
+          <span>
+            Live · synced{" "}
+            {new Date(lastUpdated).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+      )}
 
       {/* ── Two-column layout (desktop) / stacked (mobile) ─────── */}
       <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5 items-start">
