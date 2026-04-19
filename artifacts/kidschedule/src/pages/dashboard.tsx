@@ -7,7 +7,7 @@ import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { AmyIcon } from "@/components/amy-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getTotalPoints, getBadges, getRewards, redeemReward, type Reward } from "@/lib/rewards";
 
@@ -63,27 +63,36 @@ function computeStreak(routines: Routine[]): number {
   return streak;
 }
 
-// ─── Hero Greeting (soft gradient) ─────────────────────────────────────────
+// ─── Hero Greeting (simplified, light) ──────────────────────────────────────
 function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
   const { t } = useTranslation();
   const greeting = t(getGreetingKey());
   const heading = displayName
     ? t("dashboard.greeting_with_name", { name: displayName })
     : t("dashboard.greeting_no_name");
+
+  const today = new Date();
+  const dateStr = today.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+
   return (
-    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 dark:from-amber-500/20 via-rose-100 dark:via-rose-500/20 to-violet-100 dark:to-violet-500/20 p-6 sm:p-7 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
-      <div aria-hidden className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/40 blur-2xl" />
-      <div aria-hidden className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-white/30 blur-2xl" />
-      <div className="relative">
-        <p className="text-[11px] font-bold uppercase tracking-widest text-amber-800/80">{greeting}</p>
-        <h1 className="font-quicksand text-[22px] sm:text-3xl font-black text-foreground mt-1.5 leading-tight">
+    <div className="flex items-center justify-between gap-4 py-2 animate-in fade-in duration-400">
+      <div>
+        <p className="text-xs font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">{greeting}</p>
+        <h1 className="font-quicksand text-2xl sm:text-3xl font-black text-foreground mt-0.5 leading-tight">
           👋 {heading}
         </h1>
-        <p className="text-sm text-foreground/70 mt-2 leading-relaxed">
+        <p className="text-sm text-muted-foreground mt-1">
           {hasChildren
-            ? `${t("dashboard.planned_for_you")} ❤️`
-            : `${t("dashboard.setup_first")} 🌟`}
+            ? t("dashboard.planned_for_you")
+            : t("dashboard.setup_first")}
         </p>
+      </div>
+      <div className="shrink-0 text-right hidden sm:block">
+        <p className="text-xs text-muted-foreground">{dateStr}</p>
+        <div className="mt-1 inline-flex items-center gap-1.5 bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 rounded-full px-3 py-1 text-xs font-bold border border-violet-100 dark:border-violet-400/20">
+          <Sparkles className="h-3 w-3" />
+          KidSchedule AI
+        </div>
       </div>
     </div>
   );
@@ -94,12 +103,12 @@ function ChildrenStrip({ children }: { children: any[] }) {
   const { t } = useTranslation();
   if (children.length === 0) return null;
   return (
-    <div className="-mx-1">
-      <div className="flex items-center justify-between px-1 mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-white/50">{t("dashboard.your_little_ones")}</p>
-        <Link href="/children" className="text-xs font-semibold text-violet-400 hover:text-violet-300">{t("common.manage")}</Link>
+    <div>
+      <div className="flex items-center justify-between mb-2.5">
+        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("dashboard.your_little_ones")}</p>
+        <Link href="/children" className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700">{t("common.manage")}</Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 snap-x snap-mandatory -mx-0.5 px-0.5">
         {children.map((c: any, i: number) => {
           const ageMonths = c.ageMonths ?? 0;
           const group = getAgeGroup(c.age, ageMonths);
@@ -107,25 +116,19 @@ function ChildrenStrip({ children }: { children: any[] }) {
           return (
             <Link key={c.id} href={`/children/${c.id}`}>
               <div
-                className="relative shrink-0 snap-start min-w-[180px] sm:min-w-[200px] rounded-3xl border border-white/10 p-4 backdrop-blur-md overflow-hidden transition-all hover:scale-[1.03] hover:border-violet-400/40 cursor-pointer"
-                style={{
-                  background: "linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%)",
-                  boxShadow: "0 0 25px rgba(139,92,246,0.15), inset 0 1px 0 rgba(255,255,255,0.07)",
-                  animationDelay: `${i * 80}ms`,
-                }}
+                className="relative shrink-0 snap-start min-w-[160px] sm:min-w-[175px] rounded-2xl border border-border bg-card p-3.5 overflow-hidden transition-all hover:scale-[1.02] hover:border-violet-300 dark:hover:border-violet-500/50 hover:shadow-sm cursor-pointer"
+                style={{ animationDelay: `${i * 80}ms` }}
               >
-                <div className="absolute -top-5 -right-5 w-16 h-16 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(139,92,246,0.25)" }} />
-                <div className="flex items-center gap-3 relative">
-                  <div className="h-12 w-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"
-                    style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.3),rgba(236,72,153,0.2))", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <div className="flex items-center gap-2.5">
+                  <div className="h-10 w-10 rounded-xl flex items-center justify-center text-xl shrink-0 bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20">
                     {info.emoji}
                   </div>
                   <div className="min-w-0">
-                    <p className="font-black text-sm leading-tight truncate text-white">{c.name}</p>
-                    <p className="text-[11px] text-white/50 mt-0.5">{formatAge(c.age, ageMonths)}</p>
+                    <p className="font-bold text-sm leading-tight truncate text-foreground">{c.name}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{formatAge(c.age, ageMonths)}</p>
                   </div>
                 </div>
-                <p className="text-[11px] text-white/35 mt-2.5 italic relative">
+                <p className="text-[10px] text-muted-foreground/60 mt-2 italic">
                   Personalised for {c.name}
                 </p>
               </div>
@@ -133,11 +136,10 @@ function ChildrenStrip({ children }: { children: any[] }) {
           );
         })}
         <Link href="/children/new">
-          <div className="shrink-0 snap-start min-w-[140px] rounded-3xl border border-dashed border-white/15 p-4 flex items-center justify-center text-center backdrop-blur-sm hover:border-violet-400/50 hover:bg-white/5 transition-all cursor-pointer"
-            style={{ background: "rgba(255,255,255,0.03)" }}>
+          <div className="shrink-0 snap-start min-w-[110px] rounded-2xl border border-dashed border-border p-3.5 flex items-center justify-center text-center hover:border-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-500/5 transition-all cursor-pointer">
             <div>
-              <div className="text-2xl mb-1">➕</div>
-              <p className="text-xs font-bold text-white/50">Add child</p>
+              <div className="text-xl mb-1">➕</div>
+              <p className="text-xs font-bold text-muted-foreground">Add child</p>
             </div>
           </div>
         </Link>
@@ -153,13 +155,13 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
 
   if (todayRoutines.length === 0) {
     return (
-      <Card className="rounded-3xl shadow-sm border-2 border-dashed bg-gradient-to-br from-sky-50 dark:from-sky-500/15 to-blue-50 dark:to-blue-500/15 overflow-hidden">
+      <Card className="rounded-2xl border-2 border-dashed border-border bg-card">
         <CardContent className="p-6 text-center space-y-3">
           <div className="text-4xl">🗓️</div>
           <p className="font-bold text-foreground">No plan for today yet</p>
-          <p className="text-xs text-muted-foreground">Tap below to create today's routine in one tap.</p>
+          <p className="text-xs text-muted-foreground">Create today's routine in one tap.</p>
           <Link href="/routines/generate">
-            <button className="mt-2 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 text-white font-bold text-sm px-5 py-2.5 shadow-md hover:shadow-lg active:scale-95 transition-all">
+            <button className="mt-1 inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm px-5 py-2.5 transition-colors">
               <Sparkles className="h-4 w-4" />
               Plan My Child's Day
             </button>
@@ -188,36 +190,28 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
 
   if (displayItems.length === 0) {
     return (
-      <Card className="rounded-3xl shadow-sm border-none overflow-hidden bg-gradient-to-br from-emerald-50 dark:from-emerald-500/15 to-teal-50 dark:to-teal-500/15">
+      <Card className="rounded-2xl border border-border bg-card">
         <CardContent className="p-5 text-center space-y-1">
           <div className="text-3xl">🌙</div>
-          <p className="font-bold text-emerald-800 dark:text-emerald-200">Day complete!</p>
-          <p className="text-xs text-emerald-700/70">Time to relax and recharge</p>
+          <p className="font-bold text-foreground">Day complete!</p>
+          <p className="text-xs text-muted-foreground">Time to relax and recharge</p>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <div
-      className="rounded-3xl overflow-hidden border border-white/10"
-      style={{
-        background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)",
-        boxShadow: "0 0 30px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.07)",
-        backdropFilter: "blur(12px)",
-      }}
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/8"
-        style={{ borderBottomColor: "rgba(255,255,255,0.08)" }}>
+    <Card className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-violet-400" />
-          <span className="font-quicksand font-bold text-sm text-white">Today's Timeline</span>
+          <Clock className="h-4 w-4 text-violet-500" />
+          <span className="font-quicksand font-bold text-sm text-foreground">Today's Timeline</span>
         </div>
-        <Link href="/routines" className="text-xs font-bold text-violet-400 hover:text-violet-300 flex items-center gap-0.5">
+        <Link href="/routines" className="text-xs font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700 flex items-center gap-0.5">
           View all <ArrowRight className="h-3 w-3 ml-0.5" />
         </Link>
       </div>
-      <div className="p-3 space-y-2">
+      <div className="p-3 space-y-1.5">
         {displayItems.map((item, idx) => {
           const isCurrent = currentIdx >= 0 && idx === 0;
           const isNext = idx === (currentIdx >= 0 ? 1 : 0);
@@ -225,43 +219,226 @@ function NowNextTimeline({ routines }: { routines: Routine[] }) {
           return (
             <Link key={`${item.routineId}-${idx}`} href={`/routines/${item.routineId}`}>
               <div
-                className={`flex items-center gap-3 p-3 rounded-2xl transition-all hover:scale-[1.01] ${
+                className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
                   isCurrent
-                    ? "text-white shadow-md"
-                    : "hover:bg-white/5"
+                    ? "bg-violet-600 text-white"
+                    : "bg-muted/50 hover:bg-muted"
                 }`}
-                style={isCurrent ? {
-                  background: "linear-gradient(90deg,#7B3FF2,#FF4ECD)",
-                  boxShadow: "0 4px 20px rgba(123,63,242,0.4)",
-                } : {
-                  background: "rgba(255,255,255,0.04)",
-                }}
               >
-                <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-white/60"}`}>
+                <div className={`flex flex-col items-center w-14 shrink-0 ${isCurrent ? "text-white" : "text-muted-foreground"}`}>
                   <div className="text-xs font-bold">{item.time}</div>
                   {isCurrent && <span className="mt-1 text-[9px] font-black uppercase bg-white/25 px-1.5 py-0.5 rounded-full">Now</span>}
-                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-500/25 text-violet-300 px-1.5 py-0.5 rounded-full">Next</span>}
+                  {!isCurrent && isNext && <span className="mt-1 text-[9px] font-black uppercase bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-300 px-1.5 py-0.5 rounded-full">Next</span>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`font-bold text-sm text-white ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
+                  <div className={`font-bold text-sm ${isCurrent ? "text-white" : "text-foreground"} ${completed ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", whiteSpace: "normal" }}>
                     {item.activity}
                   </div>
-                  <div className={`text-[11px] mt-0.5 ${isCurrent ? "text-white/80" : "text-white/40"}`}>
+                  <div className={`text-[11px] mt-0.5 ${isCurrent ? "text-violet-100" : "text-muted-foreground"}`}>
                     {item.childName} · {item.duration}m
                   </div>
                 </div>
-                {completed && !isCurrent && <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />}
+                {completed && !isCurrent && <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />}
               </div>
             </Link>
           );
         })}
       </div>
+    </Card>
+  );
+}
+
+// ─── Streak Card (compact row) ────────────────────────────────────────────
+function StreakCard({ streak }: { streak: number }) {
+  return (
+    <Link href="/progress">
+      <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-border bg-card hover:border-violet-300 dark:hover:border-violet-500/40 hover:shadow-sm transition-all cursor-pointer group">
+        <div className={`text-2xl ${streak === 0 ? "grayscale opacity-40" : ""}`}>🔥</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-black text-2xl text-foreground leading-none">{streak}</span>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Day Streak</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            {streak === 0 ? "Start today!" : streak >= 3 ? "You're on a roll!" : "Keep going!"}
+          </p>
+        </div>
+        <div className="shrink-0">
+          {streak > 0 && (
+            <span className="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20 px-2 py-0.5 rounded-full">
+              {streak >= 7 ? "🏆 Epic" : streak >= 3 ? "🔥 Hot" : "✨ Active"}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Flat Stat Tile ───────────────────────────────────────────────────────
+function StatTile({ label, value, sublabel, icon }: {
+  label: string; value: number | string; sublabel: string; icon: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2 p-3.5 rounded-xl border border-border bg-card">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="text-violet-500 dark:text-violet-400">{icon}</span>
+      </div>
+      <div>
+        <div className="text-2xl font-black text-foreground leading-none">{value}</div>
+        <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mt-0.5">{sublabel}</div>
+      </div>
     </div>
   );
 }
 
+// ─── Stats 2×2 Grid ───────────────────────────────────────────────────────
+function StatsGrid({ summary, loading }: { summary: any; loading: boolean }) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      <StatTile
+        label="Routines" value={summary?.routinesGeneratedThisWeek || 0} sublabel="this week"
+        icon={<Calendar className="h-3.5 w-3.5" />}
+      />
+      <StatTile
+        label="Great Job" value={summary?.positiveBehaviorsToday || 0} sublabel="today"
+        icon={<TrendingUp className="h-3.5 w-3.5" />}
+      />
+      <StatTile
+        label="Challenging" value={summary?.negativeBehaviorsToday || 0} sublabel="today"
+        icon={<TrendingDown className="h-3.5 w-3.5" />}
+      />
+      <StatTile
+        label="Children" value={summary?.totalChildren || 0} sublabel="total"
+        icon={<Users className="h-3.5 w-3.5" />}
+      />
+    </div>
+  );
+}
 
-// ─── Rewards Card ───────────────────────────────────────────────────────────
+// ─── Amy AI Suggestion Card ───────────────────────────────────────────────
+function AmySuggestionCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
+  const allItems = todayRoutines.flatMap((r) => r.items);
+  const total = allItems.length;
+  const completed = allItems.filter((i) => i.status === "completed").length;
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const hour = new Date().getHours();
+
+  const suggestions: { emoji: string; text: string }[] = [];
+
+  if (total === 0) {
+    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!" });
+  } else if (pct < 30 && hour >= 14) {
+    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum." });
+  } else if (pct >= 80) {
+    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate." });
+  }
+
+  if (hour >= 15 && hour <= 17) {
+    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way." });
+  }
+
+  if (streak >= 3) {
+    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Consistency builds habits.` });
+  } else if (streak === 0 && hour < 10) {
+    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day." });
+  }
+
+  if (hour >= 19) {
+    suggestions.push({ emoji: "🌙", text: "Wind-down time! End screen time 30 min before sleep for better rest." });
+  }
+
+  const display = suggestions.slice(0, 2);
+
+  return (
+    <div className="rounded-2xl border border-violet-100 dark:border-violet-400/20 bg-violet-50/50 dark:bg-violet-500/8 overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-violet-100 dark:border-violet-400/15">
+        <AmyIcon size={18} bounce />
+        <span className="font-quicksand font-bold text-sm text-foreground">Amy AI Suggests</span>
+      </div>
+      <div className="p-3 space-y-2">
+        {display.map((s, i) => (
+          <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white dark:bg-slate-900/60 border border-border text-sm">
+            <span className="text-base shrink-0 mt-0.5">{s.emoji}</span>
+            <p className="leading-snug text-foreground/85">{s.text}</p>
+          </div>
+        ))}
+        {display.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-2">All looking good today!</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Parent Score Card ────────────────────────────────────────────────────
+function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
+  const last7 = routines.slice(0, 7);
+  const totalItems = last7.flatMap((r) => r.items).length;
+  const completedItems = last7.flatMap((r) => r.items).filter((i) => i.status === "completed").length;
+  const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  const daysActive = last7.length;
+  const streakBonus = Math.min(streak * 5, 30);
+  const score = Math.min(Math.round(completionRate * 0.5 + daysActive * 5 + streakBonus), 100);
+  const grade = score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
+  const percentile = score >= 80 ? 90 : score >= 60 ? 70 : score >= 40 ? 50 : score >= 20 ? 30 : 15;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <Trophy className="h-4 w-4 text-violet-500" />
+        <span className="font-quicksand font-bold text-sm text-foreground">Parent Score</span>
+      </div>
+      <div className="p-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="h-14 w-14 rounded-2xl bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20 flex items-center justify-center shrink-0">
+            <span className="font-black text-2xl text-violet-600 dark:text-violet-400">{grade}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-black text-2xl text-foreground">{score}</span>
+              <span className="text-xs text-muted-foreground font-bold">/100</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Top {100 - percentile}% of parents</p>
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Completion</span>
+            <span className="font-bold text-foreground">{completionRate}%</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-1.5">
+            <div className="bg-violet-500 h-1.5 rounded-full transition-all" style={{ width: `${completionRate}%` }} />
+          </div>
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">Days active</span>
+            <span className="font-bold text-foreground">{daysActive}/7</span>
+          </div>
+          <div className="w-full bg-muted rounded-full h-1.5">
+            <div className="bg-violet-400 h-1.5 rounded-full transition-all" style={{ width: `${(daysActive / 7) * 100}%` }} />
+          </div>
+        </div>
+        {score < 60 && (
+          <p className="text-xs text-muted-foreground bg-muted rounded-xl p-2.5 border border-border">
+            💡 Complete 5+ tasks per day to boost your score!
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Rewards Card ─────────────────────────────────────────────────────────
 function RewardsCard({ streak }: { streak: number }) {
   const [points, setPoints] = useState(0);
   const [badges, setBadges] = useState<ReturnType<typeof getBadges>>([]);
@@ -288,13 +465,13 @@ function RewardsCard({ streak }: { streak: number }) {
 
   return (
     <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden">
-      <CardHeader className="pb-3 border-b border-border/50 bg-gradient-to-r from-violet-50/60 to-indigo-50/40">
+      <CardHeader className="pb-3 border-b border-border/50">
         <div className="flex items-center justify-between">
           <CardTitle className="font-quicksand text-base flex items-center gap-2">
             <Trophy className="h-4 w-4 text-violet-600" />
             Rewards & Points
           </CardTitle>
-          <div className="flex items-center gap-1.5 bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-200 rounded-full px-3 py-1">
+          <div className="flex items-center gap-1.5 bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 rounded-full px-3 py-1 border border-violet-100 dark:border-violet-400/20">
             <Star className="h-3.5 w-3.5 fill-violet-500" />
             <span className="font-black text-sm">{points}</span>
             <span className="text-xs font-medium">pts</span>
@@ -307,13 +484,12 @@ function RewardsCard({ streak }: { streak: number }) {
             {redeemMsg}
           </div>
         )}
-        {/* Badges */}
         {badges.length > 0 && (
           <div>
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Badges Earned</p>
             <div className="flex flex-wrap gap-2">
               {badges.map((b) => (
-                <div key={b.id} className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/30 rounded-full px-2.5 py-1 text-xs font-bold text-amber-800 dark:text-amber-200">
+                <div key={b.id} className="flex items-center gap-1.5 bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20 rounded-full px-2.5 py-1 text-xs font-bold text-violet-700 dark:text-violet-300">
                   {b.emoji} {b.label}
                 </div>
               ))}
@@ -323,7 +499,6 @@ function RewardsCard({ streak }: { streak: number }) {
         {badges.length === 0 && (
           <p className="text-xs text-muted-foreground">Complete tasks to earn badges! Complete a task to unlock <strong>🌟 First Day Completed</strong>.</p>
         )}
-        {/* Reward Store */}
         <div>
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">Reward Store</p>
           <div className="space-y-2">
@@ -355,244 +530,51 @@ function RewardsCard({ streak }: { streak: number }) {
   );
 }
 
-// ─── AI Co-Parent Suggestions ────────────────────────────────────────────────
-// ─── Premium Stat Card ───────────────────────────────────────────────────────
-function PremiumStatCard({
-  label, value, sublabel, icon, gradient, borderColor, textColor, glowShadow, delay = 0,
-}: {
-  label: string; value: number | string; sublabel: string;
-  icon: React.ReactNode; gradient: string; borderColor: string;
-  textColor: string; glowShadow: string; delay?: number;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.opacity = "0";
-    el.style.transform = "translateY(12px)";
-    const t = setTimeout(() => {
-      el.style.transition = "opacity 0.5s ease, transform 0.5s ease";
-      el.style.opacity = "1";
-      el.style.transform = "translateY(0)";
-    }, delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  return (
-    <div ref={ref} className={`relative rounded-3xl p-4 backdrop-blur-md border overflow-hidden flex flex-col justify-between min-h-[110px] ${gradient} ${borderColor}`}
-      style={{ boxShadow: glowShadow }}>
-      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/5 blur-2xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-16 h-16 rounded-full bg-white/3 blur-xl pointer-events-none" />
-      <div className="flex items-center justify-between mb-3">
-        <span className={`text-xs font-bold tracking-wide uppercase ${textColor} opacity-80`}>{label}</span>
-        <span className={`${textColor} opacity-60`}>{icon}</span>
-      </div>
-      <div>
-        <div className={`text-4xl font-black leading-none mb-1 ${textColor}`}>{value}</div>
-        <div className={`text-[10px] font-semibold uppercase tracking-wide ${textColor} opacity-50`}>{sublabel}</div>
-      </div>
-    </div>
-  );
-}
-
-function CoParentCard({ routines, streak }: { routines: Routine[]; streak: number }) {
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayRoutines = routines.filter((r) => r.date.slice(0, 10) === todayStr);
-  const allItems = todayRoutines.flatMap((r) => r.items);
-  const total = allItems.length;
-  const completed = allItems.filter((i) => i.status === "completed").length;
-  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const hour = new Date().getHours();
-
-  const suggestions: { emoji: string; text: string; color: string }[] = [];
-
-  if (total === 0) {
-    suggestions.push({ emoji: "📅", text: "No routine for today yet. Generate one to get started!", color: "bg-blue-50 dark:bg-blue-500/15 border-blue-200 dark:border-blue-400/30 text-blue-800 dark:text-blue-200" });
-  } else if (pct < 30 && hour >= 14) {
-    suggestions.push({ emoji: "⚡", text: "Your child seems behind today — try shorter, easier tasks to build momentum.", color: "bg-amber-50 dark:bg-amber-500/15 border-amber-200 dark:border-amber-400/30 text-amber-800 dark:text-amber-200" });
-  } else if (pct >= 80) {
-    suggestions.push({ emoji: "🌟", text: "Amazing progress today! Consider a small reward to celebrate.", color: "bg-green-50 dark:bg-green-500/15 border-green-200 dark:border-green-400/30 text-green-800 dark:text-green-200" });
-  }
-
-  if (hour >= 15 && hour <= 17) {
-    suggestions.push({ emoji: "❤️", text: "Good time for a 15-min bonding activity — a quick walk or board game goes a long way.", color: "bg-rose-50 dark:bg-rose-500/15 border-rose-200 dark:border-rose-400/30 text-rose-800 dark:text-rose-200" });
-  }
-
-  if (streak >= 3) {
-    suggestions.push({ emoji: "🔥", text: `You're on a ${streak}-day streak! Keep the momentum going — consistency builds habits.`, color: "bg-orange-50 dark:bg-orange-500/15 border-orange-200 dark:border-orange-400/30 text-orange-800 dark:text-orange-200" });
-  } else if (streak === 0 && hour < 10) {
-    suggestions.push({ emoji: "☀️", text: "Fresh start today! Generate a routine to set a positive tone for the day.", color: "bg-sky-50 dark:bg-sky-500/15 border-sky-200 dark:border-sky-400/30 text-sky-800 dark:text-sky-200" });
-  }
-
-  if (hour >= 19) {
-    suggestions.push({ emoji: "🌙", text: "Wind-down time! Make sure screen time ends 30 min before sleep for better rest.", color: "bg-indigo-50 dark:bg-indigo-500/15 border-indigo-200 dark:border-indigo-400/30 text-indigo-800 dark:text-indigo-200" });
-  }
-
-  const display = suggestions.slice(0, 3);
-
-  return (
-    <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/20"
-      style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.18) 0%,rgba(236,72,153,0.08) 100%)", boxShadow: "0 0 40px rgba(139,92,246,0.2), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-      <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl pointer-events-none"
-        style={{ background: "rgba(139,92,246,0.2)" }} />
-      <div className="p-4 border-b border-white/8">
-        <div className="flex items-center gap-2 mb-0.5">
-          <AmyIcon size={22} bounce />
-          <span className="font-quicksand font-bold text-base text-white">Amy AI Suggests</span>
-        </div>
-        <p className="text-xs text-white/50">Caring nudges from Amy 💜</p>
-      </div>
-      <div className="p-4 space-y-2.5">
-        {display.map((s, i) => (
-          <div key={i} className="flex items-start gap-2.5 p-3 rounded-2xl bg-white/5 border border-white/8 text-sm text-white/85">
-            <span className="text-base shrink-0 mt-0.5">{s.emoji}</span>
-            <p className="leading-snug">{s.text}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Parent Score Card ───────────────────────────────────────────────────────
-function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
-  const last7 = routines.slice(0, 7);
-  const totalItems = last7.flatMap((r) => r.items).length;
-  const completedItems = last7.flatMap((r) => r.items).filter((i) => i.status === "completed").length;
-  const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-  const daysActive = last7.length;
-  const streakBonus = Math.min(streak * 5, 30);
-  const score = Math.min(Math.round(completionRate * 0.5 + daysActive * 5 + streakBonus), 100);
-
-  const percentile = score >= 80 ? 90 : score >= 60 ? 70 : score >= 40 ? 50 : score >= 20 ? 30 : 15;
-  const grade = score >= 80 ? "A" : score >= 60 ? "B" : score >= 40 ? "C" : "D";
-  const gradeColor = score >= 80 ? "text-green-600" : score >= 60 ? "text-blue-600" : score >= 40 ? "text-amber-600" : "text-red-600";
-
-  const ringColor = score >= 80 ? "#22c55e" : score >= 60 ? "#3b82f6" : score >= 40 ? "#f59e0b" : "#ef4444";
-
-  return (
-    <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-emerald-400/20"
-      style={{ background: "linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(5,150,105,0.06) 100%)", boxShadow: "0 0 40px rgba(16,185,129,0.2), inset 0 1px 0 rgba(255,255,255,0.07)" }}>
-      <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full blur-3xl pointer-events-none"
-        style={{ background: "rgba(16,185,129,0.2)" }} />
-      <div className="p-4 border-b border-white/8">
-        <div className="flex items-center gap-2 mb-0.5">
-          <Sparkles className="h-4 w-4 text-emerald-400" />
-          <span className="font-quicksand font-bold text-base text-white">Your Parent Score</span>
-        </div>
-        <p className="text-xs text-white/50">Based on last 7 days of activity</p>
-      </div>
-      <div className="p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="relative w-20 h-20 shrink-0">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="3" />
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke={ringColor}
-                strokeWidth="3" strokeDasharray={`${score} ${100 - score}`} strokeLinecap="round"
-                style={{ filter: `drop-shadow(0 0 6px ${ringColor})` }} />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-black text-white">{grade}</span>
-              <span className="text-[9px] text-white/50 font-medium">{score}/100</span>
-            </div>
-          </div>
-          <div className="flex-1 space-y-2">
-            <p className="text-sm font-semibold text-white/80">
-              Better than <span className="text-emerald-300 font-black">{percentile}%</span> of parents!
-            </p>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs text-white/50">
-                <span>Task completion</span>
-                <span className="font-bold text-white/80">{completionRate}%</span>
-              </div>
-              <div className="w-full bg-white/10 rounded-full h-1.5">
-                <div className="bg-emerald-400 h-1.5 rounded-full transition-all" style={{ width: `${completionRate}%`, boxShadow: "0 0 6px rgba(52,211,153,0.6)" }} />
-              </div>
-              <div className="flex justify-between text-xs text-white/50">
-                <span>Days active</span>
-                <span className="font-bold text-white/80">{daysActive}/7</span>
-              </div>
-              <div className="w-full bg-white/10 rounded-full h-1.5">
-                <div className="bg-violet-400 h-1.5 rounded-full transition-all" style={{ width: `${(daysActive / 7) * 100}%`, boxShadow: "0 0 6px rgba(167,139,250,0.6)" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-        {score < 60 && (
-          <p className="text-xs text-white/50 bg-white/5 rounded-2xl p-2.5 border border-white/8">
-            💡 Complete 5+ tasks per day to boost your score!
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Onboarding Screen ───────────────────────────────────────────────────────
+// ─── Onboarding Screen ────────────────────────────────────────────────────
 function OnboardingScreen({ displayName }: { displayName: string }) {
   const features = [
-    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-blue-500 to-indigo-500", bg: "bg-blue-50 dark:bg-blue-500/15 border-blue-100 dark:border-blue-400/30" },
-    { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-emerald-500 to-teal-500", bg: "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-100 dark:border-emerald-400/30" },
-    { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-orange-500 to-amber-500", bg: "bg-orange-50 dark:bg-orange-500/15 border-orange-100 dark:border-orange-400/30" },
-    { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-purple-500", bg: "bg-violet-50 dark:bg-violet-500/15 border-violet-100 dark:border-violet-400/30" },
-    { icon: <Heart className="h-5 w-5" />, emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", color: "from-rose-500 to-pink-500", bg: "bg-rose-50 dark:bg-rose-500/15 border-rose-100 dark:border-rose-400/30" },
+    { icon: <Brain className="h-5 w-5" />, emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", color: "from-violet-500 to-indigo-500", bg: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-400/20" },
+    { icon: <TrendingUp className="h-5 w-5" />, emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", color: "from-violet-500 to-indigo-500", bg: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-400/20" },
+    { icon: <Target className="h-5 w-5" />, emoji: "🎯", label: "Daily Activities", desc: "Age-based activities that build skills while keeping kids engaged.", color: "from-violet-500 to-indigo-500", bg: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-400/20" },
+    { icon: <Star className="h-5 w-5" />, emoji: "🧩", label: "Learning & Puzzles", desc: "Adaptive daily puzzles that grow harder as your child levels up.", color: "from-violet-500 to-indigo-500", bg: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-400/20" },
+    { icon: <Heart className="h-5 w-5" />, emoji: "❤️", label: "Parenting Tips", desc: "Expert-curated tips, sleep guides, and milestone insights.", color: "from-violet-500 to-indigo-500", bg: "bg-violet-50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-400/20" },
   ];
 
   return (
-    <div className="min-h-[80vh] flex flex-col items-center justify-start animate-in fade-in duration-700">
-
-      {/* ── Hero gradient card ───────────────────────────────── */}
-      <div className="w-full rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 mb-8 text-white text-center relative overflow-hidden shadow-xl">
-        {/* Decorative circles */}
+    <div className="min-h-[80vh] flex flex-col items-center justify-start animate-in fade-in duration-500">
+      <div className="w-full rounded-3xl bg-gradient-to-br from-violet-600 via-indigo-600 to-violet-700 p-8 mb-8 text-white text-center relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-white/10 -translate-y-12 translate-x-12 blur-sm" />
         <div className="absolute bottom-0 left-0 w-36 h-36 rounded-full bg-white/10 translate-y-10 -translate-x-10 blur-sm" />
-
-        {/* Illustration */}
         <div className="relative z-10 flex justify-center mb-5">
           <svg width="160" height="140" viewBox="0 0 160 140" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            {/* Ground */}
             <ellipse cx="80" cy="128" rx="55" ry="8" fill="white" fillOpacity="0.15" />
-            {/* Parent body */}
             <rect x="42" y="68" width="26" height="48" rx="13" fill="white" fillOpacity="0.9" />
-            {/* Parent head */}
             <circle cx="55" cy="55" r="18" fill="white" fillOpacity="0.95" />
-            {/* Parent face — eyes */}
             <circle cx="49" cy="53" r="2.5" fill="#6366F1" />
             <circle cx="61" cy="53" r="2.5" fill="#6366F1" />
-            {/* Parent smile */}
             <path d="M49 60 Q55 65 61 60" stroke="#6366F1" strokeWidth="2" strokeLinecap="round" fill="none" />
-            {/* Parent arm reaching out */}
             <path d="M68 82 Q88 72 96 78" stroke="white" strokeOpacity="0.9" strokeWidth="10" strokeLinecap="round" />
-            {/* Child body */}
             <rect x="90" y="88" width="22" height="36" rx="11" fill="white" fillOpacity="0.85" />
-            {/* Child head */}
             <circle cx="101" cy="76" r="14" fill="white" fillOpacity="0.95" />
-            {/* Child face — eyes */}
             <circle cx="96.5" cy="74" r="2" fill="#EC4899" />
             <circle cx="105.5" cy="74" r="2" fill="#EC4899" />
-            {/* Child smile */}
             <path d="M97 80 Q101 84 105 80" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-            {/* Stars */}
             <text x="22" y="42" fontSize="16" fill="white" fillOpacity="0.7">✨</text>
             <text x="120" y="50" fontSize="12" fill="white" fillOpacity="0.6">⭐</text>
             <text x="118" y="100" fontSize="10" fill="white" fillOpacity="0.5">🌟</text>
           </svg>
         </div>
-
-        {/* Welcome text */}
         <div className="relative z-10 space-y-2">
-          <p className="text-blue-200 text-sm font-semibold uppercase tracking-widest">Meet Amy AI</p>
+          <p className="text-violet-200 text-sm font-semibold uppercase tracking-widest">Meet Amy AI</p>
           <h1 className="text-3xl font-black leading-tight">
             👋 Hi{displayName ? `, ${displayName}` : ""} 😊
           </h1>
-          <p className="text-blue-100 text-lg font-medium">I'm Amy — your smart parenting partner ❤️</p>
-          <p className="text-blue-200/90 text-sm max-w-xs mx-auto leading-relaxed mt-1">
+          <p className="text-violet-100 text-lg font-medium">I'm Amy — your smart parenting partner ❤️</p>
+          <p className="text-violet-200/90 text-sm max-w-xs mx-auto leading-relaxed mt-1">
             Create personalised routines, track progress, and make parenting easier — one day at a time.
           </p>
         </div>
       </div>
-
-      {/* ── Motivation line ──────────────────────────────────── */}
       <div className="w-full flex items-center justify-center gap-2 mb-7">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-border" />
         <p className="text-sm font-bold text-muted-foreground px-3 text-center">
@@ -600,13 +582,11 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
         </p>
         <div className="h-px flex-1 bg-gradient-to-l from-transparent to-border" />
       </div>
-
-      {/* ── Feature highlights ───────────────────────────────── */}
       <div className="w-full grid grid-cols-1 gap-3 mb-8">
         {features.map((f, i) => (
           <div
             key={f.label}
-            className={`flex items-center gap-4 rounded-2xl border p-4 ${f.bg} animate-in slide-in-from-bottom-4 duration-500`}
+            className={`flex items-center gap-4 rounded-2xl border p-4 ${f.bg} animate-in fade-in duration-400`}
             style={{ animationDelay: `${i * 80}ms` }}
           >
             <div className={`h-11 w-11 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-white shadow-sm flex-shrink-0`}>
@@ -620,26 +600,20 @@ function OnboardingScreen({ displayName }: { displayName: string }) {
           </div>
         ))}
       </div>
-
-      {/* ── Primary CTA ──────────────────────────────────────── */}
       <div className="w-full space-y-3">
         <Link href="/amy-coach">
-          <button className="w-full h-14 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+          <button className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
             <Sparkles className="h-5 w-5" />
             ✨ Experience Now
           </button>
         </Link>
-
-        {/* ── Secondary CTA ──────────────────────────────────── */}
         <Link href="/parenting-hub">
-          <button className="w-full h-12 rounded-2xl border-2 border-border bg-background text-foreground font-bold text-sm hover:bg-muted/50 hover:border-primary/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+          <button className="w-full h-12 rounded-2xl border-2 border-border bg-background text-foreground font-bold text-sm hover:bg-muted/50 hover:border-violet-400/40 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
             <BookOpenIcon />
             Explore Parenting Hub
           </button>
         </Link>
       </div>
-
-      {/* ── Bottom note ──────────────────────────────────────── */}
       <p className="text-xs text-muted-foreground text-center mt-6 pb-4">
         Works for ages 0–15 years · Science-backed parenting plans
       </p>
@@ -694,119 +668,69 @@ export default function Dashboard() {
 
   const streak = computeStreak((allRoutines ?? []) as Routine[]);
 
-  // Show skeleton while loading for first-time load
+  const noChildren = !loadingSummary && (summary?.totalChildren ?? 0) === 0;
+  if (noChildren) {
+    return <OnboardingScreen displayName={displayName} />;
+  }
+
   if (loadingSummary) {
     return (
-      <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-        <Skeleton className="h-10 w-64 rounded-2xl" />
-        <Skeleton className="h-4 w-48 rounded-xl" />
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+      <div className="flex flex-col gap-5 animate-in fade-in duration-400">
+        <Skeleton className="h-16 w-full rounded-2xl" />
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5">
+          <div className="flex flex-col gap-4">
+            <Skeleton className="h-28 rounded-2xl" />
+            <Skeleton className="h-48 rounded-2xl" />
+          </div>
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-16 rounded-2xl" />
+            <Skeleton className="h-36 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-32 rounded-2xl" />
+          </div>
         </div>
-        <Skeleton className="h-48 rounded-2xl" />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-5 animate-in fade-in duration-500 pb-8">
+    <div className="flex flex-col gap-5 animate-in fade-in duration-400 pb-8">
 
-      {/* ── Hero greeting (TinyPal-style soft gradient) ─────────── */}
+      {/* ── Hero Greeting ───────────────────────────────────────── */}
       <HeroGreeting displayName={displayName} hasChildren={(childrenList?.length ?? 0) > 0} />
 
-      {/* ── Children profile strip (horizontal scroll) ──────────── */}
-      <ChildrenStrip children={childrenList ?? []} />
+      {/* ── Two-column layout (desktop) / stacked (mobile) ─────── */}
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5 items-start">
 
-      {/* ── Now / Next timeline + Streak ────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="md:col-span-2">
+        {/* LEFT column: Children + Now/Next */}
+        <div className="flex flex-col gap-4">
+          <ChildrenStrip children={childrenList ?? []} />
           <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
         </div>
 
-        {/* Streak mini-card — premium glow */}
-        <Link href="/progress">
-          <div className={`relative rounded-3xl border overflow-hidden flex flex-col items-center justify-center text-center min-h-[100px] p-4 cursor-pointer backdrop-blur-md transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]
-            ${streak >= 3
-              ? "bg-gradient-to-br from-orange-500/30 to-rose-500/20 border-orange-400/30"
-              : streak > 0
-              ? "bg-gradient-to-br from-amber-500/20 to-orange-500/10 border-amber-400/25"
-              : "bg-white/5 border-white/10"}`}
-            style={{ boxShadow: streak >= 3 ? "0 0 40px rgba(251,146,60,0.4), 0 0 80px rgba(251,146,60,0.15)" : streak > 0 ? "0 0 25px rgba(251,191,36,0.25)" : "none" }}>
-            <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl pointer-events-none"
-              style={{ background: streak >= 3 ? "rgba(251,146,60,0.3)" : "transparent" }} />
-            <div className={`text-3xl mb-1 ${streak === 0 ? "grayscale opacity-30" : streak >= 3 ? "animate-bounce" : ""}`}>🔥</div>
-            <div className="font-black text-3xl text-white mb-0.5">{streak}</div>
-            <div className="text-xs font-bold text-white/70 uppercase tracking-wide">Day Streak</div>
-            <div className="text-[10px] mt-1 text-white/40">{streak === 0 ? "Start today!" : "Tap for progress"}</div>
-          </div>
-        </Link>
+        {/* RIGHT column: Streak + Stats + Amy + Parent Score */}
+        <div className="flex flex-col gap-3">
+          <StreakCard streak={streak} />
+          <StatsGrid summary={summary} loading={loadingSummary} />
+          <AmySuggestionCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+          <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+        </div>
       </div>
 
-      {/* ── Summary Stats — premium glass glow ───────────────────── */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {loadingSummary ? (
-          Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-28 rounded-3xl" />)
-        ) : (
-          <>
-            <PremiumStatCard
-              label="Routines" value={summary?.routinesGeneratedThisWeek || 0} sublabel="this week"
-              icon={<Calendar className="h-4 w-4" />}
-              gradient="bg-gradient-to-br from-violet-500/20 to-purple-500/8"
-              borderColor="border-violet-400/25"
-              textColor="text-violet-200"
-              glowShadow="0 0 30px rgba(167,139,250,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
-              delay={0}
-            />
-            <PremiumStatCard
-              label="Great Job" value={summary?.positiveBehaviorsToday || 0} sublabel="today"
-              icon={<TrendingUp className="h-4 w-4" />}
-              gradient="bg-gradient-to-br from-emerald-500/20 to-teal-500/8"
-              borderColor="border-emerald-400/25"
-              textColor="text-emerald-200"
-              glowShadow="0 0 30px rgba(52,211,153,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
-              delay={80}
-            />
-            <PremiumStatCard
-              label="Challenging" value={summary?.negativeBehaviorsToday || 0} sublabel="today"
-              icon={<TrendingDown className="h-4 w-4" />}
-              gradient="bg-gradient-to-br from-rose-500/20 to-pink-500/8"
-              borderColor="border-rose-400/25"
-              textColor="text-rose-200"
-              glowShadow="0 0 30px rgba(251,113,133,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
-              delay={160}
-            />
-            <PremiumStatCard
-              label="Children" value={summary?.totalChildren || 0} sublabel="total"
-              icon={<Users className="h-4 w-4" />}
-              gradient="bg-gradient-to-br from-amber-500/20 to-orange-500/8"
-              borderColor="border-amber-400/25"
-              textColor="text-amber-200"
-              glowShadow="0 0 30px rgba(251,191,36,0.3), inset 0 1px 0 rgba(255,255,255,0.08)"
-              delay={240}
-            />
-          </>
-        )}
-      </div>
-
-      {/* Today's Suggestion + Parent Score */}
+      {/* ── Below-fold: Recent Routines + Behavior Highlights ────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <CoParentCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
-        <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Recent Routines */}
         <Card className="rounded-2xl shadow-sm border-border/50 overflow-hidden flex flex-col">
           <CardHeader className="bg-muted/30 pb-4 border-b border-border/50">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="font-quicksand text-lg flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
+                  <Calendar className="h-5 w-5 text-violet-500" />
                   Recent Routines
                 </CardTitle>
                 <CardDescription>Latest generated schedules</CardDescription>
               </div>
-              <Link href="/routines" className="text-sm font-medium text-primary hover:underline flex items-center">
+              <Link href="/routines" className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center">
                 View all <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
@@ -827,9 +751,9 @@ export default function Dashboard() {
                     <Link key={routine.id} href={`/routines/${routine.id}`} className="block hover:bg-muted/30 transition-colors p-4 group">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors truncate">{routine.title}</h4>
+                          <h4 className="font-bold text-foreground group-hover:text-violet-600 dark:group-hover:text-violet-400 transition-colors truncate">{routine.title}</h4>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <span className="inline-flex items-center justify-center rounded-full bg-secondary/50 px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+                            <span className="inline-flex items-center justify-center rounded-full bg-violet-50 dark:bg-violet-500/15 px-2 py-0.5 text-xs font-medium text-violet-700 dark:text-violet-300 border border-violet-100 dark:border-violet-400/20">
                               {routine.childName}
                             </span>
                             <span>{new Date(routine.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
@@ -842,7 +766,7 @@ export default function Dashboard() {
                               <div className="text-[10px] text-muted-foreground">{done}/{items.length}</div>
                             </div>
                           )}
-                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0" />
+                          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-violet-500 opacity-0 group-hover:opacity-100 transition-all transform translate-x-[-10px] group-hover:translate-x-0" />
                         </div>
                       </div>
                     </Link>
@@ -853,7 +777,7 @@ export default function Dashboard() {
               <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground h-full min-h-[200px]">
                 <Calendar className="h-10 w-10 text-muted-foreground/30 mb-3" />
                 <p>No routines created yet.</p>
-                <Link href="/routines/generate" className="mt-4 text-primary font-medium hover:underline">
+                <Link href="/routines/generate" className="mt-4 text-violet-600 dark:text-violet-400 font-medium hover:underline">
                   Create your first routine
                 </Link>
               </div>
@@ -867,12 +791,12 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="font-quicksand text-lg flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-accent" />
+                  <Activity className="h-5 w-5 text-violet-500" />
                   Behavior Highlights
                 </CardTitle>
                 <CardDescription>Overall stats by child</CardDescription>
               </div>
-              <Link href="/behavior" className="text-sm font-medium text-accent hover:underline flex items-center">
+              <Link href="/behavior" className="text-sm font-medium text-violet-600 dark:text-violet-400 hover:underline flex items-center">
                 Log behavior <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
@@ -889,11 +813,11 @@ export default function Dashboard() {
                   <div key={stat.childId} className="p-4">
                     <h4 className="font-bold text-foreground mb-3">{stat.childName}</h4>
                     <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5 flex-1 bg-accent/10 rounded-lg p-2">
-                        <div className="bg-accent/20 p-1 rounded-md text-accent">
+                      <div className="flex items-center gap-1.5 flex-1 bg-violet-50 dark:bg-violet-500/10 rounded-lg p-2 border border-violet-100 dark:border-violet-400/15">
+                        <div className="bg-violet-100 dark:bg-violet-500/20 p-1 rounded-md text-violet-600 dark:text-violet-400">
                           <TrendingUp className="h-3.5 w-3.5" />
                         </div>
-                        <span className="font-bold text-accent">{stat.positive}</span>
+                        <span className="font-bold text-violet-700 dark:text-violet-300">{stat.positive}</span>
                       </div>
                       <div className="flex items-center gap-1.5 flex-1 bg-destructive/10 rounded-lg p-2">
                         <div className="bg-destructive/20 p-1 rounded-md text-destructive">
@@ -915,7 +839,7 @@ export default function Dashboard() {
               <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground h-full min-h-[200px]">
                 <Star className="h-10 w-10 text-muted-foreground/30 mb-3" />
                 <p>No behavior logged yet.</p>
-                <Link href="/behavior" className="mt-4 text-accent font-medium hover:underline">
+                <Link href="/behavior" className="mt-4 text-violet-600 dark:text-violet-400 font-medium hover:underline">
                   Track a behavior
                 </Link>
               </div>
@@ -927,11 +851,11 @@ export default function Dashboard() {
       {/* Rewards Card */}
       <RewardsCard streak={streak} />
 
-      {/* ── Friendly Primary CTA ────────────────────────────────── */}
+      {/* ── Primary CTA ──────────────────────────────────────────── */}
       <Link href="/routines/generate">
-        <button className="w-full h-14 rounded-3xl bg-gradient-to-r from-violet-500 via-pink-500 to-rose-500 text-white font-black text-base shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2">
+        <button className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-base shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2">
           <Sparkles className="h-5 w-5" />
-          ✨ Plan My Child's Day
+          Generate Today's Routine
         </button>
       </Link>
     </div>
