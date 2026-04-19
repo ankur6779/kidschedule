@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { getAuth } from "@clerk/express";
 import {
   getEntitlements,
   startTrial,
@@ -336,30 +337,51 @@ router.post(
       res.status(401).json({ error: "invalid_signature" });
       return;
     }
-    const planCode = (plan === "monthly" || plan === "six_month" || plan === "yearly")
+    const planFromBody = (plan === "monthly" || plan === "six_month" || plan === "yearly")
       ? (plan as Exclude<Plan, "free">)
       : null;
-    if (!planCode) {
+    if (!planFromBody) {
       res.status(400).json({ error: "invalid_plan" });
       return;
     }
-    // Optimistically activate. Webhook will reconcile period_end accurately.
+
+    // Fetch the subscription from Razorpay so we can verify ownership and the
+    // plan binding server-side. Without this an attacker who captured ANY
+    // valid {payment_id, subscription_id, signature} tuple from another
+    // account could replay it to grant their own account premium access.
+    let sub: Awaited<ReturnType<typeof rzpFetchSubscription>>;
     try {
-      const sub = await rzpFetchSubscription(subscriptionId);
-      const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
-      await activateSubscription(userId, planCode, {
-        provider: "razorpay",
-        periodEnd,
-        providerCustomerId: userId,
-        providerSubscriptionId: subscriptionId,
-      });
-    } catch {
-      await activateSubscription(userId, planCode, {
-        provider: "razorpay",
-        providerCustomerId: userId,
-        providerSubscriptionId: subscriptionId,
-      });
+      sub = await rzpFetchSubscription(subscriptionId);
+    } catch (err: any) {
+      res.status(502).json({ error: "razorpay_fetch_failed", message: err?.message });
+      return;
     }
+
+    const ownerUserId = (sub.notes as Record<string, unknown> | undefined)?.userId;
+    if (typeof ownerUserId !== "string" || ownerUserId !== userId) {
+      // Either the subscription wasn't created by us, or it belongs to a
+      // different account. Refuse to grant premium. This is the key
+      // anti-replay / anti-cross-account check.
+      res.status(403).json({ error: "subscription_owner_mismatch" });
+      return;
+    }
+
+    const planFromSub = razorpayPlanIdToPlan(sub.plan_id);
+    if (!planFromSub || planFromSub !== planFromBody) {
+      res.status(400).json({ error: "plan_mismatch" });
+      return;
+    }
+    const planCode = planFromSub;
+
+    // Optimistically activate. Webhook is canonical and will reconcile
+    // period_end + lifecycle state.
+    const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
+    await activateSubscription(userId, planCode, {
+      provider: "razorpay",
+      periodEnd,
+      providerCustomerId: userId,
+      providerSubscriptionId: subscriptionId,
+    });
     const ent = await getEntitlements(userId);
     res.json({ ok: true, entitlements: ent });
   },
