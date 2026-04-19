@@ -191,6 +191,9 @@ importers:
       '@workspace/infant-hub':
         specifier: workspace:*
         version: link:../../lib/infant-hub
+      '@workspace/infant-problems':
+        specifier: workspace:*
+        version: link:../../lib/infant-problems
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -436,6 +439,9 @@ importers:
       '@workspace/infant-hub':
         specifier: workspace:*
         version: link:../../lib/infant-hub
+      '@workspace/infant-problems':
+        specifier: workspace:*
+        version: link:../../lib/infant-problems
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -1062,6 +1068,8 @@ importers:
   lib/family-routine: {}
 
   lib/infant-hub: {}
+
+  lib/infant-problems: {}
 
   lib/integrations-openai-ai-react: {}
 

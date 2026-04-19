@@ -82,6 +82,7 @@
     "react-i18next": "^17.0.4",
     "@workspace/behavior-tracker": "workspace:*",
     "@workspace/family-routine": "workspace:*",
-    "@workspace/infant-hub": "workspace:*"
+    "@workspace/infant-hub": "workspace:*",
+    "@workspace/infant-problems": "workspace:*"
   }
 }

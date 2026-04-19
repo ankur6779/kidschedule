@@ -13,6 +13,13 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
+import { useTranslation } from "react-i18next";
+import {
+  INFANT_PROBLEMS,
+  isInfantProblemId,
+  getInfantProblem,
+  pickLang as pickInfLang,
+} from "@workspace/infant-problems";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface GoalItem { id: string; title: string; emoji: string; bg: [string, string] }
@@ -23,7 +30,7 @@ interface Win {
   micro_task: string; duration: string; science_reference: string;
 }
 interface Plan { title: string; root_cause: string; summary: string; wins: Win[] }
-type Phase = "goals" | "questions" | "loading" | "result";
+type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem";
 type Feedback = "yes" | "somewhat" | "no";
 type Question = {
   id: "ageGroup" | "severity" | "triggers" | "routine" | "goalRefinement";
@@ -81,6 +88,15 @@ const GOAL_CATEGORIES: GoalCategory[] = [
       { id: "reduce-homework-resistance", title: "Homework Resistance",  emoji: "✏️", bg: ["#CCFBF1", "#A7F3D0"] },
       { id: "develop-growth-mindset",     title: "Growth Mindset",       emoji: "🌱", bg: ["#BBF7D0", "#ECFCCB"] },
     ],
+  },
+  {
+    id: "infant-problems", title: "Infant Problems (0–2 yrs)", emoji: "👶", bg: ["#FCE7F3", "#FED7AA"],
+    items: INFANT_PROBLEMS.map((p) => ({
+      id: p.id,
+      title: p.title.en,
+      emoji: p.emoji,
+      bg: ["#FCE7F3", "#FED7AA"] as [string, string],
+    })),
   },
   {
     id: "parenting-challenges", title: "Parenting", emoji: "💝", bg: ["#FEF3C7", "#FED7AA"],
@@ -150,10 +166,17 @@ export default function CoachScreen() {
     return Math.min(100, Math.round((sum / denom) * 100));
   }, [feedbackByWin, plan]);
 
-  // ─── Goal pick → questions
+  const { i18n } = useTranslation();
+
+  // ─── Goal pick → questions (or → Infant Problem detail for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setGoalId(id); setQIndex(0); setAnswers({}); setPhase("questions");
+    setGoalId(id);
+    if (isInfantProblemId(id)) {
+      setPhase("infantProblem");
+      return;
+    }
+    setQIndex(0); setAnswers({}); setPhase("questions");
   };
 
   const currentQ = QUESTIONS[qIndex];
@@ -558,6 +581,180 @@ export default function CoachScreen() {
           </TouchableOpacity>
         </ScrollView>
       </View>
+    );
+  }
+
+  // ── PHASE: INFANT PROBLEM DETAIL ──────────────────────────────────────
+  if (phase === "infantProblem") {
+    const problem = getInfantProblem(goalId);
+    if (!problem) {
+      // Safe fallback view — never triggers a state update during render.
+      return (
+        <View style={{ flex: 1, paddingTop: topPad, padding: 24, alignItems: "center", justifyContent: "center", gap: 12 }}>
+          <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>
+            This topic isn't available.
+          </Text>
+          <TouchableOpacity
+            onPress={() => setPhase("goals")}
+            style={{ paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: "rgba(139,92,246,0.25)" }}
+          >
+            <Text style={{ color: "#ddd6fe", fontWeight: "700" }}>← Back to topics</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    const lang = (i18n?.language as string) || "en";
+    return (
+      <LinearGradient
+        colors={["#1a0b2e", "#3b0a4f", "#1a0b2e"]}
+        style={{ flex: 1, paddingTop: topPad }}
+      >
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingBottom: botPad + 32, gap: 14 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Back row */}
+          <TouchableOpacity
+            onPress={() => {
+              Haptics.selectionAsync();
+              setPhase("goals");
+            }}
+            style={{ flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 4 }}
+          >
+            <Ionicons name="chevron-back" size={18} color="rgba(255,255,255,0.7)" />
+            <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 14 }}>Back</Text>
+          </TouchableOpacity>
+
+          {/* Hero card */}
+          <LinearGradient
+            colors={["rgba(244,114,182,0.22)", "rgba(251,146,60,0.12)"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 24, padding: 18,
+              borderWidth: 1, borderColor: "rgba(244,114,182,0.3)",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <Text style={{ fontSize: 36 }}>{problem.emoji}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontSize: 20, fontWeight: "800" }}>
+                  {pickInfLang(problem.title, lang)}
+                </Text>
+                <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 2 }}>
+                  {pickInfLang(problem.description, lang)}
+                </Text>
+              </View>
+            </View>
+          </LinearGradient>
+
+          {/* (A) Possible Reason */}
+          <View style={{
+            borderRadius: 18, padding: 14,
+            backgroundColor: "rgba(255,255,255,0.05)",
+            borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+          }}>
+            <Text style={{
+              color: "rgba(255,255,255,0.55)", fontSize: 11,
+              fontWeight: "800", letterSpacing: 1, marginBottom: 8,
+            }}>
+              🔍 POSSIBLE REASON
+            </Text>
+            <Text style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, lineHeight: 20 }}>
+              {pickInfLang(problem.reason, lang)}
+            </Text>
+          </View>
+
+          {/* (B) What You Can Do */}
+          <View style={{
+            borderRadius: 18, padding: 14,
+            backgroundColor: "rgba(255,255,255,0.05)",
+            borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+          }}>
+            <Text style={{
+              color: "rgba(255,255,255,0.55)", fontSize: 11,
+              fontWeight: "800", letterSpacing: 1, marginBottom: 12,
+            }}>
+              ✅ WHAT YOU CAN DO
+            </Text>
+            {problem.solution.map((s, i) => (
+              <View key={i} style={{ flexDirection: "row", gap: 10, marginBottom: 10 }}>
+                <View style={{
+                  width: 24, height: 24, borderRadius: 12,
+                  backgroundColor: "rgba(244,114,182,0.25)",
+                  borderWidth: 1, borderColor: "rgba(244,114,182,0.5)",
+                  alignItems: "center", justifyContent: "center",
+                  marginTop: 1,
+                }}>
+                  <Text style={{ color: "#fce7f3", fontSize: 11, fontWeight: "800" }}>{i + 1}</Text>
+                </View>
+                <Text style={{
+                  color: "rgba(255,255,255,0.92)",
+                  fontSize: 14, lineHeight: 20, flex: 1,
+                }}>
+                  {pickInfLang(s, lang)}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* (C) Amy AI Insight */}
+          <LinearGradient
+            colors={["rgba(139,92,246,0.22)", "rgba(236,72,153,0.12)"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 18, padding: 14,
+              borderWidth: 1, borderColor: "rgba(139,92,246,0.4)",
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 }}>
+              <Ionicons name="sparkles" size={14} color="#ddd6fe" />
+              <Text style={{
+                color: "#ddd6fe", fontSize: 11,
+                fontWeight: "800", letterSpacing: 1,
+              }}>
+                AMY AI INSIGHT
+              </Text>
+            </View>
+            <Text style={{
+              color: "#fff", fontSize: 14, lineHeight: 20, fontStyle: "italic",
+            }}>
+              "{pickInfLang(problem.insight, lang)}"
+            </Text>
+          </LinearGradient>
+
+          {/* (D) Reassurance */}
+          <LinearGradient
+            colors={["rgba(244,114,182,0.18)", "rgba(251,146,60,0.08)"]}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            style={{
+              borderRadius: 18, padding: 14, flexDirection: "row", gap: 10,
+              borderWidth: 1, borderColor: "rgba(244,114,182,0.4)",
+            }}
+          >
+            <Ionicons name="heart" size={20} color="#f9a8d4" style={{ marginTop: 2 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{
+                color: "rgba(255,255,255,0.95)", fontSize: 14,
+                fontWeight: "600", lineHeight: 20,
+              }}>
+                {pickInfLang(problem.reassure, lang)}
+              </Text>
+              <Text style={{
+                color: "rgba(255,255,255,0.5)", fontSize: 11, marginTop: 4,
+              }}>
+                I'm here to help ❤️ — Amy
+              </Text>
+            </View>
+          </LinearGradient>
+
+          <Text style={{
+            color: "rgba(255,255,255,0.4)", fontSize: 11,
+            textAlign: "center", paddingTop: 4,
+          }}>
+            Guidance only — not a medical diagnosis. If concerns persist, consult your pediatrician.
+          </Text>
+        </ScrollView>
+      </LinearGradient>
     );
   }
 

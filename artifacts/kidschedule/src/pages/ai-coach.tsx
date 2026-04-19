@@ -4,8 +4,15 @@ import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { useToast } from "@/hooks/use-toast";
 import {
   Sparkles, ArrowLeft, ArrowRight, Loader2, Search,
-  Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark, Brain,
+  Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark, Brain, Heart,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import {
+  INFANT_PROBLEMS,
+  isInfantProblemId,
+  getInfantProblem,
+  pickLang as pickInfLang,
+} from "@workspace/infant-problems";
 
 // ─── Goals (categorized) ───────────────────────────────────────────────────
 interface GoalItem { id: string; title: string; emoji: string; gradient: string }
@@ -68,6 +75,16 @@ const GOAL_CATEGORIES: GoalCategory[] = [
     ],
   },
   {
+    id: "infant-problems", title: "Infant Parent Problems (0–2 yrs)", emoji: "👶",
+    gradient: "from-pink-100 dark:from-pink-500/20 via-rose-50 dark:via-rose-500/15 to-amber-100 dark:to-amber-500/20",
+    items: INFANT_PROBLEMS.map((p) => ({
+      id: p.id,
+      title: p.title.en,
+      emoji: p.emoji,
+      gradient: "from-pink-100 dark:from-pink-500/20 to-rose-200 dark:to-rose-500/25",
+    })),
+  },
+  {
     id: "parenting-challenges", title: "Parenting Challenges", emoji: "💝",
     gradient: "from-amber-100 dark:from-amber-500/20 via-orange-50 dark:via-orange-500/15 to-yellow-100 dark:to-yellow-500/20",
     items: [
@@ -118,7 +135,7 @@ interface Win {
 }
 interface Plan { title: string; root_cause: string; summary: string; wins: Win[]; }
 
-type Phase = "goals" | "questions" | "loading" | "result";
+type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem";
 type Feedback = "yes" | "somewhat" | "no";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -128,6 +145,7 @@ export default function AICoachPage() {
   const [, setLocation] = useLocation();
   const authFetch = useAuthFetch();
   const { toast } = useToast();
+  const { i18n } = useTranslation();
 
   const [phase, setPhase] = useState<Phase>("goals");
   const [goalSearch, setGoalSearch] = useState("");
@@ -180,9 +198,13 @@ export default function AICoachPage() {
 
   const selectedGoal = ALL_GOALS.find((g) => g.id === goalId);
 
-  // ─── Goals → Questions
+  // ─── Goals → Questions (or → Infant Problem detail for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
     setGoalId(id);
+    if (isInfantProblemId(id)) {
+      setPhase("infantProblem");
+      return;
+    }
     setQIndex(0);
     setAnswers({});
     setPhase("questions");
@@ -643,6 +665,120 @@ export default function AICoachPage() {
         >
           {qIndex < QUESTIONS.length - 1 ? "Next →" : "Build My Plan ✨"}
         </button>
+      </div>
+    );
+  }
+
+  // ── PHASE: INFANT PROBLEM DETAIL ─────────────────────────────────────
+  if (phase === "infantProblem") {
+    const problem = getInfantProblem(goalId);
+    if (!problem) {
+      // Safe fallback view — never triggers a state update during render.
+      return (
+        <div className="max-w-2xl mx-auto px-4 py-10 text-center space-y-4">
+          <p className="text-sm text-white/70">This topic isn't available.</p>
+          <button
+            onClick={() => setPhase("goals")}
+            className="text-sm font-bold px-4 py-2 rounded-full bg-violet-500/20 text-violet-100"
+          >
+            ← Back to topics
+          </button>
+        </div>
+      );
+    }
+    const lang = (i18n?.language as string) || "en";
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setPhase("goals")}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            data-testid="button-infant-problem-back"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back
+          </button>
+        </div>
+
+        {/* Hero card */}
+        <div
+          className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-pink-400/25 p-5"
+          style={{
+            background: "linear-gradient(135deg,rgba(244,114,182,0.22) 0%,rgba(251,146,60,0.12) 100%)",
+            boxShadow: "0 0 35px rgba(236,72,153,0.25), inset 0 1px 0 rgba(255,255,255,0.07)",
+          }}
+        >
+          <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(236,72,153,0.3)" }} />
+          <div className="flex items-center gap-3 relative">
+            <span className="text-4xl">{problem.emoji}</span>
+            <div>
+              <h1 className="font-quicksand text-xl font-bold text-white">{pickInfLang(problem.title, lang)}</h1>
+              <p className="text-xs text-white/60 mt-0.5">{pickInfLang(problem.description, lang)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* (A) Possible Reason */}
+        <section
+          className="rounded-2xl p-4 border border-white/10 backdrop-blur-md"
+          style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)" }}
+        >
+          <h2 className="font-quicksand text-xs font-bold uppercase tracking-wider text-white/50 mb-2">
+            🔍 Possible Reason
+          </h2>
+          <p className="text-sm text-white/85 leading-relaxed">{pickInfLang(problem.reason, lang)}</p>
+        </section>
+
+        {/* (B) What You Can Do */}
+        <section
+          className="rounded-2xl p-4 border border-white/10 backdrop-blur-md"
+          style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)" }}
+        >
+          <h2 className="font-quicksand text-xs font-bold uppercase tracking-wider text-white/50 mb-3">
+            ✅ What You Can Do
+          </h2>
+          <ol className="space-y-2.5">
+            {problem.solution.map((s, i) => (
+              <li key={i} className="flex items-start gap-3">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-pink-500/25 border border-pink-400/40 text-pink-100 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-white/90 leading-relaxed">{pickInfLang(s, lang)}</span>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* (C) Amy AI Insight */}
+        <section
+          className="rounded-2xl p-4 border border-violet-400/30 backdrop-blur-md"
+          style={{
+            background: "linear-gradient(135deg,rgba(139,92,246,0.22) 0%,rgba(236,72,153,0.12) 100%)",
+            boxShadow: "0 0 22px rgba(139,92,246,0.18)",
+          }}
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-violet-200" />
+            <h2 className="font-quicksand text-xs font-bold uppercase tracking-wider text-violet-100">
+              Amy AI Insight
+            </h2>
+          </div>
+          <p className="text-sm text-white leading-relaxed italic">"{pickInfLang(problem.insight, lang)}"</p>
+        </section>
+
+        {/* (D) Reassurance */}
+        <section className="rounded-2xl p-4 border border-pink-400/30 backdrop-blur-md flex items-start gap-3"
+          style={{ background: "linear-gradient(135deg,rgba(244,114,182,0.18) 0%,rgba(251,146,60,0.08) 100%)" }}
+        >
+          <Heart className="h-5 w-5 text-pink-300 shrink-0 mt-0.5 fill-pink-400/40" />
+          <div>
+            <p className="text-sm text-white/95 font-medium leading-relaxed">{pickInfLang(problem.reassure, lang)}</p>
+            <p className="text-[11px] text-white/50 mt-1">I'm here to help ❤️ — Amy</p>
+          </div>
+        </section>
+
+        <p className="text-[11px] text-white/40 text-center pt-1">
+          Guidance only — not a medical diagnosis. If concerns persist, consult your pediatrician.
+        </p>
       </div>
     );
   }
