@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions, useColorScheme } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
@@ -46,15 +46,18 @@ function SectionHeader({ icon, label, color }: { icon: keyof typeof Ionicons.gly
 
 export default function CoachCard({ win, total, topInset, bottomInset, onAction }: Props) {
   const c = useColors();
+  const isDark = useColorScheme() === "dark";
   return (
     <View style={[styles.page, { height: CARD_HEIGHT }]}>
       <Animated.View
         entering={FadeIn.duration(450)}
         style={[styles.cardWrap, { paddingTop: topInset + 88, paddingBottom: bottomInset + 16 }]}
       >
-        <BlurView intensity={40} tint="light" style={styles.card}>
+        <BlurView intensity={40} tint={isDark ? "dark" : "light"} style={[styles.card, { borderColor: c.glassBorder }]}>
           <LinearGradient
-            colors={["rgba(255,255,255,0.92)", "rgba(255,255,255,0.78)"]}
+            colors={isDark
+              ? ["rgba(20,20,43,0.80)", "rgba(20,20,43,0.65)"]
+              : ["rgba(255,255,255,0.92)", "rgba(255,255,255,0.78)"]}
             style={StyleSheet.absoluteFill}
           />
 
@@ -158,7 +161,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.6)",
     shadowColor: brand.violet600,
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.18,

@@ -1247,7 +1247,7 @@ export default function HomeScreen() {
                         <Ionicons name="trending-down" size={12} color="#EF4444" />
                         <Text style={[styles.behaviorChipText, { color: colors.behaviorBadText }]}>{stat.negative}</Text>
                       </View>
-                      <View style={[styles.behaviorChip, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
+                      <View style={[styles.behaviorChip, { backgroundColor: colors.glass }]}>
                         <Ionicons name="remove" size={12} color={colors.textSubtle} />
                         <Text style={[styles.behaviorChipText, { color: colors.textBody }]}>{stat.neutral}</Text>
                       </View>

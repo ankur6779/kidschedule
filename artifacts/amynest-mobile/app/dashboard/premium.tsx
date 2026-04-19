@@ -90,7 +90,7 @@ export default function PremiumDashboardScreen() {
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.bg}>
+      <View style={[styles.bg, { backgroundColor: themeColors.background }]}>
         <ScrollView
           contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}

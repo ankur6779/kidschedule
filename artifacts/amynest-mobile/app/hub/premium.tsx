@@ -9,6 +9,7 @@ import {
   Pressable,
   Platform,
   RefreshControl,
+  useColorScheme,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -164,6 +165,7 @@ export default function PremiumHubScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const c = useColors();
+  const isDark = useColorScheme() === "dark";
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
@@ -250,7 +252,9 @@ export default function PremiumHubScreen() {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <LinearGradient
-        colors={[brand.violet50, "#EFF6FF", "#FFFBEB"]}
+        colors={isDark
+          ? [c.background, c.card, c.surfaceElevated] as const
+          : [brand.violet50, "#EFF6FF", "#FFFBEB"] as const}
         locations={[0, 0.5, 1]}
         style={styles.bg}
       >
@@ -294,7 +298,7 @@ export default function PremiumHubScreen() {
           <AppDataStatusBanner />
 
           {/* SEARCH */}
-          <Animated.View entering={FadeInDown.duration(500).delay(80)} style={styles.searchWrap}>
+          <Animated.View entering={FadeInDown.duration(500).delay(80)} style={[styles.searchWrap, { backgroundColor: c.glass, borderColor: c.glassBorder }]}>
             <Ionicons name="search" size={17} color={c.textFaint} />
             <TextInput
               value={search}
@@ -318,20 +322,24 @@ export default function PremiumHubScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chipsRow}
             >
-              {FILTER_CHIPS.map((c) => {
-                const active = filter === c.id;
+              {FILTER_CHIPS.map((chip) => {
+                const active = filter === chip.id;
                 return (
                   <TouchableOpacity
-                    key={c.id}
-                    onPress={() => handleFilter(c.id)}
+                    key={chip.id}
+                    onPress={() => handleFilter(chip.id)}
                     activeOpacity={0.85}
-                    style={[styles.chip, active && styles.chipActive]}
+                    style={[
+                      styles.chip,
+                      { backgroundColor: c.glass, borderColor: c.glassBorder },
+                      active && { backgroundColor: c.primary, borderColor: c.primary },
+                    ]}
                     accessibilityRole="button"
-                    accessibilityLabel={`Filter by ${c.label}`}
+                    accessibilityLabel={`Filter by ${chip.label}`}
                     accessibilityState={{ selected: active }}
                   >
-                    <Ionicons name={c.icon} size={13} color={active ? "#fff" : brand.violet600} />
-                    <Text style={[styles.chipText, active && { color: "#fff" }]}>{c.label}</Text>
+                    <Ionicons name={chip.icon} size={13} color={active ? "#fff" : brand.violet600} />
+                    <Text style={[styles.chipText, active && { color: "#fff" }]}>{chip.label}</Text>
                   </TouchableOpacity>
                 );
               })}
