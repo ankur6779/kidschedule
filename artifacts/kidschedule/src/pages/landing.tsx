@@ -214,9 +214,9 @@ export default function LandingPage() {
             <img
               src={logoImg}
               alt="AmyNest AI"
-              className="h-48 w-48 md:h-60 md:w-60 object-contain"
+              className="h-64 w-64 md:h-80 md:w-80 object-contain"
               style={{
-                filter: "drop-shadow(0 12px 50px rgba(168,85,247,0.7))",
+                filter: "drop-shadow(0 16px 60px rgba(168,85,247,0.75))",
                 mixBlendMode: "screen",
               }}
             />
