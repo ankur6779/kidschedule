@@ -36,9 +36,8 @@ import {
   Play,
   Clock,
 } from "lucide-react";
-import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776587201948.png";
+import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776624005902.png";
 import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776588039438.png";
 import { useTranslation } from "react-i18next";
 
@@ -176,13 +175,6 @@ const ALL_FEATURES = [
     gradient: "linear-gradient(135deg,#FFD166,#EF4444)",
     badge: null,
   },
-];
-
-const STATS = [
-  { value: "50,000+", label: "Smart Parents", icon: Users },
-  { value: "2M+", label: "Routines Created", icon: Calendar },
-  { value: "12-Step", label: "Deep Plans", icon: ListChecks },
-  { value: "4.9★", label: "App Rating", icon: Star },
 ];
 
 const TESTIMONIALS = [
@@ -357,7 +349,17 @@ export default function LandingPage() {
 
       {/* NAV */}
       <header className="relative z-20 flex items-center justify-between px-5 py-4">
-        <BrandLogo size="sm" />
+        <div style={{ background: "transparent", display: "inline-flex" }}>
+          <img
+            src={logoImg}
+            alt="AmyNest AI"
+            className="h-14 w-auto object-contain"
+            style={{
+              mixBlendMode: "multiply",
+              filter: "drop-shadow(0 2px 12px rgba(168,85,247,0.5))",
+            }}
+          />
+        </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <Link href="/sign-in">
@@ -395,9 +397,18 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <h1 className="amy-fade-up-2 amy-color-cycle font-quicksand font-black text-4xl md:text-6xl leading-[1.1] tracking-tight max-w-3xl mb-5">
+        <h1 className="amy-fade-up-2 amy-color-cycle font-quicksand font-black text-4xl md:text-6xl leading-[1.1] tracking-tight max-w-3xl mb-4">
           {t("landing.hero_headline")}
         </h1>
+
+        <Link href="/sign-in">
+          <p className="amy-fade-up-2 text-white/55 text-sm mb-5 hover:text-white/80 transition-colors cursor-pointer">
+            Already a Smart Parent?{" "}
+            <span className="text-purple-300 font-semibold underline underline-offset-2">
+              Kindly Sign In
+            </span>
+          </p>
+        </Link>
 
         <p className="amy-fade-up-3 text-white/75 text-base md:text-xl max-w-xl leading-relaxed mb-10">
           {t("landing.hero_sub")}
@@ -421,46 +432,6 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        <p className="amy-fade-up-4 mt-5 text-xs text-white/50">
-          {t("landing.hero_free")}
-        </p>
-      </section>
-
-      {/* STATS BAR */}
-      <section className="relative z-10 px-5 pb-16">
-        <div className="max-w-4xl mx-auto">
-          <div
-            className="amy-glass rounded-3xl p-6 md:p-8"
-            style={{ borderColor: "rgba(168,85,247,0.2)" }}
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {STATS.map(({ value, label, icon: Icon }) => (
-                <div key={label} className="flex flex-col items-center text-center gap-2">
-                  <div
-                    className="h-11 w-11 rounded-2xl flex items-center justify-center mb-1"
-                    style={{
-                      background: "linear-gradient(135deg,rgba(168,85,247,0.25),rgba(99,102,241,0.15))",
-                      border: "1px solid rgba(168,85,247,0.3)",
-                    }}
-                  >
-                    <Icon className="h-5 w-5 text-purple-300" />
-                  </div>
-                  <span
-                    className="font-quicksand font-black text-2xl md:text-3xl"
-                    style={{
-                      background: "linear-gradient(90deg,#A855F7,#EC4899)",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                  >
-                    {value}
-                  </span>
-                  <span className="text-white/60 text-xs md:text-sm font-medium">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* PROBLEM HOOK */}
@@ -685,7 +656,7 @@ export default function LandingPage() {
                 <ArrowRight className="h-5 w-5" />
               </button>
             </Link>
-            <p className="mt-3 text-xs text-white/40">No credit card · Free plan included · Upgrade anytime</p>
+            <p className="mt-3 text-xs text-white/40">Free plan included · Upgrade anytime</p>
           </div>
         </div>
       </section>
@@ -850,95 +821,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRICING TEASER */}
-      <section className="relative z-10 px-5 pb-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-1.5 amy-glass mb-4 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full text-white/80">
-              <Sparkles className="h-3 w-3 text-yellow-300" />
-              Simple Pricing
-            </div>
-            <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white mb-3">
-              Start Free. Grow at Your Pace.
-            </h2>
-            <p className="text-white/60 text-base max-w-lg mx-auto">
-              All core features are free. Unlock premium for unlimited coaching plans and full access.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Free tier */}
-            <div className="amy-glass-card rounded-3xl p-7 flex flex-col gap-4">
-              <div>
-                <h3 className="font-quicksand font-bold text-xl text-white mb-1">Free Plan</h3>
-                <p className="text-white/55 text-sm">Everything to get started</p>
-              </div>
-              <div className="text-4xl font-black text-white font-quicksand">₹0<span className="text-base font-medium text-white/50">/mo</span></div>
-              <ul className="flex flex-col gap-2.5">
-                {["Amy Coach (3 plans/month)", "Smart Daily Routines", "Behavior Tracking", "Daily Tips & Activities", "Parent Hub Access"].map(f => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-white/80">
-                    <CheckCircle2 className="h-4 w-4 text-purple-300 shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/sign-up">
-                <button className="w-full amy-glass rounded-xl py-3 font-bold text-sm text-white/80 hover:text-white transition-colors border border-white/10">
-                  Start Free
-                </button>
-              </Link>
-            </div>
-
-            {/* Premium tier */}
-            <div
-              className="amy-glass-card rounded-3xl p-7 flex flex-col gap-4 relative overflow-hidden"
-              style={{
-                borderColor: "rgba(168,85,247,0.4)",
-                background: "linear-gradient(135deg,rgba(168,85,247,0.15),rgba(99,102,241,0.08))",
-              }}
-            >
-              <div
-                aria-hidden
-                className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-30 pointer-events-none"
-                style={{ background: "radial-gradient(circle,#A855F7,transparent 70%)" }}
-              />
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-quicksand font-bold text-xl text-white">Premium Plan</h3>
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full text-white"
-                    style={{ background: "linear-gradient(135deg,#A855F7,#EC4899)" }}
-                  >
-                    Best Value
-                  </span>
-                </div>
-                <p className="text-white/55 text-sm">Full access for committed parents</p>
-              </div>
-              <div className="text-4xl font-black font-quicksand relative"
-                style={{
-                  background: "linear-gradient(90deg,#A855F7,#EC4899)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >₹299<span className="text-base font-medium text-white/50">/mo</span></div>
-              <ul className="flex flex-col gap-2.5">
-                {["Unlimited Amy Coach Plans", "All Free features included", "Infant Sleep Tracker", "Printable Worksheets", "Olympiad Zone", "Life Skills Zone", "Priority AI responses"].map(f => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-white/80">
-                    <CheckCircle2 className="h-4 w-4 text-purple-300 shrink-0" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/sign-up">
-                <button className="w-full amy-cta rounded-xl py-3 font-bold text-sm text-white">
-                  Start Premium Free Trial
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FINAL CTA */}
       <section className="relative z-10 px-5 pb-24">
         <div className="max-w-2xl mx-auto text-center">
@@ -980,7 +862,7 @@ export default function LandingPage() {
                   <ArrowRight className="h-5 w-5" />
                 </button>
               </Link>
-              <p className="mt-4 text-xs text-white/40">{t("landing.hero_free")}</p>
+              <p className="mt-4 text-xs text-white/40">✨ Free to start — Join the smart parenting revolution.</p>
             </div>
           </div>
         </div>
@@ -990,13 +872,20 @@ export default function LandingPage() {
       <footer className="relative z-10 px-5 py-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center md:items-start gap-1">
-            <BrandLogo size="sm" />
+            <img
+              src={logoImg}
+              alt="AmyNest AI"
+              className="h-12 w-auto object-contain"
+              style={{
+                mixBlendMode: "multiply",
+                filter: "drop-shadow(0 2px 12px rgba(168,85,247,0.5))",
+              }}
+            />
             <p className="text-xs text-white/40">{t("landing.footer_tagline")}</p>
           </div>
           <div className="flex items-center gap-6 text-xs text-white/40">
             <Link href="/sign-up"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign Up</span></Link>
             <Link href="/sign-in"><span className="hover:text-white/70 transition-colors cursor-pointer">Sign In</span></Link>
-            <Link href="/pricing"><span className="hover:text-white/70 transition-colors cursor-pointer">Pricing</span></Link>
           </div>
           <p className="text-xs text-white/30">© 2025 AmyNest AI. All rights reserved.</p>
         </div>
