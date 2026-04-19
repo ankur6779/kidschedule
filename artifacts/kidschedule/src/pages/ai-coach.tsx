@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Sparkles, ArrowLeft, ArrowRight, Loader2, Search,
   Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark, Brain, Heart,
+  Printer, Volume2, VolumeX,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
@@ -94,6 +95,66 @@ const GOAL_CATEGORIES: GoalCategory[] = [
       { id: "set-consistent-family-rules",      title: "Set Consistent Family Rules",       emoji: "📋", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
     ],
   },
+  // ─── NEW: Toddler Behavior (2–4 yrs focused) ─────────────────────────
+  {
+    id: "toddler-behavior", title: "Toddler Behavior (2–4 yrs)", emoji: "🧒",
+    gradient: "from-rose-100 dark:from-rose-500/20 via-pink-50 dark:via-pink-500/15 to-amber-100 dark:to-amber-500/20",
+    items: [
+      { id: "toddler-tantrums",       title: "Toddler Tantrums (2–4)",     emoji: "😤", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "hitting-biting",         title: "Hitting & Biting",            emoji: "🦷", gradient: "from-red-100 dark:from-red-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "no-phase",               title: "The 'No' Phase",              emoji: "🙅", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
+      { id: "public-meltdowns",       title: "Public Meltdowns",            emoji: "🛒", gradient: "from-pink-100 dark:from-pink-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
+      { id: "whining-and-clinginess", title: "Whining & Clinginess",        emoji: "🥺", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
+    ],
+  },
+  // ─── NEW: Daily Skills & Independence ────────────────────────────────
+  {
+    id: "daily-skills", title: "Daily Skills & Independence", emoji: "🚽",
+    gradient: "from-teal-100 dark:from-teal-500/20 via-emerald-50 dark:via-emerald-500/15 to-cyan-100 dark:to-cyan-500/20",
+    items: [
+      { id: "potty-training-readiness", title: "Potty Training Readiness",  emoji: "🪴", gradient: "from-teal-100 dark:from-teal-500/20 to-emerald-200 dark:to-emerald-500/25" },
+      { id: "potty-day-training",       title: "Day Toilet Training",        emoji: "🚽", gradient: "from-cyan-100 dark:from-cyan-500/20 to-teal-200 dark:to-teal-500/25" },
+      { id: "potty-night-training",     title: "Night-Time Dry",              emoji: "🌙", gradient: "from-indigo-100 dark:from-indigo-500/20 to-violet-200 dark:to-violet-500/25" },
+      { id: "potty-public-anxiety",     title: "Public Toilet Anxiety",       emoji: "🚻", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+      { id: "self-dressing",            title: "Self-Dressing & Hygiene",     emoji: "👕", gradient: "from-emerald-100 dark:from-emerald-500/20 to-green-200 dark:to-green-500/25" },
+    ],
+  },
+  // ─── NEW: Family Dynamics ────────────────────────────────────────────
+  {
+    id: "family-dynamics", title: "Family Dynamics", emoji: "👨‍👩‍👧‍👦",
+    gradient: "from-violet-100 dark:from-violet-500/20 via-fuchsia-50 dark:via-fuchsia-500/15 to-pink-100 dark:to-pink-500/20",
+    items: [
+      { id: "sibling-rivalry",       title: "Sibling Rivalry",            emoji: "⚔️", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "sharing-turn-taking",   title: "Sharing & Turn-Taking",      emoji: "🤲", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
+      { id: "new-baby-adjustment",   title: "Adjusting to New Baby",      emoji: "👶", gradient: "from-pink-100 dark:from-pink-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "sibling-fights",        title: "Sibling Fights & Hitting",   emoji: "🥊", gradient: "from-red-100 dark:from-red-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "favouritism-feelings",  title: "Handle Favouritism Feelings",emoji: "💔", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
+    ],
+  },
+  // ─── NEW: For You — Parent Self-Care ─────────────────────────────────
+  {
+    id: "parent-self-care", title: "For You (Parent Self-Care)", emoji: "💆",
+    gradient: "from-sky-100 dark:from-sky-500/20 via-cyan-50 dark:via-cyan-500/15 to-teal-100 dark:to-teal-500/20",
+    items: [
+      { id: "parent-burnout",          title: "Beat Parent Burnout",        emoji: "🔋", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+      { id: "anger-management-parent", title: "Manage Your Own Anger",      emoji: "🌬️", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "find-me-time",            title: "Find 10-Min Me-Time Daily",  emoji: "🧘", gradient: "from-emerald-100 dark:from-emerald-500/20 to-teal-200 dark:to-teal-500/25" },
+      { id: "parent-sleep",            title: "Improve Your Own Sleep",     emoji: "💤", gradient: "from-indigo-100 dark:from-indigo-500/20 to-violet-200 dark:to-violet-500/25" },
+      { id: "mom-guilt",               title: "Release Mom/Dad Guilt",       emoji: "💗", gradient: "from-pink-100 dark:from-pink-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
+    ],
+  },
+  // ─── NEW: Special Situations ─────────────────────────────────────────
+  {
+    id: "special-situations", title: "Special Situations", emoji: "✈️",
+    gradient: "from-orange-100 dark:from-orange-500/20 via-amber-50 dark:via-amber-500/15 to-yellow-100 dark:to-yellow-500/20",
+    items: [
+      { id: "travel-with-kids",    title: "Travel With Kids",            emoji: "✈️", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+      { id: "hospital-doctor-visit", title: "Hospital / Doctor Visit",   emoji: "🏥", gradient: "from-rose-100 dark:from-rose-500/20 to-red-200 dark:to-red-500/25" },
+      { id: "daycare-school-transition", title: "Daycare / School Transition", emoji: "🎒", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
+      { id: "welcoming-new-sibling", title: "Welcoming a New Sibling",   emoji: "🎀", gradient: "from-pink-100 dark:from-pink-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "moving-houses",        title: "Moving to a New Home",       emoji: "📦", gradient: "from-emerald-100 dark:from-emerald-500/20 to-teal-200 dark:to-teal-500/25" },
+    ],
+  },
 ];
 
 const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
@@ -113,7 +174,7 @@ const COMMON_TRIGGERS = [
 ];
 
 const QUESTIONS: Question[] = [
-  { id: "ageGroup",       prompt: "What's your child's age?",         type: "single", options: ["2–4 years", "5–7 years", "8–10 years"] },
+  { id: "ageGroup",       prompt: "What's your child's age?",         type: "single", options: ["2–4 years", "5–7 years", "8–10 years", "10+ years (tween/teen)"] },
   { id: "severity",       prompt: "How challenging is it right now?", type: "single", options: ["Mild – occasional", "Moderate – frequent", "Severe – daily struggle"] },
   { id: "triggers",       prompt: "What triggers it most? (pick any)",type: "multi",  options: COMMON_TRIGGERS },
   { id: "routine",        prompt: "What's your current approach?",    type: "single", options: ["No clear routine yet", "I try but it's inconsistent", "Strict rules, lots of pushback", "Trying gentle parenting", "Just starting to figure it out"] },
@@ -265,7 +326,7 @@ export default function AICoachPage() {
     setPhase("loading");
     setActiveIdx(0);
     setFeedbackByWin({});
-    const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10" };
+    const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10", "10+ years (tween/teen)": "10+" };
     const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
     const payload = {
       goal: goalId,
@@ -439,6 +500,15 @@ export default function AICoachPage() {
         toast({ title: "Copied!", description: "Plan copied to clipboard." });
       } catch {}
     }
+  };
+
+  // ─── Print / Save as PDF
+  // Triggers the browser's native print dialog. The print-only stylesheet
+  // (in src/index.css) hides the live UI and shows only the .ws-print-only
+  // block, which is rendered by <PrintablePlan />.
+  const handlePrintPlan = () => {
+    if (!plan) return;
+    if (typeof window !== "undefined") window.print();
   };
 
   const handleStartOver = () => {
@@ -857,6 +927,14 @@ export default function AICoachPage() {
 
           <div style={{ display: "flex", gap: 6 }}>
             <button
+              onClick={handlePrintPlan}
+              style={{ color: "#6d28d9", background: "rgba(167,139,250,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}
+              aria-label="Print or save as PDF"
+              title="Print / Save as PDF"
+            >
+              <Printer size={16} />
+            </button>
+            <button
               onClick={handleShare}
               style={{ color: "#6d28d9", background: "rgba(167,139,250,0.15)", borderRadius: 999, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", border: "none", cursor: "pointer" }}
               aria-label="Share"
@@ -872,6 +950,9 @@ export default function AICoachPage() {
             </button>
           </div>
         </div>
+
+        {/* Hidden print-only render — full plan in a clean A4 layout */}
+        <PrintablePlan plan={plan} />
 
         {/* Progress dots */}
         <div style={{
@@ -1164,7 +1245,7 @@ function WinCard({
           </div>
         )}
 
-        {/* DURATION + SCIENCE REFERENCE */}
+        {/* DURATION + LISTEN (Amy reads this win aloud) */}
         <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
           <span style={{
             fontSize: 11, padding: "4px 10px", borderRadius: 999,
@@ -1173,6 +1254,7 @@ function WinCard({
           }}>
             ⏱ {win.duration}
           </span>
+          <ListenButton win={win} />
         </div>
 
         {win.science_reference && (
@@ -1256,6 +1338,159 @@ function WinCard({
             </p>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LISTEN BUTTON — speaks the win aloud using the browser's TTS engine.
+// No backend / no API key needed; works offline. Voice picks "en" by default.
+// ═══════════════════════════════════════════════════════════════════════════
+function ListenButton({ win }: { win: Win }) {
+  const [speaking, setSpeaking] = useState(false);
+
+  const buildText = () => {
+    const parts = [
+      `Win ${win.win}. ${win.title}.`,
+      win.objective,
+      win.deep_explanation,
+      win.actions?.length ? `Steps to take: ${win.actions.join(". ")}` : "",
+      win.example ? `For example. ${win.example}` : "",
+      win.mistake_to_avoid ? `Mistake to avoid: ${win.mistake_to_avoid}.` : "",
+      win.micro_task ? `Tiny task for today: ${win.micro_task}.` : "",
+    ].filter(Boolean).join(" ");
+    return parts;
+  };
+
+  const stop = () => {
+    if (typeof window === "undefined") return;
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+  };
+
+  const speak = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(buildText());
+    utter.rate = 0.95;
+    utter.pitch = 1.0;
+    utter.lang = "en-US";
+    // Prefer a softer female voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find((v) =>
+      /female|samantha|victoria|karen|google us english|aria|jenny|libby/i.test(v.name + " " + v.lang)
+    ) || voices.find((v) => v.lang?.startsWith("en"));
+    if (preferred) utter.voice = preferred;
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    setSpeaking(true);
+    window.speechSynthesis.speak(utter);
+  };
+
+  // Stop speaking when card unmounts (user swipes away)
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+    };
+  }, []);
+
+  return (
+    <button
+      onClick={speaking ? stop : speak}
+      style={{
+        fontSize: 11, padding: "4px 10px", borderRadius: 999,
+        background: speaking ? "rgba(236,72,153,0.25)" : "rgba(34,197,94,0.18)",
+        color: speaking ? "#fbcfe8" : "#86efac",
+        fontWeight: 700,
+        border: speaking ? "1px solid rgba(236,72,153,0.4)" : "1px solid rgba(34,197,94,0.35)",
+        display: "inline-flex", alignItems: "center", gap: 5,
+        cursor: "pointer",
+      }}
+      aria-label={speaking ? "Stop listening" : "Listen to this win"}
+      title={speaking ? "Stop" : "Amy reads this aloud"}
+    >
+      {speaking ? <VolumeX size={12} /> : <Volume2 size={12} />}
+      {speaking ? "Stop" : "Listen"}
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PRINTABLE PLAN — A clean, paper-friendly render of the entire 12-win plan.
+// Hidden on screen via the .ws-print-only class; revealed when window.print()
+// is invoked. The accompanying CSS in src/index.css hides everything else.
+// ═══════════════════════════════════════════════════════════════════════════
+function PrintablePlan({ plan }: { plan: Plan }) {
+  return (
+    <div className="ws-print-only" aria-hidden="true">
+      <div style={{ padding: 24, color: "#111", fontFamily: "Georgia, 'Times New Roman', serif" }}>
+        <div style={{ borderBottom: "2px solid #6d28d9", paddingBottom: 12, marginBottom: 16 }}>
+          <p style={{ fontSize: 11, color: "#6d28d9", margin: 0, letterSpacing: 1, fontWeight: 700 }}>
+            AMYNEST · AMY COACH · 12-WIN PLAN
+          </p>
+          <h1 style={{ fontSize: 22, margin: "6px 0 4px", color: "#111" }}>{plan.title}</h1>
+          {plan.root_cause && (
+            <p style={{ fontSize: 12, color: "#444", margin: "8px 0 0", lineHeight: 1.55 }}>
+              <strong>Root cause:</strong> {plan.root_cause}
+            </p>
+          )}
+          {plan.summary && (
+            <p style={{ fontSize: 12, color: "#444", margin: "6px 0 0", lineHeight: 1.55 }}>
+              <strong>Summary:</strong> {plan.summary}
+            </p>
+          )}
+        </div>
+
+        {plan.wins.map((w) => (
+          <section key={w.win} style={{
+            pageBreakInside: "avoid",
+            borderLeft: "3px solid #8b5cf6",
+            padding: "10px 14px",
+            marginBottom: 14,
+            background: "#fafafa",
+          }}>
+            <h2 style={{ fontSize: 14, margin: "0 0 4px", color: "#1f1147" }}>
+              Win {w.win}: {w.title}
+            </h2>
+            <p style={{ fontSize: 11, fontStyle: "italic", color: "#555", margin: "0 0 8px" }}>
+              {w.objective}
+            </p>
+            <p style={{ fontSize: 11, color: "#222", lineHeight: 1.55, margin: "0 0 8px" }}>
+              {w.deep_explanation}
+            </p>
+            {w.actions?.length > 0 && (
+              <>
+                <p style={{ fontSize: 11, fontWeight: 700, margin: "6px 0 4px", color: "#1f1147" }}>Actions:</p>
+                <ol style={{ fontSize: 11, color: "#222", margin: "0 0 6px 18px", paddingLeft: 0, lineHeight: 1.5 }}>
+                  {w.actions.map((a, i) => <li key={i} style={{ marginBottom: 2 }}>{a}</li>)}
+                </ol>
+              </>
+            )}
+            {w.example && (
+              <p style={{ fontSize: 11, color: "#222", margin: "6px 0", lineHeight: 1.5 }}>
+                <strong>Example:</strong> {w.example}
+              </p>
+            )}
+            {w.mistake_to_avoid && (
+              <p style={{ fontSize: 11, color: "#7f1d1d", margin: "6px 0", lineHeight: 1.5 }}>
+                <strong>Avoid:</strong> {w.mistake_to_avoid}
+              </p>
+            )}
+            {w.micro_task && (
+              <p style={{ fontSize: 11, color: "#065f46", margin: "6px 0", lineHeight: 1.5 }}>
+                <strong>Today's micro-task:</strong> {w.micro_task}
+              </p>
+            )}
+            <p style={{ fontSize: 10, color: "#666", margin: "6px 0 0" }}>
+              ⏱ {w.duration} {w.science_reference ? ` · 📚 ${w.science_reference}` : ""}
+            </p>
+          </section>
+        ))}
+
+        <p style={{ fontSize: 10, color: "#666", marginTop: 16, textAlign: "center", borderTop: "1px solid #ddd", paddingTop: 8 }}>
+          Generated by AmyNest · Amy Coach. Guidance only — not a medical diagnosis.
+        </p>
       </div>
     </div>
   );

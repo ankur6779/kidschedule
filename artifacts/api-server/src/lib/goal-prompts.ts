@@ -10,7 +10,9 @@ type GoalFamily =
   | "eating"
   | "sleep"
   | "stubborn"
-  | "coparenting" | "generic";
+  | "coparenting" | "generic"
+  // NEW families
+  | "toddler" | "potty" | "siblings" | "selfcare" | "transitions";
 
 interface FamilyPrompt {
   focus: string[];
@@ -241,6 +243,107 @@ const FAMILIES: Record<GoalFamily, FamilyPrompt> = {
     concepts: ["Neuroscience, behavioural psychology, habit formation"],
     mustInclude: ["Real-life actionable steps tailored to the stated goal"],
   },
+  // ─── NEW FAMILIES ──────────────────────────────────────────────────
+  toddler: {
+    focus: [
+      "2–4 yr brain: massive prefrontal-cortex pruning, almost no impulse control",
+      "Autonomy explosion + still-developing language = behaviour IS the communication",
+      "Co-regulation: parent's calm body lends regulation to the toddler's body",
+    ],
+    concepts: [
+      "Erikson: Autonomy vs. Shame & Doubt stage (2–4 yrs)",
+      "Daniel Siegel & Tina Bryson — 'flipped lid' / hand model of the brain",
+      "Mona Delahooke — bottom-up vs top-down behaviour",
+      "Stephen Porges — polyvagal regulation",
+    ],
+    mustInclude: [
+      "A specific in-the-moment script (what to SAY in 10 words or less)",
+      "A connection ritual that PREVENTS the next episode (≤5 min)",
+      "A 'give them control inside a limit' choice script (two real options)",
+      "A repair script for after the storm passes",
+    ],
+    experts: ["Dan Siegel", "Tina Payne Bryson", "Mona Delahooke", "Janet Lansbury", "Becky Kennedy"],
+  },
+  potty: {
+    focus: [
+      "Readiness signs (dryness intervals, body awareness, interest)",
+      "Pressure-free, child-led process — accidents are NOT failures",
+      "Day mastery before night; night-time dryness is largely physiological maturation",
+    ],
+    concepts: [
+      "AAP toilet-training readiness (typical window 18 months – 3 yrs)",
+      "ICCS (Brazelton) child-oriented approach — significantly fewer regressions",
+      "Operant conditioning: tiny celebrations beat sticker charts long-term",
+      "Antidiuretic hormone (ADH) maturation — night dryness ≠ effort",
+    ],
+    mustInclude: [
+      "A clear readiness-check (yes/no) the parent can do this week",
+      "Step-by-step day-1 plan (clothes off, timer, snack/drink loading)",
+      "Exact words for accidents (no shame, no praise — neutral coaching)",
+      "When to PAUSE training (regressions, illness, big life changes)",
+    ],
+    experts: ["T. Berry Brazelton", "AAP", "Jamie Glowacki", "Dr Steve Hodges"],
+  },
+  siblings: {
+    focus: [
+      "Each child's emotional bucket — rivalry is starvation, not malice",
+      "Stop being the referee — coach skills, not verdicts",
+      "Protect the relationship long-term, not the moment's peace",
+    ],
+    concepts: [
+      "Adler/Dreikurs — sibling positions and the 'mistaken goal' of attention",
+      "Faber & Mazlish — 'do not compare, describe what you see'",
+      "Attachment theory — secure base required for prosocial sibling behaviour",
+      "Conflict-resolution scaffolding (sportscasting → coaching → stepping back)",
+    ],
+    mustInclude: [
+      "A 1:1 connection ritual (15 min/day per child) — the #1 evidence-based intervention",
+      "A sportscasting script for live conflicts (describe, do not judge)",
+      "A repair conversation after a hit/bite that builds empathy, not shame",
+      "A 'no comparing' rephrase library (replace 'why can't you be like X')",
+    ],
+    experts: ["Adele Faber & Elaine Mazlish", "Janet Lansbury", "Laura Markham", "Becky Kennedy"],
+  },
+  selfcare: {
+    focus: [
+      "You cannot pour from an empty cup — parent regulation IS the intervention",
+      "Burnout is a nervous-system state, not a willpower failure",
+      "Tiny 2–10 min restoration beats hour-long fantasies you'll never get",
+    ],
+    concepts: [
+      "Maslach burnout inventory — emotional exhaustion + depersonalisation + low efficacy",
+      "Polyvagal theory — completing the stress cycle (Nagoski)",
+      "Self-Compassion (Kristin Neff) — three components: kindness, common humanity, mindfulness",
+      "Sleep deprivation cognition cost — 6 hrs × 10 nights ≈ 24 hrs awake",
+    ],
+    mustInclude: [
+      "A 2-min nervous-system reset the parent can do mid-meltdown",
+      "One boundary script to protect 10 min/day non-negotiable",
+      "A reframe practice for guilt (specific cognitive-distortion challenge)",
+      "A weekly 'minimum viable rest' plan that survives chaos",
+    ],
+    experts: ["Emily & Amelia Nagoski", "Kristin Neff", "Christina Maslach", "Becky Kennedy"],
+  },
+  transitions: {
+    focus: [
+      "Predictability is the antidote to transition anxiety",
+      "Pre-loading (preview, rehearse, role-play) reduces in-the-moment overwhelm by ~50%",
+      "Hold both feelings: this is hard AND we will be okay",
+    ],
+    concepts: [
+      "Transitional objects (Winnicott) — anchor of safety in new spaces",
+      "Bowlby attachment — secure base allows exploration of unfamiliar environments",
+      "Cognitive rehearsal & habituation — repeated low-stakes exposure",
+      "Story-based scripts (Carol Gray's Social Stories) for predictability",
+    ],
+    mustInclude: [
+      "A pre-trip / pre-event preview ritual (visuals, story, what to expect)",
+      "A 'comfort kit' packing list specific to the situation",
+      "Day-of script for departure (no sneaking out, no over-explaining)",
+      "A post-event decompression ritual to integrate the experience",
+    ],
+    experts: ["John Bowlby", "Donald Winnicott", "Carol Gray", "Tina Payne Bryson"],
+  },
 };
 
 const GOAL_TO_FAMILY: Record<string, GoalFamily> = {
@@ -280,6 +383,36 @@ const GOAL_TO_FAMILY: Record<string, GoalFamily> = {
   "align-parenting-between-parents": "coparenting",
   "handle-working-parent-guilt": "coparenting",
   "set-consistent-family-rules": "coparenting",
+  // Toddler Behavior (2–4)
+  "toddler-tantrums": "toddler",
+  "hitting-biting": "toddler",
+  "no-phase": "toddler",
+  "public-meltdowns": "toddler",
+  "whining-and-clinginess": "toddler",
+  // Daily Skills & Independence
+  "potty-training-readiness": "potty",
+  "potty-day-training": "potty",
+  "potty-night-training": "potty",
+  "potty-public-anxiety": "potty",
+  "self-dressing": "potty",
+  // Family Dynamics
+  "sibling-rivalry": "siblings",
+  "sharing-turn-taking": "siblings",
+  "new-baby-adjustment": "siblings",
+  "sibling-fights": "siblings",
+  "favouritism-feelings": "siblings",
+  // Parent Self-Care
+  "parent-burnout": "selfcare",
+  "anger-management-parent": "selfcare",
+  "find-me-time": "selfcare",
+  "parent-sleep": "selfcare",
+  "mom-guilt": "selfcare",
+  // Special Situations
+  "travel-with-kids": "transitions",
+  "hospital-doctor-visit": "transitions",
+  "daycare-school-transition": "transitions",
+  "welcoming-new-sibling": "transitions",
+  "moving-houses": "transitions",
 };
 
 export function getGoalPromptSection(goalId: string, goalLabel: string): string {

@@ -627,8 +627,26 @@ STRICT RULES:
 - Examples must feel real, with names and specifics — not abstract
 - Reference at least 5 different researchers/principles across the 12 wins
 - "deep_explanation" must be 6-8 lines of substantive science, not generic
-- Every win MUST include a "science_reference" naming the underlying concept/theory
+- Every win MUST include a "science_reference" naming a real researcher, theory, study, or guideline body (AAP/WHO/CDC/NIH/RCPCH etc.). Generic phrases like "research shows" are NOT acceptable — name the source.
 - Output ONLY the JSON object — no other text
+
+━━━ AGE-STAGE DEVELOPMENTAL BRIEF (${input.ageGroup}) ━━━
+${input.ageGroup === "10+"
+  ? `TWEEN/TEEN (10+ yrs): Massive prefrontal-cortex remodelling AND limbic-system surge create high emotional reactivity with growing logical capacity (Steinberg, Casey). Identity formation (Erikson stage 5), peer influence eclipses parent influence on social rules but parents still anchor values. Use:
+  - Collaborative problem-solving over directives (Ross Greene)
+  - Validating before guiding — never lecture
+  - Autonomy with scaffolding (Self-Determination Theory: Deci & Ryan)
+  - Shorter, fewer parent-led talks; more questions, more listening
+  - Acknowledge online/social-media reality (Jean Twenge, Jonathan Haidt research)
+  - Avoid power struggles — co-create rules, then enforce them calmly
+  - Privacy + connection balance (research on adolescent brain: B.J. Casey)
+  Wins must respect that the child has growing reasoning power and craves dignity. Avoid baby-talk framing.`
+  : input.ageGroup === "8-10"
+  ? `MIDDLE CHILDHOOD (8–10 yrs): Industry vs Inferiority (Erikson), peer comparisons start, abstract thinking emerges. Wins should build competence, autonomy and emotion-naming vocabulary. Use natural-consequence framing more than punishment.`
+  : input.ageGroup === "5-7"
+  ? `EARLY SCHOOL AGE (5–7 yrs): Concrete operational thinking starting (Piaget), big feelings + still-developing impulse control. Wins lean on visual schedules, role-play, predictable routines and short emotion-coaching scripts.`
+  : `EARLY CHILDHOOD (2–4 yrs): Autonomy vs Shame (Erikson), prefrontal cortex barely online, behaviour IS communication. Wins must rely on co-regulation, choice within limits, and PARENT-led nervous-system regulation as the primary tool.`
+}
 ${goalBrief}`;
 
   let plan: CoachPlan;
