@@ -694,12 +694,6 @@ export default function Dashboard() {
 
   const streak = computeStreak((allRoutines ?? []) as Routine[]);
 
-  // Show onboarding for new users with no child profiles yet
-  const noChildren = !loadingSummary && (summary?.totalChildren ?? 0) === 0;
-  if (noChildren) {
-    return <OnboardingScreen displayName={displayName} />;
-  }
-
   // Show skeleton while loading for first-time load
   if (loadingSummary) {
     return (

@@ -551,7 +551,7 @@ export default function OnboardingScreen() {
                   body: JSON.stringify({ onboardingComplete: true }),
                 });
               } catch (_) {}
-              router.replace("/(tabs)/coach");
+              router.replace("/(tabs)");
             }}
             style={styles.skipBtn}
             activeOpacity={0.7}

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useMemo, useCallback } from "react";
+import { useProfileComplete } from "@/hooks/useProfileComplete";
+import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Platform, FlatList, TextInput, Share,
@@ -128,6 +130,7 @@ const QUESTIONS: Question[] = [
 export default function CoachScreen() {
   const insets = useSafeAreaInsets();
   const authFetch = useAuthFetch();
+  const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const { width } = useWindowDimensions();
 
   const [phase, setPhase] = useState<Phase>("goals");
@@ -336,6 +339,10 @@ export default function CoachScreen() {
 
   const topPad = insets.top + (Platform.OS === "web" ? 16 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 16 : 0);
+
+  if (!profileLoading && !profileComplete) {
+    return <ProfileLockScreen sectionName="Amy Coach" />;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // RENDER

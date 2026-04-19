@@ -664,7 +664,7 @@ export default function OnboardingPage() {
                 localStorage.setItem("onboardingComplete", "true");
                 queryClient.setQueryData(["onboarding-status"], { onboardingComplete: true });
               } catch (_) {}
-              setLocation("/amy-coach");
+              setLocation("/dashboard");
             }}
             className="text-xs font-semibold text-indigo-400 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-xl hover:bg-indigo-50 active:scale-95"
             title="Skip onboarding"

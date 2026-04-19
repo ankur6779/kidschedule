@@ -1,149 +1,304 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  Image,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/hooks/useColors";
 
-const PRIMARY = "#7B3FF2";
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const FEATURES = [
+  { emoji: "🧠", label: "Amy AI Routines", desc: "Smart daily schedules for your child's age.", glow: "#6366F1", grad: ["#6366F1", "#4F46E5"] as [string, string] },
+  { emoji: "📊", label: "Progress Tracking", desc: "Streaks, milestones & growth in one view.", glow: "#10B981", grad: ["#10B981", "#059669"] as [string, string] },
+  { emoji: "🎯", label: "Daily Activities", desc: "Age-based activities to keep kids engaged.", glow: "#F59E0B", grad: ["#F59E0B", "#D97706"] as [string, string] },
+  { emoji: "🏆", label: "Behavior Tracker", desc: "Reward positive habits and celebrate wins.", glow: "#8B5CF6", grad: ["#8B5CF6", "#7C3AED"] as [string, string] },
+  { emoji: "❤️", label: "Parenting Tips", desc: "Expert tips, sleep guides, and insights.", glow: "#EC4899", grad: ["#EC4899", "#DB2777"] as [string, string] },
+  { emoji: "🧩", label: "Life Skills Mode", desc: "Challenges that level up as your child grows.", glow: "#14B8A6", grad: ["#14B8A6", "#0D9488"] as [string, string] },
+];
 
 export function ProfileLockScreen({ sectionName }: { sectionName?: string }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const colors = useColors();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top + 24, paddingBottom: insets.bottom + 24 }]}>
-      <View style={styles.lockCircle}>
-        <LinearGradient
-          colors={["#EDE9FE", "#DDD6FE"]}
-          style={styles.lockGrad}
-        >
-          <Ionicons name="lock-closed" size={36} color={PRIMARY} />
-        </LinearGradient>
-      </View>
-
-      <Text style={[styles.title, { color: colors.foreground }]}>
-        Complete your profile first
-      </Text>
-      <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-        Add your child and parent details to unlock{sectionName ? ` ${sectionName}` : " this section"}.{"\n"}Amy Coach is always available to guide you!
-      </Text>
-
-      <View style={styles.btnRow}>
-        <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={() => router.push("/(tabs)/children")}
-          activeOpacity={0.8}
-        >
-          <LinearGradient
-            colors={[PRIMARY, "#9B5FF5"]}
-            start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-            style={styles.primaryBtnGrad}
-          >
-            <Text style={styles.primaryBtnText}>👶  Add Child Profile</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.secondaryBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
-          onPress={() => router.push("/(tabs)/profile")}
-          activeOpacity={0.8}
-        >
-          <Text style={[styles.secondaryBtnText, { color: PRIMARY }]}>👤  Add Parent Profile</Text>
-        </TouchableOpacity>
-      </View>
-
-      <TouchableOpacity
-        onPress={() => router.replace("/(tabs)/coach")}
-        activeOpacity={0.7}
-        style={styles.coachLink}
+    <LinearGradient
+      colors={["#0f0c29", "#1a1560", "#24243e"]}
+      style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
       >
-        <Ionicons name="sparkles-outline" size={14} color={PRIMARY} />
-        <Text style={[styles.coachLinkText, { color: PRIMARY }]}>  Go to Amy Coach</Text>
-      </TouchableOpacity>
-    </View>
+        {/* ── Hero ──────────────────────────────────────── */}
+        <View style={styles.hero}>
+          <View style={styles.avatarWrap}>
+            <View style={styles.avatarGlow} />
+            <Image
+              source={require("../assets/images/icon.png")}
+              style={styles.avatar}
+              resizeMode="cover"
+            />
+          </View>
+          <Text style={styles.tag}>MEET AMY AI</Text>
+          <Text style={styles.title}>Your Smart Parenting Partner ✨</Text>
+          <Text style={styles.subtitle}>
+            Set up your profile to unlock personalized routines, progress tracking, and much more.
+          </Text>
+        </View>
+
+        {/* ── Feature glass cards ───────────────────────── */}
+        <View style={styles.grid}>
+          {FEATURES.map((f, i) => (
+            <View
+              key={f.label}
+              style={[
+                styles.card,
+                {
+                  shadowColor: f.glow,
+                  shadowOpacity: 0.45,
+                  shadowRadius: 16,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: 8,
+                },
+              ]}
+            >
+              <View style={[styles.glowBlob, { backgroundColor: f.glow }]} />
+              <LinearGradient
+                colors={f.grad}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.iconBadge}
+              >
+                <Text style={styles.featureEmoji}>{f.emoji}</Text>
+              </LinearGradient>
+              <Text style={styles.cardTitle}>{f.label}</Text>
+              <Text style={styles.cardDesc}>{f.desc}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* ── Divider ──────────────────────────────────── */}
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>Unlock everything in 2 steps</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* ── CTAs ─────────────────────────────────────── */}
+        <View style={styles.ctaBlock}>
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/children")}
+            activeOpacity={0.85}
+            style={styles.primaryBtnWrap}
+          >
+            <LinearGradient
+              colors={["#7B3FF2", "#FF4ECD"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.primaryBtn}
+            >
+              <Text style={styles.primaryBtnText}>👶  Add Child Profile — Step 1</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/profile")}
+            activeOpacity={0.85}
+            style={styles.secondaryBtn}
+          >
+            <Text style={styles.secondaryBtnText}>👤  Add Parent Profile — Step 2</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.footnote}>Works for ages 0–15 · Science-backed parenting plans</Text>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 28,
   },
-  lockCircle: {
+  scroll: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
+    alignItems: "center",
+  },
+
+  /* Hero */
+  hero: {
+    alignItems: "center",
     marginBottom: 24,
-    borderRadius: 48,
-    overflow: "hidden",
-    shadowColor: PRIMARY,
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
   },
-  lockGrad: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+  avatarWrap: {
+    position: "relative",
+    width: 84,
+    height: 84,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 14,
+  },
+  avatarGlow: {
+    position: "absolute",
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: "#7B3FF2",
+    opacity: 0.35,
+  },
+  avatar: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  tag: {
+    color: "#A78BFA",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    marginBottom: 6,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    color: "#FFFFFF",
+    fontSize: 22,
+    fontWeight: "900",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 8,
+    lineHeight: 28,
   },
   subtitle: {
-    fontSize: 14,
+    color: "rgba(165,180,252,0.7)",
+    fontSize: 13,
     textAlign: "center",
-    lineHeight: 21,
-    marginBottom: 32,
+    lineHeight: 19,
+    maxWidth: 280,
   },
-  btnRow: {
+
+  /* Grid */
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    justifyContent: "center",
+    marginBottom: 24,
+    width: "100%",
+  },
+  card: {
+    width: (SCREEN_WIDTH - 60) / 2,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    overflow: "hidden",
+    position: "relative",
+  },
+  glowBlob: {
+    position: "absolute",
+    top: -16,
+    right: -16,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    opacity: 0.35,
+  },
+  iconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  featureEmoji: {
+    fontSize: 17,
+  },
+  cardTitle: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+    marginBottom: 3,
+    lineHeight: 15,
+  },
+  cardDesc: {
+    color: "rgba(255,255,255,0.45)",
+    fontSize: 10,
+    lineHeight: 14,
+  },
+
+  /* Divider */
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 20,
+    width: "100%",
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(139,92,246,0.4)",
+  },
+  dividerText: {
+    color: "rgba(165,180,252,0.6)",
+    fontSize: 10,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
+  /* CTAs */
+  ctaBlock: {
     width: "100%",
     gap: 12,
-    marginBottom: 24,
+    marginBottom: 20,
+  },
+  primaryBtnWrap: {
+    borderRadius: 18,
+    overflow: "hidden",
+    shadowColor: "#7B3FF2",
+    shadowOpacity: 0.55,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 10,
   },
   primaryBtn: {
-    borderRadius: 16,
-    overflow: "hidden",
-    shadowColor: PRIMARY,
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  primaryBtnGrad: {
-    paddingVertical: 14,
+    paddingVertical: 15,
     alignItems: "center",
-    borderRadius: 16,
+    borderRadius: 18,
   },
   primaryBtnText: {
-    color: "#fff",
-    fontSize: 15,
-    fontWeight: "700",
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "800",
   },
   secondaryBtn: {
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1.5,
-    paddingVertical: 13,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.07)",
+    paddingVertical: 14,
     alignItems: "center",
   },
   secondaryBtnText: {
-    fontSize: 15,
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 14,
     fontWeight: "600",
   },
-  coachLink: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  coachLinkText: {
-    fontSize: 13,
-    fontWeight: "600",
+
+  footnote: {
+    color: "rgba(255,255,255,0.2)",
+    fontSize: 10,
+    textAlign: "center",
   },
 });
