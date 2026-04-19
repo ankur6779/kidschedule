@@ -418,17 +418,23 @@ router.post(
  * MUST be mounted before requireAuth (it is — see routes/index.ts). Verifies
  * X-Razorpay-Signature against RAZORPAY_WEBHOOK_SECRET and is idempotent on
  * event id (same event arriving twice is safe).
+ *
+ * Idempotency is enforced by the `razorpay_webhook_events` table inside a
+ * single DB transaction: we INSERT the event id (PK) with ON CONFLICT DO
+ * NOTHING and apply the subscription mutation in the SAME transaction.
+ * Either both land atomically or neither does. So:
+ *   • Concurrent / retried deliveries of the same event id race on the
+ *     INSERT — exactly one wins and proceeds; the rest see no row inserted
+ *     and short-circuit as duplicates.
+ *   • A crash, OOM, or restart between the INSERT and the COMMIT rolls the
+ *     transaction back, so Razorpay's next retry will be able to claim and
+ *     process the event normally — no event is lost.
+ *   • A handler exception throws out of the transaction, rolling it back,
+ *     and we return 5xx so Razorpay retries with backoff.
+ * This works across restarts AND across multiple server instances because
+ * the database row is the lock.
  */
-const seenEventIds = new Set<string>();
-function markEventSeen(eventId: string): void {
-  seenEventIds.add(eventId);
-  if (seenEventIds.size > 5000) {
-    // Drop the oldest ~half by re-creating the set from a slice.
-    const arr = Array.from(seenEventIds).slice(-2500);
-    seenEventIds.clear();
-    arr.forEach((id) => seenEventIds.add(id));
-  }
-}
+
 router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> => {
   // Razorpay always POSTs JSON. Reject anything else so the rawBody hook
   // (which is keyed off application/json) is guaranteed to have run.
@@ -461,6 +467,16 @@ router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> =>
   const body = req.body ?? {};
   const eventId: string | undefined = body.id;
   const eventType: string | undefined = body.event;
+
+  // Razorpay always stamps webhook payloads with `id`. If it's missing the
+  // payload is malformed and we have no key to dedupe on — refuse rather
+  // than silently process without idempotency protection. Razorpay treats
+  // 4xx as a permanent failure and won't retry, which is what we want for
+  // a malformed body.
+  if (!eventId) {
+    res.status(400).json({ error: "missing_event_id" });
+    return;
+  }
   const sub = body.payload?.subscription?.entity as
     | {
         id?: string;
@@ -472,86 +488,101 @@ router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> =>
       }
     | undefined;
 
-  // Idempotency: short-circuit if we've already processed this event id.
-  // We only ADD to the set AFTER the handler succeeds (see end of try
-  // block) so a transient failure doesn't permanently drop a Razorpay
-  // retry. The set is bounded to avoid unbounded memory growth.
-  if (eventId && seenEventIds.has(eventId)) {
-    res.json({ ok: true, duplicate: true });
-    return;
-  }
+  const userId = sub?.notes?.userId;
+  const plan = razorpayPlanIdToPlan(sub?.plan_id);
+  const periodEnd = sub?.current_end ? new Date(sub.current_end * 1000) : undefined;
 
-  if (!sub) {
-    if (eventId) markEventSeen(eventId);
-    res.json({ ok: true, ignored: "no_subscription_payload", eventType });
-    return;
-  }
+  // Run claim + business mutation in ONE transaction. If we crash before
+  // commit, the claim row is rolled back together with any partial state,
+  // so Razorpay's retry can reprocess the event cleanly.
+  type Outcome =
+    | { kind: "duplicate" }
+    | { kind: "ignored"; reason: string; extra?: Record<string, unknown> }
+    | { kind: "applied"; payload: Record<string, unknown> };
 
-  const userId = sub.notes?.userId;
-  const plan = razorpayPlanIdToPlan(sub.plan_id);
-  const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
-
-  if (!userId) {
-    if (eventId) markEventSeen(eventId);
-    res.json({ ok: true, ignored: "no_user_id_in_notes", eventType });
-    return;
-  }
-
+  let outcome: Outcome;
   try {
-    switch (eventType) {
-      case "subscription.activated":
-      case "subscription.charged":
-      case "subscription.resumed": {
-        // Note: subscription.authenticated fires when the mandate is
-        // approved but the first payment has NOT yet been captured. We
-        // deliberately do NOT activate on that event — wait for
-        // `.activated` / `.charged` / `.resumed`.
-        if (!plan) {
-          if (eventId) markEventSeen(eventId);
-          res.json({ ok: true, ignored: "unknown_plan", planId: sub.plan_id });
-          return;
+    const { db, razorpayWebhookEventsTable, subscriptionsTable } = await import(
+      "@workspace/db"
+    );
+    outcome = await db.transaction(async (tx): Promise<Outcome> => {
+      // 1) Claim the event id. ON CONFLICT DO NOTHING + RETURNING tells us
+      //    whether this transaction owns the event. Concurrent deliveries
+      //    of the same id either block waiting for our row lock and then
+      //    see the conflict, or beat us and we see the conflict. Either
+      //    way only one transaction commits with a row insert.
+      const claimed = await tx
+        .insert(razorpayWebhookEventsTable)
+        .values({ eventId, eventType: eventType ?? null })
+        .onConflictDoNothing({ target: razorpayWebhookEventsTable.eventId })
+        .returning({ eventId: razorpayWebhookEventsTable.eventId });
+      if (claimed.length === 0) return { kind: "duplicate" };
+
+      if (!sub) return { kind: "ignored", reason: "no_subscription_payload", extra: { eventType } };
+      if (!userId) return { kind: "ignored", reason: "no_user_id_in_notes", extra: { eventType } };
+
+      switch (eventType) {
+        case "subscription.activated":
+        case "subscription.charged":
+        case "subscription.resumed": {
+          // Note: subscription.authenticated fires when the mandate is
+          // approved but the first payment has NOT yet been captured. We
+          // deliberately do NOT activate on that event — wait for
+          // `.activated` / `.charged` / `.resumed`.
+          if (!plan) {
+            return { kind: "ignored", reason: "unknown_plan", extra: { planId: sub.plan_id } };
+          }
+          await activateSubscription(
+            userId,
+            plan,
+            {
+              provider: "razorpay",
+              periodEnd,
+              providerCustomerId: userId,
+              providerSubscriptionId: sub.id,
+            },
+            tx,
+          );
+          return { kind: "applied", payload: { userId, plan, eventType } };
         }
-        await activateSubscription(userId, plan, {
-          provider: "razorpay",
-          periodEnd,
-          providerCustomerId: userId,
-          providerSubscriptionId: sub.id,
-        });
-        if (eventId) markEventSeen(eventId);
-        res.json({ ok: true, applied: { userId, plan, eventType } });
-        return;
+        case "subscription.cancelled":
+        case "subscription.completed":
+        case "subscription.expired":
+        case "subscription.paused":
+        case "subscription.halted": {
+          await tx
+            .update(subscriptionsTable)
+            .set({
+              status: eventType === "subscription.halted" ? "past_due" : "canceled",
+              currentPeriodEnd: periodEnd ?? null,
+              updatedAt: new Date(),
+            })
+            .where(eq(subscriptionsTable.userId, userId));
+          return { kind: "applied", payload: { userId, status: eventType } };
+        }
+        default: {
+          return { kind: "ignored", reason: eventType ?? "unknown_event" };
+        }
       }
-      case "subscription.cancelled":
-      case "subscription.completed":
-      case "subscription.expired":
-      case "subscription.paused":
-      case "subscription.halted": {
-        const { db, subscriptionsTable } = await import("@workspace/db");
-        await db
-          .update(subscriptionsTable)
-          .set({
-            status: eventType === "subscription.halted" ? "past_due" : "canceled",
-            currentPeriodEnd: periodEnd ?? null,
-            updatedAt: new Date(),
-          })
-          .where(eq(subscriptionsTable.userId, userId));
-        if (eventId) markEventSeen(eventId);
-        res.json({ ok: true, applied: { userId, status: eventType } });
-        return;
-      }
-      default: {
-        if (eventId) markEventSeen(eventId);
-        res.json({ ok: true, ignored: eventType });
-        return;
-      }
-    }
+    });
   } catch (err: any) {
-    // Surface failures with a 5xx so Razorpay retries the webhook with
-    // exponential backoff. We deliberately did NOT add the eventId to
-    // seenEventIds, so the retry will go through this branch again.
+    // Transaction was rolled back — both the claim row and any partial
+    // state are gone, so Razorpay's retry will reprocess this event.
     req.log?.error?.({ err, eventId, eventType }, "razorpay_webhook_failed");
     res.status(500).json({ error: "webhook_processing_failed", message: err?.message });
     return;
+  }
+
+  switch (outcome.kind) {
+    case "duplicate":
+      res.json({ ok: true, duplicate: true });
+      return;
+    case "ignored":
+      res.json({ ok: true, ignored: outcome.reason, ...outcome.extra });
+      return;
+    case "applied":
+      res.json({ ok: true, applied: outcome.payload });
+      return;
   }
 });
 

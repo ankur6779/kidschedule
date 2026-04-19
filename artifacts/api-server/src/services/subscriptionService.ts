@@ -6,6 +6,11 @@ import {
 } from "@workspace/db";
 import { and, eq, sql } from "drizzle-orm";
 
+// Drizzle's transaction object exposes the same query API as `db`, so the
+// service helpers below accept either. We type it loosely to avoid leaking
+// drizzle-internal generics through the public API.
+type DbExec = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 export type Plan = "free" | "monthly" | "six_month" | "yearly";
 export type Status = "free" | "trialing" | "active" | "past_due" | "canceled";
 
@@ -42,14 +47,17 @@ function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function getOrCreateSubscription(userId: string): Promise<Subscription> {
-  const existing = await db
+export async function getOrCreateSubscription(
+  userId: string,
+  dbExec: DbExec = db,
+): Promise<Subscription> {
+  const existing = await dbExec
     .select()
     .from(subscriptionsTable)
     .where(eq(subscriptionsTable.userId, userId))
     .limit(1);
   if (existing[0]) return existing[0];
-  const [created] = await db
+  const [created] = await dbExec
     .insert(subscriptionsTable)
     .values({ userId, plan: "free", status: "free", provider: "none" })
     .returning();
@@ -150,9 +158,34 @@ export async function activateSubscription(
   userId: string,
   plan: Exclude<Plan, "free">,
   opts: { provider?: "stripe" | "revenuecat" | "razorpay"; periodEnd?: Date; providerCustomerId?: string; providerSubscriptionId?: string } = {},
+  dbExec: DbExec = db,
 ): Promise<Subscription> {
-  await getOrCreateSubscription(userId);
-  const [updated] = await db
+  const existing = await getOrCreateSubscription(userId, dbExec);
+  // Idempotency: if the subscription is already active on the same plan and
+  // the same provider subscription id, and the period_end is not moving
+  // backwards, treat this as a no-op. This protects against a webhook for
+  // the SAME charge being delivered twice (e.g. retried after a network
+  // blip) from clobbering newer state written by a later webhook.
+  const sameProviderSub =
+    !!opts.providerSubscriptionId &&
+    existing.providerSubscriptionId === opts.providerSubscriptionId;
+  const samePlan = existing.plan === plan;
+  const periodNotRegressing =
+    !opts.periodEnd ||
+    !existing.currentPeriodEnd ||
+    opts.periodEnd.getTime() >= existing.currentPeriodEnd.getTime();
+  if (
+    existing.status === "active" &&
+    samePlan &&
+    sameProviderSub &&
+    periodNotRegressing &&
+    (!opts.periodEnd ||
+      (existing.currentPeriodEnd &&
+        existing.currentPeriodEnd.getTime() === opts.periodEnd.getTime()))
+  ) {
+    return existing;
+  }
+  const [updated] = await dbExec
     .update(subscriptionsTable)
     .set({
       plan,
