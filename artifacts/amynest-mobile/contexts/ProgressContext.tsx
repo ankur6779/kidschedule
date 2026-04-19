@@ -104,20 +104,48 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<ProgressState>(DEFAULT_STATE);
 
   const toggleTask = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      routine: prev.routine.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
-    }));
+    setState((prev) => {
+      const target = prev.routine.find((t) => t.id === id);
+      const nextDone = target ? !target.done : true;
+      // Fire-and-forget: enqueues now, syncs when online
+      import("@/utils/offlineActions")
+        .then(({ submitAction }) =>
+          submitAction(nextDone ? "COMPLETE_ROUTINE" : "UNDO_ROUTINE", {
+            taskId: id,
+            done: nextDone,
+          }),
+        )
+        .catch((e) => {
+          if (__DEV__) console.warn("[offline] toggleTask submit failed", e);
+        });
+      return {
+        ...prev,
+        routine: prev.routine.map((t) => (t.id === id ? { ...t, done: nextDone } : t)),
+      };
+    });
   }, []);
 
   const advanceCoach = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      coach: {
-        ...prev.coach,
-        index: Math.min(prev.coach.total, prev.coach.index + 1),
-      },
-    }));
+    setState((prev) => {
+      const nextIndex = Math.min(prev.coach.total, prev.coach.index + 1);
+      import("@/utils/offlineActions")
+        .then(({ submitAction }) =>
+          submitAction("COMPLETE_COACH_STEP", {
+            stepIndex: nextIndex,
+            totalSteps: prev.coach.total,
+          }),
+        )
+        .catch((e) => {
+          if (__DEV__) console.warn("[offline] advanceCoach submit failed", e);
+        });
+      return {
+        ...prev,
+        coach: {
+          ...prev.coach,
+          index: nextIndex,
+        },
+      };
+    });
   }, []);
 
   const setChild = useCallback((c: Partial<ChildProfile>) => {

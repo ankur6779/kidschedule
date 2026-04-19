@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { useAppDataBootstrap } from "@/hooks/useAppData";
+import { useOfflineSyncBootstrap } from "@/hooks/useOfflineSync";
 import "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
@@ -54,6 +55,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   // Bootstrap unified /api/app-data layer (cache hydrate + fetch + 5min auto-refresh)
   useAppDataBootstrap();
+  // Bootstrap offline action queue + background sync on reconnect/foreground
+  useOfflineSyncBootstrap();
 
   const checkOnboardingStatus = useCallback(async (): Promise<"complete" | "incomplete"> => {
     if (checkInFlightRef.current || !getToken) return "incomplete";

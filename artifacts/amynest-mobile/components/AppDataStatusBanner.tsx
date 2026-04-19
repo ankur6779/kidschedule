@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "@/store/useAppStore";
+import { useNetworkStore, selectIsOnline } from "@/store/useNetworkStore";
 
 function formatRelative(ts: number | null): string {
   if (!ts) return "";
@@ -21,6 +22,36 @@ export default function AppDataStatusBanner() {
   const fromCache = useAppStore((s) => s.fromCache);
   const hasData = useAppStore((s) => !!s.data);
   const refresh = useAppStore((s) => s.refresh);
+  const queueLength = useAppStore((s) => s.queueLength);
+  const syncing = useAppStore((s) => s.syncing);
+  const isOnline = useNetworkStore(selectIsOnline);
+
+  // Offline mode (highest priority)
+  if (!isOnline) {
+    return (
+      <View style={[styles.banner, styles.offline]}>
+        <Ionicons name="cloud-offline" size={14} color="#92400E" />
+        <Text style={styles.offlineText}>
+          Offline Mode{queueLength > 0 ? ` · ${queueLength} pending` : ""}
+        </Text>
+        {hasData && lastUpdated ? (
+          <Text style={styles.offlineSub}>{formatRelative(lastUpdated)}</Text>
+        ) : null}
+      </View>
+    );
+  }
+
+  // Actively syncing queued actions
+  if (syncing) {
+    return (
+      <View style={[styles.banner, styles.syncing]}>
+        <ActivityIndicator size="small" color="#1D4ED8" />
+        <Text style={styles.syncingText}>
+          Syncing{queueLength > 0 ? ` ${queueLength}` : ""}…
+        </Text>
+      </View>
+    );
+  }
 
   if (!hasData && status === "error" && error) {
     return (
@@ -88,6 +119,31 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     fontWeight: "600",
     marginLeft: 4,
+  },
+  offline: {
+    backgroundColor: "#FEF3C7",
+    borderColor: "#FCD34D",
+  },
+  offlineText: {
+    color: "#92400E",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  offlineSub: {
+    color: "#92400E",
+    fontSize: 11,
+    fontWeight: "600",
+    marginLeft: "auto",
+    opacity: 0.75,
+  },
+  syncing: {
+    backgroundColor: "#DBEAFE",
+    borderColor: "#93C5FD",
+  },
+  syncingText: {
+    color: "#1D4ED8",
+    fontSize: 12,
+    fontWeight: "800",
   },
   error: {
     backgroundColor: "#FEE2E2",

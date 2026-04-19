@@ -13,6 +13,8 @@ type AppStoreState = {
   hydrated: boolean;
   userId: string | null;
   requestId: number;
+  queueLength: number;
+  syncing: boolean;
 };
 
 type AppStoreActions = {
@@ -21,6 +23,8 @@ type AppStoreActions = {
   refresh: (opts?: { userId?: string | null }) => Promise<void>;
   setData: (data: AppDataResponse) => void;
   reset: () => Promise<void>;
+  setQueueLength: (n: number) => void;
+  setSyncing: (v: boolean) => void;
 };
 
 const initialState: AppStoreState = {
@@ -32,6 +36,8 @@ const initialState: AppStoreState = {
   hydrated: false,
   userId: null,
   requestId: 0,
+  queueLength: 0,
+  syncing: false,
 };
 
 export const useAppStore = create<AppStoreState & AppStoreActions>((set, get) => ({
@@ -125,6 +131,9 @@ export const useAppStore = create<AppStoreState & AppStoreActions>((set, get) =>
     await clearAppDataCache();
     set({ ...initialState });
   },
+
+  setQueueLength: (n) => set({ queueLength: n }),
+  setSyncing: (v) => set({ syncing: v }),
 }));
 
 // Convenience selectors
