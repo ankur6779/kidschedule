@@ -1,0 +1,189 @@
+Upgrade my web app "AmyNest" routine system into an advanced personalized parenting engine with rewards, localization, and premium gating.
+
+IMPORTANT:
+- Keep existing functionality intact
+- Add new layers on top (do not break current system)
+- Maintain performance and simplicity
+- Mobile + Web compatible UI
+
+--------------------------------
+1. Routine Generation Rules (Core 🔥)
+--------------------------------
+- Allow routine generation ONLY for:
+  - Today
+  - Tomorrow
+
+- Restriction:
+  - 1 routine per child per day
+  - If user regenerates → override existing
+
+--------------------------------
+2. Premium Logic (Important 🔥🔥)
+--------------------------------
+- First 7 days:
+  → Full access (trial)
+
+- After 7 days:
+  → Only basic routine allowed
+  → Advanced customization locked
+
+Show message:
+“Upgrade to unlock smart personalized routines”
+
+--------------------------------
+3. Context-Based Routine Engine 🧠
+--------------------------------
+Take inputs:
+
+- Child mood (Happy / Low / Irritated)
+- Sleep quality (Good / Poor)
+- Parent availability (Busy / Free)
+- Day type (School / Holiday)
+
+Adjust routine dynamically:
+- Low energy → light routine
+- Busy parent → fewer tasks
+
+--------------------------------
+4. Goal-Based Personalization 🎯
+--------------------------------
+Parent selects goal:
+
+- Study
+- Discipline
+- Health
+- Behavior
+
+Routine adjusts accordingly
+
+--------------------------------
+5. Reward System 🎮 (Core Feature 🔥)
+--------------------------------
+Each task should have reward points:
+
+- Essential tasks:
+  → Low reward (e.g., 5 points)
+
+- Important tasks:
+  → Medium reward (10 points)
+
+- Extra activities:
+  → High reward (15–20 points)
+
+Show:
+- Total daily points
+- Earned points
+
+--------------------------------
+6. Reward Feedback
+--------------------------------
+When task completed:
+- Show:
+  “+10 points earned 🎉”
+
+--------------------------------
+7. Language Support 🌐
+--------------------------------
+Show content in:
+
+- English
+- Hindi
+- Hinglish
+
+Example:
+“Brush your teeth”
+→ “Daant saaf karo”
+→ “Brush kar lo”
+
+--------------------------------
+8. Meal Suggestion System 🍽 (Smart Localization 🔥)
+--------------------------------
+Based on:
+
+- User location (country + region)
+- Example:
+  - South India → Idli, Dosa
+  - North India → Roti, Dal
+
+Also ask:
+“What is available in your fridge?”
+
+Use input:
+- Suggest meals from available ingredients
+
+--------------------------------
+9. Smart Meal Logic
+--------------------------------
+- Morning → light food
+- Afternoon → full meal
+- Evening → snack
+- Night → light dinner
+
+--------------------------------
+10. UI Display (Premium Feel 🔥)
+--------------------------------
+Routine card should show:
+
+- Task name
+- Time
+- Image
+- Reward points
+- Category
+
+--------------------------------
+11. Routine Edit System ✏️
+--------------------------------
+User can:
+
+- Edit task
+- Change time
+- Add new task
+
+System should:
+- Auto-adjust remaining tasks
+
+--------------------------------
+12. Skip Logic (Smart)
+--------------------------------
+If time exceeded:
+
+- Skip non-essential tasks automatically
+- Continue essential tasks
+
+--------------------------------
+13. Amy AI Integration 🤖
+--------------------------------
+Show:
+
+“Amy AI Suggests”
+
+Example:
+“Today keep routine light due to low sleep”
+
+--------------------------------
+14. Data Storage
+--------------------------------
+- Store routines per date
+- Prevent duplicate generation
+
+--------------------------------
+15. Performance Rules
+--------------------------------
+- Use local logic
+- Minimal AI usage
+- Fast rendering
+
+--------------------------------
+16. Keep it simple
+--------------------------------
+- No heavy backend
+- No complex APIs
+
+--------------------------------
+Return:
+Updated system with:
+- Advanced routine engine
+- Reward system
+- Localization
+- Premium gating
+- Mobile + web UI compatibility
