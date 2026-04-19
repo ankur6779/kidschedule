@@ -1,0 +1,177 @@
+Integrate my Expo React Native app with a single backend API endpoint "/api/app-data" and build a centralized data layer with caching, loading states, and real-time sync.
+
+---
+
+🎯 GOAL
+
+- Use ONLY one API call: GET /api/app-data
+- Populate entire app (Dashboard, Parent Hub, Routine, Amy Coach)
+- Avoid multiple API calls
+- Implement caching + refresh + error handling
+- Maintain a global state (single source of truth)
+
+---
+
+📦 TECH STACK
+
+- Expo (React Native)
+- Axios (for API)
+- Zustand (for global state)
+- AsyncStorage (for caching)
+
+Install:
+
+- axios
+- zustand
+- @react-native-async-storage/async-storage
+
+---
+
+🧠 GLOBAL STORE (ZUSTAND)
+
+Create: /store/useAppStore.js
+
+State:
+{
+data: null,
+loading: false,
+error: null,
+lastUpdated: null
+}
+
+Actions:
+
+- fetchAppData()
+- setData()
+- setLoading()
+- setError()
+
+---
+
+📡 API SERVICE
+
+Create: /services/api.js
+
+- Base URL (Replit backend)
+- Axios instance
+
+Function:
+fetchAppData() → GET /api/app-data
+
+---
+
+💾 CACHING SYSTEM
+
+Use AsyncStorage:
+
+On fetch success:
+
+- Save response to cache
+
+On app load:
+
+- Load cached data first
+- Then refresh from API
+
+Cache key:
+"APP_DATA_CACHE"
+
+---
+
+📱 DATA FLOW
+
+1. App starts
+2. Load cached data (instant UI)
+3. Call API in background
+4. Update store
+5. UI re-renders automatically
+
+---
+
+🔄 REFRESH SYSTEM
+
+- Pull-to-refresh on screens
+- Calls fetchAppData()
+
+---
+
+📊 SCREEN INTEGRATION
+
+Dashboard:
+
+- Read from store.data.dashboard
+
+Parent Hub:
+
+- Read from store.data.recommendations + insights
+
+Routine:
+
+- Read from store.data.routine
+
+Amy Coach:
+
+- Read from store.data.coach
+
+---
+
+⚡ LOADING STATE
+
+- Show skeleton loaders if no data
+- If cached exists → show data + small loader
+
+---
+
+🚫 ERROR HANDLING
+
+- Show fallback UI:
+  "Unable to load data. Retry."
+
+- Retry button → fetchAppData()
+
+---
+
+🔁 AUTO SYNC
+
+When user:
+
+- completes routine
+- updates behavior
+- completes coach step
+
+→ Call API again
+→ Update global store
+
+---
+
+🎨 UI RULES
+
+- No blank screens
+- Smooth transitions
+- Minimal loading flicker
+
+---
+
+📂 FILE STRUCTURE
+
+/store/useAppStore.js
+/services/api.js
+/utils/cache.js
+
+---
+
+✨ BONUS
+
+- Add last updated timestamp
+- Add auto refresh every 5 minutes
+
+---
+
+FINAL RESULT
+
+- One API → full app data
+- Instant loading (cache)
+- Real-time sync
+- Clean, scalable architecture
+
+---

@@ -1,0 +1,208 @@
+Design and implement a unified "Single API System" for my app (AmyNest AI) using Node.js + Express that serves all app data (Dashboard, Parent Hub, Routine, Amy Coach, Behavior) from one endpoint.
+
+---
+
+🎯 GOAL
+
+- Create ONE central API that returns all required app data
+- Eliminate multiple API calls
+- Ensure consistent, synced data across all screens
+- Improve performance and scalability
+
+---
+
+📡 MAIN API ENDPOINT
+
+Create endpoint:
+
+GET /api/app-data
+
+---
+
+📦 RESPONSE STRUCTURE (IMPORTANT)
+
+Return structured JSON:
+
+{
+user: {
+name: "",
+parentType: "",
+},
+
+children: [
+{
+id: "",
+name: "",
+ageGroup: "",
+problems: [],
+}
+],
+
+dashboard: {
+greeting: "",
+totalProgress: 0,
+streak: 0
+},
+
+routine: {
+todayTasks: [
+{
+id,
+title,
+duration,
+status: "pending" | "done"
+}
+],
+completedCount: 0,
+totalCount: 0
+},
+
+coach: {
+currentGoal: "",
+currentStep: 0,
+totalSteps: 12,
+progress: 0,
+currentWin: {
+title,
+objective,
+summary
+}
+},
+
+behavior: {
+score: 0,
+metrics: {
+listening: 0,
+screen: 0,
+sleep: 0,
+eating: 0
+},
+trend: "up" | "down"
+},
+
+insights: [
+{
+title: "",
+description: ""
+}
+],
+
+recommendations: [
+{
+type: "coach" | "routine" | "activity",
+title: "",
+description: ""
+}
+]
+}
+
+---
+
+🧠 DATA AGGREGATION LOGIC
+
+Inside backend:
+
+- Fetch from DB:
+  
+  - user profile
+  - children data
+  - routine data
+  - coach progress
+  - behavior logs
+
+- Combine all into ONE response
+
+---
+
+📊 CALCULATIONS
+
+1. Routine progress:
+   completedCount / totalCount
+
+2. Coach progress:
+   currentStep / totalSteps
+
+3. Behavior score:
+   average of all metrics
+
+4. Total progress:
+   average of routine + coach + behavior
+
+---
+
+⚙️ BACKEND STRUCTURE
+
+/routes
+appData.js
+
+/controllers
+appDataController.js
+
+/services
+userService.js
+routineService.js
+coachService.js
+behaviorService.js
+
+---
+
+⚡ PERFORMANCE OPTIMIZATION
+
+- Add caching (optional)
+- Avoid multiple DB calls
+- Use async/await
+
+---
+
+📱 FRONTEND USAGE
+
+In Expo app:
+
+- Call ONLY:
+  GET /api/app-data
+
+- Use response to populate:
+  
+  - Dashboard
+  - Parent Hub
+  - Routine screen
+  - Amy Coach
+
+---
+
+🔄 REAL-TIME UPDATE
+
+When user:
+
+- completes routine
+- finishes coach step
+- updates behavior
+
+→ update DB
+→ next API call reflects change
+
+---
+
+🚫 DO NOT
+
+- Do NOT create multiple APIs for each screen
+- Do NOT duplicate logic in frontend
+- Do NOT use static data
+
+---
+
+✨ BONUS
+
+- Add refresh endpoint
+- Add timestamp in response
+
+---
+
+FINAL RESULT
+
+- Single source of truth
+- Fully synced app
+- Better performance
+- Scalable architecture
+
+---

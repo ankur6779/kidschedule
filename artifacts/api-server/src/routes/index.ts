@@ -8,6 +8,7 @@ import parentProfileRouter from "./parent-profile";
 import babysittersRouter from "./babysitters";
 import aiRouter from "./ai";
 import aiCoachRouter from "./ai-coach";
+import appDataRouter from "./app-data";
 import reelsRouter from "./reels";
 import worksheetsRouter from "./worksheets";
 import onboardingRouter from "./onboarding";
@@ -28,5 +29,6 @@ router.use(parentProfileRouter);
 router.use(babysittersRouter);
 router.use(aiRouter);
 router.use(aiCoachRouter);
+router.use(appDataRouter);
 
 export default router;
