@@ -543,7 +543,16 @@ export default function OnboardingScreen() {
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => router.replace("/(tabs)")}
+            onPress={async () => {
+              try {
+                await authFetch("/api/onboarding", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ onboardingComplete: true }),
+                });
+              } catch (_) {}
+              router.replace("/(tabs)");
+            }}
             style={styles.skipBtn}
             activeOpacity={0.7}
             testID="skip-onboarding-btn"

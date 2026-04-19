@@ -654,7 +654,18 @@ export default function OnboardingPage() {
             </div>
           </div>
           <button
-            onClick={() => setLocation("/dashboard")}
+            onClick={async () => {
+              try {
+                await authFetch("/api/onboarding", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ onboardingComplete: true }),
+                });
+                localStorage.setItem("onboardingComplete", "true");
+                queryClient.setQueryData(["onboarding-status"], { onboardingComplete: true });
+              } catch (_) {}
+              setLocation("/dashboard");
+            }}
             className="text-xs font-semibold text-indigo-400 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-xl hover:bg-indigo-50 active:scale-95"
             title="Skip onboarding"
           >
