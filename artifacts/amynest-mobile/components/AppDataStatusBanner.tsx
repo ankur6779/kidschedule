@@ -31,13 +31,13 @@ export default function AppDataStatusBanner() {
 
   if (!isOnline) {
     return (
-      <View style={[styles.banner, styles.offline]}>
-        <Ionicons name="cloud-offline" size={14} color="#92400E" />
-        <Text style={styles.offlineText}>
+      <View style={[styles.banner, { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }]}>
+        <Ionicons name="cloud-offline" size={14} color={c.statusWarnText} />
+        <Text style={[styles.offlineText, { color: c.statusWarnText }]}>
           Offline Mode{queueLength > 0 ? ` · ${queueLength} pending` : ""}
         </Text>
         {hasData && lastUpdated ? (
-          <Text style={styles.offlineSub}>{formatRelative(lastUpdated)}</Text>
+          <Text style={[styles.offlineSub, { color: c.statusWarnText }]}>{formatRelative(lastUpdated)}</Text>
         ) : null}
       </View>
     );
@@ -45,9 +45,9 @@ export default function AppDataStatusBanner() {
 
   if (syncing) {
     return (
-      <View style={[styles.banner, { backgroundColor: c.statusInfoBg, borderColor: "#93C5FD" }]}>
-        <ActivityIndicator size="small" color="#1D4ED8" />
-        <Text style={styles.syncingText}>
+      <View style={[styles.banner, { backgroundColor: c.statusInfoBg, borderColor: c.statusInfoBorder }]}>
+        <ActivityIndicator size="small" color={c.statusInfoText} />
+        <Text style={[styles.syncingText, { color: c.statusInfoText }]}>
           Syncing{queueLength > 0 ? ` ${queueLength}` : ""}…
         </Text>
       </View>
@@ -56,12 +56,12 @@ export default function AppDataStatusBanner() {
 
   if (!hasData && status === "error" && error) {
     return (
-      <View style={[styles.banner, styles.error]}>
-        <Ionicons name="cloud-offline-outline" size={16} color="#B91C1C" />
-        <Text style={styles.errorText} numberOfLines={2}>
+      <View style={[styles.banner, { backgroundColor: c.statusErrorBg, borderColor: c.statusErrorBorder }]}>
+        <Ionicons name="cloud-offline-outline" size={16} color={c.statusErrorText} />
+        <Text style={[styles.errorText, { color: c.statusErrorText }]} numberOfLines={2}>
           Unable to load data. Tap retry.
         </Text>
-        <Pressable onPress={() => void refresh()} hitSlop={8} style={styles.retryBtn}>
+        <Pressable onPress={() => void refresh()} hitSlop={8} style={[styles.retryBtn, { backgroundColor: c.destructive }]}>
           <Text style={styles.retryText}>Retry</Text>
         </Pressable>
       </View>
@@ -70,7 +70,7 @@ export default function AppDataStatusBanner() {
 
   if (status === "refreshing" && hasData) {
     return (
-      <View style={[styles.banner, styles.muted]}>
+      <View style={[styles.banner, { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder }]}>
         <ActivityIndicator size="small" color={brand.violet600} />
         <Text style={[styles.mutedText, { color: c.textSubtle }]}>Refreshing…</Text>
       </View>
@@ -79,14 +79,14 @@ export default function AppDataStatusBanner() {
 
   if (hasData && lastUpdated) {
     return (
-      <View style={[styles.banner, styles.muted]}>
+      <View style={[styles.banner, { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder }]}>
         <Ionicons
           name={fromCache ? "save-outline" : "checkmark-circle-outline"}
           size={14}
           color={c.textSubtle}
         />
         <Text style={[styles.mutedText, { color: c.textSubtle }]}>{formatRelative(lastUpdated)}</Text>
-        {error ? <Text style={styles.softErr}>· offline</Text> : null}
+        {error ? <Text style={[styles.softErr, { color: c.statusErrorText }]}>· offline</Text> : null}
       </View>
     );
   }
@@ -106,53 +106,35 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
   },
-  muted: {
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderColor: "rgba(0,0,0,0.05)",
-  },
   mutedText: {
     fontSize: 11.5,
     fontWeight: "600",
   },
   softErr: {
-    color: "#B91C1C",
     fontSize: 11.5,
     fontWeight: "600",
     marginLeft: 4,
   },
-  offline: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FCD34D",
-  },
   offlineText: {
-    color: "#92400E",
     fontSize: 12,
     fontWeight: "800",
   },
   offlineSub: {
-    color: "#92400E",
     fontSize: 11,
     fontWeight: "600",
     marginLeft: "auto",
     opacity: 0.75,
   },
   syncingText: {
-    color: "#1D4ED8",
     fontSize: 12,
     fontWeight: "800",
   },
-  error: {
-    backgroundColor: "#FEE2E2",
-    borderColor: "#FCA5A5",
-  },
   errorText: {
     flex: 1,
-    color: "#B91C1C",
     fontSize: 12.5,
     fontWeight: "700",
   },
   retryBtn: {
-    backgroundColor: "#B91C1C",
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 999,

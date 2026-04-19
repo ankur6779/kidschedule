@@ -432,7 +432,7 @@ export default function PremiumHubScreen() {
                   <Pressable
                     key={r.id}
                     onPress={() => goTo("/coach/premium")}
-                    style={styles.recCard}
+                    style={[styles.recCard, { backgroundColor: c.card, borderColor: c.border }]}
                     accessibilityRole="button"
                     accessibilityLabel={`${r.title}: ${r.description}`}
                   >

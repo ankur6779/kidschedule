@@ -109,7 +109,7 @@ export default function PremiumDashboardScreen() {
 
           {/* Streak + daily goal strip */}
           <Animated.View entering={FadeInDown.duration(450).delay(40)} style={styles.stripRow}>
-            <View style={styles.stripCard}>
+            <View style={[styles.stripCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
               <View style={[styles.stripIcon, { backgroundColor: `${brand.violet600}18` }]}>
                 <Ionicons name="flame" size={18} color={brand.violet600} />
               </View>
@@ -118,7 +118,7 @@ export default function PremiumDashboardScreen() {
                 <Text style={[styles.stripLabel, { color: themeColors.textSubtle }]}>Keep it alive</Text>
               </View>
             </View>
-            <View style={styles.stripCard}>
+            <View style={[styles.stripCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
               <View style={[styles.stripIcon, { backgroundColor: goalReached ? `${brand.violet700}18` : `${brand.violet600}18` }]}>
                 <Ionicons
                   name={goalReached ? "trophy" : "rocket"}
@@ -227,7 +227,7 @@ export default function PremiumDashboardScreen() {
                 <Pressable
                   key={q.id}
                   onPress={() => goTo(q.route)}
-                  style={styles.quickBtn}
+                  style={[styles.quickBtn, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
                   accessibilityRole="button"
                   accessibilityLabel={q.label}
                 >

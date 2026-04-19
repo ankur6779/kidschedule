@@ -16,22 +16,26 @@ export default function AiQuotaBanner() {
   const exhausted = remaining <= 0;
   const low = !exhausted && remaining <= 2;
 
+  const bannerStyle = exhausted
+    ? { backgroundColor: c.statusErrorBg, borderColor: c.statusErrorBorder }
+    : low
+    ? { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }
+    : { backgroundColor: c.mutedBannerBg, borderColor: c.mutedBannerBorder };
+
+  const iconColor = exhausted ? c.statusErrorText : low ? c.statusWarnText : c.textSubtle;
+  const textColor = exhausted ? c.statusErrorText : low ? c.statusWarnText : c.textSubtle;
+
   return (
     <Pressable
       onPress={() => router.push({ pathname: "/paywall", params: { reason: "ai_quota" } })}
-      style={[styles.banner, exhausted ? styles.exhausted : low ? styles.low : styles.muted]}
+      style={[styles.banner, bannerStyle]}
     >
       <Ionicons
         name={exhausted ? "lock-closed" : "sparkles"}
         size={14}
-        color={exhausted ? "#B91C1C" : low ? "#92400E" : c.textSubtle}
+        color={iconColor}
       />
-      <Text
-        style={[
-          styles.text,
-          exhausted ? { color: "#B91C1C" } : low ? { color: "#92400E" } : { color: c.textSubtle },
-        ]}
-      >
+      <Text style={[styles.text, { color: textColor }]}>
         {exhausted
           ? "Daily Amy AI limit reached"
           : `${remaining} Amy AI ${remaining === 1 ? "query" : "queries"} left today`}
@@ -52,18 +56,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 12,
     borderWidth: 1,
-  },
-  muted: {
-    backgroundColor: "rgba(255,255,255,0.7)",
-    borderColor: "rgba(0,0,0,0.05)",
-  },
-  low: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FCD34D",
-  },
-  exhausted: {
-    backgroundColor: "#FEE2E2",
-    borderColor: "#FCA5A5",
   },
   text: {
     flex: 1,

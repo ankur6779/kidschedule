@@ -100,8 +100,8 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
             <View style={{ gap: 10, marginTop: 4 }}>
               {win.actions.map((a, i) => (
                 <View key={i} style={styles.actionRow}>
-                  <View style={styles.actionDot}>
-                    <Text style={styles.actionDotText}>{i + 1}</Text>
+                  <View style={[styles.actionDot, { backgroundColor: c.statusSuccessBg, borderColor: c.statusSuccessBorder }]}>
+                    <Text style={[styles.actionDotText, { color: c.behaviorGoodText }]}>{i + 1}</Text>
                   </View>
                   <Text style={[styles.actionText, { color: c.textBody }]}>{a}</Text>
                 </View>
@@ -110,33 +110,33 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
 
             {/* Example */}
             <SectionHeader icon="chatbubble-ellipses-outline" label="REAL EXAMPLE" color="#0EA5E9" />
-            <View style={styles.calloutBox}>
-              <Text style={styles.calloutText}>{win.example}</Text>
+            <View style={[styles.calloutBox, { backgroundColor: c.calloutBg, borderColor: c.calloutBorder }]}>
+              <Text style={[styles.calloutText, { color: c.textBody }]}>{win.example}</Text>
             </View>
 
             {/* Mistake */}
             <SectionHeader icon="alert-circle-outline" label="AVOID THIS" color="#DC2626" />
-            <View style={[styles.calloutBox, { backgroundColor: "#FEF2F2", borderColor: "#FECACA" }]}>
-              <Text style={[styles.calloutText, { color: "#7F1D1D" }]}>{win.mistake}</Text>
+            <View style={[styles.calloutBox, { backgroundColor: c.statusErrorBg, borderColor: c.statusErrorBorder }]}>
+              <Text style={[styles.calloutText, { color: c.statusErrorText }]}>{win.mistake}</Text>
             </View>
 
             {/* Micro task */}
             <SectionHeader icon="flash-outline" label="MICRO TASK FOR TODAY" color="#D97706" />
-            <View style={[styles.calloutBox, { backgroundColor: "#FFFBEB", borderColor: "#FDE68A" }]}>
-              <Text style={[styles.calloutText, { color: "#78350F", fontWeight: "600" }]}>
+            <View style={[styles.calloutBox, { backgroundColor: c.statusWarnBg, borderColor: c.statusWarnBorder }]}>
+              <Text style={[styles.calloutText, { color: c.statusWarnText, fontWeight: "600" }]}>
                 {win.microTask}
               </Text>
             </View>
 
             {/* Science */}
-            <View style={styles.science}>
+            <View style={[styles.science, { borderTopColor: c.border }]}>
               <Ionicons name="flask-outline" size={11} color={c.textSubtle} />
               <Text style={[styles.scienceText, { color: c.textSubtle }]}>{win.science}</Text>
             </View>
           </ScrollView>
 
           {/* Action buttons (sticky bottom) */}
-          <View style={styles.actionsWrap}>
+          <View style={[styles.actionsWrap, { backgroundColor: c.glass, borderColor: c.glassBorder }]}>
             <ActionButtons onAction={onAction} />
           </View>
         </BlurView>
@@ -255,15 +255,12 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#ECFDF5",
     borderWidth: 1.5,
-    borderColor: "#A7F3D0",
     alignItems: "center",
     justifyContent: "center",
     marginTop: 1,
   },
   actionDotText: {
-    color: "#047857",
     fontSize: 11,
     fontWeight: "800",
   },
@@ -273,14 +270,11 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   calloutBox: {
-    backgroundColor: "#F0F9FF",
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#BAE6FD",
   },
   calloutText: {
-    color: "#075985",
     fontSize: 14,
     lineHeight: 20.5,
   },
@@ -291,7 +285,6 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.06)",
   },
   scienceText: {
     flex: 1,
@@ -304,12 +297,10 @@ const styles = StyleSheet.create({
     bottom: 14,
     left: 14,
     right: 14,
-    backgroundColor: "rgba(255,255,255,0.92)",
     paddingTop: 10,
     paddingHorizontal: 6,
     paddingBottom: 6,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.7)",
   },
 });

@@ -489,7 +489,7 @@ export default function CoachScreen() {
       <View style={[styles.screen, { paddingTop: topPad }]}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
           <View style={styles.heroRow}>
-            <View style={styles.heroBadge}>
+            <View style={[styles.heroBadge, { backgroundColor: c.heroBadgeBg }]}>
               <Ionicons name="sparkles" size={20} color={brand.violet600} />
             </View>
             <View style={{ flex: 1 }}>

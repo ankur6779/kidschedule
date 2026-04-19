@@ -415,7 +415,7 @@ export default function ProfileScreen() {
 
         {/* Sign out */}
         <TouchableOpacity
-          style={[styles.logoutBtn, { backgroundColor: "#FEF2F2", borderColor: "#FECACA" }]}
+          style={[styles.logoutBtn, { backgroundColor: colors.statusErrorBg, borderColor: colors.statusErrorBorder }]}
           onPress={handleLogout}
         >
           <Ionicons name="log-out-outline" size={20} color="#EF4444" />

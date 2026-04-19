@@ -1239,13 +1239,13 @@ export default function HomeScreen() {
                   <View key={stat.childId} style={styles.behaviorRow}>
                     <Text style={styles.behaviorChild}>{stat.childName}</Text>
                     <View style={styles.behaviorStats}>
-                      <View style={[styles.behaviorChip, { backgroundColor: "#ECFDF5" }]}>
+                      <View style={[styles.behaviorChip, { backgroundColor: colors.behaviorGoodBg }]}>
                         <Ionicons name="trending-up" size={12} color="#10B981" />
-                        <Text style={[styles.behaviorChipText, { color: "#047857" }]}>{stat.positive}</Text>
+                        <Text style={[styles.behaviorChipText, { color: colors.behaviorGoodText }]}>{stat.positive}</Text>
                       </View>
-                      <View style={[styles.behaviorChip, { backgroundColor: "#FEF2F2" }]}>
+                      <View style={[styles.behaviorChip, { backgroundColor: colors.behaviorBadBg }]}>
                         <Ionicons name="trending-down" size={12} color="#EF4444" />
-                        <Text style={[styles.behaviorChipText, { color: "#B91C1C" }]}>{stat.negative}</Text>
+                        <Text style={[styles.behaviorChipText, { color: colors.behaviorBadText }]}>{stat.negative}</Text>
                       </View>
                       <View style={[styles.behaviorChip, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
                         <Ionicons name="remove" size={12} color={colors.textSubtle} />
