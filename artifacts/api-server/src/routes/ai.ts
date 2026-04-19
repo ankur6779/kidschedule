@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { GetRecipeBody, GetRecipeResponse, AskAssistantBody, AskAssistantResponse } from "@workspace/api-zod";
 import { findRecipe } from "../lib/recipe-database.js";
 import { getParentingAdvice } from "../lib/parenting-faq.js";
+import { aiUsageGate } from "../middlewares/aiUsageGate.js";
 
 const router: IRouter = Router();
 
@@ -33,8 +34,8 @@ router.post("/ai/assistant", async (req, res): Promise<void> => {
   res.json(AskAssistantResponse.parse({ answer }));
 });
 
-// AI-powered parenting assistant — uses OpenAI, rate-limited on frontend (5/day)
-router.post("/ai/assistant-ai", async (req, res): Promise<void> => {
+// AI-powered parenting assistant — uses OpenAI, rate-limited server-side via aiUsageGate (free=5/day)
+router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => {
   const parsed = AskAssistantBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

@@ -1,0 +1,206 @@
+Implement a complete freemium + subscription system across the website and mobile app with proper feature control, pricing, and premium UX.
+
+IMPORTANT:
+- Maintain premium UI
+- Do NOT break existing features
+- Focus on conversion and clean UX
+
+----------------------------------------
+
+1. FREE PLAN (DEFAULT USERS)
+
+Allow limited access:
+
+- Amy AI:
+  - 5 queries per day
+
+- Amy Coach:
+  - Basic tips only
+  - 1–2 daily insights
+  - No personalization
+
+- Routine:
+  - Limited routines
+
+- Parenting Hub:
+  - Limited articles
+
+- Child profiles:
+  - Max 1 child
+
+----------------------------------------
+
+2. PREMIUM FEATURES (UNLOCKED AFTER PAYMENT)
+
+- Unlimited Amy AI usage
+- Full Amy Coach (AI-powered personalized coaching)
+- Behavior analysis + smart insights
+- Unlimited routines
+- Unlimited children
+- Full Parenting Hub access
+- Advanced progress tracking
+
+----------------------------------------
+
+3. PRICING PLANS
+
+Create 3 plans:
+
+----------------------------------------
+
+PLAN 1: MONTHLY
+
+- ₹199 / month
+- All premium features unlocked
+
+----------------------------------------
+
+PLAN 2: 6 MONTHS (MOST POPULAR)
+
+- ₹999 / 6 months
+- Show badge: "Most Popular"
+- Show savings
+
+----------------------------------------
+
+PLAN 3: YEARLY (BEST VALUE)
+
+- ₹1599 / year
+- Show badge: "Best Value"
+- Highlight as best deal
+
+----------------------------------------
+
+4. USAGE LIMIT LOGIC (CRITICAL)
+
+Track Amy AI usage:
+
+- Count queries per user per day
+- Reset every 24 hours
+
+IF:
+user is free AND limit exceeded:
+
+→ Block further AI calls  
+→ Show paywall screen
+
+----------------------------------------
+
+5. AMY COACH (CORE PREMIUM DRIVER)
+
+FREE VERSION:
+
+- Show basic parenting tips
+- Show limited insights
+- No AI personalization
+
+PREMIUM VERSION:
+
+- Personalized AI coaching
+- Behavior analysis
+- Smart recommendations
+- Adaptive learning
+
+----------------------------------------
+
+6. LOCKED CONTENT DESIGN
+
+- Show premium insights blurred or dimmed
+- Add label: "Premium Insight"
+
+CTA:
+"Unlock Personalized Coaching"
+
+----------------------------------------
+
+7. PAYWALL SCREEN
+
+TITLE:
+"Unlock Full Parenting Power"
+
+SUBTEXT:
+"Get unlimited AI, smart coaching, and premium insights"
+
+SHOW:
+
+- Plan cards
+- Feature comparison
+- Benefits
+
+CTA:
+"Upgrade Now"
+
+SECONDARY:
+"Maybe Later"
+
+----------------------------------------
+
+8. PAYWALL TRIGGERS
+
+Trigger upgrade when:
+
+- AI limit reached
+- User clicks locked Amy Coach feature
+- User tries premium insight
+- After repeated usage (soft nudge)
+
+----------------------------------------
+
+9. PRICING UI DESIGN
+
+- Card layout
+- Rounded corners (20px+)
+- Gradient highlight (purple → pink)
+- Glow effect on selected plan
+
+----------------------------------------
+
+10. FEATURE LOCKING SYSTEM
+
+Before accessing premium feature:
+
+IF user is free:
+→ Show paywall
+
+----------------------------------------
+
+11. BACKEND / STATE LOGIC
+
+Track:
+
+- User plan (free / premium)
+- AI usage count
+- Subscription status
+
+----------------------------------------
+
+12. UPGRADE FLOW
+
+- Smooth transition after payment
+- Instantly unlock features
+- No reload
+
+----------------------------------------
+
+13. UI STYLE
+
+- Dark premium theme (#0B0B1A)
+- Purple accents (#7B3FF2)
+- Pink highlights (#FF4ECD)
+- Subtle glow + smooth animations
+
+----------------------------------------
+
+14. OPTIONAL
+
+- Add free trial (3 days)
+
+----------------------------------------
+
+OUTPUT:
+
+- Pricing screen
+- Paywall component
+- Usage tracking system
+- Feature locking logic
+- Subscription handling

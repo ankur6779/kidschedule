@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
 import { useAppDataBootstrap } from "@/hooks/useAppData";
 import { useOfflineSyncBootstrap } from "@/hooks/useOfflineSync";
+import { useSubscriptionBootstrap } from "@/hooks/useSubscription";
 import "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
@@ -57,6 +58,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   useAppDataBootstrap();
   // Bootstrap offline action queue + background sync on reconnect/foreground
   useOfflineSyncBootstrap();
+  // Bootstrap freemium subscription + entitlements
+  useSubscriptionBootstrap();
 
   const checkOnboardingStatus = useCallback(async (): Promise<"complete" | "incomplete"> => {
     if (checkInFlightRef.current || !getToken) return "incomplete";

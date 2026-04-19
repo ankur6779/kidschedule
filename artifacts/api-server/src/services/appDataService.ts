@@ -4,6 +4,7 @@ import { getCoachProgress, type CoachSection } from "./coachService";
 import { getBehaviorSection, type BehaviorSection } from "./behaviorService";
 import { buildInsightsAndRecommendations, type Insight, type Recommendation } from "./hubService";
 import type { UserSummary, ChildSummary } from "./userService";
+import { getEntitlements, type EntitlementSummary } from "./subscriptionService";
 
 export type AppDataResponse = {
   user: UserSummary;
@@ -18,6 +19,7 @@ export type AppDataResponse = {
   behavior: BehaviorSection;
   insights: Insight[];
   recommendations: Recommendation[];
+  subscription: EntitlementSummary;
   meta: {
     generatedAt: string;
     cached: boolean;
@@ -46,10 +48,11 @@ export async function buildAppData(userId: string): Promise<AppDataResponse> {
   const ctx = await loadUserContext(userId);
   const childIds = ctx.rawChildren.map((c) => c.id);
 
-  const [routine, coach, behavior] = await Promise.all([
+  const [routine, coach, behavior, subscription] = await Promise.all([
     getRoutineForChildren(childIds),
     getCoachProgress(userId),
     getBehaviorSection(childIds),
+    getEntitlements(userId),
   ]);
 
   const totalProgress =
@@ -75,6 +78,7 @@ export async function buildAppData(userId: string): Promise<AppDataResponse> {
     behavior,
     insights,
     recommendations,
+    subscription,
     meta: {
       generatedAt: new Date().toISOString(),
       cached: false,
