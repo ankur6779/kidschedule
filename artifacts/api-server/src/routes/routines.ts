@@ -213,8 +213,15 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
   }
 
   const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -285,8 +292,15 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
   }
 
   const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
 
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -420,9 +434,23 @@ router.get("/routines", async (req, res): Promise<void> => {
 
 // Check if a routine exists for a given child + date
 router.get("/routines/check", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const parsed = CheckRoutineQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  // Ownership check: cross-tenant access returns 404 to avoid existence disclosure.
+  const [child] = await db
+    .select({ id: childrenTable.id })
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
+  if (!child) {
+    res.status(404).json({ error: "Child not found" });
     return;
   }
   const existing = await db
@@ -521,29 +549,43 @@ router.post("/routines", async (req, res): Promise<void> => {
 });
 
 router.get("/routines/:id", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = GetRoutineParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [routine] = await db.select().from(routinesTable).where(eq(routinesTable.id, params.data.id));
-  if (!routine) {
+  // Ownership check via join: routine -> child -> userId
+  const [row] = await db
+    .select({ routine: routinesTable, child: childrenTable })
+    .from(routinesTable)
+    .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+    .where(and(eq(routinesTable.id, params.data.id), eq(childrenTable.userId, userId)));
+  if (!row) {
     res.status(404).json({ error: "Routine not found" });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
   res.json(
     GetRoutineResponse.parse({
-      ...routine,
-      childName: child?.name ?? "Unknown",
-      items: routine.items as RoutineItem[],
-      createdAt: routine.createdAt.toISOString(),
+      ...row.routine,
+      childName: row.child.name,
+      items: row.routine.items as RoutineItem[],
+      createdAt: row.routine.createdAt.toISOString(),
     }),
   );
 });
 
 // Update routine items (for marking tasks complete/skipped/delayed)
 router.patch("/routines/:id/items", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = UpdateRoutineItemsParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -552,6 +594,16 @@ router.patch("/routines/:id/items", async (req, res): Promise<void> => {
   const parsed = UpdateRoutineItemsBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  // Verify ownership before mutating.
+  const [owned] = await db
+    .select({ id: routinesTable.id, childName: childrenTable.name })
+    .from(routinesTable)
+    .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+    .where(and(eq(routinesTable.id, params.data.id), eq(childrenTable.userId, userId)));
+  if (!owned) {
+    res.status(404).json({ error: "Routine not found" });
     return;
   }
   const [routine] = await db
@@ -564,11 +616,10 @@ router.patch("/routines/:id/items", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Routine not found" });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
   res.json(
     GetRoutineResponse.parse({
       ...routine,
-      childName: child?.name ?? "Unknown",
+      childName: owned.childName,
       items: routine.items as RoutineItem[],
       createdAt: routine.createdAt.toISOString(),
     }),
@@ -576,16 +627,27 @@ router.patch("/routines/:id/items", async (req, res): Promise<void> => {
 });
 
 router.delete("/routines/:id", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
   const params = DeleteRoutineParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [routine] = await db.delete(routinesTable).where(eq(routinesTable.id, params.data.id)).returning();
-  if (!routine) {
+  // Verify ownership before deleting.
+  const [owned] = await db
+    .select({ id: routinesTable.id })
+    .from(routinesTable)
+    .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+    .where(and(eq(routinesTable.id, params.data.id), eq(childrenTable.userId, userId)));
+  if (!owned) {
     res.status(404).json({ error: "Routine not found" });
     return;
   }
+  await db.delete(routinesTable).where(eq(routinesTable.id, params.data.id));
   res.sendStatus(204);
 });
 
@@ -643,11 +705,15 @@ router.post("/routines/:id/partial-regenerate", async (req, res): Promise<void> 
   const routineId = parseInt(req.params.id);
   if (isNaN(routineId)) { res.status(400).json({ error: "Invalid id" }); return; }
 
-  const [routine] = await db.select().from(routinesTable).where(eq(routinesTable.id, routineId));
-  if (!routine) { res.status(404).json({ error: "Not found" }); return; }
-
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, routine.childId));
-  if (!child) { res.status(404).json({ error: "Child not found" }); return; }
+  // Ownership check via join: routine -> child -> userId
+  const [row] = await db
+    .select({ routine: routinesTable, child: childrenTable })
+    .from(routinesTable)
+    .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+    .where(and(eq(routinesTable.id, routineId), eq(childrenTable.userId, userId)));
+  if (!row) { res.status(404).json({ error: "Not found" }); return; }
+  const routine = row.routine;
+  const child = row.child;
 
   const items = (routine.items ?? []) as Array<RoutineItem & { imageUrl?: string }>;
   const { newActivity } = req.body as { newActivity?: { name: string; time?: string; duration?: number } };
