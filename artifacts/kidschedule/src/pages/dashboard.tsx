@@ -764,6 +764,28 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ── Gaming Reward entry ─────────────────────────────────── */}
+      <Link href="/games">
+        <button
+          type="button"
+          className="w-full text-left rounded-2xl p-4 border border-violet-300/40 hover:border-violet-400/70 hover:scale-[1.005] active:scale-[0.995] transition-all flex items-center gap-4"
+          style={{
+            background: "linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(245,158,11,0.10) 100%)",
+            boxShadow: "0 4px 18px rgba(139,92,246,0.18)",
+          }}
+        >
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
+            style={{ background: "linear-gradient(135deg,#8b5cf6,#f59e0b)" }}>
+            🎮
+          </div>
+          <div className="flex-1">
+            <p className="font-quicksand font-bold text-base leading-tight">Gaming Reward</p>
+            <p className="text-[12px] text-muted-foreground mt-0.5">Earn points from routines → unlock skill-based mini-games & redeem rewards.</p>
+          </div>
+          <span className="text-violet-500 text-lg shrink-0">→</span>
+        </button>
+      </Link>
+
       {/* ── Below-fold: Recent Routines + Behavior Highlights ────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Recent Routines */}

@@ -1,0 +1,166 @@
+Add a new section “Gaming Reward” in my app "AmyNest" (both Web and Mobile) that connects rewards with skill-based mini games and redemption.
+
+IMPORTANT:
+- Keep games short (1–3 min)
+- Educational + skill-based (not addictive)
+- Fully integrated with reward system
+- Mobile + Web responsive UI
+
+--------------------------------
+1. Section Name
+--------------------------------
+“🎮 Gaming Reward”
+
+--------------------------------
+2. Core Concept (🔥)
+--------------------------------
+- Users earn points from routines, behavior, and activities
+- Points can be used to UNLOCK games
+- Games help improve skills
+
+--------------------------------
+3. Game Categories
+--------------------------------
+
+(A) Brain Games
+- Pattern match
+- Find odd one out
+
+(B) Memory Games
+- Card flip
+- Sequence memory
+
+(C) Puzzle Games
+- Drag & drop shapes
+- Jigsaw
+
+(D) Focus Games
+- Spot difference
+- Hidden objects
+
+(E) Behavior Games (USP 🔥)
+- Situation-based choices
+- “What should you do?”
+
+--------------------------------
+4. Unlock Logic 🔐
+--------------------------------
+
+- Each game is LOCKED by default
+
+Unlock rules:
+- 50 points → unlock 1 game
+- OR streak-based unlock
+
+--------------------------------
+5. Daily Usage Limit (IMPORTANT)
+--------------------------------
+- Max 2–3 games per day
+- After limit → lock for that day
+
+--------------------------------
+6. Reward Integration 🎮
+--------------------------------
+
+- Completing game:
+  → +5 to +15 points
+
+- Bonus:
+  → perfect score → extra points
+
+--------------------------------
+7. Redemption System (Dashboard Integration 🔥🔥)
+--------------------------------
+
+Add “Reward Redemption” section in Dashboard:
+
+User can:
+
+- Use points to unlock:
+  - New games
+  - Special content
+  - Parent-defined rewards (e.g., chocolate, outing)
+
+--------------------------------
+8. UI Design (Premium 🔥)
+--------------------------------
+
+Gaming Reward Section:
+
+- Grid layout of game cards
+- Each card:
+  - Icon/image
+  - Game title
+  - Lock/unlock status
+  - Points required
+
+Locked state:
+- Blur effect
+- Lock icon
+
+--------------------------------
+9. Game Screen UI
+--------------------------------
+
+- Simple interface
+- Timer (optional)
+- Result screen:
+  - Score
+  - Points earned
+
+--------------------------------
+10. Amy AI Integration 🤖
+--------------------------------
+
+Show suggestions:
+
+“Amy AI Suggests:
+Try a memory game today to improve focus”
+
+--------------------------------
+11. Mobile Optimization 📱
+--------------------------------
+
+- Touch-friendly UI
+- Smooth animations
+- Fast loading
+
+--------------------------------
+12. Web Optimization 🌐
+--------------------------------
+
+- Responsive grid
+- Keyboard/mouse support
+
+--------------------------------
+13. Data Tracking
+--------------------------------
+
+Track:
+
+- gamesPlayedToday
+- totalPoints
+- unlockedGames
+
+--------------------------------
+14. Performance
+--------------------------------
+
+- Use lightweight logic
+- Avoid heavy game engines
+
+--------------------------------
+15. Keep it simple
+--------------------------------
+
+- No multiplayer
+- No complex backend
+
+--------------------------------
+Return:
+Working system with:
+- Gaming Reward section
+- Unlock system
+- Daily limits
+- Dashboard redemption
+- Mobile + web support

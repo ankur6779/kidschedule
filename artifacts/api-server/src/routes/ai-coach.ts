@@ -573,9 +573,8 @@ router.post("/ai-coach", aiUsageGate, async (req, res): Promise<void> => {
   const goalLabel = GOAL_LABELS[input.goal!] ?? input.goal;
   const triggers = (input.triggers ?? []).join(", ") || "not specified";
   const { getGoalPromptSection } = await import("../lib/goal-prompts.js");
-  const goalBrief = getGoalPromptSection(input.goal!, goalLabel!);
-
   const language: "en" | "hi" | "hinglish" = input.language ?? "en";
+  const goalBrief = getGoalPromptSection(input.goal!, goalLabel!, language);
   const langDirective =
     language === "hi"
       ? "\nIMPORTANT: Write ALL string VALUES (title, root_cause, summary, wins[].title, objective, deep_explanation, actions, example, mistake_to_avoid, micro_task, duration, science_reference) in natural Hindi (Devanagari script). Keep JSON keys in English."

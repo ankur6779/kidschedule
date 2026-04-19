@@ -681,6 +681,26 @@ export default function AICoachPage() {
           />
         </div>
 
+        {/* Audio Lessons entry card */}
+        <button
+          onClick={() => setLocation("/audio-lessons")}
+          className="relative w-full rounded-3xl p-4 border border-violet-400/30 text-left backdrop-blur-md hover:border-violet-400/60 hover:scale-[1.01] active:scale-[0.98] transition-all overflow-hidden flex items-center gap-4"
+          style={{
+            background: "linear-gradient(135deg,rgba(139,92,246,0.18) 0%,rgba(236,72,153,0.10) 100%)",
+            boxShadow: "0 0 20px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.06)",
+          }}
+        >
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
+            style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)" }}>
+            🎙️
+          </div>
+          <div className="flex-1">
+            <p className="font-quicksand font-bold text-base text-white leading-tight">Amy Audio Lessons</p>
+            <p className="text-[11.5px] text-white/60 mt-0.5">Hands full? Listen to age-curated parenting lessons (3–5 min each).</p>
+          </div>
+          <span className="text-violet-300 text-lg shrink-0">→</span>
+        </button>
+
         <div className="grid grid-cols-2 gap-3">
           {GOAL_CATEGORIES.map((cat, i) => (
             <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}

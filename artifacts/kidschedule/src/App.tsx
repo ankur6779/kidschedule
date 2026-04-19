@@ -26,6 +26,8 @@ import ProgressPage from "@/pages/progress";
 import ParentingHub from "@/pages/parenting-hub";
 import AmyCoachPage from "@/pages/ai-coach";
 import AmyCoachProgressPage from "@/pages/ai-coach-progress";
+import AudioLessonsPage from "@/pages/audio-lessons";
+import GamesPage from "@/pages/games";
 import OnboardingPage from "@/pages/onboarding";
 import PricingPage from "@/pages/pricing";
 import { PaywallProvider } from "@/contexts/paywall-context";
@@ -412,6 +414,12 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/amy-coach/progress">
               {() => <ProtectedRoute component={AmyCoachProgressPage} />}
+            </Route>
+            <Route path="/audio-lessons">
+              {() => <ProtectedRoute component={AudioLessonsPage} />}
+            </Route>
+            <Route path="/games">
+              {() => <ProtectedRoute component={GamesPage} />}
             </Route>
             <Route path="/pricing">
               {() => <ProtectedRoute component={PricingPage} requiresProfile={false} />}
