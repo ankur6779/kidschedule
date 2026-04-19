@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import {
   BookOpen, Brain, Sparkles, Heart, Palette,
   ChevronDown, ChevronUp, MessageCircleHeart,
-  Calendar, ArrowRight,
+  Calendar, ArrowRight, Trophy,
 } from "lucide-react";
+import { OlympiadZone } from "@/components/olympiad-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
@@ -427,6 +428,19 @@ export default function ParentingHub() {
               effectiveChild={effectiveChild}
               totalAgeMonths={totalAgeMonths}
             />
+          </HubSection>
+        )}
+
+        {/* 6. Smart Olympiad Zone */}
+        {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 15 && (
+          <HubSection
+            id="olympiad"
+            icon={<Trophy className="h-5 w-5 text-amber-600" />}
+            title="Smart Olympiad Zone"
+            description="Daily 5 MCQs, weekly tests, badges & insights"
+            accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-yellow-100 dark:to-yellow-500/20"
+          >
+            <OlympiadZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
           </HubSection>
         )}
 
