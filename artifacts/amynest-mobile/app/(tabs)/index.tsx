@@ -18,6 +18,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import type { ThemePalette } from "@/lib/theme";
 import { useTranslation } from "react-i18next";
 import { LanguageRow } from "@/components/LanguageRow";
+import { useProfileComplete } from "@/hooks/useProfileComplete";
+import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -1000,6 +1002,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────
 export default function HomeScreen() {
+  const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const styles = useThemedStyles();
   const { user } = useUser();
   const colors = useColors();
@@ -1055,6 +1058,10 @@ export default function HomeScreen() {
 
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
+
+  if (!profileLoading && !profileComplete) {
+    return <ProfileLockScreen sectionName="Dashboard" />;
+  }
 
   if (summaryLoading) {
     return (

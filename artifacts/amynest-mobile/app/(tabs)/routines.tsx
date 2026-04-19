@@ -12,6 +12,8 @@ import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import * as Haptics from "expo-haptics";
+import { useProfileComplete } from "@/hooks/useProfileComplete";
+import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 
 type RoutineItem = {
   time: string; activity: string; duration: number;
@@ -57,6 +59,7 @@ function completionPct(items: RoutineItem[]): number {
 }
 
 export default function RoutinesScreen() {
+  const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -127,6 +130,10 @@ export default function RoutinesScreen() {
     const qs = selectedChild ? `?childId=${selectedChild}` : "";
     router.push(`/routines/generate${qs}` as never);
   };
+
+  if (!profileLoading && !profileComplete) {
+    return <ProfileLockScreen sectionName="Routines" />;
+  }
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

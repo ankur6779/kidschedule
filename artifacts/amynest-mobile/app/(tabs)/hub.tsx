@@ -17,6 +17,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { LifeSkillsZone } from "@/components/LifeSkillsZone";
 import InfantHub from "@/components/InfantHub";
 import { isInfantHubAge } from "@workspace/infant-hub";
+import { useProfileComplete } from "@/hooks/useProfileComplete";
+import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -48,6 +50,7 @@ function ageGroup(age: number, months = 0): { label: string; emoji: string } {
 }
 
 export default function HubScreen() {
+  const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -74,6 +77,10 @@ export default function HubScreen() {
   const askAmy = (q: string) => {
     router.push({ pathname: "/amy-ai", params: { q } });
   };
+
+  if (!profileLoading && !profileComplete) {
+    return <ProfileLockScreen sectionName="Hub" />;
+  }
 
   return (
     <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
