@@ -20,8 +20,9 @@ import {
   BookOpen,
   Microscope,
 } from "lucide-react";
-import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
+import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
 import { useTranslation } from "react-i18next";
 
 const COACH_HIGHLIGHT_KEYS = [
@@ -188,12 +189,7 @@ export default function LandingPage() {
 
       {/* NAV — minimal */}
       <header className="relative z-20 flex items-center justify-between px-5 py-4">
-        <div className="flex items-center gap-2">
-          <img src={logoImg} alt="AmyNest AI" className="h-8 w-8 rounded-lg object-contain" />
-          <span className="font-quicksand font-bold text-base text-white tracking-tight">
-            AmyNest <span className="amy-gradient-text">AI</span>
-          </span>
-        </div>
+        <BrandLogo size="sm" />
         <div className="flex items-center gap-2">
           <LanguageSwitcher />
           <Link href="/sign-in">
@@ -561,12 +557,7 @@ export default function LandingPage() {
       {/* FOOTER */}
       <footer className="relative z-10 px-5 py-8 border-t border-white/10 text-center">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2">
-            <img src={logoImg} alt="AmyNest AI" className="h-6 w-6 rounded-md object-contain" />
-            <span className="font-quicksand font-bold text-sm text-white/80">
-              AmyNest <span className="amy-gradient-text">AI</span>
-            </span>
-          </div>
+          <BrandLogo size="sm" />
           <p className="text-xs text-white/40">{t("landing.footer_tagline")}</p>
         </div>
       </footer>
