@@ -31,7 +31,20 @@ app.use(
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 
 app.use(cors({ credentials: true, origin: true }));
-app.use(express.json({ limit: "10mb" }));
+app.use(
+  express.json({
+    limit: "10mb",
+    // Capture the raw request bytes for Razorpay's webhook so we can
+    // verify the X-Razorpay-Signature HMAC. Stored only for that path
+    // to avoid wasting memory on every request.
+    verify: (req: any, _res, buf) => {
+      const url: string = req.originalUrl ?? req.url ?? "";
+      if (url.includes("/api/subscription/razorpay/webhook")) {
+        req.rawBody = buf.toString("utf8");
+      }
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(clerkMiddleware());

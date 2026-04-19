@@ -7,6 +7,16 @@ import {
   type Plan,
 } from "../services/subscriptionService";
 import { requireAuth } from "../middlewares/requireAuth";
+import {
+  createSubscription as rzpCreateSubscription,
+  fetchSubscription as rzpFetchSubscription,
+  verifySubscriptionPaymentSignature,
+  verifyWebhookSignature,
+  razorpayConfigured,
+  planEnv as rzpPlanEnv,
+  razorpayPlanIdToPlan,
+  TOTAL_COUNT_BY_PLAN,
+} from "../lib/razorpayClient";
 
 // Map RevenueCat product/store identifiers back to our internal Plan code so
 // that webhook events can update the local subscription record.
@@ -215,6 +225,266 @@ router.post("/subscription/webhook", async (req, res): Promise<void> => {
     }
     default:
       res.json({ ok: true, ignored: event.type });
+      return;
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Razorpay (web + Android only — iOS keeps RevenueCat / Apple IAP)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /subscription/razorpay/config — public-safe values the client needs to
+ * launch Razorpay Checkout. Requires auth so we can echo the user's id.
+ */
+router.get("/subscription/razorpay/config", requireAuth, (req, res): void => {
+  const userId = (req as any).auth?.userId as string | undefined;
+  if (!userId) {
+    res.status(401).json({ error: "unauthorized" });
+    return;
+  }
+  res.json({
+    enabled: razorpayConfigured(),
+    keyId: process.env.RAZORPAY_KEY_ID ?? null,
+    plansConfigured: {
+      monthly: !!process.env.RAZORPAY_PLAN_ID_MONTHLY,
+      six_month: !!process.env.RAZORPAY_PLAN_ID_SIX_MONTH,
+      yearly: !!process.env.RAZORPAY_PLAN_ID_YEARLY,
+    },
+  });
+});
+
+/**
+ * POST /subscription/razorpay/create-subscription
+ * Body: { plan: "monthly" | "six_month" | "yearly" }
+ * Returns: { subscriptionId, keyId, plan, amount, currency }
+ */
+router.post(
+  "/subscription/razorpay/create-subscription",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const userId = (req as any).auth?.userId as string | undefined;
+    if (!userId) {
+      res.status(401).json({ error: "unauthorized" });
+      return;
+    }
+    if (!razorpayConfigured()) {
+      res.status(503).json({ error: "razorpay_not_configured" });
+      return;
+    }
+    const plan = req.body?.plan as Exclude<Plan, "free"> | undefined;
+    if (plan !== "monthly" && plan !== "six_month" && plan !== "yearly") {
+      res.status(400).json({ error: "invalid_plan" });
+      return;
+    }
+    const env = rzpPlanEnv();
+    const planId = env[plan];
+    if (!planId) {
+      res.status(503).json({ error: `plan_id_unconfigured_${plan}` });
+      return;
+    }
+    try {
+      const sub = await rzpCreateSubscription({
+        planId,
+        totalCount: TOTAL_COUNT_BY_PLAN[plan],
+        notes: { userId, internalPlan: plan },
+      });
+      res.json({
+        subscriptionId: sub.id,
+        keyId: process.env.RAZORPAY_KEY_ID,
+        plan,
+        amount: PLAN_PRICES[plan].amount,
+        currency: "INR",
+      });
+    } catch (err: any) {
+      res.status(502).json({ error: "razorpay_create_failed", message: err?.message });
+    }
+  },
+);
+
+/**
+ * POST /subscription/razorpay/verify
+ * Body: { razorpay_payment_id, razorpay_subscription_id, razorpay_signature, plan }
+ * Verifies the HMAC signature and writes a pending row so the UI can reflect
+ * intent immediately. The webhook is the canonical source of truth.
+ */
+router.post(
+  "/subscription/razorpay/verify",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const userId = (req as any).auth?.userId as string | undefined;
+    if (!userId) {
+      res.status(401).json({ error: "unauthorized" });
+      return;
+    }
+    const {
+      razorpay_payment_id: paymentId,
+      razorpay_subscription_id: subscriptionId,
+      razorpay_signature: signature,
+      plan,
+    } = req.body ?? {};
+    if (!paymentId || !subscriptionId || !signature) {
+      res.status(400).json({ error: "missing_fields" });
+      return;
+    }
+    const ok = verifySubscriptionPaymentSignature({
+      paymentId,
+      subscriptionId,
+      signature,
+    });
+    if (!ok) {
+      res.status(401).json({ error: "invalid_signature" });
+      return;
+    }
+    const planCode = (plan === "monthly" || plan === "six_month" || plan === "yearly")
+      ? (plan as Exclude<Plan, "free">)
+      : null;
+    if (!planCode) {
+      res.status(400).json({ error: "invalid_plan" });
+      return;
+    }
+    // Optimistically activate. Webhook will reconcile period_end accurately.
+    try {
+      const sub = await rzpFetchSubscription(subscriptionId);
+      const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
+      await activateSubscription(userId, planCode, {
+        provider: "razorpay",
+        periodEnd,
+        providerCustomerId: userId,
+        providerSubscriptionId: subscriptionId,
+      });
+    } catch {
+      await activateSubscription(userId, planCode, {
+        provider: "razorpay",
+        providerCustomerId: userId,
+        providerSubscriptionId: subscriptionId,
+      });
+    }
+    const ent = await getEntitlements(userId);
+    res.json({ ok: true, entitlements: ent });
+  },
+);
+
+/**
+ * POST /subscription/razorpay/webhook — Razorpay subscription lifecycle.
+ * MUST be mounted before requireAuth (it is — see routes/index.ts). Verifies
+ * X-Razorpay-Signature against RAZORPAY_WEBHOOK_SECRET and is idempotent on
+ * event id (same event arriving twice is safe).
+ */
+const seenEventIds = new Set<string>();
+router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> => {
+  // Razorpay always POSTs JSON. Reject anything else so the rawBody hook
+  // (which is keyed off application/json) is guaranteed to have run.
+  const ct = (req.headers["content-type"] ?? "").toString().toLowerCase();
+  if (!ct.includes("application/json")) {
+    res.status(415).json({ error: "unsupported_media_type" });
+    return;
+  }
+
+  const expected = process.env.RAZORPAY_WEBHOOK_SECRET;
+  if (!expected) {
+    if (process.env.NODE_ENV === "production") {
+      res.status(503).json({ error: "webhook_secret_unconfigured" });
+      return;
+    }
+    // dev/test allows unauthenticated calls so we can exercise locally.
+  } else {
+    const signature = req.headers["x-razorpay-signature"] as string | undefined;
+    const rawBody: string | undefined = (req as any).rawBody;
+    if (!rawBody) {
+      res.status(400).json({ error: "missing_raw_body" });
+      return;
+    }
+    if (!verifyWebhookSignature(rawBody, signature, expected)) {
+      res.status(401).json({ error: "invalid_signature" });
+      return;
+    }
+  }
+
+  const body = req.body ?? {};
+  const eventId: string | undefined = body.id;
+  const eventType: string | undefined = body.event;
+  const sub = body.payload?.subscription?.entity as
+    | {
+        id?: string;
+        plan_id?: string;
+        notes?: Record<string, string>;
+        current_end?: number | null;
+        current_start?: number | null;
+        status?: string;
+      }
+    | undefined;
+
+  // Idempotency: drop duplicate event ids. Bounded set to avoid unbounded
+  // memory growth on long-running processes.
+  if (eventId) {
+    if (seenEventIds.has(eventId)) {
+      res.json({ ok: true, duplicate: true });
+      return;
+    }
+    seenEventIds.add(eventId);
+    if (seenEventIds.size > 5000) {
+      // Drop the oldest ~half by re-creating the set from a slice.
+      const arr = Array.from(seenEventIds).slice(-2500);
+      seenEventIds.clear();
+      arr.forEach((id) => seenEventIds.add(id));
+    }
+  }
+
+  if (!sub) {
+    res.json({ ok: true, ignored: "no_subscription_payload", eventType });
+    return;
+  }
+
+  const userId = sub.notes?.userId;
+  const plan = razorpayPlanIdToPlan(sub.plan_id);
+  const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
+
+  if (!userId) {
+    res.json({ ok: true, ignored: "no_user_id_in_notes", eventType });
+    return;
+  }
+
+  switch (eventType) {
+    case "subscription.activated":
+    case "subscription.charged":
+    case "subscription.resumed": {
+      // Note: subscription.authenticated fires when the mandate is approved
+      // but the first payment has NOT yet been captured. We deliberately do
+      // NOT activate on that event — wait for `.activated` / `.charged`.
+      if (!plan) {
+        res.json({ ok: true, ignored: "unknown_plan", planId: sub.plan_id });
+        return;
+      }
+      await activateSubscription(userId, plan, {
+        provider: "razorpay",
+        periodEnd,
+        providerCustomerId: userId,
+        providerSubscriptionId: sub.id,
+      });
+      res.json({ ok: true, applied: { userId, plan, eventType } });
+      return;
+    }
+    case "subscription.cancelled":
+    case "subscription.completed":
+    case "subscription.expired":
+    case "subscription.paused":
+    case "subscription.halted": {
+      const { db, subscriptionsTable } = await import("@workspace/db");
+      const { eq } = await import("drizzle-orm");
+      await db
+        .update(subscriptionsTable)
+        .set({
+          status: eventType === "subscription.halted" ? "past_due" : "canceled",
+          currentPeriodEnd: periodEnd ?? null,
+          updatedAt: new Date(),
+        })
+        .where(eq(subscriptionsTable.userId, userId));
+      res.json({ ok: true, applied: { userId, status: eventType } });
+      return;
+    }
+    default:
+      res.json({ ok: true, ignored: eventType });
       return;
   }
 });

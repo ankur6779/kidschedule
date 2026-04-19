@@ -50,11 +50,13 @@ export default function PaywallScreen() {
   const loading = useSubscriptionStore((s) => s.loading);
   const load = useSubscriptionStore((s) => s.load);
   const upgrade = useSubscriptionStore((s) => s.upgrade);
+  const upgradeRazorpay = useSubscriptionStore((s) => s.upgradeRazorpay);
   const beginTrial = useSubscriptionStore((s) => s.beginTrial);
 
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const showRazorpay = Platform.OS === "android";
 
   useEffect(() => {
     if (plans.length === 0 && !loading) void load();
@@ -74,6 +76,19 @@ export default function PaywallScreen() {
       setNotice(
         res.reason ?? "Checkout is not yet available. Try again soon or contact support.",
       );
+    }
+  };
+
+  const onUpgradeRazorpay = async () => {
+    if (Platform.OS !== "web") void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setSubmitting(true);
+    setNotice(null);
+    const res = await upgradeRazorpay(selected);
+    setSubmitting(false);
+    if (res.ok) {
+      router.back();
+    } else if (!res.userCancelled) {
+      setNotice(res.reason ?? "UPI / card checkout failed.");
     }
   };
 
@@ -198,7 +213,7 @@ export default function PaywallScreen() {
             </View>
           )}
 
-          {/* Primary CTA */}
+          {/* Primary CTA — Google Play (RevenueCat) on Android+iOS */}
           <Pressable
             disabled={submitting || plans.length === 0}
             onPress={onUpgrade}
@@ -208,7 +223,9 @@ export default function PaywallScreen() {
               (submitting || plans.length === 0) && { opacity: 0.6 },
             ]}
             accessibilityRole="button"
-            accessibilityLabel="Upgrade Now"
+            accessibilityLabel={
+              Platform.OS === "android" ? "Pay with Google Play" : "Upgrade Now"
+            }
           >
             <LinearGradient
               colors={["#7B3FF2", "#FF4ECD"]}
@@ -221,11 +238,31 @@ export default function PaywallScreen() {
               ) : (
                 <>
                   <Ionicons name="rocket" size={16} color="#fff" />
-                  <Text style={styles.primaryText}>Upgrade Now</Text>
+                  <Text style={styles.primaryText}>
+                    {Platform.OS === "android" ? "Pay with Google Play" : "Upgrade Now"}
+                  </Text>
                 </>
               )}
             </LinearGradient>
           </Pressable>
+
+          {/* Secondary CTA — Razorpay (UPI / Card / Netbanking) on Android only */}
+          {showRazorpay && (
+            <Pressable
+              disabled={submitting || plans.length === 0}
+              onPress={onUpgradeRazorpay}
+              style={({ pressed }) => [
+                styles.secondaryBtn,
+                pressed && { opacity: 0.85 },
+                (submitting || plans.length === 0) && { opacity: 0.6 },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Pay with UPI or Card via Razorpay"
+            >
+              <Ionicons name="flash" size={16} color="#fff" />
+              <Text style={styles.secondaryText}>Pay with UPI / Card</Text>
+            </Pressable>
+          )}
 
           {/* Trial offer (only if free + never trialed) */}
           {ent && ent.status === "free" && (
@@ -415,6 +452,23 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "900",
+  },
+  secondaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 999,
+    marginTop: 10,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+  },
+  secondaryText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "800",
   },
   trialBtn: {
     alignItems: "center",

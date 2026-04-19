@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
+import { openRazorpayCheckout, type RazorpayCheckoutResponse } from "@/lib/razorpay";
 
 export type Plan = "free" | "monthly" | "six_month" | "yearly";
 export type Status = "free" | "trialing" | "active" | "past_due" | "canceled";
@@ -72,11 +73,119 @@ export function useSubscription() {
     return res.ok;
   }, [authFetch, refresh]);
 
+  /**
+   * Razorpay-powered web checkout. Creates a subscription server-side, opens
+   * the Razorpay overlay, then verifies the signature on success and polls
+   * for the canonical entitlement (which the webhook will update).
+   */
+  const checkoutRazorpay = useCallback(
+    async (
+      plan: Exclude<Plan, "free">,
+      prefill?: { name?: string; email?: string; contact?: string },
+    ): Promise<{ ok: boolean; reason?: string; userCancelled?: boolean }> => {
+      // 1) Ask the server to create a Razorpay subscription for this user/plan.
+      const createRes = await authFetch(
+        getApiUrl("/api/subscription/razorpay/create-subscription"),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ plan }),
+        },
+      );
+      if (!createRes.ok) {
+        const body = await createRes.json().catch(() => ({}));
+        if (createRes.status === 503) {
+          return {
+            ok: false,
+            reason:
+              "UPI / card payments are not enabled yet. Please use the mobile app or try again soon.",
+          };
+        }
+        return { ok: false, reason: body?.message ?? "Could not start checkout." };
+      }
+      const { subscriptionId, keyId } = (await createRes.json()) as {
+        subscriptionId: string;
+        keyId: string;
+      };
+
+      // 2) Open Razorpay Checkout. We resolve the outer promise from inside
+      //    the handler / dismiss callbacks.
+      const result = await new Promise<{
+        ok: boolean;
+        reason?: string;
+        userCancelled?: boolean;
+      }>((resolve) => {
+        let resolved = false;
+        const finish = (r: {
+          ok: boolean;
+          reason?: string;
+          userCancelled?: boolean;
+        }) => {
+          if (resolved) return;
+          resolved = true;
+          resolve(r);
+        };
+        openRazorpayCheckout({
+          key: keyId,
+          subscription_id: subscriptionId,
+          name: "AmyNest AI",
+          description: "AmyNest Premium subscription",
+          theme: { color: "#7B3FF2" },
+          prefill,
+          notes: { plan },
+          handler: async (resp: RazorpayCheckoutResponse) => {
+            try {
+              const verifyRes = await authFetch(
+                getApiUrl("/api/subscription/razorpay/verify"),
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ ...resp, plan }),
+                },
+              );
+              if (!verifyRes.ok) {
+                finish({ ok: false, reason: "Payment verification failed." });
+                return;
+              }
+              finish({ ok: true });
+            } catch {
+              finish({ ok: false, reason: "Payment verification failed." });
+            }
+          },
+          modal: {
+            ondismiss: () => finish({ ok: false, userCancelled: true }),
+          },
+        }).catch((err: unknown) => {
+          finish({
+            ok: false,
+            reason: err instanceof Error ? err.message : "Checkout failed to open.",
+          });
+        });
+      });
+
+      if (result.ok) {
+        // Optimistic refresh + a few delayed polls so the webhook has time to
+        // land. The verify endpoint already activates the row, so the first
+        // refresh usually shows premium immediately.
+        refresh();
+        for (const delay of [1500, 3500, 6000]) {
+          await new Promise((r) => setTimeout(r, delay));
+          await qc.invalidateQueries({ queryKey: QKEY });
+          const data = qc.getQueryData<SubscriptionResponse>(QKEY);
+          if (data?.entitlements.isPremium) break;
+        }
+      }
+      return result;
+    },
+    [authFetch, qc, refresh],
+  );
+
+  /**
+   * Legacy entry point — kept for any caller that hasn't moved to
+   * `checkoutRazorpay`. Falls back to the mobile-app message.
+   */
   const checkout = useCallback(
     async (_plan: Exclude<Plan, "free">): Promise<{ ok: boolean; reason?: string }> => {
-      // Subscriptions are sold through the iOS / Android stores via RevenueCat.
-      // Web users are directed to the mobile app to complete checkout; the
-      // entitlement then syncs back to web via the RC webhook.
       return {
         ok: false,
         reason:
@@ -96,5 +205,6 @@ export function useSubscription() {
     refresh,
     startTrial,
     checkout,
+    checkoutRazorpay,
   };
 }

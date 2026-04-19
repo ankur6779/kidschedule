@@ -206,3 +206,85 @@ eas submit --profile internal --platform android --latest
 
 Play Internal Testing distributes new builds to testers within minutes —
 no review wait.
+
+---
+
+## Razorpay Setup (Android User Choice Billing + Web)
+
+AmyNest offers Razorpay (UPI / Card / Netbanking) as a second payment
+option alongside Google Play Billing on Android, and as the **only**
+payment option on the website. iOS does not get Razorpay (Apple
+forbids third-party billing for digital subscriptions).
+
+### 1. Get Razorpay API keys
+
+1. Sign up / log in at <https://dashboard.razorpay.com/>.
+2. Switch to **Test Mode** for development (toggle top-right).
+3. Go to **Account & Settings → API Keys → Generate Test Key**.
+4. Copy the `Key ID` (starts with `rzp_test_…`) and `Key Secret`.
+5. Add both to Replit Secrets:
+   - `RAZORPAY_KEY_ID`
+   - `RAZORPAY_KEY_SECRET`
+6. Mirror the **public** key as client-shipped env vars:
+   - `VITE_RAZORPAY_KEY_ID` (web)
+   - `EXPO_PUBLIC_RAZORPAY_KEY_ID` (mobile)
+
+### 2. Seed the three subscription Plans
+
+Once `RAZORPAY_KEY_ID` / `_SECRET` are set, run the seed script
+to create the three subscription Plans (₹199 monthly, ₹999 6-month,
+₹1599 yearly):
+
+```bash
+pnpm --filter @workspace/api-server exec tsx scripts/seedRazorpay.ts
+```
+
+Copy the printed `plan_xxx` IDs into Replit Secrets:
+
+- `RAZORPAY_PLAN_ID_MONTHLY`
+- `RAZORPAY_PLAN_ID_SIX_MONTH`
+- `RAZORPAY_PLAN_ID_YEARLY`
+
+### 3. Configure the webhook
+
+1. In the Razorpay dashboard go to **Account & Settings → Webhooks → Add
+   New Webhook**.
+2. Webhook URL: `https://<your-deployed-domain>/api/subscription/razorpay/webhook`
+3. Subscribe to events: `subscription.activated`, `subscription.charged`,
+   `subscription.cancelled`, `subscription.completed`,
+   `subscription.expired`, `subscription.paused`, `subscription.resumed`,
+   `subscription.halted`, `subscription.authenticated`.
+4. Set a **Secret** (any strong random string) and add it to Replit
+   Secrets as `RAZORPAY_WEBHOOK_SECRET`. The server returns 503 in
+   production if this secret is unset.
+
+### 4. Google Play User Choice Billing (Android only)
+
+Google requires opt-in to allow third-party billing alongside Play
+Billing.
+
+1. In Play Console → **Monetisation setup → Alternative billing →
+   User choice billing**, apply for the program.
+2. Once approved, the Razorpay-paid Android users get the Razorpay
+   button on the paywall. Until approved, keep Razorpay disabled in
+   the production Android build by leaving `EXPO_PUBLIC_RAZORPAY_KEY_ID`
+   unset (the button gracefully shows a "not available" message).
+
+### 5. Switch from Test mode to Live mode
+
+1. In the Razorpay dashboard toggle to **Live Mode** and complete KYC.
+2. Generate **Live API keys**, replace `RAZORPAY_KEY_ID` /
+   `RAZORPAY_KEY_SECRET` (and the public key vars).
+3. Re-run `seedRazorpay.ts` against live mode to create live Plans, then
+   update the three `RAZORPAY_PLAN_ID_*` secrets.
+4. Add a Live-mode webhook with the same URL and secret.
+
+### 6. Smoke test
+
+- Web: open the paywall, pick a plan, click **Pay with UPI / Card**.
+  Use Razorpay test card `4111 1111 1111 1111`, any future expiry,
+  CVV `123`, OTP `1111` to complete the mandate.
+- After verify, the `subscriptions` row should flip to `active` with
+  `provider="razorpay"`. The webhook then refines `current_period_end`.
+- Android: build with `eas build --profile preview --platform android`
+  (Expo Go cannot load `react-native-razorpay`'s native module).

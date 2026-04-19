@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Rocket, Check, X, Smartphone } from "lucide-react";
+import { Sparkles, Rocket, Check, X, Smartphone, Zap } from "lucide-react";
+import { useUser } from "@clerk/react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePaywall } from "@/contexts/paywall-context";
@@ -30,7 +31,8 @@ const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
 
 export function PaywallModal() {
   const { state, closePaywall } = usePaywall();
-  const { plans, entitlements, checkout, startTrial } = useSubscription();
+  const { plans, entitlements, checkoutRazorpay, startTrial } = useSubscription();
+  const { user } = useUser();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -41,14 +43,19 @@ export function PaywallModal() {
 
   const copy = REASON_COPY[state.reason] ?? REASON_COPY.feature;
 
-  const onUpgrade = async () => {
+  const onPayWithRazorpay = async () => {
     setSubmitting(true);
     setNotice(null);
-    const res = await checkout(selected);
+    const prefill = {
+      name: user?.fullName ?? undefined,
+      email: user?.primaryEmailAddress?.emailAddress,
+      contact: user?.primaryPhoneNumber?.phoneNumber,
+    };
+    const res = await checkoutRazorpay(selected, prefill);
     setSubmitting(false);
     if (res.ok) {
       closePaywall();
-    } else {
+    } else if (!res.userCancelled) {
       setNotice(res.reason ?? "Checkout is not yet available.");
     }
   };
@@ -146,22 +153,27 @@ export function PaywallModal() {
           )}
 
           <Button
-            onClick={openMobileApp}
+            onClick={onPayWithRazorpay}
             disabled={submitting || plans.length === 0}
             className="w-full h-12 text-base font-extrabold bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 border-0 shadow-[0_10px_24px_rgba(255,78,205,0.5)]"
           >
-            <Smartphone className="h-4 w-4 mr-2" />
-            Continue in Mobile App
+            <Zap className="h-4 w-4 mr-2" />
+            {submitting ? "Opening Razorpay…" : "Pay with UPI / Card"}
           </Button>
 
           <button
             type="button"
-            onClick={onUpgrade}
-            className="hidden"
-            aria-hidden="true"
+            onClick={openMobileApp}
+            disabled={submitting}
+            className="w-full mt-2 h-10 inline-flex items-center justify-center gap-2 rounded-md text-sm font-bold text-white/85 bg-white/5 hover:bg-white/10 border border-white/10 transition"
           >
-            <Rocket className="h-4 w-4" />
+            <Smartphone className="h-3.5 w-3.5" />
+            Continue in Mobile App instead
           </button>
+
+          <span className="hidden" aria-hidden="true">
+            <Rocket className="h-4 w-4" />
+          </span>
 
           {entitlements?.status === "free" && (
             <button

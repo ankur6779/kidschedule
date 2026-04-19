@@ -149,7 +149,7 @@ export async function startTrial(userId: string): Promise<Subscription> {
 export async function activateSubscription(
   userId: string,
   plan: Exclude<Plan, "free">,
-  opts: { provider?: "stripe" | "revenuecat"; periodEnd?: Date; providerCustomerId?: string; providerSubscriptionId?: string } = {},
+  opts: { provider?: "stripe" | "revenuecat" | "razorpay"; periodEnd?: Date; providerCustomerId?: string; providerSubscriptionId?: string } = {},
 ): Promise<Subscription> {
   await getOrCreateSubscription(userId);
   const [updated] = await db

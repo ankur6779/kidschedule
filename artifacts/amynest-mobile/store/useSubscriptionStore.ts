@@ -3,6 +3,7 @@ import {
   fetchSubscription,
   startTrial,
   checkout,
+  checkoutRazorpay,
   type Entitlements,
   type PlanCard,
   type Plan,
@@ -20,6 +21,10 @@ type Actions = {
   refresh: () => Promise<void>;
   beginTrial: () => Promise<void>;
   upgrade: (planId: Exclude<Plan, "free">) => Promise<{ ok: boolean; reason?: string; userCancelled?: boolean }>;
+  upgradeRazorpay: (
+    planId: Exclude<Plan, "free">,
+    prefill?: { name?: string; email?: string; contact?: string },
+  ) => Promise<{ ok: boolean; reason?: string; userCancelled?: boolean }>;
   setEntitlements: (e: Entitlements) => void;
   reset: () => void;
 };
@@ -61,36 +66,51 @@ export const useSubscriptionStore = create<State & Actions>((set, get) => ({
   },
   upgrade: async (planId) => {
     const res = await checkout(planId);
-    if (res.ok) {
-      // Optimistically reflect premium right away; the RC webhook will sync
-      // the canonical entitlement on the server. We poll a few times in case
-      // the webhook is slightly delayed.
-      const current = get().entitlements;
-      if (current) {
-        set({
-          entitlements: {
-            ...current,
-            plan: planId,
-            status: "active",
-            isPremium: true,
-            usage: { ...current.usage, aiQueriesRemaining: null },
-          },
-        });
-      }
-      const poll = async () => {
-        for (const delay of [1500, 3000, 5000]) {
-          await new Promise((r) => setTimeout(r, delay));
-          await get().refresh();
-          if (get().entitlements?.isPremium) return;
-        }
-      };
-      void poll();
-    }
+    if (res.ok) applyOptimisticPremium(planId, set, get);
+    return res;
+  },
+  upgradeRazorpay: async (planId, prefill) => {
+    const res = await checkoutRazorpay(planId, prefill);
+    if (res.ok) applyOptimisticPremium(planId, set, get);
     return res;
   },
   setEntitlements: (e) => set({ entitlements: e }),
   reset: () => set({ ...initial }),
 }));
+
+function applyOptimisticPremium(
+  planId: Exclude<Plan, "free">,
+  set: (partial: Partial<State>) => void,
+  get: () => State,
+): void {
+  // Optimistically reflect premium; the RC / Razorpay webhook will sync the
+  // canonical entitlement on the server. Poll a few times in case the
+  // webhook is slightly delayed.
+  const current = get().entitlements;
+  if (current) {
+    set({
+      entitlements: {
+        ...current,
+        plan: planId,
+        status: "active",
+        isPremium: true,
+        usage: { ...current.usage, aiQueriesRemaining: null },
+      },
+    });
+  }
+  void (async () => {
+    for (const delay of [1500, 3000, 5000]) {
+      await new Promise((r) => setTimeout(r, delay));
+      try {
+        const data = await fetchSubscription();
+        set({ entitlements: data.entitlements, plans: data.plans });
+        if (data.entitlements.isPremium) return;
+      } catch {
+        // best-effort
+      }
+    }
+  })();
+}
 
 export const selectIsPremium = (s: State): boolean => !!s.entitlements?.isPremium;
 export const selectAiRemaining = (s: State): number | null =>
