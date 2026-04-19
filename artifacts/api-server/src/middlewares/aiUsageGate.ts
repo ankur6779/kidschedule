@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import { getAuth } from "@clerk/express";
 import {
   getOrCreateSubscription,
   isPremiumNow,
@@ -22,7 +23,7 @@ export async function aiUsageGate(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;

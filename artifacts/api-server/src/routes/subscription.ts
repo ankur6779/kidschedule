@@ -31,7 +31,7 @@ function productIdToPlan(productId: string | undefined | null): Exclude<Plan, "f
 const router: IRouter = Router();
 
 router.get("/subscription", requireAuth, async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;
@@ -91,7 +91,7 @@ router.get("/subscription", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/subscription/start-trial", requireAuth, async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;
@@ -107,7 +107,7 @@ router.post("/subscription/start-trial", requireAuth, async (req, res): Promise<
  * The actual checkout happens client-side via the RevenueCat SDK.
  */
 router.get("/subscription/rc-config", requireAuth, async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;
@@ -131,7 +131,7 @@ router.get("/subscription/rc-config", requireAuth, async (req, res): Promise<voi
  * Mobile clients should call /subscription/rc-config directly.
  */
 router.post("/subscription/checkout", requireAuth, async (req, res): Promise<void> => {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;
@@ -238,7 +238,7 @@ router.post("/subscription/webhook", async (req, res): Promise<void> => {
  * launch Razorpay Checkout. Requires auth so we can echo the user's id.
  */
 router.get("/subscription/razorpay/config", requireAuth, (req, res): void => {
-  const userId = (req as any).auth?.userId as string | undefined;
+  const userId = getAuth(req).userId;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
     return;
@@ -263,7 +263,7 @@ router.post(
   "/subscription/razorpay/create-subscription",
   requireAuth,
   async (req, res): Promise<void> => {
-    const userId = (req as any).auth?.userId as string | undefined;
+    const userId = getAuth(req).userId;
     if (!userId) {
       res.status(401).json({ error: "unauthorized" });
       return;
@@ -312,7 +312,7 @@ router.post(
   "/subscription/razorpay/verify",
   requireAuth,
   async (req, res): Promise<void> => {
-    const userId = (req as any).auth?.userId as string | undefined;
+    const userId = getAuth(req).userId;
     if (!userId) {
       res.status(401).json({ error: "unauthorized" });
       return;
