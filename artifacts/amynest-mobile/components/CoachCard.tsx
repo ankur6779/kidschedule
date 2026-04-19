@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions, useColorScheme } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
@@ -7,6 +7,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 import ActionButtons, { type ActionResult } from "./ActionButtons";
 import { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 export const CARD_HEIGHT = SCREEN_H;
@@ -46,7 +47,8 @@ function SectionHeader({ icon, label, color }: { icon: keyof typeof Ionicons.gly
 
 export default function CoachCard({ win, total, topInset, bottomInset, onAction }: Props) {
   const c = useColors();
-  const isDark = useColorScheme() === "dark";
+  const { mode } = useTheme();
+  const isDark = mode === "dark";
   return (
     <View style={[styles.page, { height: CARD_HEIGHT }]}>
       <Animated.View

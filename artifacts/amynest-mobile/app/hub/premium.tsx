@@ -9,7 +9,6 @@ import {
   Pressable,
   Platform,
   RefreshControl,
-  useColorScheme,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -27,6 +26,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useAppDataRefresh } from "@/hooks/useAppDataRefresh";
 import colors, { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Filter = "all" | "behavior" | "sleep" | "focus";
 
@@ -165,7 +165,8 @@ export default function PremiumHubScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const c = useColors();
-  const isDark = useColorScheme() === "dark";
+  const { mode } = useTheme();
+  const isDark = mode === "dark";
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
