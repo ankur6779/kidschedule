@@ -37,6 +37,7 @@ import {
   Clock,
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { AmyFaceSVG } from "@/components/amy-face-svg";
 import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776624219075.png";
 import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776588039438.png";
 import { useTranslation } from "react-i18next";
@@ -432,10 +433,7 @@ export default function LandingPage() {
                 Amy Nest AI
               </span>
               <span className="flex items-center gap-1.5 text-[10px] text-white/50 font-medium">
-                <span className="amy-face-wrap">
-                  <span className="amy-face-iris" />
-                  <span className="amy-face-iris" />
-                </span>
+                <AmyFaceSVG size={22} />
                 AI Parenting Coach
               </span>
             </div>
@@ -975,10 +973,7 @@ export default function LandingPage() {
                   Amy Nest AI
                 </span>
                 <span className="flex items-center gap-1.5 text-[10px] text-white/45 font-medium">
-                  <span className="amy-face-wrap" style={{ width: "20px", height: "20px" }}>
-                    <span className="amy-face-iris" style={{ width: "6px", height: "6px" }} />
-                    <span className="amy-face-iris" style={{ width: "6px", height: "6px" }} />
-                  </span>
+                  <AmyFaceSVG size={20} />
                   Where Smart Parenting Begins
                 </span>
               </div>
