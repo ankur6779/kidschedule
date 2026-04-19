@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -254,6 +255,7 @@ function ActivitiesSection({ ageGroup, effectiveChild, totalAgeMonths }: Activit
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ParentingHub() {
+  const { t } = useTranslation();
   const { data: children = [], isLoading } = useListChildren({
     query: { queryKey: getListChildrenQueryKey() },
   });
@@ -281,7 +283,7 @@ export default function ParentingHub() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="text-sm text-muted-foreground animate-pulse">Loading Parenting Hub…</div>
+        <div className="text-sm text-muted-foreground animate-pulse">{t("common.loading")}</div>
       </div>
     );
   }
@@ -445,21 +447,22 @@ export default function ParentingHub() {
 
 // ─── Page Header ─────────────────────────────────────────────────────────────
 function PageHeader() {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3">
       <div className="flex-1">
         <h1 className="font-quicksand text-2xl font-bold text-foreground flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-emerald-600" />
-          Parenting Hub
+          {t("hub.title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Articles, tips, activities & emotional support — all in one place
+          {t("hub.subtitle")}
         </p>
       </div>
       <Link href="/assistant">
         <button className="shrink-0 flex items-center gap-2 bg-gradient-to-br from-amber-100 dark:from-amber-500/20 via-rose-100 dark:via-rose-500/20 to-violet-200 dark:to-violet-500/25 rounded-2xl px-3 py-2 border border-border hover:border-primary/40 transition-all">
           <AmyIcon size={24} bounce />
-          <span className="text-xs font-bold text-foreground">Ask Amy</span>
+          <span className="text-xs font-bold text-foreground">{t("ai.ask_amy")}</span>
           <MessageCircleHeart className="h-4 w-4 text-rose-500" />
         </button>
       </Link>

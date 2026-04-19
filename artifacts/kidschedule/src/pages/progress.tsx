@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useListRoutines, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,7 @@ function getInsightIcon(type: string, icon: string) {
 }
 
 export default function ProgressPage() {
+  const { t } = useTranslation();
   const authFetch = useAuthFetch();
   const [insights, setInsights] = useState<{ summary: string; insights: Insight[] } | null>(null);
   const [loadingInsights, setLoadingInsights] = useState(false);
@@ -178,7 +180,7 @@ export default function ProgressPage() {
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
       <header>
-        <h1 className="font-quicksand text-3xl font-bold text-foreground">Progress & Insights</h1>
+        <h1 className="font-quicksand text-3xl font-bold text-foreground">{t("progress.title")}</h1>
         <p className="text-muted-foreground mt-1">Track your family's routine consistency and get Amy AI coaching ❤️</p>
       </header>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -40,6 +41,7 @@ const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
 };
 
 export default function PaywallScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { reason } = useLocalSearchParams<{ reason?: string }>();

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useAuth } from "@clerk/react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface ParentProfile {
 }
 
 export default function ParentProfilePage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { user } = useUser();
   const { getToken } = useAuth();
@@ -156,10 +158,10 @@ export default function ParentProfilePage() {
       <header>
         <h1 className="font-quicksand text-3xl font-bold text-foreground flex items-center gap-2">
           <UserCircle className="h-8 w-8 text-primary" />
-          My Parent Profile
+          {t("profile.title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Your schedule and availability help Amy AI build smarter routines for your child.
+          {t("profile.subtitle")}
         </p>
       </header>
 
@@ -219,18 +221,18 @@ export default function ParentProfilePage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Role</Label>
+              <Label>{t("profile.role")}</Label>
               <Select value={profile.role} onValueChange={(v) => setProfile((p) => ({ ...p, role: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="mother">Mother</SelectItem>
-                  <SelectItem value="father">Father</SelectItem>
+                  <SelectItem value="mother">{t("profile.mother")}</SelectItem>
+                  <SelectItem value="father">{t("profile.father")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Gender</Label>
+              <Label>{t("profile.gender")}</Label>
               <Select value={profile.gender || "prefer_not"} onValueChange={(v) => setProfile((p) => ({ ...p, gender: v === "prefer_not" ? "" : v }))}>
                 <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
                 <SelectContent>
@@ -242,7 +244,7 @@ export default function ParentProfilePage() {
             </div>
 
             <div className="flex flex-col gap-1.5 sm:col-span-2">
-              <Label>Mobile Number</Label>
+              <Label>{t("profile.mobile")}</Label>
               <Input
                 placeholder="+92 300 1234567"
                 value={profile.mobileNumber}
@@ -260,13 +262,13 @@ export default function ParentProfilePage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Work Type</Label>
+            <Label>{t("profile.work_type")}</Label>
             <Select value={profile.workType} onValueChange={(v) => setProfile((p) => ({ ...p, workType: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="work_from_home">Work from Home</SelectItem>
-                <SelectItem value="work_from_office">Work from Office</SelectItem>
-                <SelectItem value="homemaker">Housewife / Homemaker</SelectItem>
+                <SelectItem value="work_from_home">{t("profile.work_from_home")}</SelectItem>
+                <SelectItem value="work_from_office">{t("profile.work_from_office")}</SelectItem>
+                <SelectItem value="homemaker">{t("profile.stay_at_home")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -387,7 +389,7 @@ export default function ParentProfilePage() {
 
       <Button onClick={handleSave} disabled={saving} className="w-full rounded-xl h-11">
         <Save className="h-4 w-4 mr-2" />
-        {saving ? "Saving..." : "Save Profile"}
+        {saving ? t("common.saving") : t("profile.save")}
       </Button>
     </div>
   );

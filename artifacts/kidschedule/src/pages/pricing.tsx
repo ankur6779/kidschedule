@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Sparkles, Check, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSubscription, type Plan } from "@/hooks/use-subscription";
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const { plans, entitlements, isPremium, checkout, startTrial, loading } = useSubscription();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
@@ -14,7 +16,7 @@ export default function PricingPage() {
     setNotice(null);
     const res = await checkout(selected);
     setSubmitting(false);
-    if (!res.ok) setNotice(res.reason ?? "Checkout is not yet available.");
+    if (!res.ok) setNotice(res.reason ?? t("pricing.checkout_unavailable"));
   };
   const onTrial = async () => {
     setSubmitting(true);
@@ -29,19 +31,19 @@ export default function PricingPage() {
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 mb-4 shadow-lg">
             <Sparkles className="h-7 w-7 text-white" />
           </div>
-          <h1 className="text-4xl font-black text-slate-900 mb-3">Unlock Full Parenting Power</h1>
+          <h1 className="text-4xl font-black text-slate-900 mb-3">{t("pricing.title")}</h1>
           <p className="text-slate-600 max-w-xl mx-auto">
-            Unlimited Amy AI, personalized coaching plans, and behavior insights — built for busy parents.
+            {t("pricing.subtitle")}
           </p>
           {isPremium && (
             <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm font-bold">
-              <Check className="h-4 w-4" /> You're on the {entitlements?.plan} plan
+              <Check className="h-4 w-4" /> {t("pricing.on_plan", { plan: entitlements?.plan })}
             </div>
           )}
         </div>
 
         {loading ? (
-          <div className="text-center text-slate-400">Loading plans…</div>
+          <div className="text-center text-slate-400">{t("pricing.loading_plans")}</div>
         ) : (
           <div className="grid md:grid-cols-3 gap-6">
             {plans.map((p) => {
@@ -70,7 +72,7 @@ export default function PricingPage() {
                     <span className="text-sm text-slate-500">/ {p.period}</span>
                   </div>
                   {typeof p.savingsPercent === "number" && p.savingsPercent > 0 && (
-                    <div className="text-sm font-extrabold text-pink-500 mb-4">Save {p.savingsPercent}%</div>
+                    <div className="text-sm font-extrabold text-pink-500 mb-4">{t("pricing.save_percent", { percent: p.savingsPercent })}</div>
                   )}
                   <ul className="space-y-2 mt-4">
                     {p.features.map((f, i) => (
@@ -100,7 +102,7 @@ export default function PricingPage() {
             data-testid="button-upgrade"
           >
             <Rocket className="h-4 w-4 mr-2" />
-            {isPremium ? "You're already premium" : submitting ? "Please wait…" : "Upgrade Now"}
+            {isPremium ? t("pricing.already_premium") : submitting ? t("common.please_wait") : t("pricing.upgrade_now")}
           </Button>
           {!isPremium && entitlements?.status === "free" && (
             <button
@@ -110,10 +112,10 @@ export default function PricingPage() {
               className="w-full text-center mt-3 text-pink-600 font-extrabold text-sm hover:underline"
               data-testid="button-start-trial"
             >
-              Start 3-day free trial
+              {t("pricing.start_trial")}
             </button>
           )}
-          <p className="text-center text-xs text-slate-400 mt-3">Cancel anytime. Renews automatically until canceled.</p>
+          <p className="text-center text-xs text-slate-400 mt-3">{t("pricing.cancel_anytime")}</p>
         </div>
       </div>
     </div>

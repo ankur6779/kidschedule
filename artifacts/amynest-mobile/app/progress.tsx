@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator,
 } from "react-native";
@@ -14,6 +15,7 @@ type Routine = { id: number; childId: number; childName?: string; title?: string
 type Behavior = { id: number; type: string; date: string };
 
 export default function ProgressScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -64,8 +66,8 @@ export default function ProgressScreen() {
           <Ionicons name="trending-up" size={18} color="#fff" />
         </LinearGradient>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Progress</Text>
-          <Text style={styles.headerSubtitle}>Wins, patterns & milestones</Text>
+          <Text style={styles.headerTitle}>{t("progress.title")}</Text>
+          <Text style={styles.headerSubtitle}>{t("progress.subtitle")}</Text>
         </View>
       </View>
 

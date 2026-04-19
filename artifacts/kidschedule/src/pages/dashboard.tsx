@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey, useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Link } from "wouter";
@@ -28,11 +29,11 @@ type Routine = {
   items: RoutineItem[];
 };
 
-function getGreeting(): string {
+function getGreetingKey(): string {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return "Good Morning";
-  if (hour >= 12 && hour < 17) return "Good Afternoon";
-  return "Good Evening";
+  if (hour >= 5 && hour < 12) return "dashboard.good_morning";
+  if (hour >= 12 && hour < 17) return "dashboard.good_afternoon";
+  return "dashboard.good_evening";
 }
 
 function parseTimeToMinutes(t: string): number {
@@ -64,7 +65,11 @@ function computeStreak(routines: Routine[]): number {
 
 // ─── Hero Greeting (soft gradient) ─────────────────────────────────────────
 function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
-  const greeting = getGreeting();
+  const { t } = useTranslation();
+  const greeting = t(getGreetingKey());
+  const heading = displayName
+    ? t("dashboard.greeting_with_name", { name: displayName })
+    : t("dashboard.greeting_no_name");
   return (
     <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-amber-100 dark:from-amber-500/20 via-rose-100 dark:via-rose-500/20 to-violet-100 dark:to-violet-500/20 p-6 sm:p-7 shadow-sm animate-in fade-in slide-in-from-top-2 duration-500">
       <div aria-hidden className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-white/40 blur-2xl" />
@@ -72,12 +77,12 @@ function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasCh
       <div className="relative">
         <p className="text-[11px] font-bold uppercase tracking-widest text-amber-800/80">{greeting}</p>
         <h1 className="font-quicksand text-[22px] sm:text-3xl font-black text-foreground mt-1.5 leading-tight">
-          👋 Hi{displayName ? `, ${displayName}` : ""}, let's make today easier
+          👋 {heading}
         </h1>
         <p className="text-sm text-foreground/70 mt-2 leading-relaxed">
           {hasChildren
-            ? "We've planned your child's day for you ❤️"
-            : "Let's set up your child's first routine 🌟"}
+            ? `${t("dashboard.planned_for_you")} ❤️`
+            : `${t("dashboard.setup_first")} 🌟`}
         </p>
       </div>
     </div>
@@ -86,12 +91,13 @@ function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasCh
 
 // ─── Children Profile Strip (horizontal scroll) ────────────────────────────
 function ChildrenStrip({ children }: { children: any[] }) {
+  const { t } = useTranslation();
   if (children.length === 0) return null;
   return (
     <div className="-mx-1">
       <div className="flex items-center justify-between px-1 mb-2">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-white/50">Your little ones</p>
-        <Link href="/children" className="text-xs font-semibold text-violet-400 hover:text-violet-300">Manage</Link>
+        <p className="text-[11px] font-bold uppercase tracking-wide text-white/50">{t("dashboard.your_little_ones")}</p>
+        <Link href="/children" className="text-xs font-semibold text-violet-400 hover:text-violet-300">{t("common.manage")}</Link>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory">
         {children.map((c: any, i: number) => {

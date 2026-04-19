@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator,
   TextInput, Modal, KeyboardAvoidingView, Platform, Alert,
@@ -14,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 type Babysitter = { id: number; name: string; mobileNumber?: string; notes?: string; createdAt: string };
 
 export default function BabysittersScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
@@ -77,7 +79,7 @@ export default function BabysittersScreen() {
           <MaterialCommunityIcons name="baby-face-outline" size={18} color="#fff" />
         </LinearGradient>
         <View style={{ flex: 1 }}>
-          <Text style={styles.headerTitle}>Babysitters</Text>
+          <Text style={styles.headerTitle}>{t("babysitters.title")}</Text>
           <Text style={styles.headerSubtitle}>Manage your trusted helpers</Text>
         </View>
         <Pressable onPress={() => setOpen(true)} style={styles.addBtn}>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator,
   TextInput, Modal, KeyboardAvoidingView, Platform, Alert,
@@ -21,6 +22,7 @@ const TYPES: { key: string; label: string; emoji: string; color: string }[] = [
 ];
 
 export default function BehaviorScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
