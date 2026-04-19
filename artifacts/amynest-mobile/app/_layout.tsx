@@ -14,6 +14,7 @@ import { ActivityIndicator, View } from "react-native";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ProgressProvider } from "@/contexts/ProgressContext";
+import { useAppDataBootstrap } from "@/hooks/useAppData";
 import "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
@@ -50,6 +51,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
       setAuthTokenGetter(() => getToken());
     }
   }, [isSignedIn, getToken]);
+
+  // Bootstrap unified /api/app-data layer (cache hydrate + fetch + 5min auto-refresh)
+  useAppDataBootstrap();
 
   const checkOnboardingStatus = useCallback(async (): Promise<"complete" | "incomplete"> => {
     if (checkInFlightRef.current || !getToken) return "incomplete";

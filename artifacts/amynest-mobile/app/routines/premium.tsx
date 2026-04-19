@@ -35,6 +35,8 @@ import RoutineCard, {
   SNAP_INTERVAL,
 } from "@/components/RoutineCard";
 import ProgressBar from "@/components/ProgressBar";
+import AppDataStatusBanner from "@/components/AppDataStatusBanner";
+import { useAppStore } from "@/store/useAppStore";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const SIDE_PAD = (SCREEN_W - CARD_W) / 2;
@@ -171,8 +173,12 @@ export default function PremiumRoutineScreen() {
     [routines.length],
   );
 
-  const completedCount = routines.filter((r) => r.completed).length;
-  const progress = routines.length > 0 ? completedCount / routines.length : 0;
+  // Live overlay from /api/app-data — prefer server counts when available
+  const liveRoutine = useAppStore((s) => s.data?.routine);
+  const localCompletedCount = routines.filter((r) => r.completed).length;
+  const completedCount = liveRoutine ? liveRoutine.completedCount : localCompletedCount;
+  const totalForBar = liveRoutine ? liveRoutine.totalCount : routines.length;
+  const progress = totalForBar > 0 ? completedCount / totalForBar : 0;
 
   const handleCardPress = useCallback((r: Routine) => {
     setActiveRoutine(r);
@@ -240,10 +246,12 @@ export default function PremiumRoutineScreen() {
           <View style={{ marginTop: 18 }}>
             <ProgressBar
               progress={progress}
-              label={`${completedCount} of ${routines.length} completed`}
+              label={`${completedCount} of ${totalForBar} completed`}
             />
           </View>
         </Animated.View>
+
+        <AppDataStatusBanner />
 
         {/* CAROUSEL */}
         <Animated.View

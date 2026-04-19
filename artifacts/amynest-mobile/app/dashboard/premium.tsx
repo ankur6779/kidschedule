@@ -6,6 +6,7 @@ import {
   ScrollView,
   Pressable,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -15,6 +16,9 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useProgress } from "@/contexts/ProgressContext";
+import { useAppStore } from "@/store/useAppStore";
+import { useAppDataRefresh } from "@/hooks/useAppDataRefresh";
+import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import DashboardHeader from "@/components/DashboardHeader";
 import ChildCard from "@/components/ChildCard";
 import RoutineCarousel from "@/components/RoutineCarousel";
@@ -59,7 +63,21 @@ export default function PremiumDashboardScreen() {
     [router],
   );
 
-  const dailyGoalProgress = Math.min(1, totalProgress);
+  // Live data from unified /api/app-data
+  const liveData = useAppStore((s) => s.data);
+  const liveDashboard = liveData?.dashboard;
+  const liveRecs = liveData?.recommendations ?? [];
+  const liveCoach = liveData?.coach;
+  const liveRoutine = liveData?.routine;
+  const { refreshing, onRefresh } = useAppDataRefresh();
+
+  const displayParentName = liveData?.user?.name || parentName;
+  const displayChildName = liveData?.children?.[0]?.name || child.name;
+  const displayChildAge = liveData?.children?.[0]?.ageGroup || child.ageGroup;
+  const liveTotalProgress = liveDashboard?.totalProgress ?? totalProgress;
+  const liveStreak = liveDashboard?.streak ?? streakDays;
+
+  const dailyGoalProgress = Math.min(1, liveTotalProgress);
   const dailyGoalPercent = Math.round(dailyGoalProgress * 100);
   const goalReached = dailyGoalPercent >= dailyGoal;
 
@@ -84,13 +102,18 @@ export default function PremiumDashboardScreen() {
         <ScrollView
           contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
+          }
         >
           {/* Header */}
           <DashboardHeader
-            parentName={parentName}
-            childName={child.name}
+            parentName={displayParentName}
+            childName={displayChildName}
             onProfilePress={() => router.push("/(tabs)/profile" as never)}
           />
+
+          <AppDataStatusBanner />
 
           {/* Streak + daily goal strip */}
           <Animated.View entering={FadeInDown.duration(450).delay(40)} style={styles.stripRow}>
@@ -99,7 +122,7 @@ export default function PremiumDashboardScreen() {
                 <Ionicons name="flame" size={18} color="#F97316" />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.stripValue}>{streakDays}-day streak</Text>
+                <Text style={styles.stripValue}>{liveStreak}-day streak</Text>
                 <Text style={styles.stripLabel}>Keep it alive</Text>
               </View>
             </View>
@@ -128,10 +151,10 @@ export default function PremiumDashboardScreen() {
 
           {/* Hero child card with progress ring */}
           <ChildCard
-            childName={child.name}
-            ageGroup={child.ageGroup}
+            childName={displayChildName}
+            ageGroup={displayChildAge}
             focusGoal={child.focusGoal}
-            progress={totalProgress}
+            progress={liveTotalProgress}
             onContinue={() => goTo("/coach/premium")}
           />
 
@@ -139,7 +162,11 @@ export default function PremiumDashboardScreen() {
           <View style={{ marginTop: 26 }}>
             <HubSection
               title="Today's Routine"
-              subtitle={`${routineCompleted} of ${routine.length} done`}
+              subtitle={
+                liveRoutine
+                  ? `${liveRoutine.completedCount} of ${liveRoutine.totalCount} done`
+                  : `${routineCompleted} of ${routine.length} done`
+              }
               actionLabel="Open"
               onAction={() => goTo("/routines/premium")}
               delay={140}
@@ -154,11 +181,11 @@ export default function PremiumDashboardScreen() {
           {/* Amy Coach Progress */}
           <HubSection title="Amy Coach Progress" delay={200}>
             <CoachProgressCard
-              index={coach.index}
-              total={coach.total}
-              title={coach.title}
-              summary={coach.summary}
-              progress={coachProgress}
+              index={liveCoach?.currentStep ?? coach.index}
+              total={liveCoach?.totalSteps ?? coach.total}
+              title={liveCoach?.currentWin?.title ?? coach.title}
+              summary={liveCoach?.currentWin?.summary ?? coach.summary}
+              progress={liveCoach?.progress ?? coachProgress}
               onContinue={() => goTo("/coach/premium")}
             />
           </HubSection>
@@ -172,12 +199,25 @@ export default function PremiumDashboardScreen() {
             onAction={() => goTo("/hub/premium")}
           >
             <View style={styles.vList}>
-              {recommendations.map((r, i) => (
+              {(liveRecs.length > 0
+                ? liveRecs.map((r, i) => ({
+                    id: `live-${i}`,
+                    title: r.title,
+                    description: r.description,
+                    tag: r.type,
+                  }))
+                : recommendations.map((r) => ({
+                    id: r.id,
+                    title: r.title,
+                    description: r.description,
+                    tag: r.tag,
+                  }))
+              ).map((r, i) => (
                 <InsightCard
                   key={r.id}
                   title={r.title}
                   description={r.description}
-                  category={r.tag.toUpperCase()}
+                  category={String(r.tag).toUpperCase()}
                   readMinutes={3 + i}
                   accent={RECO_ACCENTS[i % RECO_ACCENTS.length]}
                   bookmarked={false}

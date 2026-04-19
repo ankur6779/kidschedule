@@ -18,6 +18,8 @@ import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 
 import CoachCard, { CARD_HEIGHT, type CoachWin } from "@/components/CoachCard";
 import ProgressBar from "@/components/ProgressBar";
+import AppDataStatusBanner from "@/components/AppDataStatusBanner";
+import { useAppStore } from "@/store/useAppStore";
 import { type ActionResult } from "@/components/ActionButtons";
 
 const { height: SCREEN_H } = Dimensions.get("window");
@@ -434,6 +436,8 @@ export default function PremiumCoachScreen() {
             <Text style={styles.progressPillText}>{Math.round(progress * 100)}%</Text>
           </View>
         </View>
+
+        <AppDataStatusBanner />
 
         {/* Header progress bar */}
         {phase === "cards" && (

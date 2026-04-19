@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Pressable,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,6 +21,9 @@ import HubSection from "@/components/HubSection";
 import ActionCard from "@/components/ActionCard";
 import ActivityCard from "@/components/ActivityCard";
 import InsightCard from "@/components/InsightCard";
+import AppDataStatusBanner from "@/components/AppDataStatusBanner";
+import { useAppStore } from "@/store/useAppStore";
+import { useAppDataRefresh } from "@/hooks/useAppDataRefresh";
 
 type Filter = "all" | "behavior" | "sleep" | "focus";
 
@@ -177,19 +181,48 @@ export default function PremiumHubScreen() {
       ),
     [filter, matches],
   );
+  // Live overlays from /api/app-data
+  const liveInsightsRaw = useAppStore((s) => s.data?.insights ?? []);
+  const liveRecsRaw = useAppStore((s) => s.data?.recommendations ?? []);
+
+  const mergedInsights = useMemo(() => {
+    const liveMapped = liveInsightsRaw.map((i, idx) => ({
+      id: `live-i-${idx}`,
+      title: i.title,
+      description: i.description,
+      category: "INSIGHT",
+      readMinutes: 3,
+      accent: ["#A855F7", "#EC4899"] as const,
+      tag: "behavior" as Filter,
+    }));
+    return [...liveMapped, ...INSIGHTS];
+  }, [liveInsightsRaw]);
+
+  const mergedRecs = useMemo(() => {
+    const liveMapped = liveRecsRaw.map((r, idx) => ({
+      id: `live-r-${idx}`,
+      title: r.title,
+      description: r.description,
+      tag: (r.type === "coach" ? "behavior" : r.type === "routine" ? "sleep" : "focus") as Filter,
+      icon: (r.type === "coach" ? "sparkles" : r.type === "routine" ? "calendar" : "leaf") as keyof typeof Ionicons.glyphMap,
+      gradient: ["#A855F7", "#EC4899"] as readonly [string, string],
+    }));
+    return [...liveMapped, ...RECOMMENDATIONS];
+  }, [liveRecsRaw]);
+
   const filteredInsights = useMemo(
     () =>
-      INSIGHTS.filter(
+      mergedInsights.filter(
         (i) => (filter === "all" || i.tag === filter) && (matches(i.title) || matches(i.description)),
       ),
-    [filter, matches],
+    [filter, matches, mergedInsights],
   );
   const filteredRecs = useMemo(
     () =>
-      RECOMMENDATIONS.filter(
+      mergedRecs.filter(
         (r) => (filter === "all" || r.tag === filter) && (matches(r.title) || matches(r.description)),
       ),
-    [filter, matches],
+    [filter, matches, mergedRecs],
   );
 
   const toggleBookmark = useCallback((id: string) => {
@@ -208,6 +241,8 @@ export default function PremiumHubScreen() {
     [router],
   );
 
+  const { refreshing, onRefresh } = useAppDataRefresh();
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
@@ -225,6 +260,9 @@ export default function PremiumHubScreen() {
         <ScrollView
           contentContainerStyle={{ paddingTop: insets.top + 14, paddingBottom: insets.bottom + 40 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#7C3AED" />
+          }
         >
           {/* HEADER */}
           <Animated.View entering={FadeInDown.duration(500)} style={styles.headerRow}>
@@ -249,6 +287,8 @@ export default function PremiumHubScreen() {
               </LinearGradient>
             </Pressable>
           </Animated.View>
+
+          <AppDataStatusBanner />
 
           {/* SEARCH */}
           <Animated.View entering={FadeInDown.duration(500).delay(80)} style={styles.searchWrap}>
