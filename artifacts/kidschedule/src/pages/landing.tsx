@@ -210,12 +210,12 @@ export default function LandingPage() {
         </div>
 
         {/* Big floating logo */}
-        <div className="amy-fade-up-1 relative mb-8 flex items-center justify-center">
+        <div className="amy-fade-up-1 relative -mb-6 flex items-center justify-center">
           <div className="amy-float">
             <img
               src={heroImg}
               alt="AmyNest AI"
-              className="w-80 md:w-[520px] object-contain"
+              className="w-96 md:w-[620px] object-contain"
               style={{
                 mixBlendMode: "screen",
                 filter:
