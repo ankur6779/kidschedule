@@ -640,12 +640,21 @@ export default function OnboardingPage() {
         className="sticky top-0 z-10"
         style={{ background: "rgba(238,242,255,0.85)", backdropFilter: "blur(8px)" }}
       >
-        <div className="flex items-center gap-2.5 px-4 pt-3 pb-1">
-          <AmyAvatar size={8} />
-          <div>
-            <p className="text-xs font-bold text-indigo-700">Amy Coach</p>
-            <p className="text-xs text-indigo-400">Setting up your profile</p>
+        <div className="flex items-center justify-between px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2.5">
+            <AmyAvatar size={8} />
+            <div>
+              <p className="text-xs font-bold text-indigo-700">Amy Coach</p>
+              <p className="text-xs text-indigo-400">Setting up your profile</p>
+            </div>
           </div>
+          <button
+            onClick={() => setLocation("/dashboard")}
+            className="text-xs font-semibold text-indigo-400 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-xl hover:bg-indigo-50 active:scale-95"
+            title="Skip onboarding"
+          >
+            Skip onboarding — will do it manually
+          </button>
         </div>
         <ProgressBar step={step} />
       </div>

@@ -528,14 +528,24 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.topBar, { paddingTop: topPad + 8 }]}>
-        <View style={styles.amyRow}>
-          <View style={[styles.amyAvatar, { backgroundColor: PRIMARY }]}>
-            <Ionicons name="leaf" size={18} color="#fff" />
+        <View style={[styles.amyRow, { justifyContent: "space-between" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <View style={[styles.amyAvatar, { backgroundColor: PRIMARY }]}>
+              <Ionicons name="leaf" size={18} color="#fff" />
+            </View>
+            <View>
+              <Text style={[styles.amyName, { color: colors.foreground }]}>Amy</Text>
+              <Text style={[styles.amyStatus, { color: "#10B981" }]}>Parenting Coach</Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.amyName, { color: colors.foreground }]}>Amy</Text>
-            <Text style={[styles.amyStatus, { color: "#10B981" }]}>Parenting Coach</Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => router.replace("/(tabs)")}
+            style={styles.skipBtn}
+            activeOpacity={0.7}
+            testID="skip-onboarding-btn"
+          >
+            <Text style={styles.skipBtnText}>Skip — will do it manually</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -591,6 +601,19 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   topBar: { paddingHorizontal: 16, paddingBottom: 12 },
   amyRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  skipBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: "rgba(99,102,241,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(99,102,241,0.15)",
+  },
+  skipBtnText: {
+    fontSize: 11,
+    fontFamily: "Inter_500Medium",
+    color: "#6366F1",
+  },
   amyAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   amyName: { fontSize: 16, fontFamily: "Inter_700Bold" },
   amyStatus: { fontSize: 11, fontFamily: "Inter_500Medium" },

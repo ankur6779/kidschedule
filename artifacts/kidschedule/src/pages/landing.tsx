@@ -251,6 +251,16 @@ export default function LandingPage() {
         <p className="amy-fade-up-4 mt-6 text-xs text-white/50">
           {t("landing.hero_free")}
         </p>
+
+        {/* Sign-in line */}
+        <p className="amy-fade-up-4 mt-4 text-sm text-white/60">
+          Already a Smart Parent?{" "}
+          <Link href="/sign-in">
+            <span className="font-bold text-purple-300 hover:text-purple-200 underline underline-offset-2 cursor-pointer transition-colors">
+              Kindly Sign In
+            </span>
+          </Link>
+        </p>
       </section>
 
       {/* PROBLEM HOOK */}

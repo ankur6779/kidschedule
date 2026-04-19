@@ -231,6 +231,16 @@ export default function WelcomeScreen() {
             </TouchableOpacity>
 
             <Text style={styles.smallNote}>{t("landing.hero_free")}</Text>
+
+            {/* Sign-in line */}
+            <Link href="/sign-in" asChild>
+              <TouchableOpacity activeOpacity={0.7} style={{ marginTop: 14 }} testID="link-sign-in-hero">
+                <Text style={styles.signInLine}>
+                  Already a Smart Parent?{" "}
+                  <Text style={styles.signInLineEmphasis}>Kindly Sign In</Text>
+                </Text>
+              </TouchableOpacity>
+            </Link>
           </Animated.View>
 
           {/* PROBLEM HOOK */}
@@ -620,6 +630,17 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_500Medium",
     marginTop: 18,
     textAlign: "center",
+  },
+  signInLine: {
+    color: "rgba(255,255,255,0.60)",
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
+  signInLineEmphasis: {
+    color: "#C4B5FD",
+    fontFamily: "Inter_700Bold",
+    textDecorationLine: "underline",
   },
 
   /* SECTIONS — shared */
