@@ -68,6 +68,7 @@ export default function GenerateRoutineScreen() {
   const [mood, setMood] = useState<Mood>("normal");
   const [hasSchool, setHasSchool] = useState<boolean | null>(null);
   const [specialPlans, setSpecialPlans] = useState<string>("");
+  const [fridgeItems, setFridgeItems] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: children = [], isLoading } = useQuery<Child[]>({
@@ -102,6 +103,7 @@ export default function GenerateRoutineScreen() {
           date,
           hasSchool: hasSchool ?? undefined,
           specialPlans: specialPlans.trim() || undefined,
+          fridgeItems: fridgeItems.trim() || undefined,
           mood: mood !== "normal" ? mood : undefined,
         }),
       });
@@ -314,6 +316,22 @@ export default function GenerateRoutineScreen() {
           value={specialPlans}
           onChangeText={setSpecialPlans}
           placeholder="e.g. doctor visit at 4pm, birthday party, swimming class…"
+          placeholderTextColor="#9CA3AF"
+          style={styles.textarea}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+        />
+
+        {/* Food items */}
+        <Text style={styles.sectionLabel}>6. Food items at home <Text style={styles.optional}>(optional)</Text></Text>
+        <Text style={[styles.optional, { marginTop: -4, marginBottom: 8 }]}>
+          List ingredients you'd like Amy to use today (comma-separated). Leave blank to use your regional cuisine.
+        </Text>
+        <TextInput
+          value={fridgeItems}
+          onChangeText={setFridgeItems}
+          placeholder="e.g. paneer, tomato, eggs, spinach, leftover dal…"
           placeholderTextColor="#9CA3AF"
           style={styles.textarea}
           multiline

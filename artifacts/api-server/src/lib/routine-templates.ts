@@ -68,6 +68,7 @@ export type RoutineParams = {
   region?: Region;
   goals?: string;
   specialPlans?: string;
+  fridgeItems?: string;
   p1Free: boolean;
   p2Free: boolean;
   bothBusy: boolean;
@@ -133,6 +134,109 @@ function dateSeed(date: string, childName: string): number {
 
 function pick<T>(arr: T[], seed: number, offset = 0): T {
   return arr[Math.abs(seed + offset) % arr.length];
+}
+
+// ─── Fridge / user-supplied food items helpers ────────────────────────────────
+// When parents type ingredients into "Food items" while generating a routine,
+// the generator should suggest meal names built from those items instead of
+// the regional meal bank.
+
+export function parseFridgeItems(raw: string | undefined | null): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[,\n;|]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
+    .slice(0, 12);
+}
+
+const ITEM_MEAL_TEMPLATES: Record<string, string[]> = {
+  VEG_BREAKFAST: [
+    "{a} paratha with curd",
+    "{a} & {b} toast",
+    "{a} omelette (egg-free besan style)",
+    "{a} poha",
+    "{a} sandwich",
+  ],
+  NONVEG_BREAKFAST: [
+    "{a} omelette with toast",
+    "{a} & {b} bhurji",
+    "{a} keema paratha",
+    "Scrambled egg with {a}",
+    "{a} sandwich",
+  ],
+  VEG_LUNCH: [
+    "{a} sabzi with roti & dal",
+    "{a}-{b} pulao",
+    "{a} curry with rice",
+    "Stuffed {a} paratha with curd",
+    "{a} khichdi",
+  ],
+  NONVEG_LUNCH: [
+    "{a} curry with rice",
+    "{a} biryani",
+    "{a}-{b} pulao",
+    "Grilled {a} with roti & salad",
+    "{a} masala with chapati",
+  ],
+  VEG_DINNER: [
+    "{a} sabzi with roti",
+    "{a} khichdi with ghee",
+    "{a}-{b} fried rice",
+    "{a} paratha with curd",
+    "Light {a} soup with toast",
+  ],
+  NONVEG_DINNER: [
+    "{a} curry with roti",
+    "{a} stew with bread",
+    "Grilled {a} with veggies",
+    "{a} fried rice",
+    "{a} kebabs with salad",
+  ],
+  VEG_SNACKS: [
+    "{a} chaat",
+    "{a} cutlet",
+    "Toasted {a} bites",
+    "{a}-{b} salad bowl",
+    "{a} smoothie",
+  ],
+  NONVEG_SNACKS: [
+    "{a} cutlet",
+    "{a} kebab bites",
+    "Grilled {a} skewers",
+    "{a}-{b} salad bowl",
+    "{a} sliders",
+  ],
+  VEG_TIFFIN: [
+    "{a} sandwich",
+    "{a} paratha roll",
+    "{a}-{b} wrap",
+    "{a} rice with pickle",
+    "{a} pulao box",
+  ],
+  NONVEG_TIFFIN: [
+    "{a} sandwich",
+    "{a} keema paratha roll",
+    "{a}-{b} wrap",
+    "{a} fried rice box",
+    "{a} biryani box",
+  ],
+};
+
+export function mealFromItems(key: MealKey, items: string[], seed: number): string {
+  if (items.length === 0) return "Healthy meal";
+  // Fall back to the closest meal-key family if a specific key is missing.
+  const fallback =
+    key.includes("BREAKFAST") ? ITEM_MEAL_TEMPLATES.VEG_BREAKFAST!
+    : key.includes("LUNCH") ? ITEM_MEAL_TEMPLATES.VEG_LUNCH!
+    : key.includes("DINNER") ? ITEM_MEAL_TEMPLATES.VEG_DINNER!
+    : key.includes("TIFFIN") ? ITEM_MEAL_TEMPLATES.VEG_TIFFIN!
+    : ITEM_MEAL_TEMPLATES.VEG_SNACKS!;
+  const templates = ITEM_MEAL_TEMPLATES[key] ?? fallback;
+  const tpl = templates[Math.abs(seed) % templates.length]!;
+  const a = items[Math.abs(seed) % items.length]!;
+  const b = items[Math.abs(seed + 1) % items.length] ?? a;
+  return tpl.replace("{a}", a).replace("{b}", b);
 }
 
 // ─── Region-aware Meal Databases ──────────────────────────────────────────────
@@ -842,7 +946,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   const {
     childName, ageGroup, wakeUpTime, sleepTime,
     schoolStartTime, schoolEndTime, travelMode, hasSchool,
-    mood, foodType, region, specialPlans, date,
+    mood, foodType, region, specialPlans, fridgeItems, date,
     p1Free, p2Free, bothBusy,
   } = params;
 
@@ -850,7 +954,11 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   // Accept both "non_veg" (canonical) and legacy "nonveg"
   const isVeg = foodType !== "non_veg" && foodType !== "nonveg";
   const travelMins = TRAVEL_DURATION[travelMode] ?? 20;
+  const fridgeList = parseFridgeItems(fridgeItems);
   const meal = (key: MealKey, off = 0): string => {
+    if (fridgeList.length > 0) {
+      return mealFromItems(key, fridgeList, seed + off);
+    }
     const arr = mealsFor(region, key);
     return arr[Math.abs(seed + off) % arr.length]!;
   };
@@ -1235,11 +1343,16 @@ export function generatePartialRoutine(params: {
   newActivity?: { name: string; duration?: number };
   date: string;
   region?: Region;
+  fridgeItems?: string;
 }): ScheduleItem[] {
-  const { childName, ageGroup, foodType, region, keptItems, startMins, sleepMins, newActivity, date } = params;
+  const { childName, ageGroup, foodType, region, fridgeItems, keptItems, startMins, sleepMins, newActivity, date } = params;
   const seed = dateSeed(date, childName);
   const isVeg = foodType !== "non_veg" && foodType !== "nonveg";
+  const fridgeList = parseFridgeItems(fridgeItems);
   const meal = (key: MealKey, off = 0): string => {
+    if (fridgeList.length > 0) {
+      return mealFromItems(key, fridgeList, seed + off);
+    }
     const arr = mealsFor(region, key);
     return arr[Math.abs(seed + off) % arr.length]!;
   };
