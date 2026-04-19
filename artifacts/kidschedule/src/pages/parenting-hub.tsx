@@ -401,7 +401,6 @@ export default function ParentingHub() {
           title="Ask Amy AI"
           description="Get warm, practical parenting advice"
           accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-rose-100 dark:to-rose-500/20"
-          defaultOpen
         >
           <AmyAISuggestionsSection />
         </HubSection>
@@ -413,7 +412,6 @@ export default function ParentingHub() {
           title="Parenting Articles"
           description="Research-based, age-matched reading"
           accentClass="bg-emerald-100 dark:bg-emerald-500/20"
-          defaultOpen
         >
           {effectiveChild ? (
             <ParentingArticles childAgeMonths={totalAgeMonths} />
@@ -430,7 +428,6 @@ export default function ParentingHub() {
             title="Daily Tips"
             description="Amy AI picks today's best tips for you"
             accentClass="bg-violet-100 dark:bg-violet-500/20"
-            defaultOpen
           >
             <DailyTips ageGroup={ageGroup} childName={effectiveChild.name} />
           </HubSection>
