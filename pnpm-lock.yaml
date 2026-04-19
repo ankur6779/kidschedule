@@ -182,6 +182,9 @@ importers:
       '@react-native-community/netinfo':
         specifier: ^12.0.1
         version: 12.0.1(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@workspace/behavior-tracker':
+        specifier: workspace:*
+        version: link:../../lib/behavior-tracker
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -418,6 +421,9 @@ importers:
       '@clerk/react':
         specifier: ^6.2.1
         version: 6.2.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@workspace/behavior-tracker':
+        specifier: workspace:*
+        version: link:../../lib/behavior-tracker
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -1013,6 +1019,8 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 3.25.76
+
+  lib/behavior-tracker: {}
 
   lib/db:
     dependencies:

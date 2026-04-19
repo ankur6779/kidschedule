@@ -1,0 +1,173 @@
+Upgrade the routine system in my web app "AmyNest" to support multi-child and family-level synchronized routines powered by Amy AI.
+
+IMPORTANT:
+- Keep existing single-child routine features intact
+- Add family-level intelligence on top
+- Keep system simple and fast
+- Mobile + web compatible
+
+--------------------------------
+1. Input System (Simplified 🔥)
+--------------------------------
+Remove complex inputs like detailed meal selection forms.
+
+Ask only:
+
+“Who is handling the child today?”
+
+Options:
+- Mom
+- Dad
+- Grandparent
+- Babysitter
+
+Store this as:
+handlerType
+
+--------------------------------
+2. Multi-Child Support (Core 🔥)
+--------------------------------
+- Allow multiple children profiles
+- Each child has:
+  - age
+  - routine preferences
+  - wake time
+
+--------------------------------
+3. Routine Types
+--------------------------------
+System should generate:
+
+(A) Single Child Routine  
+(B) Multi-Child Combined Routine  
+(C) Family Routine (merged view)
+
+--------------------------------
+4. Amy AI Smart Sync Logic 🧠🔥
+--------------------------------
+While generating family routine:
+
+- Align similar tasks across children:
+  Example:
+  → Meal time same for all kids
+
+- Handle conflicts:
+  → If ages differ, adjust activity difficulty
+
+- Optimize parent effort:
+  → Reduce overlapping chaos
+
+--------------------------------
+5. Handler-Based Adjustment 🎯
+--------------------------------
+Based on handlerType:
+
+- Mom/Dad:
+  → Full routine
+
+- Grandparent:
+  → Simpler, low-stress routine
+
+- Babysitter:
+  → Clear instructions + easy tasks
+
+--------------------------------
+6. Meal Suggestion Sync 🍽
+--------------------------------
+- Generate ONE family meal plan
+- Adapt portions based on child age
+
+Example:
+- Same meal → different quantity/style
+
+--------------------------------
+7. Reward System Integration 🎮
+--------------------------------
+- Each child earns points individually
+- Also add:
+
+“Family Points”
+
+Example:
+→ “Family completed routine = +20 bonus”
+
+--------------------------------
+8. Shared Activities 👨‍👩‍👧
+--------------------------------
+Add:
+
+- Family play time
+- Story time
+- Learning together
+
+--------------------------------
+9. Timeline Optimization ⏱
+--------------------------------
+- Merge schedules
+- Avoid overlapping stress
+
+Example:
+→ Stagger tasks if needed
+
+--------------------------------
+10. UI Structure (Important 🔥)
+--------------------------------
+Show:
+
+Tabs:
+- Child View
+- Family View
+
+Family View:
+- Combined timeline
+- Color-coded children
+
+--------------------------------
+11. Amy AI Suggestions 🤖
+--------------------------------
+Show:
+
+“Amy AI Suggests”
+
+Example:
+“Combine meal time for all kids to reduce effort”
+
+--------------------------------
+12. Routine Editing ✏️
+--------------------------------
+- Parent can edit:
+  - time
+  - tasks
+
+System auto-adjusts others
+
+--------------------------------
+13. Constraints
+--------------------------------
+- Only generate:
+  - Today
+  - Tomorrow
+
+- One routine per day per child
+
+--------------------------------
+14. Performance
+--------------------------------
+- Use local logic
+- Avoid heavy AI calls
+
+--------------------------------
+15. Keep it simple
+--------------------------------
+- No complex backend
+- Clean UI
+
+--------------------------------
+Return:
+Working system with:
+- Multi-child routines
+- Family synchronized routine
+- Handler-based logic
+- Meal sync
+- Reward integration
+- Amy AI insights

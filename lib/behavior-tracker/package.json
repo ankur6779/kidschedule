@@ -1,0 +1,9 @@
+{
+  "name": "@workspace/behavior-tracker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
