@@ -66,8 +66,8 @@ function computeStreak(routines: Routine[]): number {
   return streak;
 }
 
-// ─── Hero Greeting (simplified, light) ──────────────────────────────────────
-function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasChildren: boolean }) {
+// ─── Hero Greeting — premium, calm, clear ────────────────────────────────
+function HeroGreeting({ displayName, hasChildren, lastUpdated }: { displayName: string; hasChildren: boolean; lastUpdated: number }) {
   const { t } = useTranslation();
   const greeting = t(getGreetingKey());
   const heading = displayName
@@ -75,28 +75,44 @@ function HeroGreeting({ displayName, hasChildren }: { displayName: string; hasCh
     : t("dashboard.greeting_no_name");
 
   const today = new Date();
-  const dateStr = today.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const dateStr = today.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  const syncedTime = lastUpdated > 0
+    ? new Date(lastUpdated).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    : null;
 
   return (
-    <div className="flex items-center justify-between gap-4 py-2 animate-in fade-in duration-400">
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-violet-500 dark:text-violet-400">{greeting}</p>
-        <h1 className="font-quicksand text-2xl sm:text-3xl font-black text-foreground mt-0.5 leading-tight">
-          👋 {heading}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {hasChildren
-            ? t("dashboard.planned_for_you")
-            : t("dashboard.setup_first")}
-        </p>
-      </div>
-      <div className="shrink-0 text-right hidden sm:block">
-        <p className="text-xs text-muted-foreground">{dateStr}</p>
-        <div className="mt-1 inline-flex items-center gap-1.5 bg-violet-50 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 rounded-full px-3 py-1 text-xs font-bold border border-violet-100 dark:border-violet-400/20">
-          <Sparkles className="h-3 w-3" />
-          KidSchedule AI
+    <div className="relative overflow-hidden rounded-3xl border border-violet-100/70 dark:border-violet-400/15 bg-gradient-to-br from-violet-50/70 via-white to-white dark:from-violet-500/10 dark:via-slate-900/40 dark:to-slate-900/40 px-5 sm:px-6 py-5 sm:py-6 animate-in fade-in duration-400">
+      <div className="absolute -top-12 -right-12 h-40 w-40 rounded-full bg-violet-200/40 dark:bg-violet-500/15 blur-3xl pointer-events-none" />
+      <div className="relative flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+        <div className="min-w-0">
+          <p className="text-[10.5px] font-bold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">{greeting}</p>
+          <h1 className="font-quicksand text-2xl sm:text-[28px] font-black text-foreground mt-1 leading-[1.15] tracking-tight">
+            👋 {heading}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1.5 leading-snug">
+            {hasChildren ? t("dashboard.planned_for_you") : t("dashboard.setup_first")}
+          </p>
+        </div>
+        <div className="shrink-0 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="hidden sm:inline font-medium">{dateStr}</span>
+          {syncedTime && (
+            <span className="inline-flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/60 backdrop-blur rounded-full px-2.5 py-1 border border-border/70">
+              <LiveDot />
+              <span className="font-semibold">Live · {syncedTime}</span>
+            </span>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Tiny section label used to chunk the dashboard into clear groups
+function SectionLabel({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between mt-1 mb-0.5 px-0.5">
+      <p className="text-[10.5px] font-black uppercase tracking-[0.16em] text-muted-foreground">{children}</p>
+      {action}
     </div>
   );
 }
@@ -107,11 +123,16 @@ function ChildrenStrip({ children }: { children: any[] }) {
   if (children.length === 0) return null;
   return (
     <div>
-      <div className="flex items-center justify-between mb-2.5">
-        <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">{t("dashboard.your_little_ones")}</p>
-        <Link href="/children" className="text-xs font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700">{t("common.manage")}</Link>
-      </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 snap-x snap-mandatory -mx-0.5 px-0.5">
+      <SectionLabel
+        action={
+          <Link href="/children" className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:text-violet-700">
+            {t("common.manage")} →
+          </Link>
+        }
+      >
+        {t("dashboard.your_little_ones")}
+      </SectionLabel>
+      <div className="flex gap-2.5 overflow-x-auto pb-1 snap-x snap-mandatory -mx-0.5 px-0.5 mt-2">
         {children.map((c: any, i: number) => {
           const ageMonths = c.ageMonths ?? 0;
           const group = getAgeGroup(c.age, ageMonths);
@@ -733,58 +754,62 @@ export default function Dashboard() {
     <div className="flex flex-col gap-5 animate-in fade-in duration-400 pb-8">
 
       {/* ── Hero Greeting ───────────────────────────────────────── */}
-      <HeroGreeting displayName={displayName} hasChildren={(childrenList?.length ?? 0) > 0} />
-
-      {/* ── Live sync indicator ──────────────────────────────────── */}
-      {lastUpdated > 0 && (
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <LiveDot />
-          <span>
-            Live · synced{" "}
-            {new Date(lastUpdated).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
-          </span>
-        </div>
-      )}
+      <HeroGreeting
+        displayName={displayName}
+        hasChildren={(childrenList?.length ?? 0) > 0}
+        lastUpdated={lastUpdated}
+      />
 
       {/* ── Two-column layout (desktop) / stacked (mobile) ─────── */}
-      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-5 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 items-start">
 
         {/* LEFT column: Children + Now/Next */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
           <ChildrenStrip children={childrenList ?? []} />
-          <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
+          <div>
+            <SectionLabel>Today</SectionLabel>
+            <div className="mt-2">
+              <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
+            </div>
+          </div>
         </div>
 
         {/* RIGHT column: Streak + Stats + Amy + Parent Score */}
-        <div className="flex flex-col gap-3">
-          <StreakCard streak={streak} />
-          <StatsGrid summary={summary} loading={loadingSummary} />
-          <AmySuggestionCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
-          <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+        <div className="flex flex-col gap-4">
+          <SectionLabel>At a glance</SectionLabel>
+          <div className="flex flex-col gap-3 -mt-2">
+            <StreakCard streak={streak} />
+            <StatsGrid summary={summary} loading={loadingSummary} />
+          </div>
+          <SectionLabel>Coaching</SectionLabel>
+          <div className="flex flex-col gap-3 -mt-2">
+            <AmySuggestionCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+            <ParentScoreCard routines={(allRoutines ?? []) as Routine[]} streak={streak} />
+          </div>
         </div>
       </div>
 
-      {/* ── Gaming Reward entry ─────────────────────────────────── */}
-      <Link href="/games">
-        <button
-          type="button"
-          className="w-full text-left rounded-2xl p-4 border border-violet-300/40 hover:border-violet-400/70 hover:scale-[1.005] active:scale-[0.995] transition-all flex items-center gap-4"
-          style={{
-            background: "linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(245,158,11,0.10) 100%)",
-            boxShadow: "0 4px 18px rgba(139,92,246,0.18)",
-          }}
-        >
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
-            style={{ background: "linear-gradient(135deg,#8b5cf6,#f59e0b)" }}>
-            🎮
-          </div>
-          <div className="flex-1">
-            <p className="font-quicksand font-bold text-base leading-tight">Gaming Reward</p>
-            <p className="text-[12px] text-muted-foreground mt-0.5">Earn points from routines → unlock skill-based mini-games & redeem rewards.</p>
-          </div>
-          <span className="text-violet-500 text-lg shrink-0">→</span>
-        </button>
-      </Link>
+      {/* ── Quick access (Gaming Reward) ─────────────────────────── */}
+      <div>
+        <SectionLabel>Quick access</SectionLabel>
+        <Link href="/games">
+          <button
+            type="button"
+            className="w-full text-left mt-2 rounded-2xl p-4 border border-border hover:border-violet-300 dark:hover:border-violet-400/40 bg-card hover:bg-violet-50/40 dark:hover:bg-violet-500/8 hover:shadow-sm transition-all flex items-center gap-4"
+          >
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-xl bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20">
+              🎮
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-quicksand font-bold text-sm leading-tight text-foreground">Gaming Reward</p>
+              <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
+                Earn points from routines, unlock mini-games, and redeem real rewards.
+              </p>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
+        </Link>
+      </div>
 
       {/* ── Below-fold: Recent Routines + Behavior Highlights ────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
