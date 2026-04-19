@@ -7,13 +7,7 @@ import { Send, Loader2, User, Sparkles, RefreshCw, Zap } from "lucide-react";
 import { AmyIcon } from "@/components/amy-icon";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
-import {
-  getQuestionsUsed,
-  getRemainingQuestions,
-  isQuestionLimitReached,
-  recordQuestion,
-  AI_DAILY_QUESTION_LIMIT,
-} from "@/lib/ai-limits";
+import { useSubscription } from "@/hooks/use-subscription";
 
 interface Message {
   role: "user" | "assistant";
@@ -32,10 +26,10 @@ const SUGGESTED_QUESTIONS = [
 export default function AssistantPage() {
   const { toast } = useToast();
   const authFetch = useAuthFetch();
+  const { entitlements, isPremium, refresh: refreshSubscription } = useSubscription();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [questionsUsed, setQuestionsUsed] = useState(() => getQuestionsUsed());
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,22 +37,16 @@ export default function AssistantPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  const limitReached = questionsUsed >= AI_DAILY_QUESTION_LIMIT;
-  const remaining = Math.max(0, AI_DAILY_QUESTION_LIMIT - questionsUsed);
+  // Server-driven gating — no local quota counter. Premium users have no limit.
+  const dailyLimit = entitlements?.limits.aiQueriesPerDay ?? 5;
+  const questionsUsed = entitlements?.usage.aiQueriesToday ?? 0;
+  const remainingRaw = entitlements?.usage.aiQueriesRemaining; // null for premium
+  const remaining = isPremium ? Infinity : Math.max(0, remainingRaw ?? dailyLimit);
+  const limitReached = !isPremium && remaining <= 0;
 
   const sendMessage = async (question?: string) => {
     const text = (question ?? input).trim();
     if (!text || loading) return;
-
-    if (isQuestionLimitReached()) {
-      setQuestionsUsed(getQuestionsUsed());
-      toast({
-        title: "Daily limit reached",
-        description: "You've used all 5 Amy AI questions today. Come back tomorrow!",
-        variant: "destructive",
-      });
-      return;
-    }
 
     const userMsg: Message = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
@@ -73,6 +61,7 @@ export default function AssistantPage() {
         body: JSON.stringify({ question: text, language: i18nInstance.language || "en" }),
       });
       if (res.status === 402) {
+        refreshSubscription();
         // Dispatched event is handled by SubscriptionEventBridge in App.tsx
         window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
         return;
@@ -81,8 +70,6 @@ export default function AssistantPage() {
       const data = await res.json();
       const assistantMsg: Message = { role: "assistant", content: data.answer };
       setMessages((prev) => [...prev, assistantMsg]);
-      recordQuestion();
-      setQuestionsUsed(getQuestionsUsed());
       window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
     } catch {
       toast({ title: "Failed to get a response. Please try again.", variant: "destructive" });
@@ -142,12 +129,12 @@ export default function AssistantPage() {
             <span className="font-bold">Daily limit reached — try again tomorrow.</span>
           ) : (
             <span>
-              <strong>{remaining}</strong> of {AI_DAILY_QUESTION_LIMIT} Amy AI questions remaining today
+              <strong>{remaining}</strong> of {dailyLimit} Amy AI questions remaining today
             </span>
           )}
         </div>
         <div className="flex gap-1">
-          {Array.from({ length: AI_DAILY_QUESTION_LIMIT }).map((_, i) => (
+          {Array.from({ length: dailyLimit }).map((_, i) => (
             <div
               key={i}
               className={`w-2 h-2 rounded-full transition-all ${
@@ -191,7 +178,7 @@ export default function AssistantPage() {
             {limitReached && (
               <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-sm text-rose-700 max-w-sm text-center">
                 <p className="font-bold mb-1">Daily limit reached</p>
-                <p>You've used all {AI_DAILY_QUESTION_LIMIT} Amy AI questions for today. Your limit resets at midnight — come back tomorrow!</p>
+                <p>You've used all {dailyLimit} Amy AI questions for today. Your limit resets at midnight — come back tomorrow!</p>
               </div>
             )}
           </div>
@@ -254,7 +241,7 @@ export default function AssistantPage() {
         {limitReached ? (
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center text-rose-700">
             <p className="font-bold text-sm mb-0.5">Daily limit reached</p>
-            <p className="text-xs">Your {AI_DAILY_QUESTION_LIMIT} Amy AI questions for today are used up. Resets at midnight.</p>
+            <p className="text-xs">Your {dailyLimit} Amy AI questions for today are used up. Resets at midnight.</p>
           </div>
         ) : (
           <>

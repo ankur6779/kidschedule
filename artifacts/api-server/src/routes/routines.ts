@@ -1,7 +1,12 @@
 import { Router, type IRouter } from "express";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { db, routinesTable, childrenTable, parentProfilesTable } from "@workspace/db";
+import {
+  getOrCreateSubscription,
+  isPremiumNow,
+  FREE_LIMITS,
+} from "../services/subscriptionService";
 import {
   CreateRoutineBody,
   CheckRoutineQueryParams,
@@ -439,7 +444,57 @@ router.post("/routines", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, parsed.data.childId));
+  const { userId } = getAuth(req);
+  if (!userId) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  // Ownership check: child must belong to the authenticated user.
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
+  if (!child) {
+    res.status(404).json({ error: "Child not found" });
+    return;
+  }
+
+  // Enforce free-tier routines cap (count distinct routines owned by this user's children).
+  // override=true is only allowed to bypass the cap when an existing routine for the same
+  // (childId, date) already exists — otherwise free users could trivially bypass the cap by
+  // always sending override=true.
+  const sub = await getOrCreateSubscription(userId);
+  if (!isPremiumNow(sub)) {
+    let allowedByOverride = false;
+    if (parsed.data.override === true) {
+      const existing = await db
+        .select({ id: routinesTable.id })
+        .from(routinesTable)
+        .where(
+          and(
+            eq(routinesTable.childId, parsed.data.childId),
+            eq(routinesTable.date, parsed.data.date),
+          ),
+        )
+        .limit(1);
+      allowedByOverride = existing.length > 0;
+    }
+    if (!allowedByOverride) {
+      const [{ n }] = await db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(routinesTable)
+        .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+        .where(eq(childrenTable.userId, userId));
+      if ((n ?? 0) >= FREE_LIMITS.routinesMax) {
+        res.status(402).json({
+          error: "routine_limit_reached",
+          message: `Free plan supports up to ${FREE_LIMITS.routinesMax} saved routines. Upgrade for unlimited.`,
+          limit: FREE_LIMITS.routinesMax,
+        });
+        return;
+      }
+    }
+  }
 
   // If override flag is set, delete any existing routine for this child+date first
   if (parsed.data.override) {

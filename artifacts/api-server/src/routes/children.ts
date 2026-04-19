@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { db, childrenTable } from "@workspace/db";
 import {
@@ -12,6 +12,11 @@ import {
   GetChildResponse,
   UpdateChildResponse,
 } from "@workspace/api-zod";
+import {
+  getOrCreateSubscription,
+  isPremiumNow,
+  FREE_LIMITS,
+} from "../services/subscriptionService";
 
 const router: IRouter = Router();
 
@@ -40,6 +45,24 @@ router.post("/children", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+
+  // Enforce free-tier child cap
+  const sub = await getOrCreateSubscription(userId);
+  if (!isPremiumNow(sub)) {
+    const [{ n }] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(childrenTable)
+      .where(eq(childrenTable.userId, userId));
+    if ((n ?? 0) >= FREE_LIMITS.childrenMax) {
+      res.status(402).json({
+        error: "child_limit_reached",
+        message: `Free plan supports up to ${FREE_LIMITS.childrenMax} child. Upgrade to add more.`,
+        limit: FREE_LIMITS.childrenMax,
+      });
+      return;
+    }
+  }
+
   const [child] = await db.insert(childrenTable).values({ ...parsed.data, userId }).returning();
   res.status(201).json(GetChildResponse.parse({ ...child, createdAt: child.createdAt.toISOString() }));
 });

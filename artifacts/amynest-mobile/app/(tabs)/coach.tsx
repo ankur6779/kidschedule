@@ -282,7 +282,13 @@ export default function CoachScreen() {
           existingWinTitles: plan.wins.map((w) => w.title),
         }),
       });
+      if (res.status === 402) {
+        await useSubscriptionStore.getState().refresh();
+        router.push({ pathname: "/paywall", params: { reason: "ai_quota" } });
+        return;
+      }
       if (!res.ok) throw new Error(`Server ${res.status}`);
+      void useSubscriptionStore.getState().refresh();
       const data = (await res.json()) as { wins: Win[] };
       if (Array.isArray(data.wins) && data.wins.length > 0) {
         setPlan((p) => p ? { ...p, wins: [...p.wins, ...data.wins] } : p);

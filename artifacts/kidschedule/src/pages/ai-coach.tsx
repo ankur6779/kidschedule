@@ -356,7 +356,13 @@ export default function AICoachPage() {
           existingWinTitles: plan.wins.map((w) => w.title),
         }),
       });
+      if (res.status === 402) {
+        window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
+        window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
+        return;
+      }
       if (!res.ok) throw new Error(`Server ${res.status}`);
+      window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
       const data = (await res.json()) as { wins: Win[] };
       if (Array.isArray(data.wins) && data.wins.length > 0) {
         setPlan((p) => p ? { ...p, wins: [...p.wins, ...data.wins] } : p);

@@ -54,7 +54,11 @@ AmyNest — an AI-powered daily routine planner for parents. Parents can create 
   - `POST /ai/assistant-ai` — OpenAI-powered parenting assistant (gpt-5.2); falls back to static FAQ on error
   - `POST /routines/generate-ai` — OpenAI-powered routine generation with JSON mode; falls back to rule-based on error
   - `POST /api/insights` — still rule-based, but cached weekly in localStorage
-- **AI Daily Question Limit** — 5 AI questions/day tracked in localStorage (`amynest_ai_q_{date}`); shown as dot progress bar in assistant header
+- **AI Daily Question Limit** — 5 AI questions/day enforced **server-side** via `aiUsageGate` middleware (atomic reserve-then-check using `usage_daily` table; rollback on quota exceed or non-2xx). Web/mobile assistant + coach pages derive remaining count from `/api/subscription` entitlements
+- **Freemium Subscription** — plans: free / monthly ₹199 / six_month ₹999 / yearly ₹1599; 3-day trial; free caps: 5 AI/day, 1 child, 2 routines, 3 hub articles
+  - Backend: `/api/subscription` (entitlements + plan cards), `/api/subscription/start-trial`, `/api/subscription/checkout` (501 until Stripe/RevenueCat); cap enforcement on `POST /children` and `POST /routines` (with ownership check); 402 returned on any cap or quota breach
+  - Web: `useSubscription()` hook, `<PaywallProvider>` + `<PaywallModal>` + `<SubscriptionEventBridge>` listening to `amynest:open-paywall` / `amynest:refresh-subscription` window events; `/pricing` route; assistant + ai-coach handle 402 by opening paywall
+  - Mobile: `useSubscriptionStore` (Zustand), `useSubscription()` hook, `<PremiumLock>`, `<AiQuotaBanner>`, `app/paywall.tsx` sheet with plan cards + trial CTA + checkout
 - **Weekly Insights Cache** — insights stored in `amynest_insights_{year}_w{weekNum}` in localStorage; auto-loaded on page visit; "Refresh" button clears cache and regenerates
 - **Smart AI Routine Button** — secondary violet button on generate page; shows "AI Feature" badge; triggers `/routines/generate-ai`; loading overlay turns purple with Brain icon
 - **"AI Feature" Badges** — violet gradient badges on Assistant page header, AI Insights section title, Smart AI Routine button
