@@ -420,6 +420,15 @@ router.post(
  * event id (same event arriving twice is safe).
  */
 const seenEventIds = new Set<string>();
+function markEventSeen(eventId: string): void {
+  seenEventIds.add(eventId);
+  if (seenEventIds.size > 5000) {
+    // Drop the oldest ~half by re-creating the set from a slice.
+    const arr = Array.from(seenEventIds).slice(-2500);
+    seenEventIds.clear();
+    arr.forEach((id) => seenEventIds.add(id));
+  }
+}
 router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> => {
   // Razorpay always POSTs JSON. Reject anything else so the rawBody hook
   // (which is keyed off application/json) is guaranteed to have run.
@@ -463,23 +472,17 @@ router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> =>
       }
     | undefined;
 
-  // Idempotency: drop duplicate event ids. Bounded set to avoid unbounded
-  // memory growth on long-running processes.
-  if (eventId) {
-    if (seenEventIds.has(eventId)) {
-      res.json({ ok: true, duplicate: true });
-      return;
-    }
-    seenEventIds.add(eventId);
-    if (seenEventIds.size > 5000) {
-      // Drop the oldest ~half by re-creating the set from a slice.
-      const arr = Array.from(seenEventIds).slice(-2500);
-      seenEventIds.clear();
-      arr.forEach((id) => seenEventIds.add(id));
-    }
+  // Idempotency: short-circuit if we've already processed this event id.
+  // We only ADD to the set AFTER the handler succeeds (see end of try
+  // block) so a transient failure doesn't permanently drop a Razorpay
+  // retry. The set is bounded to avoid unbounded memory growth.
+  if (eventId && seenEventIds.has(eventId)) {
+    res.json({ ok: true, duplicate: true });
+    return;
   }
 
   if (!sub) {
+    if (eventId) markEventSeen(eventId);
     res.json({ ok: true, ignored: "no_subscription_payload", eventType });
     return;
   }
@@ -489,51 +492,66 @@ router.post("/subscription/razorpay/webhook", async (req, res): Promise<void> =>
   const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
 
   if (!userId) {
+    if (eventId) markEventSeen(eventId);
     res.json({ ok: true, ignored: "no_user_id_in_notes", eventType });
     return;
   }
 
-  switch (eventType) {
-    case "subscription.activated":
-    case "subscription.charged":
-    case "subscription.resumed": {
-      // Note: subscription.authenticated fires when the mandate is approved
-      // but the first payment has NOT yet been captured. We deliberately do
-      // NOT activate on that event — wait for `.activated` / `.charged`.
-      if (!plan) {
-        res.json({ ok: true, ignored: "unknown_plan", planId: sub.plan_id });
+  try {
+    switch (eventType) {
+      case "subscription.activated":
+      case "subscription.charged":
+      case "subscription.resumed": {
+        // Note: subscription.authenticated fires when the mandate is
+        // approved but the first payment has NOT yet been captured. We
+        // deliberately do NOT activate on that event — wait for
+        // `.activated` / `.charged` / `.resumed`.
+        if (!plan) {
+          if (eventId) markEventSeen(eventId);
+          res.json({ ok: true, ignored: "unknown_plan", planId: sub.plan_id });
+          return;
+        }
+        await activateSubscription(userId, plan, {
+          provider: "razorpay",
+          periodEnd,
+          providerCustomerId: userId,
+          providerSubscriptionId: sub.id,
+        });
+        if (eventId) markEventSeen(eventId);
+        res.json({ ok: true, applied: { userId, plan, eventType } });
         return;
       }
-      await activateSubscription(userId, plan, {
-        provider: "razorpay",
-        periodEnd,
-        providerCustomerId: userId,
-        providerSubscriptionId: sub.id,
-      });
-      res.json({ ok: true, applied: { userId, plan, eventType } });
-      return;
+      case "subscription.cancelled":
+      case "subscription.completed":
+      case "subscription.expired":
+      case "subscription.paused":
+      case "subscription.halted": {
+        const { db, subscriptionsTable } = await import("@workspace/db");
+        await db
+          .update(subscriptionsTable)
+          .set({
+            status: eventType === "subscription.halted" ? "past_due" : "canceled",
+            currentPeriodEnd: periodEnd ?? null,
+            updatedAt: new Date(),
+          })
+          .where(eq(subscriptionsTable.userId, userId));
+        if (eventId) markEventSeen(eventId);
+        res.json({ ok: true, applied: { userId, status: eventType } });
+        return;
+      }
+      default: {
+        if (eventId) markEventSeen(eventId);
+        res.json({ ok: true, ignored: eventType });
+        return;
+      }
     }
-    case "subscription.cancelled":
-    case "subscription.completed":
-    case "subscription.expired":
-    case "subscription.paused":
-    case "subscription.halted": {
-      const { db, subscriptionsTable } = await import("@workspace/db");
-      const { eq } = await import("drizzle-orm");
-      await db
-        .update(subscriptionsTable)
-        .set({
-          status: eventType === "subscription.halted" ? "past_due" : "canceled",
-          currentPeriodEnd: periodEnd ?? null,
-          updatedAt: new Date(),
-        })
-        .where(eq(subscriptionsTable.userId, userId));
-      res.json({ ok: true, applied: { userId, status: eventType } });
-      return;
-    }
-    default:
-      res.json({ ok: true, ignored: eventType });
-      return;
+  } catch (err: any) {
+    // Surface failures with a 5xx so Razorpay retries the webhook with
+    // exponential backoff. We deliberately did NOT add the eventId to
+    // seenEventIds, so the retry will go through this branch again.
+    req.log?.error?.({ err, eventId, eventType }, "razorpay_webhook_failed");
+    res.status(500).json({ error: "webhook_processing_failed", message: err?.message });
+    return;
   }
 });
 
