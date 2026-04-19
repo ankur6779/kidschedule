@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useTheme } from "@/contexts/theme-context";
-import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
+import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776587201948.png";
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg";

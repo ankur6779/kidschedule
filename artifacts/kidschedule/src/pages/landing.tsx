@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import logoImg from "@assets/ChatGPT_Image_Apr_18,_2026,_08_23_40_PM_1776526432358.png";
+import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776587201948.png";
 import { useTranslation } from "react-i18next";
 
 const COACH_HIGHLIGHT_KEYS = [
@@ -214,8 +214,11 @@ export default function LandingPage() {
             <img
               src={logoImg}
               alt="AmyNest AI"
-              className="h-36 w-36 md:h-44 md:w-44 rounded-3xl object-contain"
-              style={{ filter: "drop-shadow(0 12px 50px rgba(168,85,247,0.6))" }}
+              className="h-48 w-48 md:h-60 md:w-60 object-contain"
+              style={{
+                filter: "drop-shadow(0 12px 50px rgba(168,85,247,0.7))",
+                mixBlendMode: "screen",
+              }}
             />
           </div>
         </div>
