@@ -1,0 +1,158 @@
+Upgrade my web app and mobile app (AmyNest) to support a unified multi-language system across ALL sections including routine, parenting hub, meals, behavior tracker, and Amy AI.
+
+IMPORTANT:
+- Must work consistently on both Web and Mobile (React / React Native / Expo)
+- Language switch should update entire app instantly
+- Do NOT break existing features
+- Keep system lightweight and fast
+
+--------------------------------
+1. Global Language State (Core 🔥)
+--------------------------------
+- Create global language state:
+
+Key:
+app_language
+
+Options:
+- en (English)
+- hi (Hindi)
+- hinglish
+
+Store in:
+- localStorage (web)
+- AsyncStorage (mobile)
+
+--------------------------------
+2. Central Translation Engine 🧠
+--------------------------------
+Create a shared translation system:
+
+translations = {
+  en: { ... },
+  hi: { ... },
+  hinglish: { ... }
+}
+
+Create helper function:
+
+t(key)
+
+Usage:
+t("routine_title")
+
+--------------------------------
+3. Apply Across Entire App 🔥🔥
+--------------------------------
+Replace ALL hardcoded text with translation keys:
+
+Include:
+- Routine section
+- Parenting Hub
+- Behavior Tracker
+- Life Skills
+- Olympiad
+- Parent Support
+- Buttons
+- Labels
+
+--------------------------------
+4. Dynamic Content Localization
+--------------------------------
+Ensure translation for:
+
+- Routine tasks
+- Tips
+- Amy AI suggestions
+- Behavior insights
+- Skill tasks
+- Puzzle questions
+- Articles
+
+--------------------------------
+5. Meal & Recipe Translation 🍽
+--------------------------------
+Translate:
+
+- Meal names
+- Ingredients
+- Cooking steps
+
+Example:
+“Boil rice”
+→ “चावल उबालें”
+→ “Chawal boil karo”
+
+--------------------------------
+6. Amy AI Language Adaptation 🤖
+--------------------------------
+Amy AI responses must follow selected language:
+
+Example:
+Hindi:
+“Aaj routine halka rakhein”
+
+Hinglish:
+“Aaj routine light rakho”
+
+--------------------------------
+7. Language Switch UI 🌐
+--------------------------------
+Add language selector:
+
+Placement:
+- Header (web)
+- Top bar / settings (mobile)
+
+--------------------------------
+8. Instant UI Update 🔄
+--------------------------------
+On language change:
+
+- Re-render entire app
+- No reload required
+
+--------------------------------
+9. Fallback System
+--------------------------------
+If translation missing:
+→ fallback to English
+
+--------------------------------
+10. Performance Optimization
+--------------------------------
+- Load language JSON once
+- Cache translations
+- Avoid API calls
+
+--------------------------------
+11. Cross Platform Consistency 📱🖥️
+--------------------------------
+Ensure:
+
+- Same keys used in web + mobile
+- Same content output
+
+--------------------------------
+12. UI Text Handling
+--------------------------------
+Ensure text formatting works:
+
+- Line breaks
+- Dynamic values
+- No overflow
+
+--------------------------------
+13. Keep it simple
+--------------------------------
+- No backend required
+- Use local JSON files
+
+--------------------------------
+Return:
+Working multilingual system for both Web and Mobile with:
+- Global language state
+- Central translation function
+- Full app translation
+- Meal + AI localization
+- Instant switching

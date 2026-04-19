@@ -185,6 +185,9 @@ importers:
       '@workspace/behavior-tracker':
         specifier: workspace:*
         version: link:../../lib/behavior-tracker
+      '@workspace/family-routine':
+        specifier: workspace:*
+        version: link:../../lib/family-routine
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -424,6 +427,9 @@ importers:
       '@workspace/behavior-tracker':
         specifier: workspace:*
         version: link:../../lib/behavior-tracker
+      '@workspace/family-routine':
+        specifier: workspace:*
+        version: link:../../lib/family-routine
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -1046,6 +1052,8 @@ importers:
       drizzle-kit:
         specifier: ^0.31.9
         version: 0.31.9
+
+  lib/family-routine: {}
 
   lib/integrations-openai-ai-react: {}
 

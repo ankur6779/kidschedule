@@ -18,6 +18,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useColors } from "@/hooks/useColors";
+import {
+  HANDLER_TYPES,
+  type HandlerKey,
+  getHandlerInfo,
+  simplifyForHandler,
+  appendHandlerToPlans,
+} from "@workspace/family-routine";
 
 type Child = {
   id: number;
@@ -69,6 +76,7 @@ export default function GenerateRoutineScreen() {
   const [hasSchool, setHasSchool] = useState<boolean | null>(null);
   const [specialPlans, setSpecialPlans] = useState<string>("");
   const [fridgeItems, setFridgeItems] = useState<string>("");
+  const [handlerType, setHandlerType] = useState<HandlerKey>("mom");
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: children = [], isLoading } = useQuery<Child[]>({
@@ -102,13 +110,16 @@ export default function GenerateRoutineScreen() {
           childId: selectedChild,
           date,
           hasSchool: hasSchool ?? undefined,
-          specialPlans: specialPlans.trim() || undefined,
+          specialPlans: appendHandlerToPlans(specialPlans, handlerType),
           fridgeItems: fridgeItems.trim() || undefined,
           mood: mood !== "normal" ? mood : undefined,
         }),
       });
       if (!genRes.ok) throw new Error("Generate failed");
       const generated = (await genRes.json()) as { title: string; items: any[] };
+
+      // Apply handler-based simplification (grandparent / babysitter)
+      const simplifiedItems = simplifyForHandler(generated.items as any, handlerType);
 
       // Step 2: persist it (override = true so we replace any existing routine for same child+date)
       const saveRes = await authFetch("/api/routines", {
@@ -117,7 +128,7 @@ export default function GenerateRoutineScreen() {
           childId: selectedChild,
           date,
           title: generated.title,
-          items: generated.items,
+          items: simplifiedItems,
           override: true,
         }),
       });
@@ -259,8 +270,36 @@ export default function GenerateRoutineScreen() {
         </View>
         <Text style={styles.dateHint}>{formatDate(date)}</Text>
 
+        {/* Handler Type */}
+        <Text style={styles.sectionLabel}>3. Who's handling today?</Text>
+        <View style={styles.handlerGrid}>
+          {HANDLER_TYPES.map((h) => {
+            const active = handlerType === h.key;
+            return (
+              <TouchableOpacity
+                key={h.key}
+                onPress={() => { Haptics.selectionAsync(); setHandlerType(h.key); }}
+                activeOpacity={0.85}
+                style={[
+                  styles.handlerCard,
+                  {
+                    backgroundColor: active ? h.bg : "rgba(255,255,255,0.05)",
+                    borderColor: active ? h.border : "rgba(255,255,255,0.12)",
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 24 }}>{h.emoji}</Text>
+                <Text style={[styles.handlerLabel, { color: active ? h.fg : "rgba(255,255,255,0.92)" }]}>
+                  {h.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <Text style={styles.handlerNote}>{getHandlerInfo(handlerType).note}</Text>
+
         {/* Mood */}
-        <Text style={styles.sectionLabel}>3. How is {selectedChildData?.name ?? "your child"} feeling?</Text>
+        <Text style={styles.sectionLabel}>4. How is {selectedChildData?.name ?? "your child"} feeling?</Text>
         <View style={styles.moodGrid}>
           {MOODS.map((m) => {
             const active = mood === m.value;
@@ -288,7 +327,7 @@ export default function GenerateRoutineScreen() {
         </View>
 
         {/* School toggle */}
-        <Text style={styles.sectionLabel}>4. School day?</Text>
+        <Text style={styles.sectionLabel}>5. School day?</Text>
         <View style={styles.chipsRow}>
           {[
             { label: "🎒 Yes, school", value: true },
@@ -311,7 +350,7 @@ export default function GenerateRoutineScreen() {
         </View>
 
         {/* Special plans */}
-        <Text style={styles.sectionLabel}>5. Anything special today? <Text style={styles.optional}>(optional)</Text></Text>
+        <Text style={styles.sectionLabel}>6. Anything special today? <Text style={styles.optional}>(optional)</Text></Text>
         <TextInput
           value={specialPlans}
           onChangeText={setSpecialPlans}
@@ -324,7 +363,7 @@ export default function GenerateRoutineScreen() {
         />
 
         {/* Food items */}
-        <Text style={styles.sectionLabel}>6. Food items at home <Text style={styles.optional}>(optional)</Text></Text>
+        <Text style={styles.sectionLabel}>7. Food items at home <Text style={styles.optional}>(optional)</Text></Text>
         <Text style={[styles.optional, { marginTop: -4, marginBottom: 8 }]}>
           List ingredients you'd like Amy to use today (comma-separated). Leave blank to use your regional cuisine.
         </Text>
@@ -451,6 +490,30 @@ const styles = StyleSheet.create({
   },
   toggleChipActive: { backgroundColor: "#7C3AED", borderColor: "#7C3AED" },
   toggleChipText: { fontSize: 13, fontWeight: "700", color: "rgba(255,255,255,0.85)" },
+  handlerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 8,
+  },
+  handlerCard: {
+    flexBasis: "23%",
+    flexGrow: 1,
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 16,
+    borderWidth: 2,
+    gap: 4,
+  },
+  handlerLabel: { fontSize: 12, fontWeight: "800" },
+  handlerNote: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.65)",
+    marginTop: -2,
+    marginBottom: 18,
+    fontStyle: "italic",
+  },
   optional: { fontWeight: "500", color: "rgba(255,255,255,0.45)", fontSize: 12 },
   textarea: {
     borderWidth: 2,

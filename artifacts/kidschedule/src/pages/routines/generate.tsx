@@ -14,6 +14,17 @@ import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
 import { format } from "date-fns";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
+import {
+  HANDLER_TYPES,
+  type HandlerKey,
+  getHandlerInfo,
+  simplifyForHandler,
+  buildSyncSuggestions,
+  computeFamilyPoints,
+  pickSharedActivities,
+  appendHandlerToPlans,
+  type FRFamilyResult,
+} from "@workspace/family-routine";
 
 type MoodOption = { value: "happy" | "angry" | "lazy" | "normal"; label: string; emoji: string; hint: string; color: string };
 const MOOD_OPTIONS: MoodOption[] = [
@@ -574,6 +585,9 @@ export default function RoutineGenerate() {
   // Per-date parent availability
   const [parentAvail, setParentAvail] = useState<ParentAvailData>(() => loadAvailability(format(new Date(), "yyyy-MM-dd")));
 
+  // Handler type — who is taking care of the kids today
+  const [handlerType, setHandlerType] = useState<HandlerKey>("mom");
+
   // Family mode
   const [familyChildSettings, setFamilyChildSettings] = useState<Record<number, { hasSchool: boolean | null; selected: boolean }>>({});
   const [familyDate, setFamilyDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -798,14 +812,18 @@ export default function RoutineGenerate() {
           childId: selectedChild!,
           date,
           hasSchool: hasSchool ?? undefined,
-          specialPlans: specialPlans.trim() || undefined,
+          specialPlans: appendHandlerToPlans(specialPlans, handlerType),
           fridgeItems: fridgeItems.trim() || undefined,
           mood: mood !== "normal" ? mood : undefined,
           ...buildParentAvailPayload(parentAvail),
         }
       },
       {
-        onSuccess: (generatedData) => handlePostGenerate(generatedData as { title: string; items: RoutineItem[] }, shouldOverride, wakeTime),
+        onSuccess: (generatedData) => {
+          const data = generatedData as { title: string; items: RoutineItem[] };
+          const items = simplifyForHandler(data.items as any, handlerType) as RoutineItem[];
+          handlePostGenerate({ ...data, items }, shouldOverride, wakeTime);
+        },
         onError: () => toast({ title: "Failed to generate routine", variant: "destructive" }),
       }
     );
@@ -820,7 +838,7 @@ export default function RoutineGenerate() {
         childId: selectedChild!,
         date,
         hasSchool: hasSchool ?? undefined,
-        specialPlans: specialPlans.trim() || undefined,
+        specialPlans: appendHandlerToPlans(specialPlans, handlerType),
         fridgeItems: fridgeItems.trim() || undefined,
         mood: mood !== "normal" ? mood : undefined,
         ...buildParentAvailPayload(parentAvail),
@@ -831,8 +849,9 @@ export default function RoutineGenerate() {
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Amy AI generation failed");
-      const generatedData = await res.json();
-      handlePostGenerate(generatedData as { title: string; items: RoutineItem[] }, shouldOverride, wakeTime);
+      const generatedData = await res.json() as { title: string; items: RoutineItem[] };
+      const simplified = simplifyForHandler(generatedData.items as any, handlerType) as RoutineItem[];
+      handlePostGenerate({ ...generatedData, items: simplified }, shouldOverride, wakeTime);
     } catch {
       toast({ title: "Amy couldn't generate right now — try the standard routine instead.", variant: "destructive" });
     } finally {
@@ -946,7 +965,7 @@ export default function RoutineGenerate() {
                 childId: child.id,
                 date: familyDate,
                 hasSchool: familyChildSettings[child.id]?.hasSchool ?? undefined,
-                specialPlans: familySpecialPlans.trim() || undefined,
+                specialPlans: appendHandlerToPlans(familySpecialPlans, handlerType),
                 fridgeItems: familyFridgeItems.trim() || undefined,
                 ...buildParentAvailPayload(familyParentAvail),
               }
@@ -958,7 +977,9 @@ export default function RoutineGenerate() {
           );
         });
 
-        results.push({ child, routine: generated });
+        // Apply handler-based simplification (grandparent / babysitter)
+        const simplifiedItems = simplifyForHandler(generated.items as any, handlerType);
+        results.push({ child, routine: { ...generated, items: simplifiedItems as RoutineItem[] } });
       } catch {
         toast({ title: `Failed to generate routine for ${child.name}`, variant: "destructive" });
       }
@@ -1022,6 +1043,40 @@ export default function RoutineGenerate() {
           <p className="text-muted-foreground mt-1">Amy builds a smart daily plan around your schedule ❤️</p>
         </div>
       </header>
+
+      {/* Handler Selector — applies to both modes */}
+      <Card className="rounded-3xl border-none shadow-sm bg-card">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <UserCheck className="h-4 w-4 text-primary" />
+            <p className="text-sm font-bold text-foreground">Who's handling the kid{children && children.length > 1 ? "s" : ""} today?</p>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {HANDLER_TYPES.map((h) => {
+              const active = handlerType === h.key;
+              return (
+                <button
+                  key={h.key}
+                  onClick={() => setHandlerType(h.key)}
+                  className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-2xl border-2 transition-all ${
+                    active ? "shadow-sm" : "border-border bg-card hover:border-primary/40"
+                  }`}
+                  style={active ? { backgroundColor: h.bg, borderColor: h.border } : {}}
+                >
+                  <span className="text-xl leading-none">{h.emoji}</span>
+                  <span
+                    className="text-xs font-bold leading-tight"
+                    style={active ? { color: h.fg } : { color: "inherit" }}
+                  >
+                    {h.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2.5">{getHandlerInfo(handlerType).note}</p>
+        </CardContent>
+      </Card>
 
       {/* Mode Selector */}
       <div className="flex gap-2 p-1 bg-muted rounded-2xl">
@@ -1530,6 +1585,99 @@ export default function RoutineGenerate() {
                   <p className="text-xs text-green-700">{familyResults.length} routine{familyResults.length > 1 ? "s" : ""} generated for {familyDate}</p>
                 </div>
               </div>
+
+              {/* Amy AI Suggestions */}
+              {(() => {
+                const suggestions = buildSyncSuggestions(familyResults as unknown as FRFamilyResult[]);
+                if (suggestions.length === 0) return null;
+                return (
+                  <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Brain className="h-5 w-5 text-violet-600" />
+                        <h3 className="font-quicksand font-bold text-violet-900 dark:text-violet-200 text-lg">Amy AI Suggests</h3>
+                      </div>
+                      <div className="space-y-2">
+                        {suggestions.map((s, i) => (
+                          <div key={i} className="flex items-start gap-3 bg-white/70 dark:bg-white/5 rounded-2xl p-3 border border-violet-100 dark:border-violet-400/20">
+                            <span className="text-xl shrink-0">{s.icon}</span>
+                            <div>
+                              <p className="font-bold text-sm text-violet-900 dark:text-violet-100">{s.title}</p>
+                              <p className="text-xs text-violet-700 dark:text-violet-300 mt-0.5 leading-relaxed">{s.body}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
+              {/* Family Points */}
+              {(() => {
+                const fp = computeFamilyPoints(familyResults as unknown as FRFamilyResult[]);
+                const totalPossible = familyResults.reduce(
+                  (s, r) => s + r.routine.items.reduce((ss, i) => ss + ((i as any).rewardPoints ?? 5), 0),
+                  0
+                );
+                return (
+                  <Card className="rounded-3xl border-none shadow-sm bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 text-amber-600" />
+                          <h3 className="font-quicksand font-bold text-amber-900 dark:text-amber-100 text-lg">Family Points</h3>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-3xl font-black text-amber-700 dark:text-amber-200 leading-none">{totalPossible + 20}</p>
+                          <p className="text-[10px] text-amber-600 dark:text-amber-300 font-bold uppercase tracking-wide">possible today</p>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        {fp.perChild.map((p) => (
+                          <div key={p.name} className="flex items-center justify-between text-sm bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
+                            <span className="font-bold text-amber-900 dark:text-amber-100">{p.name}</span>
+                            <span className="text-amber-700 dark:text-amber-300 font-bold">earns ~{Math.round(totalPossible / familyResults.length)} pts</span>
+                          </div>
+                        ))}
+                        <div className="flex items-center justify-between text-sm bg-amber-200/60 dark:bg-amber-400/10 rounded-xl px-3 py-2 mt-2 border border-amber-300/60">
+                          <span className="font-bold text-amber-900 dark:text-amber-100">🎉 Family Bonus (everyone done)</span>
+                          <span className="text-amber-700 dark:text-amber-300 font-black">+20 pts</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
+
+              {/* Shared Family Activities */}
+              {(() => {
+                const shared = pickSharedActivities(
+                  familyResults.map((r) => ({ id: r.child.id, name: r.child.name, age: r.child.age })),
+                  3
+                );
+                return (
+                  <Card className="rounded-3xl border-none shadow-sm bg-card">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Users className="h-5 w-5 text-primary" />
+                        <h3 className="font-quicksand font-bold text-foreground text-lg">Shared Family Activities</h3>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-3">Pick one to do together — boosts sibling bonding.</p>
+                      <div className="grid sm:grid-cols-3 gap-3">
+                        {shared.map((a, i) => (
+                          <div key={i} className="bg-muted/40 hover:bg-primary/5 rounded-2xl p-3 border border-border/50 transition-all">
+                            <div className="text-2xl mb-1">{a.emoji}</div>
+                            <p className="font-bold text-sm text-foreground leading-tight">{a.title}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{a.duration} min</p>
+                            <p className="text-xs text-muted-foreground mt-1.5 leading-snug">{a.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()}
 
               {/* SECTION 3: Tiffin Suggestions */}
               <TiffinSummaryCard familyResults={familyResults} />
