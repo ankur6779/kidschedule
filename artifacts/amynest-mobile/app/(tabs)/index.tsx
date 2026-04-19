@@ -247,13 +247,13 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
   if (todayRoutines.length === 0) {
     return (
-      <LinearGradient colors={["rgba(79,195,247,0.18)", "rgba(123,63,242,0.18)"] as const} style={styles.timelineEmpty}>
+      <View style={styles.timelineEmpty}>
         <Text style={{ fontSize: 32 }}>🗓️</Text>
         <Text style={styles.timelineEmptyTitle}>{t("dashboard.no_plan_today")}</Text>
         <Text style={styles.timelineEmptySub}>{t("dashboard.no_plan_subtitle")}</Text>
         <TouchableOpacity onPress={onGenerate} activeOpacity={0.9}>
           <LinearGradient
-            colors={["#A855F7", "#EC4899"] as const}
+            colors={["#7C3AED", "#A855F7"] as const}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.timelineEmptyBtn}
@@ -262,7 +262,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
             <Text style={styles.timelineEmptyBtnText}>{t("dashboard.plan_my_day")}</Text>
           </LinearGradient>
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -285,22 +285,17 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 
   if (displayItems.length === 0) {
     return (
-      <LinearGradient colors={["rgba(16,185,129,0.18)", "rgba(79,195,247,0.14)"] as const} style={styles.timelineDone}>
+      <View style={styles.timelineDone}>
         <Text style={{ fontSize: 28 }}>🌙</Text>
         <Text style={styles.timelineDoneTitle}>{t("dashboard.day_complete")}</Text>
         <Text style={styles.timelineDoneSub}>{t("dashboard.day_complete_sub")}</Text>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
     <View style={styles.timelineCard}>
-      <LinearGradient
-        colors={["rgba(123,63,242,0.22)", "rgba(255,78,205,0.18)"] as const}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.timelineHeader}
-      >
+      <View style={styles.timelineHeader}>
         <View style={styles.timelineHeaderLeft}>
           <Ionicons name="time-outline" size={16} color="#7C3AED" />
           <Text style={styles.timelineHeaderTitle}>{t("dashboard.todays_timeline")}</Text>
@@ -309,15 +304,14 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
           <Text style={styles.timelineHeaderLink}>View all</Text>
           <Ionicons name="arrow-forward" size={12} color="#7C3AED" />
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
       <View style={{ padding: 10, gap: 8 }}>
         {displayItems.map((item, idx) => {
           const isCurrent = currentIdx >= 0 && idx === 0;
           const isNext = idx === (currentIdx >= 0 ? 1 : 0);
           const completed = item.status === "completed";
-          const Wrapper: any = isCurrent ? LinearGradient : View;
           const wrapperProps = isCurrent
-            ? { colors: ["#A855F7", "#EC4899"] as const, start: { x: 0, y: 0 }, end: { x: 1, y: 0 }, style: [styles.timelineRow, styles.timelineRowCurrent] }
+            ? { style: [styles.timelineRow, styles.timelineRowCurrent] }
             : { style: styles.timelineRow };
           return (
             <TouchableOpacity
@@ -325,7 +319,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
               activeOpacity={0.85}
               onPress={() => onOpen(item.routineId)}
             >
-              <Wrapper {...wrapperProps}>
+              <View {...wrapperProps}>
                 <View style={styles.timelineTime}>
                   <Text style={[styles.timelineTimeText, isCurrent && { color: "#fff" }]}>{item.time}</Text>
                   {isCurrent && (
@@ -357,7 +351,7 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
                 {completed && !isCurrent && (
                   <Ionicons name="checkmark-circle" size={20} color="#10B981" />
                 )}
-              </Wrapper>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -369,27 +363,16 @@ function NowNextTimeline({ routines, onGenerate, onOpen, onSeeAll }: {
 // ─── Streak Card ──────────────────────────────────────────────────────────
 function StreakCard({ streak, onPress }: { streak: number; onPress: () => void }) {
   const styles = useThemedStyles();
-  const isHot = streak >= 3;
-  const isWarm = streak > 0 && streak < 3;
-  const grad = isHot
-    ? ["rgba(251,113,133,0.35)", "rgba(251,146,60,0.28)"] as const
-    : isWarm
-    ? ["rgba(251,146,60,0.22)", "rgba(245,158,11,0.16)"] as const
-    : ["rgba(123,63,242,0.18)", "rgba(255,78,205,0.10)"] as const;
-  const numColor = isHot ? "#FFFFFF" : isWarm ? "#FED7AA" : "rgba(255,255,255,0.92)";
-  const labelColor = "rgba(255,255,255,0.85)";
-  const subColor = "rgba(255,255,255,0.6)";
-
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={{ flex: 1 }}>
-      <LinearGradient colors={grad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.streakCard}>
+      <View style={styles.streakCard}>
         <Text style={[styles.streakEmoji, streak === 0 && { opacity: 0.5 }]}>🔥</Text>
-        <Text style={[styles.streakNum, { color: numColor }]}>{streak}</Text>
-        <Text style={[styles.streakLabel, { color: labelColor }]}>Day Streak</Text>
-        <Text style={[styles.streakSub, { color: subColor }]}>
+        <Text style={styles.streakNum}>{streak}</Text>
+        <Text style={styles.streakLabel}>Day Streak</Text>
+        <Text style={styles.streakSub}>
           {streak === 0 ? "Start today!" : "Tap for progress"}
         </Text>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -741,29 +724,27 @@ function AmyFAB({ onPress, bottomOffset }: { onPress: () => void; bottomOffset: 
   );
 }
 
-// ─── Stat Card (pastel) ───────────────────────────────────────────────────
-function StatCard({ label, value, sub, icon, gradient, accent, onPress }: {
+// ─── Stat Card (flat-bordered, violet accent) ─────────────────────────────
+function StatCard({ label, value, sub, icon, onPress }: {
   label: string;
   value: string | number;
   sub: string;
   icon: React.ComponentProps<typeof Ionicons>["name"];
-  gradient: readonly [string, string];
-  accent: string;
   onPress?: () => void;
 }) {
   const styles = useThemedStyles();
   return (
     <TouchableOpacity activeOpacity={onPress ? 0.85 : 1} onPress={onPress} style={styles.statCardWrap}>
-      <LinearGradient colors={gradient} style={styles.statCard}>
+      <View style={styles.statCard}>
         <View style={styles.statTopRow}>
-          <Text style={[styles.statLabel, { color: accent }]}>{label}</Text>
-          <Ionicons name={icon} size={14} color={accent} />
+          <Text style={styles.statLabel}>{label}</Text>
+          <Ionicons name={icon} size={14} color="#7C3AED" />
         </View>
         <View style={styles.statBottom}>
-          <Text style={[styles.statValue, { color: accent }]}>{value}</Text>
-          <Text style={[styles.statSub, { color: accent + "BB" }]}>{sub}</Text>
+          <Text style={styles.statValue}>{value}</Text>
+          <Text style={styles.statSub}>{sub}</Text>
         </View>
-      </LinearGradient>
+      </View>
     </TouchableOpacity>
   );
 }
@@ -804,12 +785,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
 
   return (
     <View style={styles.amyCard}>
-      <LinearGradient
-        colors={["rgba(123,63,242,0.22)", "rgba(255,78,205,0.18)"] as const}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.amyHeader}
-      >
+      <View style={styles.amyHeader}>
         <View style={styles.amyHeaderLeft}>
           <View style={styles.amyAvatar}>
             <Ionicons name="heart" size={14} color="#fff" />
@@ -819,7 +795,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
             <Text style={styles.amySub}>Caring nudges from Amy 💜</Text>
           </View>
         </View>
-      </LinearGradient>
+      </View>
       <View style={{ padding: 12, gap: 8 }}>
         {display.length === 0 ? (
           <View style={[styles.amyTip, { backgroundColor: "#1B1B3A", borderColor: "rgba(255,255,255,0.08)" }]}>
@@ -860,18 +836,13 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
 
   return (
     <View style={styles.scoreCard}>
-      <LinearGradient
-        colors={["rgba(16,185,129,0.18)", "rgba(79,195,247,0.14)"] as const}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.scoreHeader}
-      >
-        <Ionicons name="sparkles" size={14} color="#16A34A" />
+      <View style={styles.scoreHeader}>
+        <Ionicons name="sparkles" size={14} color="#7C3AED" />
         <View style={{ flex: 1 }}>
           <Text style={styles.scoreTitle}>Your Parent Score</Text>
           <Text style={styles.scoreSub}>Based on last 7 days</Text>
         </View>
-      </LinearGradient>
+      </View>
       <View style={styles.scoreBody}>
         <View style={styles.scoreRingWrap}>
           <Svg width={70} height={70} viewBox="0 0 70 70">
@@ -912,7 +883,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
               <Text style={styles.scoreRowValue}>{daysActive}/7</Text>
             </View>
             <View style={styles.scoreBar}>
-              <View style={[styles.scoreBarFill, { width: `${(daysActive / 7) * 100}%`, backgroundColor: "#EC4899" }]} />
+              <View style={[styles.scoreBarFill, { width: `${(daysActive / 7) * 100}%`, backgroundColor: "#7C3AED" }]} />
             </View>
           </View>
         </View>
@@ -1105,7 +1076,7 @@ export default function HomeScreen() {
             style={{ borderRadius: 22, overflow: "hidden", marginBottom: 16 }}
           >
             <LinearGradient
-              colors={["#7C3AED", "#A855F7", "#EC4899"]}
+              colors={["#5B21B6", "#7C3AED"]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{ flexDirection: "row", alignItems: "center", padding: 18, gap: 14 }}
@@ -1153,8 +1124,6 @@ export default function HomeScreen() {
               value={summary?.routinesGeneratedThisWeek ?? 0}
               sub="this week"
               icon="calendar-outline"
-              gradient={["rgba(123,63,242,0.22)", "rgba(123,63,242,0.08)"]}
-              accent="#C4A8FF"
               onPress={() => router.push("/(tabs)/routines")}
             />
             <StatCard
@@ -1162,24 +1131,18 @@ export default function HomeScreen() {
               value={summary?.positiveBehaviorsToday ?? 0}
               sub="today"
               icon="trending-up-outline"
-              gradient={["rgba(52,211,153,0.22)", "rgba(52,211,153,0.06)"]}
-              accent="#6EE7B7"
             />
             <StatCard
               label="Challenging"
               value={summary?.negativeBehaviorsToday ?? 0}
               sub="today"
               icon="trending-down-outline"
-              gradient={["rgba(255,78,205,0.22)", "rgba(255,78,205,0.06)"]}
-              accent="#FF9FE0"
             />
             <StatCard
               label="Children"
               value={summary?.totalChildren ?? 0}
               sub="total"
               icon="people-outline"
-              gradient={["rgba(79,195,247,0.22)", "rgba(79,195,247,0.06)"]}
-              accent="#7DD3FC"
               onPress={() => router.push("/(tabs)/children")}
             />
           </View>
@@ -1294,7 +1257,7 @@ export default function HomeScreen() {
           {/* Big primary CTA */}
           <TouchableOpacity onPress={() => router.push("/(tabs)/coach")} activeOpacity={0.9} style={{ marginTop: 4 }}>
             <LinearGradient
-              colors={["#A855F7", "#EC4899", "#F43F5E"] as const}
+              colors={["#7C3AED", "#A855F7"] as const}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.bigCta}
@@ -1409,7 +1372,7 @@ function makeStyles(theme: ThemePalette) {
     flexDirection: "row", alignItems: "center", gap: 10,
     backgroundColor: rowOverlay, borderRadius: 16, padding: 10,
   },
-  timelineRowCurrent: { backgroundColor: "transparent", shadowColor: "#A855F7", shadowOpacity: 0.25, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
+  timelineRowCurrent: { backgroundColor: "#7C3AED" },
   timelineTime: { width: 56, alignItems: "center", gap: 4 },
   timelineTimeText: { fontSize: 11, fontFamily: "Inter_700Bold", color: onCardSecondary },
   timelineNowBadge: { backgroundColor: "rgba(255,255,255,0.25)", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999 },
@@ -1419,64 +1382,69 @@ function makeStyles(theme: ThemePalette) {
   timelineActivity: { fontSize: 13, fontFamily: "Inter_700Bold", color: onCardPrimary },
   timelineMeta: { fontSize: 11, fontFamily: "Inter_400Regular", color: onCardSecondary, marginTop: 2 },
   timelineEmpty: {
-    borderRadius: 22, padding: 20, alignItems: "center", gap: 8,
-    borderWidth: 1.5, borderStyle: "dashed", borderColor: "#BFDBFE",
+    borderRadius: 16, padding: 20, alignItems: "center", gap: 8,
+    borderWidth: 1.5, borderStyle: "dashed", borderColor: "rgba(124,58,237,0.30)",
+    backgroundColor: isLight ? "rgba(124,58,237,0.03)" : "rgba(124,58,237,0.08)",
   },
   timelineEmptyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: theme.text.primary },
   timelineEmptySub: { fontSize: 11, color: theme.text.secondary, textAlign: "center", fontFamily: "Inter_400Regular" },
   timelineEmptyBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999, marginTop: 6 },
   timelineEmptyBtnText: { color: "#fff", fontFamily: "Inter_700Bold", fontSize: 13 },
-  timelineDone: { borderRadius: 22, padding: 18, alignItems: "center", gap: 4 },
-  timelineDoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#065F46" },
-  timelineDoneSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: "rgba(6,95,70,0.7)" },
+  timelineDone: {
+    borderRadius: 16, padding: 18, alignItems: "center", gap: 4,
+    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)",
+    backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)",
+  },
+  timelineDoneTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: isLight ? "#4C1D95" : "#C4B5FD" },
+  timelineDoneSub: { fontSize: 11, fontFamily: "Inter_400Regular", color: isLight ? "rgba(76,29,149,0.65)" : "rgba(196,181,253,0.75)" },
 
   /* STREAK */
   streakCard: {
     flex: 1,
-    borderRadius: 22,
+    borderRadius: 16,
     padding: 14,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 150,
-    borderWidth: 1,
-    borderColor: cardBorder,
-    shadowColor: "#7B3FF2",
-    shadowOpacity: 0.25,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
+    backgroundColor: cardBg,
+    borderWidth: 1.5,
+    borderColor: "rgba(124,58,237,0.22)",
   },
   streakEmoji: { fontSize: 26, marginBottom: 2 },
-  streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30 },
-  streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2 },
-  streakSub: { fontSize: 9, fontFamily: "Inter_500Medium", marginTop: 4, textAlign: "center" },
+  streakNum: { fontSize: 26, fontFamily: "Inter_700Bold", lineHeight: 30, color: "#7C3AED" },
+  streakLabel: { fontSize: 11, fontFamily: "Inter_700Bold", marginTop: 2, color: isLight ? "#4C1D95" : "#C4B5FD" },
+  streakSub: { fontSize: 9, fontFamily: "Inter_500Medium", marginTop: 4, textAlign: "center", color: isLight ? "rgba(76,29,149,0.6)" : "rgba(196,181,253,0.7)" },
 
   /* STATS */
   statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginBottom: 16 },
   statCardWrap: { width: "47.8%", flexGrow: 1 },
-  statCard: { borderRadius: 22, padding: 14, minHeight: 92, justifyContent: "space-between" },
+  statCard: {
+    borderRadius: 16, padding: 14, minHeight: 92, justifyContent: "space-between",
+    backgroundColor: cardBg,
+    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.18)",
+  },
   statTopRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  statLabel: { fontSize: 11, fontFamily: "Inter_700Bold" },
+  statLabel: { fontSize: 11, fontFamily: "Inter_700Bold", color: isLight ? "#4C1D95" : "#C4B5FD" },
   statBottom: { flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 6 },
-  statValue: { fontSize: 26, fontFamily: "Inter_700Bold" },
-  statSub: { fontSize: 10, fontFamily: "Inter_500Medium" },
+  statValue: { fontSize: 26, fontFamily: "Inter_700Bold", color: "#7C3AED" },
+  statSub: { fontSize: 10, fontFamily: "Inter_500Medium", color: isLight ? "rgba(76,29,149,0.65)" : "rgba(196,181,253,0.75)" },
 
   /* AMY CARD */
   amyCard: {
     backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16,
-    borderWidth: 1, borderColor: cardBorder,
+    borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)",
   },
-  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: cardBorder },
+  amyHeader: { flexDirection: "row", padding: 12, alignItems: "center", borderBottomWidth: 1, borderBottomColor: "rgba(124,58,237,0.15)", backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)" },
   amyHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
-  amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#A855F7", alignItems: "center", justifyContent: "center" },
+  amyAvatar: { width: 28, height: 28, borderRadius: 10, backgroundColor: "#7C3AED", alignItems: "center", justifyContent: "center" },
   amyTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   amySub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   amyTip: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, borderWidth: 1 },
   amyTipText: { flex: 1, fontSize: 12, lineHeight: 17, fontFamily: "Inter_500Medium" },
 
   /* SCORE */
-  scoreCard: { backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1, borderColor: cardBorder },
-  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: cardBorder },
+  scoreCard: { backgroundColor: cardBg, borderRadius: 18, overflow: "hidden", marginBottom: 16, borderWidth: 1.5, borderColor: "rgba(124,58,237,0.22)" },
+  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12, borderBottomWidth: 1, borderBottomColor: "rgba(124,58,237,0.15)", backgroundColor: isLight ? "rgba(124,58,237,0.04)" : "rgba(124,58,237,0.10)" },
   scoreTitle: { fontSize: 14, fontFamily: "Inter_700Bold", color: onCardPrimary },
   scoreSub: { fontSize: 11, color: onCardMuted, fontFamily: "Inter_400Regular", marginTop: 1 },
   scoreBody: { flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
@@ -1522,7 +1490,7 @@ function makeStyles(theme: ThemePalette) {
   bigCta: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
     paddingVertical: 16, borderRadius: 22,
-    shadowColor: "#EC4899", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
+    shadowColor: "#7C3AED", shadowOpacity: 0.35, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 8,
   },
   bigCtaText: { color: "#fff", fontSize: 15, fontFamily: "Inter_700Bold" },
 
