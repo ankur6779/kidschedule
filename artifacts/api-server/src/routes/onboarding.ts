@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
-import { db, onboardingProfilesTable, childrenTable, parentProfilesTable } from "@workspace/db";
+import { db, onboardingProfilesTable } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 
 const router: IRouter = Router();
@@ -14,22 +14,7 @@ router.get("/onboarding", async (req, res): Promise<void> => {
     .from(onboardingProfilesTable)
     .where(eq(onboardingProfilesTable.userId, userId));
 
-  // Verify actual data exists — child profile + parent profile both required
-  const [childRow] = await db
-    .select({ id: childrenTable.id })
-    .from(childrenTable)
-    .where(eq(childrenTable.userId, userId))
-    .limit(1);
-
-  const [parentRow] = await db
-    .select({ id: parentProfilesTable.id })
-    .from(parentProfilesTable)
-    .where(eq(parentProfilesTable.userId, userId))
-    .limit(1);
-
-  const hasChild = !!childRow;
-  const hasParent = !!parentRow;
-  const onboardingComplete = !!(profile?.onboardingComplete && hasChild && hasParent);
+  const onboardingComplete = !!profile?.onboardingComplete;
 
   res.json({
     onboardingComplete,
