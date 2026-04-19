@@ -8,6 +8,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from "react-native-reanimated";
+import { useColors } from "@/hooks/useColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -30,6 +31,7 @@ export default function ActivityCard({
 }: Props) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const c = useColors();
 
   return (
     <AnimatedPressable
@@ -44,7 +46,7 @@ export default function ActivityCard({
         if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      style={[styles.card, style]}
+      style={[styles.card, { backgroundColor: c.surface }, style]}
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${count}`}
     >
@@ -57,8 +59,8 @@ export default function ActivityCard({
         <Ionicons name={icon} size={24} color="#fff" />
       </LinearGradient>
       <View style={{ marginTop: 14 }}>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        <Text style={styles.count}>{count}</Text>
+        <Text style={[styles.title, { color: c.textStrong }]} numberOfLines={1}>{title}</Text>
+        <Text style={[styles.count, { color: c.textSubtle }]}>{count}</Text>
       </View>
     </AnimatedPressable>
   );
@@ -67,7 +69,6 @@ export default function ActivityCard({
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    backgroundColor: "#fff",
     borderRadius: 20,
     padding: 16,
     minHeight: 130,
@@ -87,13 +88,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    color: "#1F2937",
     fontSize: 14.5,
     fontWeight: "800",
     letterSpacing: -0.2,
   },
   count: {
-    color: "#6B7280",
     fontSize: 12,
     fontWeight: "600",
     marginTop: 3,

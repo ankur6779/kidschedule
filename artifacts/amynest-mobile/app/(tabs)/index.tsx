@@ -87,11 +87,11 @@ function formatAge(age: number, ageMonths?: number): string {
   return `${age} year${age !== 1 ? "s" : ""}${ageMonths ? ` ${ageMonths}m` : ""}`;
 }
 
-function getAgeGroupInfo(age: number): { emoji: string; bg: string; color: string } {
-  if (age <= 1) return { emoji: "👶", bg: "#FFF1F2", color: "#BE185D" };
+function getAgeGroupInfo(age: number, palette: { statusRoseBg: string; statusInfoBg: string }): { emoji: string; bg: string; color: string } {
+  if (age <= 1) return { emoji: "👶", bg: palette.statusRoseBg, color: "#BE185D" };
   if (age <= 3) return { emoji: "🧒", bg: "#FEF3C7", color: "#B45309" };
   if (age <= 6) return { emoji: "🧒", bg: "#DCFCE7", color: "#15803D" };
-  if (age <= 10) return { emoji: "🧑", bg: "#DBEAFE", color: "#1D4ED8" };
+  if (age <= 10) return { emoji: "🧑", bg: palette.statusInfoBg, color: "#1D4ED8" };
   return { emoji: "🧑‍🎓", bg: brand.violet100, color: brand.violet700 };
 }
 
@@ -187,6 +187,7 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
 }) {
   const styles = useThemedStyles();
   const { t } = useTranslation();
+  const palette = useColors();
   if (children.length === 0) return null;
   return (
     <View style={{ marginBottom: 18 }}>
@@ -208,7 +209,7 @@ function ChildrenStrip({ children, onPressChild, onAdd }: {
               </TouchableOpacity>
             );
           }
-          const info = getAgeGroupInfo(c.age);
+          const info = getAgeGroupInfo(c.age, palette);
           return (
             <TouchableOpacity
               style={[styles.childCard, { backgroundColor: info.bg }]}
@@ -819,6 +820,7 @@ function AmySuggestsCard({ routines, streak }: { routines: Routine[]; streak: nu
 // ─── Parent Score Card ────────────────────────────────────────────────────
 function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: number }) {
   const styles = useThemedStyles();
+  const p = useColors();
   const last7 = routines.slice(0, 7);
   const items = last7.flatMap((r) => r.items);
   const total = items.length;
@@ -847,7 +849,7 @@ function ParentScoreCard({ routines, streak }: { routines: Routine[]; streak: nu
       <View style={styles.scoreBody}>
         <View style={styles.scoreRingWrap}>
           <Svg width={70} height={70} viewBox="0 0 70 70">
-            <Circle cx={35} cy={35} r={radius} stroke="#E5E7EB" strokeWidth={5} fill="none" />
+            <Circle cx={35} cy={35} r={radius} stroke={p.surfaceTrack} strokeWidth={5} fill="none" />
             <Circle
               cx={35}
               cy={35}
@@ -900,6 +902,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
   onCoach: () => void;
 }) {
   const styles = useThemedStyles();
+  const palette = useColors();
   const features = [
     { emoji: "🧠", label: "Amy AI Routine Generator", desc: "Smart daily schedules tailored to your child's age and needs.", bg: brandAlpha.indigo500_14, border: brandAlpha.indigo500_35, grad: ["#3B82F6", brand.indigo500] as const },
     { emoji: "📊", label: "Progress Tracking", desc: "Monitor growth, streaks, and milestones in one beautiful view.", bg: "rgba(16,185,129,0.14)", border: "rgba(16,185,129,0.35)", grad: ["#10B981", "#14B8A6"] as const },
@@ -923,7 +926,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
         <Text style={styles.onbHeroTitle}>
           👋 Hi{displayName ? `, ${displayName}` : ""} 😊
         </Text>
-        <Text style={styles.onbHeroSub}>I'm Amy — your smart parenting partner ❤️</Text>
+        <Text style={[styles.onbHeroSub, { color: palette.onGradientSubtext }]}>I'm Amy — your smart parenting partner ❤️</Text>
         <Text style={styles.onbHeroBody}>
           Create personalised routines, track progress, and make parenting easier — one day at a time.
         </Text>
@@ -945,7 +948,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
               <Text style={styles.onbFeatureLabel}>{f.emoji} {f.label}</Text>
               <Text style={styles.onbFeatureDesc}>{f.desc}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+            <Ionicons name="chevron-forward" size={16} color={palette.textFaint} />
           </View>
         ))}
       </View>
@@ -963,7 +966,7 @@ function OnboardingScreen({ displayName, onAddChild, onCoach }: {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onAddChild} activeOpacity={0.85} style={styles.onbSecondary}>
-        <Ionicons name="person-add-outline" size={16} color="#374151" />
+        <Ionicons name="person-add-outline" size={16} color={palette.textBody} />
         <Text style={styles.onbSecondaryText}>Add your first child</Text>
       </TouchableOpacity>
 
@@ -1171,7 +1174,7 @@ export default function HomeScreen() {
             </View>
             {recentRoutines.length === 0 ? (
               <View style={styles.listEmpty}>
-                <Ionicons name="calendar-outline" size={36} color="#D4D4D8" />
+                <Ionicons name="calendar-outline" size={36} color={colors.textFaint} />
                 <Text style={styles.listEmptyText}>No routines created yet.</Text>
                 <TouchableOpacity onPress={() => router.push("/(tabs)/coach")}>
                   <Text style={styles.listEmptyLink}>Create your first routine</Text>
@@ -1206,7 +1209,7 @@ export default function HomeScreen() {
                           <Text style={styles.listRowDone}>{done}/{items.length}</Text>
                         </View>
                       )}
-                      <Ionicons name="chevron-forward" size={16} color="#A1A1AA" />
+                      <Ionicons name="chevron-forward" size={16} color={colors.textFaint} />
                     </TouchableOpacity>
                   );
                 })}
@@ -1227,7 +1230,7 @@ export default function HomeScreen() {
             </View>
             {behaviorStats.length === 0 ? (
               <View style={styles.listEmpty}>
-                <Ionicons name="star-outline" size={36} color="#D4D4D8" />
+                <Ionicons name="star-outline" size={36} color={colors.textFaint} />
                 <Text style={styles.listEmptyText}>No behavior logged yet.</Text>
               </View>
             ) : (
@@ -1245,8 +1248,8 @@ export default function HomeScreen() {
                         <Text style={[styles.behaviorChipText, { color: "#B91C1C" }]}>{stat.negative}</Text>
                       </View>
                       <View style={[styles.behaviorChip, { backgroundColor: "rgba(255,255,255,0.06)" }]}>
-                        <Ionicons name="remove" size={12} color="#71717A" />
-                        <Text style={[styles.behaviorChipText, { color: "#52525B" }]}>{stat.neutral}</Text>
+                        <Ionicons name="remove" size={12} color={colors.textSubtle} />
+                        <Text style={[styles.behaviorChipText, { color: colors.textBody }]}>{stat.neutral}</Text>
                       </View>
                     </View>
                   </View>
@@ -1295,7 +1298,7 @@ function makeStyles(theme: ThemePalette) {
   const subtleSurface = isLight ? "rgba(15,23,42,0.04)" : "rgba(255,255,255,0.04)";
   const headerOverlay = isLight ? "rgba(15,23,42,0.03)" : "rgba(244,244,245,0.4)";
   const rowOverlay = isLight ? "rgba(15,23,42,0.04)" : "rgba(244,244,245,0.5)";
-  const onCardPrimary = isLight ? "#0F172A" : "#FFFFFF";
+  const onCardPrimary = theme.text.primary;
   const onCardSecondary = isLight ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.7)";
   const onCardMuted = isLight ? "rgba(15,23,42,0.45)" : "rgba(255,255,255,0.6)";
   const onScreenSecondary = isLight ? "rgba(15,23,42,0.55)" : "rgba(255,255,255,0.6)";
@@ -1351,7 +1354,7 @@ function makeStyles(theme: ThemePalette) {
   childTagline: { fontSize: 11, color: "rgba(31,41,55,0.6)", fontFamily: "Inter_400Regular", fontStyle: "italic", marginTop: 8 },
   childAddCard: {
     minWidth: 130, borderRadius: 22, padding: 14, borderWidth: 1.5, borderStyle: "dashed",
-    borderColor: "#D4D4D8", backgroundColor: "rgba(244,244,245,0.4)",
+    borderColor: theme.borderMuted, backgroundColor: "rgba(244,244,245,0.4)",
     alignItems: "center", justifyContent: "center",
   },
   childAddPlus: { fontSize: 22, marginBottom: 4 },
@@ -1503,10 +1506,10 @@ function makeStyles(theme: ThemePalette) {
   onbHeroEmoji: { marginBottom: 12 },
   onbHeroEyebrow: { fontSize: 11, fontFamily: "Inter_700Bold", letterSpacing: 2, color: "#BFDBFE", marginBottom: 6 },
   onbHeroTitle: { fontSize: 26, fontFamily: "Inter_700Bold", color: "#fff", textAlign: "center", marginBottom: 8 },
-  onbHeroSub: { fontSize: 15, fontFamily: "Inter_500Medium", color: "#DBEAFE", textAlign: "center", marginBottom: 8 },
+  onbHeroSub: { fontSize: 15, fontFamily: "Inter_500Medium", textAlign: "center", marginBottom: 8 },
   onbHeroBody: { fontSize: 13, lineHeight: 19, fontFamily: "Inter_400Regular", color: "rgba(219,234,254,0.85)", textAlign: "center" },
   onbDivider: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 18 },
-  onbDividerLine: { flex: 1, height: 1, backgroundColor: "#E4E4E7" },
+  onbDividerLine: { flex: 1, height: 1, backgroundColor: theme.dividerMuted },
   onbDividerText: { fontSize: 12, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)" },
   onbFeature: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1 },
   onbFeatureIcon: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center" },

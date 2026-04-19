@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 type Props = {
   title: string;
@@ -21,12 +22,13 @@ export default function HubSection({
   delay = 0,
   children,
 }: Props) {
+  const c = useColors();
   return (
     <Animated.View entering={FadeInDown.duration(500).delay(delay)} style={styles.section}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          <Text style={[styles.title, { color: c.textStrong }]}>{title}</Text>
+          {subtitle && <Text style={[styles.subtitle, { color: c.textSubtle }]}>{subtitle}</Text>}
         </View>
         {actionLabel && onAction && (
           <TouchableOpacity
@@ -58,13 +60,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   title: {
-    color: "#1F2937",
     fontSize: 19,
     fontWeight: "800",
     letterSpacing: -0.3,
   },
   subtitle: {
-    color: "#6B7280",
     fontSize: 13,
     fontWeight: "500",
     marginTop: 2,

@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeIn } from "react-native-reanimated";
 import ActionButtons, { type ActionResult } from "./ActionButtons";
 import { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 export const CARD_HEIGHT = SCREEN_H;
@@ -44,6 +45,7 @@ function SectionHeader({ icon, label, color }: { icon: keyof typeof Ionicons.gly
 }
 
 export default function CoachCard({ win, total, topInset, bottomInset, onAction }: Props) {
+  const c = useColors();
   return (
     <View style={[styles.page, { height: CARD_HEIGHT }]}>
       <Animated.View
@@ -78,10 +80,10 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
               >
                 <Text style={styles.winNumberText}>{win.index}</Text>
               </LinearGradient>
-              <Text style={styles.winLabel}>WIN {win.index} OF {total}</Text>
+              <Text style={[styles.winLabel, { color: c.textSubtle }]}>WIN {win.index} OF {total}</Text>
             </View>
 
-            <Text style={styles.title}>{win.title}</Text>
+            <Text style={[styles.title, { color: c.textStrong }]}>{win.title}</Text>
 
             {/* Objective */}
             <View style={styles.objectiveBox}>
@@ -91,7 +93,7 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
 
             {/* Deep explanation */}
             <SectionHeader icon="book-outline" label="WHY THIS WORKS" color={brand.indigo500} />
-            <Text style={styles.bodyText}>{win.explanation}</Text>
+            <Text style={[styles.bodyText, { color: c.textBody }]}>{win.explanation}</Text>
 
             {/* Actions */}
             <SectionHeader icon="checkbox-outline" label="DO THIS" color="#059669" />
@@ -101,7 +103,7 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
                   <View style={styles.actionDot}>
                     <Text style={styles.actionDotText}>{i + 1}</Text>
                   </View>
-                  <Text style={styles.actionText}>{a}</Text>
+                  <Text style={[styles.actionText, { color: c.textBody }]}>{a}</Text>
                 </View>
               ))}
             </View>
@@ -128,8 +130,8 @@ export default function CoachCard({ win, total, topInset, bottomInset, onAction 
 
             {/* Science */}
             <View style={styles.science}>
-              <Ionicons name="flask-outline" size={11} color="#6B7280" />
-              <Text style={styles.scienceText}>{win.science}</Text>
+              <Ionicons name="flask-outline" size={11} color={c.textSubtle} />
+              <Text style={[styles.scienceText, { color: c.textSubtle }]}>{win.science}</Text>
             </View>
           </ScrollView>
 
@@ -191,13 +193,11 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   winLabel: {
-    color: "#6B7280",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
   },
   title: {
-    color: "#1F2937",
     fontSize: 26,
     fontWeight: "800",
     lineHeight: 32,
@@ -243,7 +243,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   bodyText: {
-    color: "#374151",
     fontSize: 14.5,
     lineHeight: 22,
   },
@@ -270,7 +269,6 @@ const styles = StyleSheet.create({
   },
   actionText: {
     flex: 1,
-    color: "#374151",
     fontSize: 14.5,
     lineHeight: 21,
   },
@@ -297,7 +295,6 @@ const styles = StyleSheet.create({
   },
   scienceText: {
     flex: 1,
-    color: "#6B7280",
     fontSize: 11,
     lineHeight: 16,
     fontStyle: "italic",

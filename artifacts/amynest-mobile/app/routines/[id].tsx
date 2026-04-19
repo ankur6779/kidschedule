@@ -15,7 +15,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
-import { brand, brandAlpha } from "@/constants/colors";
+import colors, { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 
@@ -118,9 +119,9 @@ const CATEGORY_COLORS: Record<string, string> = {
   family: "#EC4899", bonding: "#F472B6",
   creative: "#14B8A6", outdoor: "#84CC16",
   self_care: "#06B6D4", hygiene: "#EC4899",
-  rest: "#6B7280", "wind-down": brand.violet400,
+  rest: "", "wind-down": brand.violet400,
   sleep: "#4338CA", screen: "#06B6D4",
-  default: "#9CA3AF",
+  default: "",
 };
 const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>["name"]> = {
   morning: "sunny-outline", morning_routine: "sunny-outline",
@@ -136,11 +137,20 @@ const CATEGORY_ICONS: Record<string, React.ComponentProps<typeof Ionicons>["name
   default: "ellipse-outline",
 };
 
-function hexToRgba(hex: string, alpha: number): string {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
+function hexToRgba(color: string, alpha: number): string {
+  if (color.startsWith("rgba(") || color.startsWith("rgb(")) {
+    const m = color.match(/[\d.]+/g);
+    if (m && m.length >= 3) return `rgba(${m[0]},${m[1]},${m[2]},${alpha})`;
+    return color;
+  }
+  const hex = color.replace(/^#/, "");
+  if (hex.length === 6) {
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+  return color;
 }
 
 function formatDate(dateStr: string): string {
@@ -167,6 +177,7 @@ export default function RoutineDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const authFetch = useAuthFetch();
+  const c = useColors();
   const qc = useQueryClient();
 
   const [actionItem, setActionItem] = useState<number | null>(null);
@@ -502,8 +513,9 @@ export default function RoutineDetailScreen() {
                 <View style={[styles.railLine, index === 0 && { top: 16 }, index === items.length - 1 && { bottom: "50%" }]} />
                 <View style={[
                   styles.railDot,
+                  { backgroundColor: c.railDotBg },
                   item.status === "completed" && { backgroundColor: "#22C55E", borderColor: "#22C55E" },
-                  item.status === "skipped" && { backgroundColor: "#475569", borderColor: "#475569" },
+                  item.status === "skipped" && { backgroundColor: c.statusSkipped, borderColor: c.statusSkipped },
                   item.status === "delayed" && { backgroundColor: "#F59E0B", borderColor: "#F59E0B" },
                 ]} />
               </View>
@@ -577,7 +589,7 @@ export default function RoutineDetailScreen() {
                   ))}
                 </View>
 
-                <ActionRow icon="play-skip-forward" iconColor="#9CA3AF" label="Skip"
+                <ActionRow icon="play-skip-forward" iconColor={c.textFaint} label="Skip"
                   onPress={() => setItemStatus(actionItem, "skipped")}
                   active={items[actionItem]?.status === "skipped"} />
                 <ActionRow icon="refresh" iconColor={brand.primary} label="Reset to pending"
@@ -747,8 +759,10 @@ function AmyAISuggests({ stats, title }: { stats: { done: number; total: number;
 }
 
 function ItemCard({ item }: { item: RoutineItem }) {
+  const c = useColors();
   const catKey = item.category?.toLowerCase() ?? "default";
-  const catColor = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.default;
+  const rawColor = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.default;
+  const catColor = catKey === "rest" ? c.textSubtle : (rawColor || c.textFaint);
   const catIcon = CATEGORY_ICONS[catKey] ?? CATEGORY_ICONS.default;
   const status = item.status ?? "pending";
   const isDone = status === "completed";
@@ -767,7 +781,7 @@ function ItemCard({ item }: { item: RoutineItem }) {
           borderColor,
           backgroundColor: isDone ? "rgba(16,185,129,0.12)"
             : isDelayed ? "rgba(245,158,11,0.12)"
-            : "#1E293B",
+            : c.surfaceCardDark,
           opacity: isSkipped ? 0.5 : 1,
         },
       ]}
@@ -866,13 +880,12 @@ const styles = StyleSheet.create({
   addBtnGrad: { flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 14 },
   addBtnText: { color: "#FFFFFF", fontSize: 12, fontWeight: "700" },
 
-  itemCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, backgroundColor: "#1E293B", minHeight: 76 },
+  itemCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14, borderRadius: 18, borderWidth: 1, minHeight: 76 },
   timelineRow: { flexDirection: "row", alignItems: "stretch" },
   railCol: { width: 22, alignItems: "center", paddingTop: 0, position: "relative" },
   railLine: { position: "absolute", top: 0, bottom: 0, width: 2, backgroundColor: brandAlpha.violet500_22, borderRadius: 1 },
   railDot: {
     width: 11, height: 11, borderRadius: 6,
-    backgroundColor: "#0F172A",
     borderWidth: 2, borderColor: brand.violet500,
     marginTop: 30,
     shadowColor: brand.violet500, shadowOpacity: 0.7, shadowRadius: 4, shadowOffset: { width: 0, height: 0 },

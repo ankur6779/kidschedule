@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAppStore } from "@/store/useAppStore";
 import { useNetworkStore, selectIsOnline } from "@/store/useNetworkStore";
 import { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 function formatRelative(ts: number | null): string {
   if (!ts) return "";
@@ -26,6 +27,7 @@ export default function AppDataStatusBanner() {
   const queueLength = useAppStore((s) => s.queueLength);
   const syncing = useAppStore((s) => s.syncing);
   const isOnline = useNetworkStore(selectIsOnline);
+  const c = useColors();
 
   if (!isOnline) {
     return (
@@ -43,7 +45,7 @@ export default function AppDataStatusBanner() {
 
   if (syncing) {
     return (
-      <View style={[styles.banner, styles.syncing]}>
+      <View style={[styles.banner, { backgroundColor: c.statusInfoBg, borderColor: "#93C5FD" }]}>
         <ActivityIndicator size="small" color="#1D4ED8" />
         <Text style={styles.syncingText}>
           Syncing{queueLength > 0 ? ` ${queueLength}` : ""}…
@@ -70,7 +72,7 @@ export default function AppDataStatusBanner() {
     return (
       <View style={[styles.banner, styles.muted]}>
         <ActivityIndicator size="small" color={brand.violet600} />
-        <Text style={styles.mutedText}>Refreshing…</Text>
+        <Text style={[styles.mutedText, { color: c.textSubtle }]}>Refreshing…</Text>
       </View>
     );
   }
@@ -81,9 +83,9 @@ export default function AppDataStatusBanner() {
         <Ionicons
           name={fromCache ? "save-outline" : "checkmark-circle-outline"}
           size={14}
-          color="#6B7280"
+          color={c.textSubtle}
         />
-        <Text style={styles.mutedText}>{formatRelative(lastUpdated)}</Text>
+        <Text style={[styles.mutedText, { color: c.textSubtle }]}>{formatRelative(lastUpdated)}</Text>
         {error ? <Text style={styles.softErr}>· offline</Text> : null}
       </View>
     );
@@ -109,7 +111,6 @@ const styles = StyleSheet.create({
     borderColor: "rgba(0,0,0,0.05)",
   },
   mutedText: {
-    color: "#6B7280",
     fontSize: 11.5,
     fontWeight: "600",
   },
@@ -134,10 +135,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginLeft: "auto",
     opacity: 0.75,
-  },
-  syncing: {
-    backgroundColor: "#DBEAFE",
-    borderColor: "#93C5FD",
   },
   syncingText: {
     color: "#1D4ED8",

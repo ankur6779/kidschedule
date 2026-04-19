@@ -26,6 +26,7 @@ import CoachProgressCard from "@/components/CoachProgressCard";
 import HubSection from "@/components/HubSection";
 import InsightCard from "@/components/InsightCard";
 import { brand, gradients } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const RECO_ACCENTS: readonly (readonly [string, string])[] = [
   gradients.deepVioletFlip,
@@ -42,6 +43,7 @@ const QUICK_ACTIONS = [
 export default function PremiumDashboardScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const themeColors = useColors();
   const {
     parentName,
     child,
@@ -112,8 +114,8 @@ export default function PremiumDashboardScreen() {
                 <Ionicons name="flame" size={18} color={brand.violet600} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.stripValue}>{liveStreak}-day streak</Text>
-                <Text style={styles.stripLabel}>Keep it alive</Text>
+                <Text style={[styles.stripValue, { color: themeColors.textStrong }]}>{liveStreak}-day streak</Text>
+                <Text style={[styles.stripLabel, { color: themeColors.textSubtle }]}>Keep it alive</Text>
               </View>
             </View>
             <View style={styles.stripCard}>
@@ -125,8 +127,8 @@ export default function PremiumDashboardScreen() {
                 />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.stripValue}>{dailyGoalPercent}% / {dailyGoal}%</Text>
-                <Text style={styles.stripLabel}>Daily goal</Text>
+                <Text style={[styles.stripValue, { color: themeColors.textStrong }]}>{dailyGoalPercent}% / {dailyGoal}%</Text>
+                <Text style={[styles.stripLabel, { color: themeColors.textSubtle }]}>Daily goal</Text>
               </View>
             </View>
           </Animated.View>
@@ -237,7 +239,7 @@ export default function PremiumDashboardScreen() {
                   >
                     <Ionicons name={q.icon} size={22} color="#fff" />
                   </LinearGradient>
-                  <Text style={styles.quickLabel}>{q.label}</Text>
+                  <Text style={[styles.quickLabel, { color: themeColors.textStrong }]}>{q.label}</Text>
                 </Pressable>
               ))}
             </View>
@@ -279,13 +281,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   stripValue: {
-    color: "#1F2937",
     fontSize: 13.5,
     fontWeight: "800",
     letterSpacing: -0.2,
   },
   stripLabel: {
-    color: "#6B7280",
     fontSize: 11.5,
     fontWeight: "600",
     marginTop: 1,
@@ -330,7 +330,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   quickLabel: {
-    color: "#1F2937",
     fontSize: 12.5,
     fontWeight: "800",
     letterSpacing: -0.2,

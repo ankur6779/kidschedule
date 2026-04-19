@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import ProgressRing from "./ProgressRing";
 import { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -30,22 +31,23 @@ export default function ChildCard({
 }: Props) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const c = useColors();
 
   return (
     <Animated.View
       entering={FadeInDown.duration(550).delay(80)}
       style={styles.cardWrap}
     >
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: c.surface }]}>
         <View style={styles.row}>
           <View style={{ flex: 1, paddingRight: 12 }}>
             <View style={styles.agePill}>
               <Ionicons name="happy" size={11} color={brand.violet600} />
               <Text style={styles.ageText}>{ageGroup}</Text>
             </View>
-            <Text style={styles.childName}>{childName}</Text>
-            <Text style={styles.focusLabel}>Current focus</Text>
-            <Text style={styles.focusGoal} numberOfLines={2}>{focusGoal}</Text>
+            <Text style={[styles.childName, { color: c.textStrong }]}>{childName}</Text>
+            <Text style={[styles.focusLabel, { color: c.textFaint }]}>Current focus</Text>
+            <Text style={[styles.focusGoal, { color: c.textBody }]} numberOfLines={2}>{focusGoal}</Text>
           </View>
 
           <ProgressRing
@@ -96,7 +98,6 @@ const styles = StyleSheet.create({
   card: {
     padding: 22,
     borderRadius: 26,
-    backgroundColor: "#fff",
     borderWidth: 1.5,
     borderColor: brand.violet100,
   },
@@ -123,21 +124,18 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   childName: {
-    color: "#1F2937",
     fontSize: 26,
     fontWeight: "800",
     letterSpacing: -0.5,
     marginBottom: 14,
   },
   focusLabel: {
-    color: "#9CA3AF",
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 1.2,
     marginBottom: 4,
   },
   focusGoal: {
-    color: "#374151",
     fontSize: 15,
     fontWeight: "700",
     letterSpacing: -0.2,

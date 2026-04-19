@@ -11,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import colors, { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 import {
   QUICK_BEHAVIORS, QUICK_BEHAVIOR_KEYS, TRIGGERS, TRIGGER_KEYS,
   SOLUTIONS, SITUATION_HELP, UI_LABELS, buildAmyInsights, computeScore, scoreLabel,
@@ -101,6 +102,7 @@ export default function BehaviorScreen() {
   const router = useRouter();
   const authFetch = useAuthFetch();
   const { theme } = useTheme();
+  const c = useColors();
   const qc = useQueryClient();
 
   const [lang, setLang] = useState<LangKey>("en");
@@ -342,7 +344,7 @@ export default function BehaviorScreen() {
             {[
               { label: L.positive, count: pos, color: "#10B981" },
               { label: L.challenging, count: neg, color: "#EF4444" },
-              { label: L.neutral, count: neu, color: "#6B7280" },
+              { label: L.neutral, count: neu, color: c.textSubtle },
             ].map((item) => (
               <View key={item.label} style={[styles.countCard, { borderColor: item.color + "44" }]}>
                 <Text style={[styles.countNum, { color: item.color }]}>{item.count}</Text>

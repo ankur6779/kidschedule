@@ -17,6 +17,7 @@ import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import { useTranslation } from "react-i18next";
 import colors, { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 import {
   INFANT_PROBLEMS,
   isInfantProblemId,
@@ -41,77 +42,78 @@ type Question = {
 };
 
 // ─── Goals (categorized) — mirrors web ────────────────────────────────────
-const GOAL_CATEGORIES: GoalCategory[] = [
-  {
-    id: "behavior", title: "Behavior", emoji: "🎯", bg: ["#FFE4E6", "#FED7AA"],
-    items: [
-      { id: "manage-tantrums",      title: "Manage Tantrums",      emoji: "😤", bg: ["#FFE4E6", "#FBCFE8"] },
-      { id: "handle-aggression",    title: "Handle Aggression",    emoji: "✋", bg: ["#FEE2E2", "#FECACA"] },
-      { id: "reduce-defiance",      title: "Reduce Defiance",      emoji: "🛑", bg: ["#FEF3C7", "#FED7AA"] },
-      { id: "emotional-regulation", title: "Emotional Regulation", emoji: "💗", bg: ["#FCE7F3", "#FBCFE8"] },
-      { id: "separation-anxiety",   title: "Separation Anxiety",   emoji: "🫂", bg: [brand.violet100, brand.violet200] },
-    ],
-  },
-  {
-    id: "screen-focus", title: "Screen & Focus", emoji: "📱", bg: ["#E0F2FE", "#C7D2FE"],
-    items: [
-      { id: "balance-screen-time",          title: "Balance Screen Time",        emoji: "📱", bg: ["#E0F2FE", "#BFDBFE"] },
-      { id: "reduce-mobile-addiction",      title: "Reduce Mobile Addiction",    emoji: "📵", bg: ["#DBEAFE", "#C7D2FE"] },
-      { id: "improve-focus-span",           title: "Improve Focus Span",         emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
-      { id: "reduce-shorts-overuse",        title: "Reduce Shorts Overuse",      emoji: "🎬", bg: ["#FFE4E6", "#FECACA"] },
-      { id: "reduce-instant-gratification", title: "Reduce Instant Gratification",emoji: "⏳", bg: ["#FEF3C7", "#FDE68A"] },
-    ],
-  },
-  {
-    id: "eating", title: "Eating", emoji: "🍽️", bg: ["#D1FAE5", "#CCFBF1"],
-    items: [
-      { id: "encourage-independent-eating", title: "Independent Eating",  emoji: "🥄", bg: ["#D1FAE5", "#BBF7D0"] },
-      { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",emoji: "🥦", bg: ["#CCFBF1", "#A7F3D0"] },
-      { id: "stop-junk-food-craving",       title: "Stop Junk Cravings",  emoji: "🍟", bg: ["#FED7AA", "#FDE68A"] },
-      { id: "healthy-eating-routine",       title: "Healthy Eating",      emoji: "🍎", bg: ["#BBF7D0", "#D1FAE5"] },
-      { id: "improve-mealtime-behavior",    title: "Mealtime Behavior",   emoji: "🍽️", bg: ["#ECFCCB", "#BBF7D0"] },
-    ],
-  },
-  {
-    id: "sleep", title: "Sleep", emoji: "😴", bg: [brand.indigo100, brand.violet100],
-    items: [
-      { id: "improve-sleep-patterns",   title: "Improve Sleep",        emoji: "😴", bg: [brand.indigo100, brand.violet200] },
-      { id: "fix-bedtime-resistance",   title: "Bedtime Resistance",   emoji: "🛏️", bg: [brand.violet100, brand.indigo100] },
-      { id: "stop-night-waking",        title: "Stop Night Waking",    emoji: "🌙", bg: ["#DBEAFE", brand.indigo100] },
-      { id: "consistent-sleep-routine", title: "Consistent Routine",   emoji: "🕘", bg: [brand.violet100, brand.violet200] },
-      { id: "reduce-late-sleeping",     title: "Reduce Late Sleep",    emoji: "⏰", bg: [brand.indigo100, "#DBEAFE"] },
-    ],
-  },
-  {
-    id: "learning", title: "Learning", emoji: "📚", bg: [brand.violet100, "#FCE7F3"],
-    items: [
-      { id: "boost-concentration",        title: "Boost Concentration",  emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
-      { id: "build-study-discipline",     title: "Study Discipline",     emoji: "📖", bg: ["#DBEAFE", "#BFDBFE"] },
-      { id: "increase-learning-interest", title: "Learning Interest",    emoji: "💡", bg: ["#FEF3C7", "#FDE68A"] },
-      { id: "reduce-homework-resistance", title: "Homework Resistance",  emoji: "✏️", bg: ["#CCFBF1", "#A7F3D0"] },
-      { id: "develop-growth-mindset",     title: "Growth Mindset",       emoji: "🌱", bg: ["#BBF7D0", "#ECFCCB"] },
-    ],
-  },
-  {
-    id: "infant-problems", title: "Infant Problems (0–2 yrs)", emoji: "👶", bg: ["#FCE7F3", "#FED7AA"],
-    items: INFANT_PROBLEMS.map((p) => ({
-      id: p.id,
-      title: p.title.en,
-      emoji: p.emoji,
-      bg: ["#FCE7F3", "#FED7AA"] as [string, string],
-    })),
-  },
-  {
-    id: "parenting-challenges", title: "Parenting", emoji: "💝", bg: ["#FEF3C7", "#FED7AA"],
-    items: [
-      { id: "manage-grandparents-interference", title: "Grandparents",         emoji: "👵", bg: ["#FFE4E6", "#FBCFE8"] },
-      { id: "align-parenting-between-parents",  title: "Align Co-Parenting",   emoji: "🤝", bg: [brand.violet100, brand.violet200] },
-      { id: "handle-working-parent-guilt",      title: "Working Parent Guilt", emoji: "💼", bg: ["#E0F2FE", "#BFDBFE"] },
-      { id: "set-consistent-family-rules",      title: "Family Rules",         emoji: "📋", bg: ["#FEF3C7", "#FED7AA"] },
-    ],
-  },
-];
-const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
+function getGoalCategories(infoBg: string): GoalCategory[] {
+  return [
+    {
+      id: "behavior", title: "Behavior", emoji: "🎯", bg: ["#FFE4E6", "#FED7AA"],
+      items: [
+        { id: "manage-tantrums",      title: "Manage Tantrums",      emoji: "😤", bg: ["#FFE4E6", "#FBCFE8"] },
+        { id: "handle-aggression",    title: "Handle Aggression",    emoji: "✋", bg: ["#FEE2E2", "#FECACA"] },
+        { id: "reduce-defiance",      title: "Reduce Defiance",      emoji: "🛑", bg: ["#FEF3C7", "#FED7AA"] },
+        { id: "emotional-regulation", title: "Emotional Regulation", emoji: "💗", bg: ["#FCE7F3", "#FBCFE8"] },
+        { id: "separation-anxiety",   title: "Separation Anxiety",   emoji: "🫂", bg: [brand.violet100, brand.violet200] },
+      ],
+    },
+    {
+      id: "screen-focus", title: "Screen & Focus", emoji: "📱", bg: ["#E0F2FE", "#C7D2FE"],
+      items: [
+        { id: "balance-screen-time",          title: "Balance Screen Time",        emoji: "📱", bg: ["#E0F2FE", "#BFDBFE"] },
+        { id: "reduce-mobile-addiction",      title: "Reduce Mobile Addiction",    emoji: "📵", bg: [infoBg, "#C7D2FE"] },
+        { id: "improve-focus-span",           title: "Improve Focus Span",         emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
+        { id: "reduce-shorts-overuse",        title: "Reduce Shorts Overuse",      emoji: "🎬", bg: ["#FFE4E6", "#FECACA"] },
+        { id: "reduce-instant-gratification", title: "Reduce Instant Gratification",emoji: "⏳", bg: ["#FEF3C7", "#FDE68A"] },
+      ],
+    },
+    {
+      id: "eating", title: "Eating", emoji: "🍽️", bg: ["#D1FAE5", "#CCFBF1"],
+      items: [
+        { id: "encourage-independent-eating", title: "Independent Eating",  emoji: "🥄", bg: ["#D1FAE5", "#BBF7D0"] },
+        { id: "navigate-fussy-eating",        title: "Navigate Fussy Eating",emoji: "🥦", bg: ["#CCFBF1", "#A7F3D0"] },
+        { id: "stop-junk-food-craving",       title: "Stop Junk Cravings",  emoji: "🍟", bg: ["#FED7AA", "#FDE68A"] },
+        { id: "healthy-eating-routine",       title: "Healthy Eating",      emoji: "🍎", bg: ["#BBF7D0", "#D1FAE5"] },
+        { id: "improve-mealtime-behavior",    title: "Mealtime Behavior",   emoji: "🍽️", bg: ["#ECFCCB", "#BBF7D0"] },
+      ],
+    },
+    {
+      id: "sleep", title: "Sleep", emoji: "😴", bg: [brand.indigo100, brand.violet100],
+      items: [
+        { id: "improve-sleep-patterns",   title: "Improve Sleep",        emoji: "😴", bg: [brand.indigo100, brand.violet200] },
+        { id: "fix-bedtime-resistance",   title: "Bedtime Resistance",   emoji: "🛏️", bg: [brand.violet100, brand.indigo100] },
+        { id: "stop-night-waking",        title: "Stop Night Waking",    emoji: "🌙", bg: [infoBg, brand.indigo100] },
+        { id: "consistent-sleep-routine", title: "Consistent Routine",   emoji: "🕘", bg: [brand.violet100, brand.violet200] },
+        { id: "reduce-late-sleeping",     title: "Reduce Late Sleep",    emoji: "⏰", bg: [brand.indigo100, infoBg] },
+      ],
+    },
+    {
+      id: "learning", title: "Learning", emoji: "📚", bg: [brand.violet100, "#FCE7F3"],
+      items: [
+        { id: "boost-concentration",        title: "Boost Concentration",  emoji: "🎯", bg: [brand.violet100, "#FBCFE8"] },
+        { id: "build-study-discipline",     title: "Study Discipline",     emoji: "📖", bg: [infoBg, "#BFDBFE"] },
+        { id: "increase-learning-interest", title: "Learning Interest",    emoji: "💡", bg: ["#FEF3C7", "#FDE68A"] },
+        { id: "reduce-homework-resistance", title: "Homework Resistance",  emoji: "✏️", bg: ["#CCFBF1", "#A7F3D0"] },
+        { id: "develop-growth-mindset",     title: "Growth Mindset",       emoji: "🌱", bg: ["#BBF7D0", "#ECFCCB"] },
+      ],
+    },
+    {
+      id: "infant-problems", title: "Infant Problems (0–2 yrs)", emoji: "👶", bg: ["#FCE7F3", "#FED7AA"],
+      items: INFANT_PROBLEMS.map((p) => ({
+        id: p.id,
+        title: p.title.en,
+        emoji: p.emoji,
+        bg: ["#FCE7F3", "#FED7AA"] as [string, string],
+      })),
+    },
+    {
+      id: "parenting-challenges", title: "Parenting", emoji: "💝", bg: ["#FEF3C7", "#FED7AA"],
+      items: [
+        { id: "manage-grandparents-interference", title: "Grandparents",         emoji: "👵", bg: ["#FFE4E6", "#FBCFE8"] },
+        { id: "align-parenting-between-parents",  title: "Align Co-Parenting",   emoji: "🤝", bg: [brand.violet100, brand.violet200] },
+        { id: "handle-working-parent-guilt",      title: "Working Parent Guilt", emoji: "💼", bg: ["#E0F2FE", "#BFDBFE"] },
+        { id: "set-consistent-family-rules",      title: "Family Rules",         emoji: "📋", bg: ["#FEF3C7", "#FED7AA"] },
+      ],
+    },
+  ];
+}
 
 const COMMON_TRIGGERS = [
   "Hunger or tiredness", "Transitions or changes", "Being told 'no'", "Boredom",
@@ -131,6 +133,9 @@ const QUESTIONS: Question[] = [
 export default function CoachScreen() {
   const insets = useSafeAreaInsets();
   const authFetch = useAuthFetch();
+  const c = useColors();
+  const GOAL_CATEGORIES = useMemo(() => getGoalCategories(c.statusInfoBg), [c.statusInfoBg]);
+  const ALL_GOALS = useMemo(() => GOAL_CATEGORIES.flatMap((cat) => cat.items), [GOAL_CATEGORIES]);
   const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const { width } = useWindowDimensions();
 
@@ -394,12 +399,12 @@ export default function CoachScreen() {
             </TouchableOpacity>
 
             <View style={styles.searchBox}>
-              <Ionicons name="search" size={16} color="#9CA3AF" />
+              <Ionicons name="search" size={16} color={c.textFaint} />
               <TextInput
                 value={goalSearch}
                 onChangeText={setGoalSearch}
                 placeholder="Search goals…"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={c.textFaint}
                 autoFocus
                 style={styles.searchInput}
               />
@@ -437,7 +442,7 @@ export default function CoachScreen() {
           <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 100 }}>
             <View style={styles.topBar}>
               <TouchableOpacity onPress={() => setSelectedCategoryId(null)} style={styles.backBtn}>
-                <Ionicons name="chevron-back" size={20} color="#6B7280" />
+                <Ionicons name="chevron-back" size={20} color={c.textSubtle} />
                 <Text style={styles.backText}>Categories</Text>
               </TouchableOpacity>
               <View style={{ width: 36 }} />
@@ -451,12 +456,12 @@ export default function CoachScreen() {
             </LinearGradient>
 
             <View style={[styles.searchBox, { marginTop: 14 }]}>
-              <Ionicons name="search" size={16} color="#9CA3AF" />
+              <Ionicons name="search" size={16} color={c.textFaint} />
               <TextInput
                 value={goalSearch}
                 onChangeText={setGoalSearch}
                 placeholder={`Search in ${activeCat.title}…`}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={c.textFaint}
                 style={styles.searchInput}
               />
             </View>
@@ -496,12 +501,12 @@ export default function CoachScreen() {
           <AiQuotaBanner />
 
           <View style={styles.searchBox}>
-            <Ionicons name="search" size={16} color="#9CA3AF" />
+            <Ionicons name="search" size={16} color={c.textFaint} />
             <TextInput
               value={goalSearch}
               onChangeText={setGoalSearch}
               placeholder="Search all goals…"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={c.textFaint}
               style={styles.searchInput}
             />
           </View>
@@ -533,7 +538,7 @@ export default function CoachScreen() {
       <View style={[styles.screen, { paddingTop: topPad }]}>
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 120 }}>
           <TouchableOpacity onPress={handleBackQ} style={styles.backBtn}>
-            <Ionicons name="chevron-back" size={20} color="#6B7280" />
+            <Ionicons name="chevron-back" size={20} color={c.textSubtle} />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 
@@ -542,7 +547,7 @@ export default function CoachScreen() {
               <Text style={styles.qProgressText}>Question {qIndex + 1} of {QUESTIONS.length}</Text>
               <Text style={styles.qProgressGoal}>{selectedGoal?.title}</Text>
             </View>
-            <View style={styles.qProgressBar}>
+            <View style={[styles.qProgressBar, { backgroundColor: c.surfaceTrack }]}>
               <LinearGradient
                 colors={[brand.violet500, "#EC4899"]}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
@@ -1101,7 +1106,7 @@ const styles = StyleSheet.create({
   qProgressRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 },
   qProgressText: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)" },
   qProgressGoal: { fontSize: 11, color: "rgba(255,255,255,0.6)" },
-  qProgressBar: { height: 8, backgroundColor: "#E5E7EB", borderRadius: 4, overflow: "hidden" },
+  qProgressBar: { height: 8, borderRadius: 4, overflow: "hidden" },
   qProgressFill: { height: "100%", borderRadius: 4 },
 
   qPrompt: { fontSize: 22, fontFamily: "Inter_700Bold", color: "#FFFFFF", marginTop: 22, lineHeight: 28 },

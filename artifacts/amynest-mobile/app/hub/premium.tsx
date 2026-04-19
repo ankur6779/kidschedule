@@ -25,6 +25,7 @@ import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
 import { useAppDataRefresh } from "@/hooks/useAppDataRefresh";
 import colors, { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 type Filter = "all" | "behavior" | "sleep" | "focus";
 
@@ -162,6 +163,7 @@ const FILTER_CHIPS: { id: Filter; label: string; icon: keyof typeof Ionicons.gly
 export default function PremiumHubScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const c = useColors();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
@@ -269,8 +271,8 @@ export default function PremiumHubScreen() {
           <Animated.View entering={FadeInDown.duration(500)} style={styles.headerRow}>
             <View style={{ flex: 1 }}>
               <Text style={styles.eyebrow}>EXPLORE</Text>
-              <Text style={styles.title}>Parent Hub</Text>
-              <Text style={styles.subtitle}>Tools, activities & insights for you</Text>
+              <Text style={[styles.title, { color: c.textStrong }]}>Parent Hub</Text>
+              <Text style={[styles.subtitle, { color: c.textSubtle }]}>Tools, activities & insights for you</Text>
             </View>
             <Pressable
               onPress={() => router.back()}
@@ -293,18 +295,18 @@ export default function PremiumHubScreen() {
 
           {/* SEARCH */}
           <Animated.View entering={FadeInDown.duration(500).delay(80)} style={styles.searchWrap}>
-            <Ionicons name="search" size={17} color="#9CA3AF" />
+            <Ionicons name="search" size={17} color={c.textFaint} />
             <TextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search activities, insights…"
-              placeholderTextColor="#9CA3AF"
-              style={styles.searchInput}
+              placeholderTextColor={c.textFaint}
+              style={[styles.searchInput, { color: c.textStrong }]}
               accessibilityLabel="Search the Parent Hub"
             />
             {search.length > 0 && (
               <TouchableOpacity onPress={() => setSearch("")} hitSlop={10} accessibilityLabel="Clear search">
-                <Ionicons name="close-circle" size={18} color="#9CA3AF" />
+                <Ionicons name="close-circle" size={18} color={c.textFaint} />
               </TouchableOpacity>
             )}
           </Animated.View>
@@ -367,7 +369,7 @@ export default function PremiumHubScreen() {
           >
             <View style={styles.gridWrap}>
               {filteredActivities.length === 0 ? (
-                <Text style={styles.emptyText}>No activities match this filter.</Text>
+                <Text style={[styles.emptyText, { color: c.textFaint }]}>No activities match this filter.</Text>
               ) : (
                 <View style={styles.grid}>
                   {filteredActivities.map((a) => (
@@ -396,7 +398,7 @@ export default function PremiumHubScreen() {
           >
             <View style={styles.vList}>
               {filteredInsights.length === 0 ? (
-                <Text style={styles.emptyText}>No insights match this filter.</Text>
+                <Text style={[styles.emptyText, { color: c.textFaint }]}>No insights match this filter.</Text>
               ) : (
                 filteredInsights.map((i) => (
                   <InsightCard
@@ -424,7 +426,7 @@ export default function PremiumHubScreen() {
           >
             <View style={styles.vList}>
               {filteredRecs.length === 0 ? (
-                <Text style={styles.emptyText}>No suggestions match this filter.</Text>
+                <Text style={[styles.emptyText, { color: c.textFaint }]}>No suggestions match this filter.</Text>
               ) : (
                 filteredRecs.map((r) => (
                   <Pressable
@@ -443,10 +445,10 @@ export default function PremiumHubScreen() {
                       <Ionicons name={r.icon} size={22} color="#fff" />
                     </LinearGradient>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.recTitle}>{r.title}</Text>
-                      <Text style={styles.recDesc} numberOfLines={2}>{r.description}</Text>
+                      <Text style={[styles.recTitle, { color: c.textStrong }]}>{r.title}</Text>
+                      <Text style={[styles.recDesc, { color: c.textSubtle }]} numberOfLines={2}>{r.description}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
+                    <Ionicons name="chevron-forward" size={18} color={c.textFaint} />
                   </Pressable>
                 ))
               )}
@@ -480,13 +482,11 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   title: {
-    color: "#1F2937",
     fontSize: 30,
     fontWeight: "800",
     letterSpacing: -0.6,
   },
   subtitle: {
-    color: "#6B7280",
     fontSize: 13.5,
     fontWeight: "500",
     marginTop: 4,
@@ -521,7 +521,6 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: "#1F2937",
     fontSize: 14.5,
     fontWeight: "500",
     paddingVertical: Platform.OS === "ios" ? 0 : 8,
@@ -569,7 +568,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    color: "#9CA3AF",
     fontSize: 13,
     fontStyle: "italic",
     textAlign: "center",
@@ -598,13 +596,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   recTitle: {
-    color: "#1F2937",
     fontSize: 15,
     fontWeight: "800",
     letterSpacing: -0.2,
   },
   recDesc: {
-    color: "#6B7280",
     fontSize: 12.5,
     lineHeight: 17,
     marginTop: 3,

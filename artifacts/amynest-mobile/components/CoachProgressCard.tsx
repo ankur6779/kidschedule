@@ -12,6 +12,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { brand, gradients } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -36,6 +37,7 @@ export default function CoachProgressCard({
 }: Props) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const c = useColors();
 
   const [trackWidth, setTrackWidth] = useState(0);
   const barW = useSharedValue(0);
@@ -71,15 +73,15 @@ export default function CoachProgressCard({
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>AMY COACH</Text>
-            <Text style={styles.step}>Step {index} of {total}</Text>
+            <Text style={[styles.step, { color: c.textStrong }]}>Step {index} of {total}</Text>
           </View>
           <View style={styles.percentPill}>
             <Text style={styles.percentText}>{Math.round(progress * 100)}%</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.summary} numberOfLines={3}>{summary}</Text>
+        <Text style={[styles.title, { color: c.textStrong }]}>{title}</Text>
+        <Text style={[styles.summary, { color: c.textSubtle }]} numberOfLines={3}>{summary}</Text>
 
         {/* Animated progress bar */}
         <View style={styles.barTrack} onLayout={onTrackLayout}>
@@ -160,7 +162,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.4,
   },
   step: {
-    color: "#1F2937",
     fontSize: 14.5,
     fontWeight: "800",
     marginTop: 1,
@@ -177,14 +178,12 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   title: {
-    color: "#1F2937",
     fontSize: 17,
     fontWeight: "800",
     letterSpacing: -0.3,
     marginBottom: 6,
   },
   summary: {
-    color: "#6B7280",
     fontSize: 13.5,
     lineHeight: 19,
     marginBottom: 16,

@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 type Props = {
   parentName: string;
@@ -12,11 +13,12 @@ type Props = {
 };
 
 export default function DashboardHeader({ parentName, childName, onProfilePress }: Props) {
+  const c = useColors();
   return (
     <Animated.View entering={FadeInDown.duration(500)} style={styles.row}>
       <View style={{ flex: 1 }}>
-        <Text style={styles.greeting}>Hi, {parentName} 👋</Text>
-        <Text style={styles.subtext}>
+        <Text style={[styles.greeting, { color: c.textStrong }]}>Hi, {parentName} 👋</Text>
+        <Text style={[styles.subtext, { color: c.textSubtle }]}>
           Let's help <Text style={styles.childName}>{childName}</Text> grow better today
         </Text>
       </View>
@@ -49,13 +51,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   greeting: {
-    color: "#1F2937",
     fontSize: 24,
     fontWeight: "800",
     letterSpacing: -0.5,
   },
   subtext: {
-    color: "#6B7280",
     fontSize: 13.5,
     fontWeight: "500",
     marginTop: 4,

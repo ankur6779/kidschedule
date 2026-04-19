@@ -11,6 +11,7 @@ import Animated, {
 } from "react-native-reanimated";
 import type { RoutineTask } from "@/contexts/ProgressContext";
 import { brand, gradients } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -30,6 +31,7 @@ function TaskCard({
 }) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const c = useColors();
 
   const isDone = task.done;
   const accent: readonly [string, string] = isDone
@@ -43,7 +45,7 @@ function TaskCard({
         accessibilityLabel={`${task.title}, ${task.time}, ${task.minutes} minutes, ${
           isDone ? "completed" : "pending"
         }`}
-        style={styles.card}
+        style={[styles.card, { backgroundColor: c.surface }]}
       >
         <LinearGradient
           colors={accent}
@@ -54,12 +56,12 @@ function TaskCard({
           <Ionicons name={task.icon as any} size={20} color="#fff" />
         </LinearGradient>
 
-        <Text style={styles.title} numberOfLines={1}>{task.title}</Text>
+        <Text style={[styles.title, { color: c.textStrong }]} numberOfLines={1}>{task.title}</Text>
         <View style={styles.metaRow}>
-          <Ionicons name="time-outline" size={12} color="#6B7280" />
-          <Text style={styles.metaText}>{task.time}</Text>
-          <View style={styles.dot} />
-          <Text style={styles.metaText}>{task.minutes} min</Text>
+          <Ionicons name="time-outline" size={12} color={c.textSubtle} />
+          <Text style={[styles.metaText, { color: c.textSubtle }]}>{task.time}</Text>
+          <View style={[styles.dot, { backgroundColor: c.border }]} />
+          <Text style={[styles.metaText, { color: c.textSubtle }]}>{task.minutes} min</Text>
         </View>
 
         <View style={styles.statusRow}>
@@ -92,18 +94,18 @@ function TaskCard({
           style={[styles.actionBtn, style]}
         >
           <LinearGradient
-            colors={isDone ? ["#E5E7EB", "#E5E7EB"] : accent}
+            colors={isDone ? [c.border, c.border] : accent}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.actionGrad}
           >
-            <Text style={[styles.actionText, isDone && { color: "#6B7280" }]}>
+            <Text style={[styles.actionText, isDone && { color: c.textSubtle }]}>
               {isDone ? "Undo" : "Done"}
             </Text>
             <Ionicons
               name={isDone ? "refresh" : "checkmark"}
               size={14}
-              color={isDone ? "#6B7280" : "#fff"}
+              color={isDone ? c.textSubtle : "#fff"}
             />
           </LinearGradient>
         </AnimatedPressable>
@@ -141,7 +143,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: 176,
-    backgroundColor: "#fff",
     borderRadius: 22,
     padding: 16,
     borderWidth: 1,
@@ -161,7 +162,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    color: "#1F2937",
     fontSize: 14.5,
     fontWeight: "800",
     letterSpacing: -0.2,
@@ -174,7 +174,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   metaText: {
-    color: "#6B7280",
     fontSize: 11.5,
     fontWeight: "600",
   },
@@ -182,7 +181,6 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 2,
-    backgroundColor: "#D1D5DB",
     marginHorizontal: 2,
   },
   statusRow: {

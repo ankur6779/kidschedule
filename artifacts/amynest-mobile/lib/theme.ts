@@ -11,6 +11,8 @@ export type ThemePalette = {
   status: { success: string; warning: string; danger: string; info: string };
   glow: { color: string; opacity: number };
   gradient: readonly [string, string, string];
+  borderMuted: string;
+  dividerMuted: string;
 };
 
 export const darkTheme: ThemePalette = {
@@ -44,6 +46,8 @@ export const darkTheme: ThemePalette = {
   },
   glow: { color: brand.primary, opacity: 0.5 },
   gradient: ["#0B0B1A", "#14142B", "#1B1B3A"] as const,
+  borderMuted: "rgba(255,255,255,0.20)",
+  dividerMuted: "rgba(255,255,255,0.15)",
 };
 
 export const lightTheme: ThemePalette = {
@@ -77,6 +81,8 @@ export const lightTheme: ThemePalette = {
   },
   glow: { color: brand.primary, opacity: 0.35 },
   gradient: ["#F8FAFC", "#EEF2FF", brand.violet50] as const,
+  borderMuted: "#D4D4D8",
+  dividerMuted: "#E4E4E7",
 };
 
 export function paletteFor(mode: ThemeMode): ThemePalette {

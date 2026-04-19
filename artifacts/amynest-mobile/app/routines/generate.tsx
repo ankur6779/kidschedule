@@ -38,12 +38,16 @@ type Child = {
 
 type Mood = "happy" | "normal" | "lazy" | "angry";
 
-const MOODS: { value: Mood; emoji: string; label: string; hint: string; bg: string; border: string; text: string }[] = [
-  { value: "happy",  emoji: "😊", label: "Happy",  hint: "Productive & energetic", bg: "#F0FDF4", border: "#86EFAC", text: "#166534" },
-  { value: "normal", emoji: "😐", label: "Normal", hint: "Balanced day",            bg: "#EFF6FF", border: "#BFDBFE", text: "#1E40AF" },
-  { value: "lazy",   emoji: "😴", label: "Lazy",   hint: "Easier tasks",            bg: "#FFFBEB", border: "#FCD34D", text: "#92400E" },
-  { value: "angry",  emoji: "😡", label: "Upset",  hint: "Calming activities",      bg: "#FFF1F2", border: "#FDA4AF", text: "#9F1239" },
-];
+type MoodEntry = { value: Mood; emoji: string; label: string; hint: string; bg: string; border: string; text: string };
+
+function getMoods(roseBg: string): MoodEntry[] {
+  return [
+    { value: "happy",  emoji: "😊", label: "Happy",  hint: "Productive & energetic", bg: "#F0FDF4", border: "#86EFAC", text: "#166534" },
+    { value: "normal", emoji: "😐", label: "Normal", hint: "Balanced day",            bg: "#EFF6FF", border: "#BFDBFE", text: "#1E40AF" },
+    { value: "lazy",   emoji: "😴", label: "Lazy",   hint: "Easier tasks",            bg: "#FFFBEB", border: "#FCD34D", text: "#92400E" },
+    { value: "angry",  emoji: "😡", label: "Upset",  hint: "Calming activities",      bg: roseBg,    border: "#FDA4AF", text: "#9F1239" },
+  ];
+}
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -65,6 +69,7 @@ export default function GenerateRoutineScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const MOODS = useMemo(() => getMoods(colors.statusRoseBg), [colors.statusRoseBg]);
   const authFetch = useAuthFetch();
   const queryClient = useQueryClient();
   const params = useLocalSearchParams<{ childId?: string; date?: string }>();
@@ -358,7 +363,7 @@ export default function GenerateRoutineScreen() {
           value={specialPlans}
           onChangeText={setSpecialPlans}
           placeholder="e.g. doctor visit at 4pm, birthday party, swimming class…"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.textFaint}
           style={styles.textarea}
           multiline
           numberOfLines={3}
@@ -374,7 +379,7 @@ export default function GenerateRoutineScreen() {
           value={fridgeItems}
           onChangeText={setFridgeItems}
           placeholder="e.g. paneer, tomato, eggs, spinach, leftover dal…"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={colors.textFaint}
           style={styles.textarea}
           multiline
           numberOfLines={3}

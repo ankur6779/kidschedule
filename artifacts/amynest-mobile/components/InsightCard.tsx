@@ -9,6 +9,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -37,6 +38,7 @@ export default function InsightCard({
 }: Props) {
   const scale = useSharedValue(1);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const c = useColors();
 
   return (
     <AnimatedPressable
@@ -51,7 +53,7 @@ export default function InsightCard({
         if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      style={[styles.card, style]}
+      style={[styles.card, { backgroundColor: c.surface }, style]}
       accessibilityRole="button"
       accessibilityLabel={`${title}. ${description}. ${readMinutes} minute read.`}
     >
@@ -69,13 +71,13 @@ export default function InsightCard({
             <Text style={[styles.categoryText, { color: accent[0] }]}>{category}</Text>
           </View>
           <View style={styles.readMeta}>
-            <Ionicons name="time-outline" size={11} color="#9CA3AF" />
-            <Text style={styles.readText}>{readMinutes} min</Text>
+            <Ionicons name="time-outline" size={11} color={c.textFaint} />
+            <Text style={[styles.readText, { color: c.textFaint }]}>{readMinutes} min</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.desc} numberOfLines={2}>{description}</Text>
+        <Text style={[styles.title, { color: c.textStrong }]}>{title}</Text>
+        <Text style={[styles.desc, { color: c.textSubtle }]} numberOfLines={2}>{description}</Text>
 
         <View style={styles.footerRow}>
           <View style={styles.readMore}>
@@ -96,7 +98,7 @@ export default function InsightCard({
             <Ionicons
               name={bookmarked ? "bookmark" : "bookmark-outline"}
               size={18}
-              color={bookmarked ? brand.violet600 : "#9CA3AF"}
+              color={bookmarked ? brand.violet600 : c.textFaint}
             />
           </Pressable>
         </View>
@@ -107,7 +109,6 @@ export default function InsightCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
     borderRadius: 22,
     overflow: "hidden",
     borderWidth: 1,
@@ -148,12 +149,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   readText: {
-    color: "#9CA3AF",
     fontSize: 11.5,
     fontWeight: "600",
   },
   title: {
-    color: "#1F2937",
     fontSize: 16.5,
     fontWeight: "800",
     letterSpacing: -0.3,
@@ -161,7 +160,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   desc: {
-    color: "#6B7280",
     fontSize: 13.5,
     lineHeight: 19,
     marginBottom: 14,

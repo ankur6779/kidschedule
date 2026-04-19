@@ -38,6 +38,7 @@ import ProgressBar from "@/components/ProgressBar";
 import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
 import colors, { brand, brandAlpha } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const SIDE_PAD = (SCREEN_W - CARD_W) / 2;
@@ -138,6 +139,7 @@ const SAMPLE_ROUTINES: Routine[] = [
 export default function PremiumRoutineScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const c = useColors();
   const [routines, setRoutines] = useState<Routine[]>(SAMPLE_ROUTINES);
   const [activeRoutine, setActiveRoutine] = useState<Routine | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -363,7 +365,7 @@ export default function PremiumRoutineScreen() {
                 }
               >
                 <LinearGradient
-                  colors={activeRoutine.completed ? ["#374151", "#1F2937"] : [brand.purple500, colors.light.primary]}
+                  colors={activeRoutine.completed ? [c.completedGradStart, c.completedGradEnd] : [brand.purple500, colors.light.primary]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.completeBtn}

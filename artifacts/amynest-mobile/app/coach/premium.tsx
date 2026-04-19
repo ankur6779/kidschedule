@@ -22,6 +22,7 @@ import AppDataStatusBanner from "@/components/AppDataStatusBanner";
 import { useAppStore } from "@/store/useAppStore";
 import { type ActionResult } from "@/components/ActionButtons";
 import { brand, gradients } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const { height: SCREEN_H } = Dimensions.get("window");
 
@@ -285,6 +286,7 @@ const EXTRA_WINS: Omit<CoachWin, "index" | "accent">[] = [
 export default function PremiumCoachScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const c = useColors();
 
   const [phase, setPhase] = useState<"loading" | "intro" | "cards">("loading");
   const [introText, setIntroText] = useState("");
@@ -413,7 +415,7 @@ export default function PremiumCoachScreen() {
             accessibilityRole="button"
             accessibilityLabel="Close coach"
           >
-            <Ionicons name="close" size={22} color="#4B5563" />
+            <Ionicons name="close" size={22} color={c.textSubtle} />
           </TouchableOpacity>
 
           {/* Dots indicator */}
@@ -453,8 +455,8 @@ export default function PremiumCoachScreen() {
             <View style={styles.loadingCircle}>
               <ActivityIndicator size="large" color={brand.purple500} />
             </View>
-            <Text style={styles.loadingTitle}>Amy is thinking…</Text>
-            <Text style={styles.loadingSub}>Curating your personal wins</Text>
+            <Text style={[styles.loadingTitle, { color: c.textStrong }]}>Amy is thinking…</Text>
+            <Text style={[styles.loadingSub, { color: c.textSubtle }]}>Curating your personal wins</Text>
           </Animated.View>
         )}
 
@@ -470,7 +472,7 @@ export default function PremiumCoachScreen() {
               <Ionicons name="sparkles" size={28} color="#fff" />
             </LinearGradient>
             <View style={styles.introBubble}>
-              <Text style={styles.introText}>
+              <Text style={[styles.introText, { color: c.textStrong }]}>
                 {introText}
                 <Text style={styles.caret}>|</Text>
               </Text>
@@ -626,13 +628,11 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   loadingTitle: {
-    color: "#1F2937",
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 6,
   },
   loadingSub: {
-    color: "#6B7280",
     fontSize: 14,
     fontWeight: "500",
   },
@@ -663,7 +663,6 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   introText: {
-    color: "#1F2937",
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "500",

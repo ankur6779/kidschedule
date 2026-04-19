@@ -4,11 +4,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useSubscriptionStore, selectAiRemaining, selectIsPremium } from "@/store/useSubscriptionStore";
 import { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 export default function AiQuotaBanner() {
   const router = useRouter();
   const isPremium = useSubscriptionStore(selectIsPremium);
   const remaining = useSubscriptionStore(selectAiRemaining);
+  const c = useColors();
   if (isPremium || remaining === null) return null;
 
   const exhausted = remaining <= 0;
@@ -22,12 +24,12 @@ export default function AiQuotaBanner() {
       <Ionicons
         name={exhausted ? "lock-closed" : "sparkles"}
         size={14}
-        color={exhausted ? "#B91C1C" : low ? "#92400E" : "#6B7280"}
+        color={exhausted ? "#B91C1C" : low ? "#92400E" : c.textSubtle}
       />
       <Text
         style={[
           styles.text,
-          exhausted ? { color: "#B91C1C" } : low ? { color: "#92400E" } : { color: "#6B7280" },
+          exhausted ? { color: "#B91C1C" } : low ? { color: "#92400E" } : { color: c.textSubtle },
         ]}
       >
         {exhausted
