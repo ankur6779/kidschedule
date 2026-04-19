@@ -1,9 +1,10 @@
 import { useEffect } from "react";
-import { useAuth } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
 import { setSubscriptionAuthGetter } from "@/services/subscriptionApi";
 import { useAppStore } from "@/store/useAppStore";
+import { initializeRevenueCat, identifyUser, logoutRevenueCat } from "@/lib/revenuecat";
 
 /**
  * Bootstraps subscription state from /api/subscription. Also keeps the
