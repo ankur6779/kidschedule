@@ -251,7 +251,7 @@ router.get("/subscription/razorpay/config", requireAuth, (req, res): void => {
     keyId: process.env.RAZORPAY_KEY_ID ?? null,
     plansConfigured: {
       monthly: !!process.env.RAZORPAY_PLAN_ID_MONTHLY,
-      six_month: !!process.env.RAZORPAY_PLAN_ID_SIX_MONTH,
+      six_month: !!(process.env.RAZORPAY_PLAN_ID_SIX_MONTH ?? process.env.RAZORPAY_PLAN_ID_QUARTERLY),
       yearly: !!process.env.RAZORPAY_PLAN_ID_YEARLY,
     },
   });

@@ -4,7 +4,7 @@
 // Requires: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET (test or live).
 // Prints the resulting plan_xxx IDs — copy them into env vars:
 //   RAZORPAY_PLAN_ID_MONTHLY
-//   RAZORPAY_PLAN_ID_SIX_MONTH
+//   RAZORPAY_PLAN_ID_SIX_MONTH  (canonical name; RAZORPAY_PLAN_ID_QUARTERLY is also accepted)
 //   RAZORPAY_PLAN_ID_YEARLY
 import { createPlan, listPlans, razorpayConfigured } from "../src/lib/razorpayClient.js";
 
@@ -57,7 +57,7 @@ async function main() {
   console.log("Razorpay seed complete!");
   console.log("========================================");
   console.log(`RAZORPAY_PLAN_ID_MONTHLY=${out.monthly}`);
-  console.log(`RAZORPAY_PLAN_ID_SIX_MONTH=${out.six_month}`);
+  console.log(`RAZORPAY_PLAN_ID_SIX_MONTH=${out.six_month}   # also accepted: RAZORPAY_PLAN_ID_QUARTERLY`);
   console.log(`RAZORPAY_PLAN_ID_YEARLY=${out.yearly}`);
   console.log("========================================\n");
 }

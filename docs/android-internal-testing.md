@@ -242,7 +242,7 @@ pnpm --filter @workspace/api-server exec tsx scripts/seedRazorpay.ts
 Copy the printed `plan_xxx` IDs into Replit Secrets:
 
 - `RAZORPAY_PLAN_ID_MONTHLY`
-- `RAZORPAY_PLAN_ID_SIX_MONTH`
+- `RAZORPAY_PLAN_ID_SIX_MONTH` *(canonical; also accepted as `RAZORPAY_PLAN_ID_QUARTERLY`)*
 - `RAZORPAY_PLAN_ID_YEARLY`
 
 ### 3. Configure the webhook

@@ -179,7 +179,14 @@ export function razorpayConfigured(): boolean {
   return !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 }
 
-/** Reads the env-configured Razorpay plan IDs. */
+/** Reads the env-configured Razorpay plan IDs.
+ *
+ *  The 6-month plan can be supplied under either of two env var names:
+ *    - RAZORPAY_PLAN_ID_SIX_MONTH  — canonical (preferred, set by seedRazorpay.ts)
+ *    - RAZORPAY_PLAN_ID_QUARTERLY  — accepted alias (Razorpay dashboard sometimes
+ *                                    labels a 6-month plan as "quarterly")
+ *  Both names refer to the same billing plan (₹999 / 6 months, monthly×6).
+ */
 export function planEnv(): {
   monthly: string | undefined;
   six_month: string | undefined;
@@ -187,7 +194,7 @@ export function planEnv(): {
 } {
   return {
     monthly: process.env.RAZORPAY_PLAN_ID_MONTHLY,
-    six_month: process.env.RAZORPAY_PLAN_ID_SIX_MONTH,
+    six_month: process.env.RAZORPAY_PLAN_ID_SIX_MONTH ?? process.env.RAZORPAY_PLAN_ID_QUARTERLY,
     yearly: process.env.RAZORPAY_PLAN_ID_YEARLY,
   };
 }
