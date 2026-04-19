@@ -115,14 +115,19 @@ CRITICAL RULES — follow ALL exactly:
     throw new Error("Invalid AI response structure");
   }
 
-  const rawItems: RoutineItem[] = parsed.items.map((item: Record<string, unknown>) => ({
-    time: String(item.time ?? "08:00"),
-    activity: String(item.activity ?? "Activity"),
-    duration: Number(item.duration ?? 30),
-    category: String(item.category ?? "play"),
-    notes: item.notes ? String(item.notes) : undefined,
-    status: "pending" as const,
-  }));
+  const { pointsForCategory } = await import("../lib/routine-templates.js");
+  const rawItems: RoutineItem[] = parsed.items.map((item: Record<string, unknown>) => {
+    const category = String(item.category ?? "play");
+    return {
+      time: String(item.time ?? "08:00"),
+      activity: String(item.activity ?? "Activity"),
+      duration: Number(item.duration ?? 30),
+      category,
+      notes: item.notes ? String(item.notes) : undefined,
+      status: "pending" as const,
+      rewardPoints: pointsForCategory(category),
+    };
+  });
 
   // Always re-anchor to wake time — prevents AI from starting at midnight
   const anchoredItems = params.ageGroup === "infant"
@@ -142,6 +147,7 @@ type RoutineItem = {
   category: string;
   notes?: string;
   status?: "pending" | "completed" | "skipped" | "delayed";
+  rewardPoints?: number;
 };
 
 // ─── Re-anchor AI routine to wake time ─────────────────────────────────────

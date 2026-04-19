@@ -10,7 +10,22 @@ export type ScheduleItem = {
   category: string;
   notes: string;
   status: "pending";
+  rewardPoints?: number;
 };
+
+const ESSENTIAL_CATEGORIES = new Set(["hygiene", "sleep", "meal", "school", "tiffin"]);
+const IMPORTANT_CATEGORIES = new Set(["study", "bonding", "wind-down", "homework"]);
+
+export function pointsForCategory(category: string): number {
+  const c = (category ?? "").toLowerCase();
+  if (ESSENTIAL_CATEGORIES.has(c)) return 5;
+  if (IMPORTANT_CATEGORIES.has(c)) return 10;
+  return 15;
+}
+
+export function withRewardPoints<T extends { category?: string; rewardPoints?: number }>(items: T[]): T[] {
+  return items.map((it) => ({ ...it, rewardPoints: it.rewardPoints ?? pointsForCategory(it.category ?? "") }));
+}
 
 export type GeneratedRoutine = {
   title: string;
@@ -371,7 +386,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
     add(WIND_DOWN.infant[0]!);
     add(WIND_DOWN.infant[1]!);
     items.push({ ...SLEEP_ANCHOR.infant, time: minsToTime(sleepMins), status: "pending" });
-    return { title: makeTitle("infant", childName, false, seed), items };
+    return { title: makeTitle("infant", childName, false, seed), items: withRewardPoints(items) };
   }
 
   // ── Structured routine for toddler → pre_teen ─────────────────────────────
@@ -575,7 +590,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   items.push({ ...SLEEP_ANCHOR[ageGroup], time: minsToTime(sleepMins), status: "pending" });
 
   const title = makeTitle(ageGroup, childName, hasSchool, seed);
-  return { title, items };
+  return { title, items: withRewardPoints(items) };
 }
 
 // ─── Rule-Based Insights Generator ───────────────────────────────────────────
@@ -772,5 +787,5 @@ export function generatePartialRoutine(params: {
   // Sleep anchor
   items.push({ ...SLEEP_ANCHOR[ageGroup], time: minsToTime(sleepMins), status: "pending" });
 
-  return items;
+  return withRewardPoints(items);
 }

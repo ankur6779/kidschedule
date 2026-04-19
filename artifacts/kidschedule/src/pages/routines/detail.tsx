@@ -753,9 +753,11 @@ export default function RoutineDetail() {
       // Detect sleep/bedtime completion → prompt next-day generation
       if (status === "completed") {
         const item = prev[index];
-        // Award points for completing task
+        // Award points for completing task — use per-task points if present
         const childName = (childData as any)?.name ?? routine?.childName ?? "Child";
-        addPoints(childName, item.activity, 10);
+        const earned = (item as any).rewardPoints ?? 10;
+        addPoints(childName, item.activity, earned);
+        toast({ title: `+${earned} points earned 🎉`, description: item.activity });
         const completedSoFar = updated.filter((i) => i.status === "completed").length;
         const newBadges = checkAndAwardBadges(completedSoFar, 0);
         if (newBadges.length > 0) {
@@ -841,6 +843,15 @@ export default function RoutineDetail() {
   const completedCount = items.filter((i) => i.status === "completed").length;
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const amyTip = (() => {
+    if (totalCount === 0) return "Tap a task as you complete it — earn points and build streaks!";
+    if (progress === 100) return "Perfect day! Every task complete — celebrate the win with your child.";
+    if (progress >= 70) return "Great pace! Just a few more tasks to a perfect day.";
+    const next = items.find((i) => i.status === "pending");
+    if (next) return `Next up: ${next.activity} at ${next.time}. Stay close — your presence makes the difference.`;
+    return "Keep going — small consistent steps build lifelong habits.";
+  })();
 
   // Date-awareness: compare routine date vs system date
   const routineDateStr = routine?.date?.slice(0, 10) ?? "";
@@ -1028,6 +1039,17 @@ export default function RoutineDetail() {
             </div>
           </div>
         )}
+
+        {/* Amy AI suggests banner */}
+        <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 flex items-start gap-3">
+          <div className="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-0.5">Amy AI suggests</p>
+            <p className="text-sm text-emerald-900 font-medium leading-snug">{amyTip}</p>
+          </div>
+        </div>
       </header>
 
 

@@ -240,6 +240,10 @@ export default function RoutineDetailScreen() {
       i === idx ? { ...it, status, skipReason: status === "skipped" ? "Manually skipped" : undefined } : it
     );
     persist(next);
+    if (status === "completed" && items[idx]?.status !== "completed") {
+      const earned = (items[idx] as any)?.rewardPoints ?? 10;
+      showToast(`+${earned} points earned 🎉`, "success");
+    }
     setActionItem(null);
   };
 

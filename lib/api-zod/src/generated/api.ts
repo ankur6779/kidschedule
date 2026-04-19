@@ -153,6 +153,7 @@ export const RoutineItemSchema = zod.object({
   category: zod.string(),
   notes: zod.string().optional(),
   status: zod.enum(["pending", "completed", "skipped", "delayed"]).optional(),
+  rewardPoints: zod.number().optional(),
 });
 
 /**

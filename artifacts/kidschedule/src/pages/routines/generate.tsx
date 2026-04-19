@@ -1189,15 +1189,28 @@ export default function RoutineGenerate() {
                     <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>
                     <Label className="text-lg font-bold">Which day?</Label>
                   </div>
-                  <div className="flex items-center bg-card border-2 border-border rounded-2xl px-4 py-3 focus-within:border-primary transition-all max-w-sm">
-                    <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => { setDate(e.target.value); setExistingRoutine(null); setOverrideMode(false); }}
-                      className="bg-transparent border-none outline-none text-foreground font-medium w-full text-lg"
-                    />
+                  <div className="flex gap-3 max-w-sm">
+                    {([
+                      { label: "Today", value: format(new Date(), "yyyy-MM-dd") },
+                      { label: "Tomorrow", value: format(new Date(Date.now() + 86400000), "yyyy-MM-dd") },
+                    ] as const).map((opt) => {
+                      const active = date === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => { setDate(opt.value); setExistingRoutine(null); setOverrideMode(false); }}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 border-2 font-bold transition-all ${active ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-foreground border-border hover:border-primary/40"}`}
+                        >
+                          <Calendar className="h-4 w-4" />
+                          {opt.label}
+                        </button>
+                      );
+                    })}
                   </div>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" })} · 1 routine per child per day
+                  </p>
 
                   {/* Existing routine warning */}
                   {existingRoutine?.exists && !overrideMode && (
@@ -1726,14 +1739,24 @@ export default function RoutineGenerate() {
                     <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">2</div>
                     <Label className="text-lg font-bold">Which day?</Label>
                   </div>
-                  <div className="flex items-center bg-card border-2 border-border rounded-2xl px-4 py-3 focus-within:border-primary transition-all max-w-sm">
-                    <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
-                    <input
-                      type="date"
-                      value={familyDate}
-                      onChange={(e) => setFamilyDate(e.target.value)}
-                      className="bg-transparent border-none outline-none text-foreground font-medium w-full text-lg"
-                    />
+                  <div className="flex gap-3 max-w-sm">
+                    {([
+                      { label: "Today", value: format(new Date(), "yyyy-MM-dd") },
+                      { label: "Tomorrow", value: format(new Date(Date.now() + 86400000), "yyyy-MM-dd") },
+                    ] as const).map((opt) => {
+                      const active = familyDate === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setFamilyDate(opt.value)}
+                          className={`flex-1 flex items-center justify-center gap-2 rounded-2xl px-4 py-3 border-2 font-bold transition-all ${active ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-foreground border-border hover:border-primary/40"}`}
+                        >
+                          <Calendar className="h-4 w-4" />
+                          {opt.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

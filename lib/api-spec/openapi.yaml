@@ -400,6 +400,8 @@ components:
           type: string
         notes:
           type: string
+        rewardPoints:
+          type: integer
       required:
         - time
         - activity
