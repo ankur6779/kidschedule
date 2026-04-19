@@ -32,6 +32,27 @@ export type GeneratedRoutine = {
   items: ScheduleItem[];
 };
 
+export type Region =
+  | "north_indian"
+  | "south_indian"
+  | "bengali"
+  | "gujarati"
+  | "maharashtrian"
+  | "punjabi"
+  | "global"
+  | "pan_indian";
+
+export const REGION_LABELS: Record<Region, string> = {
+  north_indian: "North Indian",
+  south_indian: "South Indian",
+  bengali: "Bengali",
+  gujarati: "Gujarati",
+  maharashtrian: "Maharashtrian",
+  punjabi: "Punjabi",
+  global: "Global / Continental",
+  pan_indian: "Pan-Indian (Mixed)",
+};
+
 export type RoutineParams = {
   childName: string;
   ageGroup: AgeGroup;
@@ -44,6 +65,7 @@ export type RoutineParams = {
   hasSchool: boolean;
   mood: string;
   foodType: string;
+  region?: Region;
   goals?: string;
   specialPlans?: string;
   p1Free: boolean;
@@ -113,87 +135,562 @@ function pick<T>(arr: T[], seed: number, offset = 0): T {
   return arr[Math.abs(seed + offset) % arr.length];
 }
 
-// ─── Meal databases ───────────────────────────────────────────────────────────
+// ─── Region-aware Meal Databases ──────────────────────────────────────────────
+// Each region defines its own meal banks. Missing entries fall back to pan_indian.
+// Each bank contains 5 strings; each string is a "|"-separated set of options.
 
-const VEG_BREAKFAST = [
-  "Idli with sambar | Upma with chutney | Poha with peanuts",
-  "Paratha with curd | Aloo toast | Besan chilla with ketchup",
-  "Dosa with coconut chutney | Rava idli | Moong dal chilla",
-  "Oats porridge with banana | Bread butter with milk | Cornflakes with milk",
-  "Paneer paratha | Vegetable uttapam | Semolina kheer",
-];
+type MealKey =
+  | "VEG_BREAKFAST" | "NONVEG_BREAKFAST"
+  | "VEG_LUNCH" | "NONVEG_LUNCH"
+  | "VEG_DINNER" | "NONVEG_DINNER"
+  | "VEG_SNACKS" | "NONVEG_SNACKS"
+  | "VEG_TIFFIN" | "NONVEG_TIFFIN";
 
-const NONVEG_BREAKFAST = [
-  "Egg omelette with toast | Egg bhurji with paratha | Boiled eggs with bread",
-  "Egg dosa | Egg poha | Chicken sandwich",
-  "Scrambled eggs with toast | Egg upma | Chicken paratha",
-  "Oats with boiled egg | Egg roll | Bread omelette",
-  "Egg uttapam | Egg idli | Chicken toast",
-];
+type RegionMeals = Partial<Record<MealKey, string[]>>;
 
-const VEG_LUNCH = [
-  "Dal rice with sabzi | Rajma chawal | Chole rice",
-  "Paneer sabzi with roti | Aloo gobi with phulka | Mixed veg curry with rice",
-  "Sambar rice with papad | Kadhi rice | Palak dal with roti",
-  "Veg pulao with raita | Lemon rice with chutney | Veg biryani",
-  "Dal makhani with paratha | Baingan bharta with roti | Bhindi sabzi with dal",
-];
+const PAN_INDIAN_MEALS: Record<MealKey, string[]> = {
+  VEG_BREAKFAST: [
+    "Idli with sambar | Upma with chutney | Poha with peanuts",
+    "Paratha with curd | Aloo toast | Besan chilla with ketchup",
+    "Dosa with coconut chutney | Rava idli | Moong dal chilla",
+    "Oats porridge with banana | Bread butter with milk | Cornflakes with milk",
+    "Paneer paratha | Vegetable uttapam | Semolina kheer",
+  ],
+  NONVEG_BREAKFAST: [
+    "Egg omelette with toast | Egg bhurji with paratha | Boiled eggs with bread",
+    "Egg dosa | Egg poha | Chicken sandwich",
+    "Scrambled eggs with toast | Egg upma | Chicken paratha",
+    "Oats with boiled egg | Egg roll | Bread omelette",
+    "Egg uttapam | Egg idli | Chicken toast",
+  ],
+  VEG_LUNCH: [
+    "Dal rice with sabzi | Rajma chawal | Chole rice",
+    "Paneer sabzi with roti | Aloo gobi with phulka | Mixed veg curry with rice",
+    "Sambar rice with papad | Kadhi rice | Palak dal with roti",
+    "Veg pulao with raita | Lemon rice with chutney | Veg biryani",
+    "Dal makhani with paratha | Baingan bharta with roti | Bhindi sabzi with dal",
+  ],
+  NONVEG_LUNCH: [
+    "Chicken curry with rice | Egg curry with roti | Fish curry with rice",
+    "Chicken biryani | Egg rice | Mutton curry with phulka",
+    "Chicken dal rice | Egg dal roti | Fish fry with rice",
+    "Keema with roti | Chicken rice | Prawn curry with rice",
+    "Grilled chicken with dal | Egg biryani | Chicken sabzi with roti",
+  ],
+  VEG_DINNER: [
+    "Roti with dal and sabzi | Khichdi with ghee | Vegetable soup with bread",
+    "Paratha with curd | Mixed veg with roti | Dal rice light",
+    "Dahi rice | Vegetable daliya | Oats with sabzi",
+    "Chapati with palak paneer | Moong dal khichdi | Veg soup with roti",
+    "Light upma | Rava dosa | Tomato soup with bread",
+  ],
+  NONVEG_DINNER: [
+    "Chicken curry with roti | Egg dal with rice | Fish with chapati",
+    "Chicken soup with bread | Egg curry light | Grilled chicken with veg",
+    "Keema roti | Chicken stew | Prawn masala with rice",
+    "Egg chapati | Chicken khichdi | Light fish curry",
+    "Chicken noodle soup | Egg fried rice | Chicken daliya",
+  ],
+  VEG_SNACKS: [
+    "Fruit bowl + milk | Banana + peanut butter | Apple slices + curd",
+    "Vegetable upma | Sprouts chaat | Boiled corn with butter",
+    "Poha | Idli with chutney | Bread with jam and milk",
+    "Chikki + banana shake | Makhana + milk | Date and nut balls",
+    "Vegetable sandwich | Dhokla | Paneer cubes with fruit",
+  ],
+  NONVEG_SNACKS: [
+    "Boiled egg + banana | Egg toast | Chicken puff",
+    "Egg sandwich | Chicken nuggets | Egg with fruit",
+    "Boiled egg + fruit bowl | Chicken roll | Egg paratha slice",
+    "Egg bhurji bread | Chicken popcorn | Egg omelette wrap",
+    "Egg milkshake | Chicken sandwich | Boiled egg + milk",
+  ],
+  VEG_TIFFIN: [
+    "Paneer paratha + curd | Veg sandwich | Upma in box",
+    "Idli with sambar | Poha with peanuts | Besan chilla with chutney",
+    "Cheese toast | Vegetable pulao | Aloo paratha + pickle",
+    "Pasta with veg | Bread rolls | Veg fried rice",
+    "Stuffed capsicum paratha | Tomato rice | Veg wrap",
+  ],
+  NONVEG_TIFFIN: [
+    "Egg roll | Egg sandwich | Chicken frankie",
+    "Egg fried rice wrap | Chicken paratha | Egg puff",
+    "Boiled egg + bread | Chicken sandwich | Egg pasta",
+    "Egg bhurji paratha | Chicken roll | Egg noodles box",
+    "Chicken chapati roll | Egg rice | Mutton keema paratha",
+  ],
+};
 
-const NONVEG_LUNCH = [
-  "Chicken curry with rice | Egg curry with roti | Fish curry with rice",
-  "Chicken biryani | Egg rice | Mutton curry with phulka",
-  "Chicken dal rice | Egg dal roti | Fish fry with rice",
-  "Keema with roti | Chicken rice | Prawn curry with rice",
-  "Grilled chicken with dal | Egg biryani | Chicken sabzi with roti",
-];
+const REGIONAL_MEALS: Record<Exclude<Region, "pan_indian">, RegionMeals> = {
+  north_indian: {
+    VEG_BREAKFAST: [
+      "Aloo paratha with curd | Stuffed paratha with butter | Bedmi puri with aloo sabzi",
+      "Chole bhature | Poori sabzi | Besan chilla with green chutney",
+      "Paneer bhurji with toast | Aloo puri | Methi thepla with curd",
+      "Suji halwa with poori | Paratha with achar | Bread pakora with chutney",
+      "Mixed veg paratha | Aloo tikki with curd | Onion uttapam",
+    ],
+    NONVEG_BREAKFAST: [
+      "Egg paratha with curd | Keema paratha | Boiled egg with poori",
+      "Egg bhurji with paratha | Chicken kheema toast | Anda curry with bread",
+      "Omelette paratha | Egg roll Delhi style | Chicken sandwich with chutney",
+      "Egg masala with poori | Chicken keema bun | Boiled egg + aloo paratha",
+      "Spicy egg bhurji with toast | Chicken curry puff | Egg roll with onion",
+    ],
+    VEG_LUNCH: [
+      "Rajma chawal with onion salad | Chole rice with raita | Kadhi pakora with rice",
+      "Dal makhani with naan | Paneer butter masala with roti | Aloo gobi with phulka",
+      "Palak paneer with roti | Mix veg with paratha | Baingan bharta with rice",
+      "Chana masala with bhature | Sarson da saag with makki roti | Dal tadka with jeera rice",
+      "Matar paneer with roti | Bhindi masala with dal-roti | Aloo dum with paratha",
+    ],
+    NONVEG_LUNCH: [
+      "Butter chicken with naan | Chicken curry with rice | Mutton rogan josh with phulka",
+      "Chicken biryani Delhi style | Egg curry with roti | Keema matar with paratha",
+      "Tandoori chicken with dal-roti | Fish curry with rice | Chicken tikka masala with naan",
+      "Mutton korma with rice | Chicken kadhai with roti | Egg masala with rice",
+      "Chicken handi with naan | Mutton qorma with rice | Anda curry with paratha",
+    ],
+    VEG_DINNER: [
+      "Roti with dal makhani | Khichdi with ghee | Mix veg with chapati",
+      "Paneer paratha with curd | Aloo gobi with roti | Light dal with rice",
+      "Phulka with kadhi | Vegetable pulao with raita | Moong dal khichdi",
+      "Chapati with bhindi | Light dal-chawal | Suji upma",
+      "Roti with palak | Veg daliya | Tomato soup with toast",
+    ],
+    NONVEG_DINNER: [
+      "Chicken curry with roti | Egg curry with rice | Light fish curry",
+      "Chicken stew with bread | Mutton soup with roti | Egg bhurji with paratha",
+      "Light chicken with chapati | Anda curry with rice | Keema paratha",
+      "Chicken khichdi | Egg dal-rice | Light fish with phulka",
+      "Chicken soup with bread | Egg fried rice | Chicken daliya",
+    ],
+    VEG_SNACKS: [
+      "Samosa with chutney | Aloo tikki | Bread pakora",
+      "Dahi bhalla | Pani puri | Bhel puri",
+      "Paneer pakora | Onion bhajiya | Sweet lassi + dry fruits",
+      "Fruit chaat | Roasted chana | Sprouts chaat",
+      "Mathri with pickle | Banana milkshake | Makhana with milk",
+    ],
+    NONVEG_TIFFIN: [
+      "Chicken roll Delhi style | Egg roll | Keema paratha box",
+      "Chicken frankie | Egg sandwich | Chicken puff",
+      "Egg bhurji wrap | Chicken patty | Egg paratha box",
+      "Chicken biryani box | Egg pulao | Chicken kathi roll",
+      "Spicy egg paratha | Chicken sandwich | Boiled egg + paratha",
+    ],
+    VEG_TIFFIN: [
+      "Aloo paratha + pickle | Paneer paratha + curd | Chole rice box",
+      "Veg pulao + raita | Stuffed paratha | Rajma rice box",
+      "Bedmi poori box | Mathri + sabzi | Veg sandwich",
+      "Methi thepla + chutney | Aloo puri | Mix veg pulao",
+      "Paneer roll | Veg frankie | Cheese paratha",
+    ],
+  },
+  south_indian: {
+    VEG_BREAKFAST: [
+      "Idli with sambar and coconut chutney | Medu vada | Pongal with chutney",
+      "Masala dosa | Set dosa | Onion rava dosa with chutney",
+      "Upma with coconut chutney | Rava idli | Pesarattu with ginger chutney",
+      "Adai with avial | Appam with veg stew | Poori with potato kurma",
+      "Lemon rice | Curd rice with pickle | Tomato rice",
+    ],
+    NONVEG_BREAKFAST: [
+      "Egg dosa with chutney | Egg appam | Anda paratha South style",
+      "Egg podimas with idiyappam | Chicken sandwich | Egg pongal",
+      "Omelette with appam | Boiled egg with upma | Chicken keema dosa",
+      "Egg uttapam | Egg vada | Chicken roll Madras style",
+      "Spicy egg bhurji with dosa | Egg + idli | Egg fried rice light",
+    ],
+    VEG_LUNCH: [
+      "Sambar rice with papad | Rasam rice with curd | Bisi bele bath",
+      "Curd rice with pickle | Lemon rice with vada | Tamarind rice with chips",
+      "Veg meals (rice, sambar, rasam, kootu, curd) | Avial with rice | Vegetable kurma with appam",
+      "Vegetable biryani South style | Coconut rice | Pulihora with raita",
+      "Pongal with sambar | Mor kuzhambu with rice | Drumstick sambar with rice",
+    ],
+    NONVEG_LUNCH: [
+      "Chicken Chettinad with rice | Fish curry with rice | Mutton kola urundai with rice",
+      "Chicken biryani Hyderabadi | Egg curry with rice | Prawn masala with rice",
+      "Andhra chicken curry with rice | Fish moilee with appam | Chicken sukka with rice",
+      "Mutton biryani | Egg rasam rice | Crab curry with rice",
+      "Chicken pepper fry with rice | Fish fry + sambar rice | Egg kurma with appam",
+    ],
+    VEG_DINNER: [
+      "Rava dosa with chutney | Idli with sambar | Lemon rice light",
+      "Curd rice with pickle | Pongal with chutney | Vegetable kichadi",
+      "Appam with veg stew | Idiyappam with kurma | Light upma",
+      "Tomato rice | Coconut rice | Light dosa with chutney",
+      "Adai with jaggery | Pesarattu | Rava upma",
+    ],
+    NONVEG_DINNER: [
+      "Egg curry with appam | Light chicken curry with rice | Fish moilee with idiyappam",
+      "Chicken stew with appam | Egg kurma with dosa | Light prawn curry with rice",
+      "Egg podimas with rice | Chicken soup with bread | Fish fry with rice",
+      "Chicken sukka with rice | Egg pepper fry | Anda curry with appam",
+      "Light chicken Chettinad | Egg masala with idli | Fish curry South style",
+    ],
+    VEG_SNACKS: [
+      "Murukku with milk | Banana chips + buttermilk | Sundal (chickpea snack)",
+      "Mysore bonda | Bonda + chutney | Vada with sambar",
+      "Boiled corn | Fruit + curd | Roasted peanuts",
+      "Coconut barfi | Banana + milk | Ragi malt",
+      "Idli with podi | Mini dosa | Mango + curd",
+    ],
+    VEG_TIFFIN: [
+      "Curd rice + pickle | Lemon rice + papad | Tamarind rice",
+      "Idli + chutney box | Mini dosa + chutney | Pongal in box",
+      "Veg biryani South style | Tomato rice + chips | Coconut rice",
+      "Pulihora box | Sambar rice box | Vegetable upma",
+      "Bisi bele bath | Sevai upma | Adai with jaggery",
+    ],
+    NONVEG_TIFFIN: [
+      "Egg dosa rolled | Chicken biryani box | Egg rice box",
+      "Chicken sandwich | Egg podimas wrap | Fish cutlet + rice",
+      "Egg fried rice | Chicken kathi roll Madras | Egg sandwich",
+      "Boiled egg + curd rice | Chicken kurma + appam box | Egg pulao",
+      "Spicy egg + lemon rice | Chicken sukka + rice | Egg + idli box",
+    ],
+  },
+  bengali: {
+    VEG_BREAKFAST: [
+      "Luchi with aloor dom | Cholar dal with luchi | Radhaballavi with sabzi",
+      "Kochuri with chholar dal | Veg ghugni with bread | Suji halwa with poori",
+      "Vegetable chop with muri | Veg cutlet with toast | Beguni with rice",
+      "Chirer pulao | Sandesh + milk | Mishti doi + roti",
+      "Pithe + milk | Veg paratha + alur torkari | Doi chura",
+    ],
+    NONVEG_BREAKFAST: [
+      "Dim er omelette with luchi | Mughlai paratha (egg) | Egg roll Kolkata style",
+      "Egg toast with chola | Anda kosha with bread | Chicken sandwich Bengali style",
+      "Egg dim torkari with paratha | Boiled egg with chira | Egg cutlet + bread",
+      "Dim er jhol with rice | Egg keema paratha | Chicken stew with bread",
+      "Spicy egg bhurji with luchi | Egg fried rice light | Mughlai egg paratha",
+    ],
+    VEG_LUNCH: [
+      "Bhaat with shukto and dal | Aloo posto with rice | Chholar dal with luchi",
+      "Mocha ghonto with bhaat | Aloo phulkopir dalna with rice | Begun bhaja + dal + bhaat",
+      "Vegetable khichuri | Doi begun with rice | Cholar dal with poori",
+      "Chanar dalna with rice | Aloo kobi'r torkari | Mishti pulao with paneer",
+      "Lau ghonto with rice | Bhaja moong dal with rice | Sukto with bhaat",
+    ],
+    NONVEG_LUNCH: [
+      "Macher jhol with bhaat | Kosha mangsho with rice | Chingri malai curry with rice",
+      "Ilish bhapa with rice | Murgir jhol with rice | Egg curry with bhaat",
+      "Doi mach with rice | Chicken kosha with luchi | Macher kalia with bhaat",
+      "Mutton biryani Kolkata style | Fish fry + dal-bhaat | Prawn malai curry",
+      "Pabda jhol with bhaat | Murgir jhol light with rice | Egg dim curry",
+    ],
+    VEG_DINNER: [
+      "Roti with cholar dal | Khichuri with begun bhaja | Light luchi with sabzi",
+      "Bhaat with bhaja moong dal | Mishti pulao light | Veg torkari with roti",
+      "Doi vada light | Vegetable stew with bread | Aloo dam with luchi",
+      "Bhaat with sukto | Chapati with chanar dalna | Light dal khichuri",
+      "Veg cutlet with bread | Suji halwa light | Chirer pulao",
+    ],
+    NONVEG_DINNER: [
+      "Macher jhol with bhaat | Light chicken jhol with rice | Egg curry Bengali style",
+      "Chicken stew with bread | Light kosha mangsho | Doi mach with rice",
+      "Egg dim curry with rice | Fish fry with chapati | Light prawn curry",
+      "Chicken khichuri | Egg dal bhaat | Light macher jhol",
+      "Murgir soup with bread | Egg fried rice | Chicken daliya Bengali style",
+    ],
+    VEG_SNACKS: [
+      "Telebhaja (assorted fritters) | Beguni + muri | Vegetable chop",
+      "Singara (Bengali samosa) | Nimki | Mishti + cha",
+      "Sandesh + milk | Mishti doi + fruit | Rasgulla + milk",
+      "Jhalmuri | Ghugni chaat | Aloo kabli",
+      "Pantua + milk | Chanar jilipi | Roshogolla + fruit",
+    ],
+    VEG_TIFFIN: [
+      "Luchi + aloor dom box | Vegetable cutlet + bread | Mishti pulao box",
+      "Aloo paratha Bengali style | Veg chop + muri | Khichuri box",
+      "Chanar dalna with rice | Aloo phulkopi torkari + roti | Tomato rice + chop",
+      "Veg roll | Sandwich + sandesh | Cholar dal + luchi box",
+      "Mochar ghonto + bhaat | Vegetable singara box | Suji halwa + poori",
+    ],
+    NONVEG_TIFFIN: [
+      "Egg roll Kolkata style | Mughlai paratha (egg) | Chicken roll Park Street style",
+      "Egg sandwich Bengali | Chicken kosha + paratha | Fish fry + bread",
+      "Egg dim torkari + rice box | Chicken stew + bread | Egg cutlet + rice",
+      "Mutton biryani Kolkata | Chicken biryani + aloo | Egg fried rice box",
+      "Macher chop + muri | Egg paratha + sabzi | Chicken keema roll",
+    ],
+  },
+  gujarati: {
+    VEG_BREAKFAST: [
+      "Thepla with curd and pickle | Methi thepla + chai | Bajra rotla with milk",
+      "Khaman dhokla with chutney | Khandvi | Patra (colocasia rolls)",
+      "Fafda with jalebi | Gathiya with chutney | Sev khamani",
+      "Handvo with chai | Muthia (steamed snacks) | Dudhpak with poori",
+      "Aloo paratha Gujarati style | Bread upma | Veg sandwich + chai",
+    ],
+    NONVEG_BREAKFAST: [
+      "Egg bhurji with thepla | Egg sandwich Gujarati style | Boiled eggs with chutney",
+      "Omelette with thepla | Egg paratha | Egg toast + chai",
+      "Egg upma | Egg bhurji with bread | Chicken sandwich",
+      "Anda paratha | Egg roll | Boiled egg with khakhra",
+      "Egg dosa | Egg fried rice light | Anda bhurji with bun",
+    ],
+    VEG_LUNCH: [
+      "Gujarati thali (dal-bhaat-rotli-shaak) | Khichdi-kadhi | Undhiyu with poori",
+      "Patra-shaak with rotli | Sev tameta nu shaak with bhaat | Bharela ringan with rotli",
+      "Dal dhokli | Veg pulao with kadhi | Bhindi-shaak with rotli",
+      "Mix veg with thepla | Aloo-shaak with rotli | Tuvar dal with bhaat",
+      "Gujarati kadhi-chawal | Methi-bajra rotla with shaak | Lasaniya batata",
+    ],
+    NONVEG_LUNCH: [
+      "Chicken curry with rotli | Egg curry with bhaat | Fish curry coastal Gujarati",
+      "Chicken biryani | Egg masala with rice | Mutton curry with rotli",
+      "Chicken pulao + raita | Egg curry + thepla | Fish fry + dal-bhaat",
+      "Chicken Kathiyawadi | Egg curry with bhakri | Prawn curry coastal",
+      "Mutton soup with rice | Chicken with rotli | Egg masala with bhaat",
+    ],
+    VEG_DINNER: [
+      "Khichdi-kadhi with papad | Thepla with chai and curd | Light dal-bhaat",
+      "Bajra rotla with shaak | Veg pulao light | Suji upma",
+      "Mug ni dal khichdi | Dudhi-chana shaak with rotli | Light handvo",
+      "Rotli with kadhi | Vegetable dhansak light | Veg sandwich with milk",
+      "Methi thepla + curd | Light shaak with rotli | Suji halwa light",
+    ],
+    NONVEG_DINNER: [
+      "Light chicken curry with rotli | Egg masala with bhaat | Fish curry light",
+      "Chicken stew with bread | Egg curry light | Anda curry with rotli",
+      "Light keema with rotli | Chicken with khichdi | Egg fried rice",
+      "Mutton soup with bread | Chicken light + rice | Egg masala with thepla",
+      "Light fish curry with rice | Chicken khichdi | Egg dal-bhaat",
+    ],
+    VEG_SNACKS: [
+      "Dhokla + chutney | Khandvi | Patra",
+      "Fafda-jalebi | Gathiya | Khaman with sev",
+      "Methi thepla + curd | Khakhra + masala | Sev mamra",
+      "Handvo + tea | Muthia | Sandwich dhokla",
+      "Banana shake + dhokla | Lassi sweet | Roasted chana with chai",
+    ],
+    VEG_TIFFIN: [
+      "Thepla + chunda pickle | Methi paratha + curd | Veg pulao + raita",
+      "Dhokla + chutney box | Khandvi + theplas | Handvo box",
+      "Bajra rotla + shaak | Khichdi-kadhi box | Veg sandwich + sev",
+      "Patra + thepla | Aloo paratha + curd | Mix veg pulao",
+      "Sandwich dhokla | Veg roll Gujarati | Cheese thepla + pickle",
+    ],
+    NONVEG_TIFFIN: [
+      "Egg sandwich + chai | Chicken roll | Egg paratha box",
+      "Chicken biryani box | Anda paratha + curd | Egg fried rice",
+      "Chicken keema paratha | Egg bhurji + bread | Chicken sandwich",
+      "Egg pulao + raita | Boiled egg + thepla | Chicken kathi roll",
+      "Egg roll Gujarati style | Chicken cutlet | Anda curry + bhaat box",
+    ],
+  },
+  maharashtrian: {
+    VEG_BREAKFAST: [
+      "Pohe (kanda poha) | Sabudana khichdi | Upma with chutney",
+      "Misal pav | Vada pav | Sabudana vada with chutney",
+      "Thalipeeth with butter | Zunka bhakri | Suji halwa with poori",
+      "Kothimbir vadi | Aloo paratha Maharashtrian style | Bread butter + chai",
+      "Onion-tomato omelette toast (veg version with paneer) | Veg sandwich Mumbai style | Modak (festival)",
+    ],
+    NONVEG_BREAKFAST: [
+      "Egg bhurji pav | Egg omelette pav | Anda paratha",
+      "Egg roll Mumbai style | Chicken sandwich | Boiled egg with toast",
+      "Egg upma | Anda bhurji with bread | Chicken paratha",
+      "Egg fried rice light | Spicy egg bhurji + pav | Egg dosa",
+      "Egg toast Mumbai style | Anda masala with bread | Chicken roll",
+    ],
+    VEG_LUNCH: [
+      "Varan-bhaat with limbu and tup | Pithla-bhakri | Masale bhaat",
+      "Amti with bhaat | Bhindi sabzi with chapati | Patodi rasa bhaji with bhakri",
+      "Vangi bhaat | Tomato saar with rice | Matki usal with bhakri",
+      "Puran poli + amti | Modak (festival lunch) | Aluchi vadi with rice",
+      "Kobichi bhaji with bhakri | Mix veg with chapati | Sol kadhi + rice",
+    ],
+    NONVEG_LUNCH: [
+      "Kombdi vade (Malvani chicken) | Mutton kolhapuri with bhakri | Fish curry Konkani style",
+      "Chicken biryani Bombay style | Egg curry with rice | Prawn koliwada with rice",
+      "Chicken sukka with bhakri | Bombil fry with rice | Mutton rassa with bhakri",
+      "Chicken handi with chapati | Egg curry Maharashtrian | Surmai fry with rice",
+      "Mutton biryani | Chicken thali (Kolhapuri) | Fish curry with rice",
+    ],
+    VEG_DINNER: [
+      "Varan-bhaat light | Pithla bhakri | Khichdi with ghee",
+      "Amti-rice with papad | Light dal-chawal | Suji upma",
+      "Bhakri with bhaji | Veg pulao light | Sabudana khichdi",
+      "Chapati with bhaji | Light masale bhaat | Tomato saar with rice",
+      "Light dal-bhaat | Misal light | Sandwich + milk",
+    ],
+    NONVEG_DINNER: [
+      "Light chicken curry + chapati | Egg curry + rice | Fish curry light",
+      "Chicken stew with bread | Mutton soup with bhakri | Egg masala with rice",
+      "Light chicken sukka with rice | Egg fried rice | Anda curry with chapati",
+      "Chicken khichdi | Egg dal-bhaat | Light fish curry with rice",
+      "Chicken soup with bread | Egg pulao | Mutton soup with rice",
+    ],
+    VEG_SNACKS: [
+      "Vada pav | Misal pav | Bhel puri",
+      "Pav bhaji | Pani puri | Sev puri",
+      "Kothimbir vadi | Sabudana vada | Aluvadi",
+      "Banana wafers + chai | Roasted chana | Modak / sweet",
+      "Veg sandwich Mumbai | Bhajiya + chai | Chikki + milk",
+    ],
+    VEG_TIFFIN: [
+      "Vada pav box | Pav bhaji + pav | Misal pav",
+      "Thalipeeth + curd | Pithla-bhakri | Sabudana khichdi box",
+      "Veg pulao + raita | Masale bhaat | Aloo paratha + chutney",
+      "Bhel puri box | Sandwich Mumbai style | Kothimbir vadi box",
+      "Puran poli + amti | Modak (festival box) | Veg roll Maharashtrian",
+    ],
+    NONVEG_TIFFIN: [
+      "Egg bhurji pav | Chicken roll Mumbai | Anda paratha + chutney",
+      "Chicken biryani box | Egg fried rice | Boiled egg + bhakri",
+      "Chicken kolhapuri + chapati box | Egg sandwich | Fish fry + rice",
+      "Mutton biryani | Egg pulao | Chicken keema paratha",
+      "Egg roll Mumbai style | Chicken cutlet | Anda curry + rice box",
+    ],
+  },
+  punjabi: {
+    VEG_BREAKFAST: [
+      "Aloo paratha with butter and curd | Gobi paratha + lassi | Mooli paratha + pickle",
+      "Chole bhature | Amritsari kulcha + chole | Chana kulcha",
+      "Dal makhani with paratha | Paneer paratha + lassi | Sarson saag with makki roti",
+      "Suji halwa + poori | Pinni + milk | Lassi + paratha",
+      "Vegetable poha | Bread pakora + chutney | Aloo tikki with curd",
+    ],
+    NONVEG_BREAKFAST: [
+      "Egg paratha + lassi | Anda kheema paratha | Boiled egg with chana",
+      "Egg bhurji + paratha | Chicken sandwich | Anda curry with bread",
+      "Omelette + paratha | Chicken keema toast | Egg roll Punjabi style",
+      "Egg masala + paratha | Anda + lassi | Chicken cutlet sandwich",
+      "Egg fried rice + chutney | Anda bhurji bun | Chicken keema paratha",
+    ],
+    VEG_LUNCH: [
+      "Sarson da saag + makki di roti | Dal makhani + naan | Rajma chawal + raita",
+      "Chole bhature + lassi | Paneer butter masala + naan | Aloo gobi + phulka",
+      "Mah ki dal + roti | Kadhi pakora + rice | Palak paneer + roti",
+      "Amritsari dal + roti | Chana masala + bhature | Mixed veg Punjabi style",
+      "Matar paneer + naan | Dal tadka + jeera rice | Bhindi do pyaza + roti",
+    ],
+    NONVEG_LUNCH: [
+      "Butter chicken + naan | Chicken curry + rice | Mutton rogan josh + phulka",
+      "Amritsari fish + dal-roti | Tandoori chicken + naan | Chicken tikka masala + rice",
+      "Mutton korma + rice | Chicken kadhai + roti | Egg curry Punjabi style",
+      "Chicken handi + naan | Mutton qorma + rice | Anda curry + paratha",
+      "Chicken biryani Punjabi | Mutton biryani | Fish curry with rice",
+    ],
+    VEG_DINNER: [
+      "Roti + dal makhani | Khichdi with ghee | Mix veg + chapati",
+      "Paneer paratha + curd | Aloo gobi + roti | Light dal + rice",
+      "Phulka + kadhi | Vegetable pulao + raita | Moong dal khichdi",
+      "Chapati + bhindi | Light dal-chawal | Suji upma",
+      "Roti + palak | Veg daliya | Tomato soup + toast",
+    ],
+    NONVEG_DINNER: [
+      "Light chicken curry + roti | Egg curry + rice | Fish curry light",
+      "Chicken stew + bread | Mutton soup + roti | Egg bhurji + paratha",
+      "Light chicken + chapati | Anda curry + rice | Keema paratha",
+      "Chicken khichdi | Egg dal-rice | Light fish + phulka",
+      "Chicken soup + bread | Egg fried rice | Chicken daliya",
+    ],
+    VEG_SNACKS: [
+      "Samosa + chutney | Aloo tikki | Chole tikki",
+      "Bread pakora + lassi | Paneer pakora | Onion bhajiya",
+      "Sweet lassi + pinni | Mathri + pickle | Roasted chana + chai",
+      "Fruit chaat | Chana chaat | Sprouts chaat",
+      "Pinni + milk | Banana milkshake | Makhana with milk",
+    ],
+    VEG_TIFFIN: [
+      "Aloo paratha + curd + pickle | Gobi paratha + chutney | Mooli paratha + butter",
+      "Chole rice + raita | Rajma chawal box | Paneer paratha + curd",
+      "Dal makhani + naan box | Veg pulao + raita | Stuffed paratha box",
+      "Amritsari kulcha + chole | Mix veg pulao | Chana paratha",
+      "Cheese paratha + ketchup | Veg roll Punjabi | Paneer roll",
+    ],
+    NONVEG_TIFFIN: [
+      "Chicken roll Punjabi | Egg paratha + curd | Anda kheema paratha",
+      "Chicken biryani box | Egg sandwich | Chicken kathi roll",
+      "Egg bhurji wrap | Anda curry + paratha box | Chicken cutlet",
+      "Mutton biryani box | Egg pulao | Chicken keema paratha",
+      "Egg roll Punjabi style | Chicken patty + bread | Boiled egg + paratha",
+    ],
+  },
+  global: {
+    VEG_BREAKFAST: [
+      "Pancakes with maple syrup and fruit | Waffles + berries | French toast + honey",
+      "Avocado toast + boiled potato | Veg omelette (paneer) + toast | Smoothie bowl + granola",
+      "Cornflakes / muesli + milk + banana | Oatmeal + nuts + honey | Greek yogurt + granola + fruit",
+      "Veg sandwich + juice | Bagel + cream cheese | Croissant + jam + milk",
+      "Tofu scramble + toast | Veg burrito (beans, cheese) | Mediterranean platter (hummus + pita)",
+    ],
+    NONVEG_BREAKFAST: [
+      "Scrambled eggs + bacon + toast | Egg omelette + sausages | Eggs Benedict",
+      "Pancakes + bacon | Chicken sandwich + juice | Tuna toast + milk",
+      "Boiled eggs + bread + cheese | Smoked salmon bagel | Chicken sausage + scrambled eggs",
+      "French toast + ham | Egg muffins + fruit | Chicken wrap + smoothie",
+      "Egg sandwich + milk | Greek yogurt + granola + boiled egg | Avocado + egg toast",
+    ],
+    VEG_LUNCH: [
+      "Pasta with tomato sauce + salad | Veg pizza + soup | Caesar salad with cheese",
+      "Veg burger + fries + juice | Mac & cheese + veggies | Veg lasagna + salad",
+      "Stir-fried veg + rice | Quesadilla + salsa | Veg sushi + miso soup",
+      "Mexican rice + beans + cheese | Mediterranean bowl (hummus, falafel, salad) | Veg quiche + salad",
+      "Pesto pasta + garlic bread | Veg wrap + smoothie | Buddha bowl (quinoa, veg, dressing)",
+    ],
+    NONVEG_LUNCH: [
+      "Grilled chicken + rice + veg | Pasta with chicken + salad | Fish and chips + salad",
+      "Chicken burger + fries | Tuna pasta salad | Chicken Caesar salad",
+      "Roast chicken + mashed potato + veg | Chicken sushi + soup | Beef tacos + salsa",
+      "Chicken wrap + fries | Salmon + rice + veg | Chicken pizza + salad",
+      "Chicken stir-fry + noodles | Turkey sandwich + soup | Chicken burrito bowl",
+    ],
+    VEG_DINNER: [
+      "Pasta + salad + bread | Veg soup + grilled cheese | Light pizza + salad",
+      "Stir-fried veg + brown rice | Veg wrap + soup | Veg risotto + salad",
+      "Baked potato + veg + cheese | Veg sushi + miso | Pesto pasta light",
+      "Veg quesadilla + salad | Light veg curry + rice | Buddha bowl",
+      "Mediterranean platter | Tomato soup + bread | Veg lasagna light",
+    ],
+    NONVEG_DINNER: [
+      "Grilled chicken + veg | Light fish + rice | Chicken soup + bread",
+      "Roast chicken + salad | Salmon + veg + rice | Chicken stew + bread",
+      "Tuna salad + bread | Chicken wrap + soup | Light chicken pasta",
+      "Egg curry + rice (Western) | Chicken burrito light | Fish tacos light",
+      "Light chicken risotto | Egg fried rice | Chicken + quinoa bowl",
+    ],
+    VEG_SNACKS: [
+      "Fruit + yogurt | Cheese + crackers | Veg sticks + hummus",
+      "Banana + peanut butter | Apple + cheese | Trail mix + milk",
+      "Smoothie + granola | Yogurt parfait | Fruit + nuts",
+      "Cheese sandwich | Cheese cubes + grapes | Mini pizza",
+      "Veg muffin + milk | Fruit salad + honey | Popcorn + juice",
+    ],
+    NONVEG_SNACKS: [
+      "Boiled egg + fruit | Tuna sandwich | Chicken nuggets + ketchup",
+      "Egg muffin | Chicken cubes + cheese | Tuna salad in pita",
+      "Chicken sandwich | Egg + crackers | Chicken wrap mini",
+      "Egg + cheese roll | Chicken popcorn | Tuna + crackers",
+      "Egg salad sandwich | Boiled egg + milk | Chicken cheese roll",
+    ],
+    VEG_TIFFIN: [
+      "Veg sandwich + fruit | Pasta salad + juice | Veg wrap + cheese",
+      "Mac & cheese box | Veg pizza slices + fruit | Quesadilla + salsa",
+      "Veg sushi box | Pesto pasta box | Buddha bowl",
+      "Veg burrito + chips | Cheese sandwich + fruit | Veg lasagna slice",
+      "Veg quiche + salad | Stir-fried noodles | Mediterranean wrap",
+    ],
+    NONVEG_TIFFIN: [
+      "Chicken sandwich + fruit | Tuna pasta box | Chicken wrap + chips",
+      "Chicken nuggets + rice | Salmon + rice box | Chicken burger + fries",
+      "Chicken sushi box | Egg + cheese sandwich | Chicken pizza slice",
+      "Chicken pasta box | Tuna salad + bread | Chicken burrito + salsa",
+      "Roast chicken + bread | Chicken stir-fry + rice | Chicken Caesar wrap",
+    ],
+  },
+};
 
-const VEG_DINNER = [
-  "Roti with dal and sabzi | Khichdi with ghee | Vegetable soup with bread",
-  "Paratha with curd | Mixed veg with roti | Dal rice light",
-  "Dahi rice | Vegetable daliya | Oats with sabzi",
-  "Chapati with palak paneer | Moong dal khichdi | Veg soup with roti",
-  "Light upma | Rava dosa | Tomato soup with bread",
-];
-
-const NONVEG_DINNER = [
-  "Chicken curry with roti | Egg dal with rice | Fish with chapati",
-  "Chicken soup with bread | Egg curry light | Grilled chicken with veg",
-  "Keema roti | Chicken stew | Prawn masala with rice",
-  "Egg chapati | Chicken khichdi | Light fish curry",
-  "Chicken noodle soup | Egg fried rice | Chicken daliya",
-];
-
-const VEG_SNACKS = [
-  "Fruit bowl + milk | Banana + peanut butter | Apple slices + curd",
-  "Vegetable upma | Sprouts chaat | Boiled corn with butter",
-  "Poha | Idli with chutney | Bread with jam and milk",
-  "Chikki + banana shake | Makhana + milk | Date and nut balls",
-  "Vegetable sandwich | Dhokla | Paneer cubes with fruit",
-];
-
-const NONVEG_SNACKS = [
-  "Boiled egg + banana | Egg toast | Chicken puff",
-  "Egg sandwich | Chicken nuggets | Egg with fruit",
-  "Boiled egg + fruit bowl | Chicken roll | Egg paratha slice",
-  "Egg bhurji bread | Chicken popcorn | Egg omelette wrap",
-  "Egg milkshake | Chicken sandwich | Boiled egg + milk",
-];
-
-const VEG_TIFFIN = [
-  "Paneer paratha + curd | Veg sandwich | Upma in box",
-  "Idli with sambar | Poha with peanuts | Besan chilla with chutney",
-  "Cheese toast | Vegetable pulao | Aloo paratha + pickle",
-  "Pasta with veg | Bread rolls | Veg fried rice",
-  "Stuffed capsicum paratha | Tomato rice | Veg wrap",
-];
-
-const NONVEG_TIFFIN = [
-  "Egg roll | Egg sandwich | Chicken frankie",
-  "Egg fried rice wrap | Chicken paratha | Egg puff",
-  "Boiled egg + bread | Chicken sandwich | Egg pasta",
-  "Egg bhurji paratha | Chicken roll | Egg noodles box",
-  "Chicken chapati roll | Egg rice | Mutton keema paratha",
-];
+function mealsFor(region: Region | undefined, key: MealKey): string[] {
+  const r: Region = region ?? "pan_indian";
+  if (r === "pan_indian") return PAN_INDIAN_MEALS[key];
+  return REGIONAL_MEALS[r][key] ?? PAN_INDIAN_MEALS[key];
+}
 
 // ─── Activity Pools per Age Group ─────────────────────────────────────────────
 
@@ -345,13 +842,18 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   const {
     childName, ageGroup, wakeUpTime, sleepTime,
     schoolStartTime, schoolEndTime, travelMode, hasSchool,
-    mood, foodType, specialPlans, date,
+    mood, foodType, region, specialPlans, date,
     p1Free, p2Free, bothBusy,
   } = params;
 
   const seed = dateSeed(date, childName);
-  const isVeg = foodType !== "nonveg";
+  // Accept both "non_veg" (canonical) and legacy "nonveg"
+  const isVeg = foodType !== "non_veg" && foodType !== "nonveg";
   const travelMins = TRAVEL_DURATION[travelMode] ?? 20;
+  const meal = (key: MealKey, off = 0): string => {
+    const arr = mealsFor(region, key);
+    return arr[Math.abs(seed + off) % arr.length]!;
+  };
 
   // Parse times
   let cursor = timeToMins(wakeUpTime);
@@ -395,7 +897,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   add(MORNING_HYGIENE[ageGroup]);
 
   // 2. Breakfast
-  const bfOptions = isVeg ? VEG_BREAKFAST[seed % VEG_BREAKFAST.length]! : NONVEG_BREAKFAST[seed % NONVEG_BREAKFAST.length]!;
+  const bfOptions = meal(isVeg ? "VEG_BREAKFAST" : "NONVEG_BREAKFAST", 0);
   const bfDuration = ageGroup === "toddler" ? 20 : ageGroup === "preschool" ? 20 : 25;
   add({ activity: "Breakfast", duration: bfDuration, category: "meal", notes: `Options: ${bfOptions}` });
 
@@ -419,7 +921,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
         : { activity: "Morning Reading / Revision", duration: 20, category: "homework", notes: "Light reading or reviewing yesterday's lesson. Starts the brain gently." };
       if (tiffinStart - cursor >= 20) add(morningFill);
     }
-    const tiffinOpts = isVeg ? VEG_TIFFIN[seed % VEG_TIFFIN.length]! : NONVEG_TIFFIN[seed % NONVEG_TIFFIN.length]!;
+    const tiffinOpts = meal(isVeg ? "VEG_TIFFIN" : "NONVEG_TIFFIN", 0);
     add({ activity: "Tiffin Box Preparation", duration: 20, category: "tiffin", notes: `Options: ${tiffinOpts}` });
     gap(5);
     add({ activity: `Travel to School (${travelMode})`, duration: travelMins, category: "travel", notes: `${travelMode === "walk" ? "Walking — great for morning energy!" : "Stay calm, avoid rushing. Play I-Spy or count trees on the way!"}` });
@@ -427,7 +929,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
     add({ activity: "School Time", duration: schoolDuration > 0 ? schoolDuration : 360, category: "school", notes: `Class ${params.childClass ? params.childClass : ""} — stay focused, be kind to friends, ask questions!` }, schoolStartMins);
     cursor = schoolEndMins;
     add({ activity: `Return Home from School (${travelMode})`, duration: travelMins, category: "travel", notes: "Transition time — let them decompress. Don't ask about homework immediately." });
-    const snackOpts = isVeg ? VEG_SNACKS[(seed + 1) % VEG_SNACKS.length]! : NONVEG_SNACKS[(seed + 1) % NONVEG_SNACKS.length]!;
+    const snackOpts = meal(isVeg ? "VEG_SNACKS" : "NONVEG_SNACKS", 1);
     add({ activity: "After-School Snack", duration: 15, category: "meal", notes: `Options: ${snackOpts}` });
     gap(5);
     // Homework block for school-age kids
@@ -444,7 +946,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
     }
     add({ activity: "Playschool", duration: playschoolDur > 0 ? playschoolDur : 180, category: "school", notes: "Play, friends, songs, and stories. Wonderful early socialisation." }, schoolStartMins);
     cursor = schoolEndMins;
-    const snackOpts = isVeg ? VEG_SNACKS[(seed + 2) % VEG_SNACKS.length]! : NONVEG_SNACKS[(seed + 2) % NONVEG_SNACKS.length]!;
+    const snackOpts = meal(isVeg ? "VEG_SNACKS" : "NONVEG_SNACKS", 2);
     add({ activity: "Post-School Snack", duration: 15, category: "meal", notes: `Options: ${snackOpts}` });
   } else {
     // No school — fill morning with activities
@@ -458,7 +960,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
       filled++;
     }
     if (ageGroup === "toddler" || ageGroup === "preschool") {
-      const snackOpts = isVeg ? VEG_SNACKS[(seed + 3) % VEG_SNACKS.length]! : NONVEG_SNACKS[(seed + 3) % NONVEG_SNACKS.length]!;
+      const snackOpts = meal(isVeg ? "VEG_SNACKS" : "NONVEG_SNACKS", 3);
       add({ activity: "Mid-Morning Snack", duration: 15, category: "meal", notes: `Options: ${snackOpts}` });
       gap(5);
     }
@@ -468,13 +970,13 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   if (ageGroup === "toddler") {
     // Aim for nap around 1–2 PM
     const napTarget = Math.max(cursor + 30, 12 * 60 + 30);
-    const lunchOpts = isVeg ? VEG_LUNCH[seed % VEG_LUNCH.length]! : NONVEG_LUNCH[seed % NONVEG_LUNCH.length]!;
+    const lunchOpts = meal(isVeg ? "VEG_LUNCH" : "NONVEG_LUNCH", 0);
     add({ activity: "Lunch", duration: 25, category: "meal", notes: `Options: ${lunchOpts}` }, napTarget - 30);
     gap(5);
     add(TODDLER_NAP);
     gap(10);
   } else if (ageGroup === "preschool") {
-    const lunchOpts = isVeg ? VEG_LUNCH[(seed + 1) % VEG_LUNCH.length]! : NONVEG_LUNCH[(seed + 1) % NONVEG_LUNCH.length]!;
+    const lunchOpts = meal(isVeg ? "VEG_LUNCH" : "NONVEG_LUNCH", 1);
     add({ activity: "Lunch", duration: 25, category: "meal", notes: `Options: ${lunchOpts}` });
     gap(5);
     if (!hasSchool) add(PRESCHOOL_REST);
@@ -483,10 +985,10 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
     // For early_school and pre_teen on school days, lunch already happened at school
     // On no-school days, add lunch
     if (!hasSchool) {
-      const lunchOpts = isVeg ? VEG_LUNCH[(seed + 2) % VEG_LUNCH.length]! : NONVEG_LUNCH[(seed + 2) % NONVEG_LUNCH.length]!;
+      const lunchOpts = meal(isVeg ? "VEG_LUNCH" : "NONVEG_LUNCH", 2);
       add({ activity: "Lunch", duration: 30, category: "meal", notes: `Options: ${lunchOpts}` });
       gap(5);
-      const snackOpts = isVeg ? VEG_SNACKS[(seed + 4) % VEG_SNACKS.length]! : NONVEG_SNACKS[(seed + 4) % NONVEG_SNACKS.length]!;
+      const snackOpts = meal(isVeg ? "VEG_SNACKS" : "NONVEG_SNACKS", 4);
       add({ activity: "Afternoon Snack", duration: 15, category: "meal", notes: `Options: ${snackOpts}` });
       gap(5);
     }
@@ -576,7 +1078,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   }
 
   // 8. Dinner
-  const dinnerOpts = isVeg ? VEG_DINNER[seed % VEG_DINNER.length]! : NONVEG_DINNER[seed % NONVEG_DINNER.length]!;
+  const dinnerOpts = meal(isVeg ? "VEG_DINNER" : "NONVEG_DINNER", 0);
   const dinnerDur = ageGroup === "toddler" ? 25 : 30;
   add({ activity: "Dinner", duration: dinnerDur, category: "meal", notes: `Options: ${dinnerOpts}` }, Math.max(cursor, dinnerMins - 30));
   gap(5);
@@ -732,10 +1234,15 @@ export function generatePartialRoutine(params: {
   sleepMins: number;
   newActivity?: { name: string; duration?: number };
   date: string;
+  region?: Region;
 }): ScheduleItem[] {
-  const { childName, ageGroup, foodType, keptItems, startMins, sleepMins, newActivity, date } = params;
+  const { childName, ageGroup, foodType, region, keptItems, startMins, sleepMins, newActivity, date } = params;
   const seed = dateSeed(date, childName);
-  const isVeg = foodType !== "nonveg";
+  const isVeg = foodType !== "non_veg" && foodType !== "nonveg";
+  const meal = (key: MealKey, off = 0): string => {
+    const arr = mealsFor(region, key);
+    return arr[Math.abs(seed + off) % arr.length]!;
+  };
 
   // Categories already present in kept items
   const usedActivities = new Set(keptItems.map((i) => i.activity.toLowerCase()));
@@ -774,7 +1281,7 @@ export function generatePartialRoutine(params: {
   // Dinner if not already in kept items and not yet added
   const hasDinner = keptItems.some((i) => i.activity.toLowerCase().includes("dinner"));
   if (!hasDinner && cursor + 30 < sleepMins - 30) {
-    const dinnerOpts = isVeg ? VEG_DINNER[seed % VEG_DINNER.length]! : NONVEG_DINNER[seed % NONVEG_DINNER.length]!;
+    const dinnerOpts = meal(isVeg ? "VEG_DINNER" : "NONVEG_DINNER", 0);
     add({ activity: "Dinner", duration: 30, category: "meal", notes: `Options: ${dinnerOpts}` });
   }
 

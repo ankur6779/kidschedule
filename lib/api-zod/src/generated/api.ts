@@ -355,6 +355,7 @@ export const GetParentProfileResponse = zod.object({
   freeSlots: zod.array(FreeSlotSchema).default([]),
   foodType: zod.string().default("non_veg"),
   allergies: zod.string().nullish(),
+  region: zod.string().default("pan_indian"),
   createdAt: zod.string(),
   updatedAt: zod.string(),
 });
@@ -370,6 +371,7 @@ export const UpsertParentProfileBody = zod.object({
   freeSlots: zod.array(FreeSlotSchema).optional(),
   foodType: zod.string().optional(),
   allergies: zod.string().optional(),
+  region: zod.string().optional(),
 });
 
 /**

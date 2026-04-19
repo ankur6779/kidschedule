@@ -35,6 +35,7 @@ async function generateAiRoutine(params: {
   schoolEndTime: string;
   hasSchool: boolean;
   foodType: string;
+  region?: string;
   mood: string;
   specialPlans?: string;
   fridgeItems?: string;
@@ -68,6 +69,17 @@ ${params.hasSchool ? `- School: ${params.schoolStartTime} to ${params.schoolEndT
 - Wake up: ${params.wakeUpTime}
 - Bedtime: ${params.sleepTime}
 - Diet: ${params.foodType === "non_veg" ? "Non-Vegetarian" : "Vegetarian"}
+- Regional cuisine: ${
+    params.region === "north_indian" ? "North Indian (Delhi/UP/Punjabi-influenced — parathas, dal makhani, chole, rajma, sabzis)"
+    : params.region === "south_indian" ? "South Indian (Tamil/Karnataka/Andhra/Kerala — idli, dosa, sambar, rasam, curd rice, appam)"
+    : params.region === "bengali" ? "Bengali (Kolkata/West Bengal — bhaat, macher jhol, luchi, kosha mangsho, mishti doi)"
+    : params.region === "gujarati" ? "Gujarati (thepla, dhokla, khandvi, undhiyu, dal-bhaat, kadhi)"
+    : params.region === "maharashtrian" ? "Maharashtrian (poha, vada pav, misal, varan-bhaat, bhakri, kolhapuri)"
+    : params.region === "punjabi" ? "Punjabi (parathas, sarson saag with makki roti, butter chicken, dal makhani, chole bhature)"
+    : params.region === "global" ? "Global / Continental (pancakes, sandwiches, pasta, salads, grilled items — Western style)"
+    : "Pan-Indian (mixed Indian cuisine — varied across regions)"
+  }
+- IMPORTANT: All meal suggestions (breakfast, lunch, dinner, snacks, tiffin) MUST be from the regional cuisine above. Do not mix in dishes from other regions.
 - Mood today: ${params.mood}
 ${params.goals ? `- Goals/focus: ${params.goals}` : ""}
 ${params.specialPlans ? `- Special plans: ${params.specialPlans}` : ""}
@@ -258,12 +270,15 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
 
   // Food type — prefer child setting, fallback to parent profile
   let foodType = (child as any).foodType ?? "veg";
-  if (userId && foodType === "veg") {
+  let region: string = "pan_indian";
+  if (userId) {
     const [pp] = await db.select().from(parentProfilesTable).where(eq(parentProfilesTable.userId, userId));
-    if (pp?.foodType) foodType = pp.foodType;
+    if (pp?.foodType && foodType === "veg") foodType = pp.foodType;
+    if (pp?.region) region = pp.region;
   }
 
   const generated = generateRuleBasedRoutine({
+    region: region as any,
     childName: child.name,
     ageGroup,
     totalAgeMonths,
@@ -327,9 +342,11 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
   } = parsed.data;
 
   let foodType = (child as any).foodType ?? "veg";
-  if (userId && foodType === "veg") {
+  let region: string = "pan_indian";
+  if (userId) {
     const [pp] = await db.select().from(parentProfilesTable).where(eq(parentProfilesTable.userId, userId));
-    if (pp?.foodType) foodType = pp.foodType;
+    if (pp?.foodType && foodType === "veg") foodType = pp.foodType;
+    if (pp?.region) region = pp.region;
   }
 
   const p1Status = parent1WorkType === "homemaker" ? "free all day (homemaker)"
@@ -358,6 +375,7 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
       schoolEndTime: child.schoolEndTime,
       hasSchool: hasSchool !== false,
       foodType,
+      region,
       mood: mood ?? "normal",
       specialPlans,
       fridgeItems,
@@ -385,6 +403,7 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
       hasSchool: hasSchool !== false,
       mood: mood ?? "normal",
       foodType,
+      region: region as any,
       goals: child.goals,
       specialPlans,
       p1Free,
@@ -753,11 +772,19 @@ router.post("/routines/:id/partial-regenerate", async (req, res): Promise<void> 
     : totalAgeMonths < 120 ? "early_school"
     : "pre_teen";
 
+  // Resolve region + foodType from parent profile
+  let foodType: string = (child as any).foodType ?? "veg";
+  let region: string = "pan_indian";
+  const [pp] = await db.select().from(parentProfilesTable).where(eq(parentProfilesTable.userId, userId));
+  if (pp?.foodType && foodType === "veg") foodType = pp.foodType;
+  if (pp?.region) region = pp.region;
+
   const newItems = generatePartialRoutine({
     childName: child.name,
     ageGroup,
     childAge: child.age,
-    foodType: (child as any).foodType ?? "veg",
+    foodType,
+    region: region as any,
     goals: child.goals,
     keptItems,
     startMins,

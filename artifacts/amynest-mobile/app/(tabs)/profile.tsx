@@ -28,6 +28,7 @@ type ParentProfile = {
   freeSlots?: FreeSlot[];
   foodType?: string;
   allergies?: string;
+  region?: string;
 };
 
 type Child = { id: number };
@@ -49,6 +50,16 @@ const WORK_TYPES: { label: string; value: string }[] = [
 const FOOD_TYPES: { label: string; value: string }[] = [
   { label: "Non-Vegetarian", value: "non_veg" },
   { label: "Vegetarian", value: "veg" },
+];
+const REGIONS: { label: string; value: string }[] = [
+  { label: "Pan-Indian", value: "pan_indian" },
+  { label: "North Indian", value: "north_indian" },
+  { label: "South Indian", value: "south_indian" },
+  { label: "Bengali", value: "bengali" },
+  { label: "Gujarati", value: "gujarati" },
+  { label: "Maharashtrian", value: "maharashtrian" },
+  { label: "Punjabi", value: "punjabi" },
+  { label: "Global / Continental", value: "global" },
 ];
 
 export default function ProfileScreen() {
@@ -73,6 +84,7 @@ export default function ProfileScreen() {
   const [freeSlots, setFreeSlots] = useState<FreeSlot[]>([]);
   const [foodType, setFoodType] = useState("non_veg");
   const [allergies, setAllergies] = useState("");
+  const [region, setRegion] = useState("pan_indian");
 
   const { data: profile, isLoading } = useQuery<ParentProfile | null>({
     queryKey: ["parent-profile"],
@@ -101,6 +113,7 @@ export default function ProfileScreen() {
       setFreeSlots(profile.freeSlots ?? []);
       setFoodType(profile.foodType ?? "non_veg");
       setAllergies(profile.allergies ?? "");
+      setRegion(profile.region ?? "pan_indian");
     }
   }, [profile, user?.firstName]);
 
@@ -153,7 +166,7 @@ export default function ProfileScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSaving(true);
     try {
-      const body: any = { role, workType, foodType };
+      const body: any = { role, workType, foodType, region };
       if (name) body.name = name;
       if (gender) body.gender = gender;
       if (mobileNumber) body.mobileNumber = mobileNumber;
@@ -354,6 +367,12 @@ export default function ProfileScreen() {
         >
           <Field label="Diet Type" colors={colors}>
             <ChipPicker options={FOOD_TYPES} value={foodType} onChange={setFoodType} colors={colors} />
+          </Field>
+          <Field label="Regional Cuisine" colors={colors}>
+            <ChipPicker options={REGIONS} value={region} onChange={setRegion} colors={colors} />
+            <Text style={[styles.hint, { color: colors.mutedForeground }]}>
+              Amy AI tailors meal suggestions to your regional cuisine.
+            </Text>
           </Field>
           <Field label="Allergies / Foods to Avoid" colors={colors}>
             <TextInput

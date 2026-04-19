@@ -27,7 +27,19 @@ interface ParentProfile {
   freeSlots: FreeSlot[];
   foodType: string;
   allergies: string;
+  region: string;
 }
+
+const REGION_OPTIONS = [
+  { value: "pan_indian", label: "Pan-Indian (Mixed)" },
+  { value: "north_indian", label: "North Indian" },
+  { value: "south_indian", label: "South Indian" },
+  { value: "bengali", label: "Bengali" },
+  { value: "gujarati", label: "Gujarati" },
+  { value: "maharashtrian", label: "Maharashtrian" },
+  { value: "punjabi", label: "Punjabi" },
+  { value: "global", label: "Global / Continental" },
+];
 
 export default function ParentProfilePage() {
   const { t } = useTranslation();
@@ -49,6 +61,7 @@ export default function ParentProfilePage() {
     freeSlots: [],
     foodType: "non_veg",
     allergies: "",
+    region: "pan_indian",
   });
 
   useEffect(() => {
@@ -73,6 +86,7 @@ export default function ParentProfilePage() {
               freeSlots: data.freeSlots ?? [],
               foodType: data.foodType ?? "non_veg",
               allergies: data.allergies ?? "",
+              region: data.region ?? "pan_indian",
             });
           }
         })
@@ -120,6 +134,7 @@ export default function ParentProfilePage() {
         role: profile.role,
         workType: profile.workType,
         foodType: profile.foodType,
+        region: profile.region,
       };
       if (profile.gender) body.gender = profile.gender;
       if (profile.mobileNumber) body.mobileNumber = profile.mobileNumber;
@@ -370,6 +385,25 @@ export default function ParentProfilePage() {
                 <SelectItem value="veg">Vegetarian (no meat or fish)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Regional Cuisine</Label>
+            <Select
+              value={profile.region}
+              onValueChange={(v) => setProfile((p) => ({ ...p, region: v }))}
+            >
+              <SelectTrigger data-testid="select-region">
+                <SelectValue placeholder="Select cuisine region" />
+              </SelectTrigger>
+              <SelectContent>
+                {REGION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Amy AI will tailor breakfast, lunch, dinner, snack and tiffin suggestions to this regional cuisine.
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label>Allergies / Foods to Avoid</Label>
