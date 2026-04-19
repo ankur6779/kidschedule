@@ -70,6 +70,7 @@
     "react-native-razorpay": "^2.3.1",
     "zustand": "^5.0.12",
     "@workspace/behavior-tracker": "workspace:*",
-    "@workspace/family-routine": "workspace:*"
+    "@workspace/family-routine": "workspace:*",
+    "@workspace/infant-hub": "workspace:*"
   }
 }

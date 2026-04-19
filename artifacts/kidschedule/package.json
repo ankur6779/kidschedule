@@ -81,6 +81,7 @@
     "i18next-browser-languagedetector": "^8.2.1",
     "react-i18next": "^17.0.4",
     "@workspace/behavior-tracker": "workspace:*",
-    "@workspace/family-routine": "workspace:*"
+    "@workspace/family-routine": "workspace:*",
+    "@workspace/infant-hub": "workspace:*"
   }
 }

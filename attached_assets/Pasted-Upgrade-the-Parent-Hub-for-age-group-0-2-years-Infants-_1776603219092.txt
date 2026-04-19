@@ -1,0 +1,178 @@
+Upgrade the “Parent Hub” for age group 0–2 years (Infants & Toddlers) in my web and mobile app "AmyNest" into a premium, research-based, intelligent system with glass UI and structured tabs.
+
+IMPORTANT:
+- Content must be science-based (pediatric + child development research inspired)
+- No random or generic advice
+- Keep language simple and actionable for parents
+- Use predefined expert-backed dataset (no heavy AI generation)
+- Mobile + web compatible
+- Maintain performance
+
+--------------------------------
+1. UI DESIGN (Glass + Glow Tabs 🔥🔥)
+--------------------------------
+- Create top tab navigation:
+
+Tabs:
+1. Sleep
+2. Feeding
+3. Development
+4. Behavior
+5. Daily Care
+
+- Use glassmorphism style:
+
+Dark mode:
+- background: rgba(255,255,255,0.05)
+- backdrop blur: 16px
+- border: soft white
+- glow: soft purple/blue
+
+Light mode:
+- background: rgba(255,255,255,0.6)
+- blur: 12px
+
+- Tabs:
+  - Rounded
+  - Glow on active
+  - Smooth switch animation
+
+--------------------------------
+2. SLEEP INTELLIGENCE SYSTEM 💤 (Core 🔥)
+--------------------------------
+If sleep feature exists → upgrade
+
+Else create:
+
+Features:
+- Sleep window prediction
+- Nap timing suggestion
+- Sleep cycle explanation
+
+Show:
+
+“Amy AI Insight:
+Your baby’s next sleep window is in 40 mins”
+
+--------------------------------
+3. FEEDING SYSTEM 🍼
+--------------------------------
+- Feeding interval guidance
+- Breastfeeding benefits tips
+- Solid food readiness (age-based)
+
+Example:
+“6 months: start semi-solid foods”
+
+--------------------------------
+4. DEVELOPMENT TRACKER 👶
+--------------------------------
+Track milestones:
+
+- Eye contact
+- Rolling
+- Sitting
+- Crawling
+
+Show:
+
+“Expected milestone for this age”
+
+Add:
+
+- Alert (if delay suspected)
+- Gentle suggestion (no panic tone)
+
+--------------------------------
+5. BEHAVIOR UNDERSTANDING 🧠
+--------------------------------
+Explain:
+
+- Crying reasons
+- Irritability patterns
+- Sleep-related behavior
+
+Show:
+
+“Most likely cause: hunger / tiredness”
+
+--------------------------------
+6. DAILY CARE GUIDE ❤️
+--------------------------------
+Include:
+
+- Bathing tips
+- Hygiene
+- Skin care
+- Safe environment
+
+--------------------------------
+7. CONTENT SYSTEM (CRITICAL 🔥🔥)
+--------------------------------
+- Use structured dataset:
+
+{
+  ageRange: "6-9 months",
+  category: "sleep",
+  tip: "Babies need 2–3 naps daily",
+  sourceType: "pediatric_guideline"
+}
+
+- Ensure:
+  - Short
+  - Clear
+  - Actionable
+
+--------------------------------
+8. AMY AI INSIGHT LAYER 🤖
+--------------------------------
+On each tab show:
+
+“Amy AI Suggests”
+
+Example:
+“Your baby may be overstimulated, reduce noise before sleep”
+
+--------------------------------
+9. AGE-BASED FILTERING 🎯
+--------------------------------
+- Content auto-filtered by:
+  - months (not just years)
+
+--------------------------------
+10. INTERACTION
+--------------------------------
+Add buttons:
+
+- 👍 Helpful
+- 🔄 Next Tip
+- ✔️ I tried this
+
+--------------------------------
+11. LANGUAGE SUPPORT 🌐
+--------------------------------
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+12. PERFORMANCE
+--------------------------------
+- No heavy API calls
+- Use local dataset
+- Fast load
+
+--------------------------------
+13. KEEP IT SAFE
+--------------------------------
+- No medical diagnosis
+- Only guidance tone
+
+--------------------------------
+14. RETURN
+--------------------------------
+Return upgraded Infant Hub with:
+
+- Glass UI tabs
+- Research-based content system
+- Sleep

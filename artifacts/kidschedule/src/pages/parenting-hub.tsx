@@ -14,6 +14,8 @@ import { OlympiadZone } from "@/components/olympiad-zone";
 import { LifeSkillsZone } from "@/components/life-skills-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
+import { InfantHub } from "@/components/infant-hub";
+import { isInfantHubAge } from "@workspace/infant-hub";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
 import { ToddlerPreschoolMode, type ToddlerShowOnly } from "@/components/toddler-preschool-mode";
 import { DailyPuzzle } from "@/components/daily-puzzle";
@@ -378,6 +380,27 @@ export default function ParentingHub() {
           })}
         </div>
       )}
+
+      {/* Infant & Toddler Hub — only when any child is ≤ 24 months */}
+      {(() => {
+        const selectedMonths = effectiveChild
+          ? (effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)
+          : -1;
+        // Prefer the selected child if they're in the window; else pick the
+        // youngest infant/toddler child in the family.
+        const target = isInfantHubAge(selectedMonths)
+          ? effectiveChild
+          : childList
+              .map((c: any) => ({
+                child: c,
+                months: (c.age * 12) + ((c as any).ageMonths ?? 0),
+              }))
+              .filter((x) => isInfantHubAge(x.months))
+              .sort((a, b) => a.months - b.months)[0]?.child;
+        if (!target) return null;
+        const targetMonths = (target.age * 12) + ((target as any).ageMonths ?? 0);
+        return <InfantHub childName={target.name} ageMonths={targetMonths} />;
+      })()}
 
       {/* Age group pill */}
       {effectiveChild && ageGroup && (

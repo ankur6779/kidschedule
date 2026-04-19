@@ -15,6 +15,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LifeSkillsZone } from "@/components/LifeSkillsZone";
+import InfantHub from "@/components/InfantHub";
+import { isInfantHubAge } from "@workspace/infant-hub";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -169,6 +171,20 @@ export default function HubScreen() {
             })}
           </ScrollView>
         )}
+
+        {/* Infant & Toddler Hub — only when any child is ≤ 24 months */}
+        {(() => {
+          const selMonths = effective ? effective.age * 12 + (effective.ageMonths ?? 0) : -1;
+          const target = isInfantHubAge(selMonths)
+            ? effective
+            : children
+                .map(c => ({ child: c, months: c.age * 12 + (c.ageMonths ?? 0) }))
+                .filter(x => isInfantHubAge(x.months))
+                .sort((a, b) => a.months - b.months)[0]?.child;
+          if (!target) return null;
+          const m = target.age * 12 + (target.ageMonths ?? 0);
+          return <InfantHub childName={target.name} ageMonths={m} />;
+        })()}
 
         {effective && grp && (
           <View style={styles.agePillRow}>

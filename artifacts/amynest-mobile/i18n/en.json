@@ -327,5 +327,26 @@
     "final_cta_sub": "Join AmyNest AI and get a personalized parenting plan in minutes — completely free.",
     "final_cta_btn": "Start Parenting Smarter",
     "footer_tagline": "Where Smart Parenting Begins"
+  },
+  "infant_hub": {
+    "title": "Infant & Toddler Hub",
+    "subtitle": "Research-based guidance for {{name}} ({{age}})",
+    "tabs": {
+      "sleep": "Sleep",
+      "feeding": "Feeding",
+      "development": "Development",
+      "behavior": "Behavior",
+      "daily_care": "Daily Care"
+    },
+    "amy_suggests": "Amy AI Suggests",
+    "helpful": "Helpful",
+    "next_tip": "Next tip",
+    "tried_this": "I tried this",
+    "thanks": "Thanks for the feedback!",
+    "tried_logged": "Marked as tried — great job!",
+    "no_tips": "No tips for this age window yet.",
+    "safe_disclaimer": "Guidance only — not medical advice. Consult your pediatrician for concerns.",
+    "based_on": "Based on pediatric guidance",
+    "select_child": "Showing tips for"
   }
 }

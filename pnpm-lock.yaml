@@ -188,6 +188,9 @@ importers:
       '@workspace/family-routine':
         specifier: workspace:*
         version: link:../../lib/family-routine
+      '@workspace/infant-hub':
+        specifier: workspace:*
+        version: link:../../lib/infant-hub
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -430,6 +433,9 @@ importers:
       '@workspace/family-routine':
         specifier: workspace:*
         version: link:../../lib/family-routine
+      '@workspace/infant-hub':
+        specifier: workspace:*
+        version: link:../../lib/infant-hub
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
@@ -1054,6 +1060,8 @@ importers:
         version: 0.31.9
 
   lib/family-routine: {}
+
+  lib/infant-hub: {}
 
   lib/integrations-openai-ai-react: {}
 

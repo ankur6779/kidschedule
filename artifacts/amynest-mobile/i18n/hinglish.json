@@ -327,5 +327,26 @@
     "final_cta_sub": "AmyNest AI ko join karein aur minutes mein ek personalized parenting plan paayein — bilkul free.",
     "final_cta_btn": "Smart Parenting Shuru Karein",
     "footer_tagline": "Jahaan Smart Parenting Shuru Hoti Hai"
+  },
+  "infant_hub": {
+    "title": "Infant & Toddler Hub",
+    "subtitle": "{{name}} ({{age}}) ke liye research-based guidance",
+    "tabs": {
+      "sleep": "Sleep",
+      "feeding": "Feeding",
+      "development": "Development",
+      "behavior": "Behavior",
+      "daily_care": "Daily Care"
+    },
+    "amy_suggests": "Amy AI ki Salah",
+    "helpful": "Helpful",
+    "next_tip": "Next tip",
+    "tried_this": "Maine try kiya",
+    "thanks": "Feedback ke liye thanks!",
+    "tried_logged": "Mark kiya — bahut badhiya!",
+    "no_tips": "Is age ke liye abhi koi tip nahi hai.",
+    "safe_disclaimer": "Sirf guidance — medical advice nahi. Concern ho toh pediatrician se milein.",
+    "based_on": "Pediatric guidelines par based",
+    "select_child": "Inke liye tips"
   }
 }
