@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import { LifeSkillsZone } from "@/components/LifeSkillsZone";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -294,6 +295,20 @@ export default function HubScreen() {
             ))}
           </View>
         </Section>
+
+        {effective && effective.age >= 2 && effective.age <= 15 && (
+          <Section
+            id="life-skills"
+            icon={<Ionicons name="compass" size={20} color="#fff" />}
+            accent={["#10B981", "#34D399"]}
+            title="🧭 Life Skills Mode"
+            desc="Daily real-life skills, ages 2–15"
+            open={openSection === "life-skills"}
+            onToggle={() => setOpenSection(s => s === "life-skills" ? null : "life-skills")}
+          >
+            <LifeSkillsZone child={{ id: effective.id, name: effective.name, age: effective.age }} />
+          </Section>
+        )}
 
         {/* Bottom CTA */}
         <Pressable onPress={() => router.push("/(tabs)/routines")} style={styles.bottomCta}>

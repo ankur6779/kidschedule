@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import {
   BookOpen, Brain, Sparkles, Heart, Palette,
   ChevronDown, ChevronUp, MessageCircleHeart,
-  Calendar, ArrowRight, Trophy,
+  Calendar, ArrowRight, Trophy, Compass,
 } from "lucide-react";
 import { OlympiadZone } from "@/components/olympiad-zone";
+import { LifeSkillsZone } from "@/components/life-skills-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
 import { SkillFocusSection, StorySection, ParentTasksSection } from "@/components/age-based-sections";
@@ -441,6 +442,19 @@ export default function ParentingHub() {
             accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-yellow-100 dark:to-yellow-500/20"
           >
             <OlympiadZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
+          </HubSection>
+        )}
+
+        {/* 7. Life Skills Mode */}
+        {effectiveChild && effectiveChild.age >= 2 && effectiveChild.age <= 15 && (
+          <HubSection
+            id="life-skills"
+            icon={<Compass className="h-5 w-5 text-emerald-600" />}
+            title="🧭 Life Skills Mode"
+            description="Daily real-life skills tailored to your child's age"
+            accentClass="bg-gradient-to-br from-emerald-100 dark:from-emerald-500/20 to-teal-100 dark:to-teal-500/20"
+          >
+            <LifeSkillsZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
           </HubSection>
         )}
 

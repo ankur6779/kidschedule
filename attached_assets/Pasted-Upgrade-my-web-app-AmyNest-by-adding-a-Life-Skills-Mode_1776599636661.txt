@@ -1,0 +1,140 @@
+Upgrade my web app "AmyNest" by adding a “Life Skills Mode” that provides age-wise real-life skill development for children aged 2–15 years.
+
+IMPORTANT:
+- Keep it simple and practical
+- Focus on real-life skills (not academic)
+- Fully age-based customization
+- Mobile + web friendly UI
+
+--------------------------------
+1. Feature Name
+--------------------------------
+Section:
+“🧭 Life Skills Mode”
+
+--------------------------------
+2. Age-Based Skill Categories (Core 🔥)
+--------------------------------
+
+(A) Age 2–4 (Toddlers):
+- Basic hygiene (wash hands)
+- Self eating
+- Toy cleanup
+- Saying “please/thank you”
+
+(B) Age 4–6:
+- Dressing independently
+- Basic sharing
+- Following simple instructions
+- Emotional expression
+
+(C) Age 6–10:
+- Time awareness
+- Homework responsibility
+- Basic chores
+- Money basics (saving coins)
+
+(D) Age 10–15:
+- Decision making
+- Self discipline
+- Time management
+- Social responsibility
+
+--------------------------------
+3. Daily Skill Task System 🔥
+--------------------------------
+- Show 1–2 daily skill tasks
+
+Example:
+“Today’s Life Skill:
+→ Arrange your school bag yourself”
+
+--------------------------------
+4. Task Structure
+--------------------------------
+Each task should include:
+
+- Title
+- Short description
+- Skill category (e.g., Responsibility)
+- Difficulty level (Easy/Medium)
+
+--------------------------------
+5. Completion Tracking
+--------------------------------
+- Add:
+  - “Mark as Done”
+  - “Skip”
+
+--------------------------------
+6. Reward Integration 🎮
+--------------------------------
+- Assign points:
+
+- Basic skills → 5 points
+- Intermediate → 10 points
+- Advanced → 15 points
+
+--------------------------------
+7. Skill Progress System 📊
+--------------------------------
+Track:
+
+- Skill completion %
+- Categories progress
+
+Example:
+“Responsibility: 60%”
+
+--------------------------------
+8. Amy AI Insight 🧠
+--------------------------------
+Show:
+
+“Amy AI Insight”
+
+Example:
+“Your child is improving in responsibility, continue daily practice”
+
+--------------------------------
+9. Parent Guidance (Important 🔥)
+--------------------------------
+For each task, show:
+
+“Parent Tip:
+Sit with your child and guide calmly”
+
+--------------------------------
+10. UI Design
+--------------------------------
+- Card-based layout
+- Separate section inside Parent Hub
+
+--------------------------------
+11. Daily Rotation
+--------------------------------
+- Show new tasks daily
+- Avoid repetition
+
+--------------------------------
+12. Language Support
+--------------------------------
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+13. Keep it simple
+--------------------------------
+- No API required
+- Use local JSON
+- Fast performance
+
+--------------------------------
+Return:
+Working system with:
+- Age-wise life skills
+- Daily tasks
+- Tracking system
+- Reward integration
+- Clean UI
