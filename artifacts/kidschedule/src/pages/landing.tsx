@@ -326,10 +326,10 @@ export default function LandingPage() {
         }
         .marquee-track:hover { animation-play-state: paused }
         @keyframes amyBlink {
-          0%, 90%, 100% { transform: scaleY(1) }
-          92% { transform: scaleY(0.16) }
-          94% { transform: scaleY(0.04) }
-          96% { transform: scaleY(0.22) }
+          0%, 45%, 100% { transform: scaleY(1) }
+          48% { transform: scaleY(0.18) }
+          50% { transform: scaleY(0.04) }
+          52% { transform: scaleY(0.18) }
         }
         @keyframes amyCapBob {
           0%, 100% { transform: translateY(0) }
@@ -353,37 +353,37 @@ export default function LandingPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg,#6D28D9,#8B5CF6,#C084FC);
+          background: linear-gradient(135deg,#7C3AED,#A855F7,#F472B6);
           border-radius: 50%;
-          width: 26px;
-          height: 26px;
+          width: 28px;
+          height: 28px;
           gap: 3px;
           flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(124,58,237,0.48);
+          box-shadow: 0 5px 14px rgba(168,85,247,0.55);
           position: relative;
           animation: amyCapBob 2.6s ease-in-out infinite;
         }
         .amy-face-wrap::before {
           content: "";
           position: absolute;
-          top: -5px;
+          top: -6px;
           left: 2px;
           right: 2px;
-          height: 8px;
+          height: 9px;
           border-radius: 999px 999px 4px 4px;
-          background: linear-gradient(90deg,#4C1D95,#7C3AED,#A855F7,#C084FC);
-          box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset;
+          background: linear-gradient(90deg,#4C1D95,#7C3AED,#A855F7,#EC4899);
+          box-shadow: 0 1px 0 rgba(255,255,255,0.45) inset;
           animation: amyCapShine 2.8s ease-in-out infinite;
         }
         .amy-face-iris {
           display: inline-block;
-          width: 7px;
-          height: 7px;
+          width: 6px;
+          height: 6px;
           background: #fff;
           border-radius: 50%;
           position: relative;
           z-index: 1;
-          box-shadow: 0 0 0 1px rgba(30,20,60,0.25);
+          box-shadow: 0 0 0 1px rgba(30,20,60,0.2);
         }
       `}</style>
 
@@ -433,8 +433,8 @@ export default function LandingPage() {
               </span>
               <span className="flex items-center gap-1.5 text-[10px] text-white/50 font-medium">
                 <span className="amy-face-wrap">
-                  <span className="amy-face-iris" style={{ width: "7px", height: "7px" }} />
-                  <span className="amy-face-iris" style={{ width: "7px", height: "7px" }} />
+                  <span className="amy-face-iris" />
+                  <span className="amy-face-iris" />
                 </span>
                 AI Parenting Coach
               </span>
