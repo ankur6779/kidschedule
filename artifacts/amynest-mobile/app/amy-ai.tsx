@@ -9,6 +9,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
+import AiQuotaBanner from "@/components/AiQuotaBanner";
+import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 
 type Message = { id: string; role: "user" | "amy"; text: string };
 
@@ -47,9 +49,18 @@ export default function AmyAIScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: trimmed, language: i18nInstance.language || "en" }),
       });
+      if (res.status === 402) {
+        // Quota exhausted — refresh entitlements and route to paywall
+        await useSubscriptionStore.getState().refresh();
+        setMessages(m => [...m, { id: `a-${Date.now()}`, role: "amy", text: "You've used your free Amy AI queries for today. Upgrade to keep chatting unlimited 💜" }]);
+        router.push({ pathname: "/paywall", params: { reason: "ai_quota" } });
+        return;
+      }
       const data = await res.json().catch(() => ({}));
       const answer: string = data?.answer ?? "Sorry, I couldn't get a response. Please try again.";
       setMessages(m => [...m, { id: `a-${Date.now()}`, role: "amy", text: answer }]);
+      // Refresh quota count after a successful AI call
+      void useSubscriptionStore.getState().refresh();
     } catch {
       setMessages(m => [...m, { id: `a-${Date.now()}`, role: "amy", text: "Network error — please try again." }]);
     } finally {
@@ -72,6 +83,8 @@ export default function AmyAIScreen() {
           <Text style={styles.headerSubtitle}>Your personal parenting coach</Text>
         </View>
       </View>
+
+      <AiQuotaBanner />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}

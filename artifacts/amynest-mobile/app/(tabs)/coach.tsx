@@ -11,6 +11,8 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
+import AiQuotaBanner from "@/components/AiQuotaBanner";
+import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface GoalItem { id: string; title: string; emoji: string; bg: [string, string] }
@@ -206,7 +208,14 @@ export default function CoachScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, language: i18nInstance.language || "en" }),
       });
+      if (res.status === 402) {
+        await useSubscriptionStore.getState().refresh();
+        setPhase("questions");
+        router.push({ pathname: "/paywall", params: { reason: "ai_quota" } });
+        return;
+      }
       if (!res.ok) throw new Error(`Server ${res.status}`);
+      void useSubscriptionStore.getState().refresh();
       const data = (await res.json()) as { plan: Plan; sessionId: string };
       setPlan(data.plan);
       originalWinCountRef.current = data.plan.wins.length;
@@ -446,6 +455,8 @@ export default function CoachScreen() {
               <Text style={styles.heroSub}>Pick a category — I'll build a 12-step plan</Text>
             </View>
           </View>
+
+          <AiQuotaBanner />
 
           <View style={styles.searchBox}>
             <Ionicons name="search" size={16} color="#9CA3AF" />

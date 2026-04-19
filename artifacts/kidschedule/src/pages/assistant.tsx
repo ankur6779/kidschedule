@@ -72,12 +72,18 @@ export default function AssistantPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: text, language: i18nInstance.language || "en" }),
       });
+      if (res.status === 402) {
+        // Dispatched event is handled by SubscriptionEventBridge in App.tsx
+        window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
+        return;
+      }
       if (!res.ok) throw new Error("Failed to get response");
       const data = await res.json();
       const assistantMsg: Message = { role: "assistant", content: data.answer };
       setMessages((prev) => [...prev, assistantMsg]);
       recordQuestion();
       setQuestionsUsed(getQuestionsUsed());
+      window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
     } catch {
       toast({ title: "Failed to get a response. Please try again.", variant: "destructive" });
     } finally {

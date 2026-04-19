@@ -248,7 +248,13 @@ export default function AICoachPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...payload, language: i18nInstance.language || "en" }),
       });
+      if (res.status === 402) {
+        window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
+        setPhase("questions");
+        return;
+      }
       if (!res.ok) throw new Error(`Server ${res.status}`);
+      window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
       const data = (await res.json()) as { plan: Plan; sessionId: string };
       setPlan(data.plan);
       // Freeze denominator at the original win count so extensions never drop progress %

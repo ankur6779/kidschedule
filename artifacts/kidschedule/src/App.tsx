@@ -27,6 +27,10 @@ import ParentingHub from "@/pages/parenting-hub";
 import AmyCoachPage from "@/pages/ai-coach";
 import AmyCoachProgressPage from "@/pages/ai-coach-progress";
 import OnboardingPage from "@/pages/onboarding";
+import PricingPage from "@/pages/pricing";
+import { PaywallProvider } from "@/contexts/paywall-context";
+import { PaywallModal } from "@/components/paywall-modal";
+import { SubscriptionEventBridge } from "@/components/subscription-event-bridge";
 
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -257,6 +261,7 @@ function ClerkProviderWithRoutes() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
         <TooltipProvider>
+        <PaywallProvider>
           <ClerkAuthSetup />
           <ClerkQueryClientCacheInvalidator />
           <Switch>
@@ -316,9 +321,15 @@ function ClerkProviderWithRoutes() {
             <Route path="/amy-coach/progress">
               {() => <ProtectedRoute component={AmyCoachProgressPage} />}
             </Route>
+            <Route path="/pricing">
+              {() => <ProtectedRoute component={PricingPage} />}
+            </Route>
             <Route component={NotFound} />
           </Switch>
+          <PaywallModal />
+          <SubscriptionEventBridge />
           <Toaster />
+        </PaywallProvider>
         </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>

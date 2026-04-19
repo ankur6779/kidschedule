@@ -5,6 +5,7 @@ import { getAuth } from "@clerk/express";
 import { db, aiCacheTable, userProgressTable } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { GOAL_IDS, type GoalId } from "../lib/image-map.js";
+import { aiUsageGate } from "../middlewares/aiUsageGate.js";
 
 const router: IRouter = Router();
 
@@ -521,7 +522,7 @@ async function dbSet(cacheKey: string, input: CoachInput, plan: CoachPlan): Prom
 }
 
 // ─── POST /ai-coach ──────────────────────────────────────────────────────
-router.post("/ai-coach", async (req, res): Promise<void> => {
+router.post("/ai-coach", aiUsageGate, async (req, res): Promise<void> => {
   pruneMem();
   const raw: CoachInput = req.body ?? {};
   const goal = norm(raw.goal);
@@ -664,7 +665,7 @@ ${goalBrief}`;
 
 // ─── POST /ai-coach/extend ───────────────────────────────────────────────
 // When a parent says "Not worked for me" — generate 3 adaptive wins to append
-router.post("/ai-coach/extend", async (req, res): Promise<void> => {
+router.post("/ai-coach/extend", aiUsageGate, async (req, res): Promise<void> => {
   const { userId } = getAuth(req);
   if (!userId) { res.status(401).json({ error: "unauthorized" }); return; }
 

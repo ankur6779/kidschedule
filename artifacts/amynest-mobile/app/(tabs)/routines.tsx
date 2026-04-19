@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import * as Haptics from "expo-haptics";
 
 type RoutineItem = {
@@ -115,6 +116,13 @@ export default function RoutinesScreen() {
   const filterData: FilterItem[] = [{ id: null, name: "All Children" }, ...children.map(c => ({ id: c.id, name: c.name }))];
 
   const goToGenerate = () => {
+    const ent = useSubscriptionStore.getState().entitlements;
+    const cap = ent?.limits.routinesMax ?? 2;
+    const isPremium = !!ent?.isPremium;
+    if (!isPremium && cap > 0 && routines.length >= cap) {
+      router.push({ pathname: "/paywall", params: { reason: "feature" } });
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const qs = selectedChild ? `?childId=${selectedChild}` : "";
     router.push(`/routines/generate${qs}` as never);

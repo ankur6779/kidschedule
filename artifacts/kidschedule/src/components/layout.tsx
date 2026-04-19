@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain, Moon, Sun } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain, Moon, Sun, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -57,6 +57,7 @@ const NAV_ITEMS = [
   { href: "/assistant",     labelKey: "nav.amy_ai",        icon: Bot },
   { href: "/babysitters",   labelKey: "nav.babysitters",   icon: Baby },
   { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
+  { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
 ];
 
 const BOTTOM_NAV_ITEMS = [

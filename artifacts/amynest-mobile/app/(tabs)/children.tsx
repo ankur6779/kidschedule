@@ -9,6 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 
 type Child = {
   id: number; name: string; age: number; ageMonths?: number;
@@ -44,6 +45,18 @@ export default function ChildrenScreen() {
     refetch();
   }, [refetch]);
 
+  const handleAddChild = useCallback(() => {
+    const ent = useSubscriptionStore.getState().entitlements;
+    const cap = ent?.limits.childrenMax ?? 1;
+    const isPremium = !!ent?.isPremium;
+    const atCap = !isPremium && cap > 0 && children.length >= cap;
+    if (atCap) {
+      router.push({ pathname: "/paywall", params: { reason: "child_limit" } });
+      return;
+    }
+    router.push("/children/new");
+  }, [children.length, router]);
+
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
@@ -53,7 +66,7 @@ export default function ChildrenScreen() {
         <Text style={[styles.headerTitle, { color: colors.foreground }]}>Children</Text>
         <TouchableOpacity
           style={[styles.addBtn, { backgroundColor: colors.primary }]}
-          onPress={() => router.push("/children/new")}
+          onPress={handleAddChild}
           testID="add-child-fab"
         >
           <Ionicons name="add" size={22} color="#fff" />
@@ -79,7 +92,7 @@ export default function ChildrenScreen() {
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>Add your child's profile to get started</Text>
           <TouchableOpacity
             style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.push("/children/new")}
+            onPress={handleAddChild}
             testID="empty-add-child-btn"
           >
             <Ionicons name="person-add" size={18} color="#fff" />
