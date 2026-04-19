@@ -326,8 +326,10 @@ export default function LandingPage() {
         }
         .marquee-track:hover { animation-play-state: paused }
         @keyframes amyBlink {
-          0%, 92%, 100% { transform: scaleY(1) }
-          95% { transform: scaleY(0.08) }
+          0%, 90%, 100% { transform: scaleY(1) }
+          92% { transform: scaleY(0.16) }
+          94% { transform: scaleY(0.04) }
+          96% { transform: scaleY(0.22) }
         }
         @keyframes amyCapBob {
           0%, 100% { transform: translateY(0) }
@@ -351,36 +353,37 @@ export default function LandingPage() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg,#7C3AED,#A855F7,#EC4899);
+          background: linear-gradient(135deg,#6D28D9,#8B5CF6,#C084FC);
           border-radius: 50%;
           width: 26px;
           height: 26px;
           gap: 3px;
           flex-shrink: 0;
-          box-shadow: 0 3px 10px rgba(168,85,247,0.5);
+          box-shadow: 0 4px 12px rgba(124,58,237,0.48);
           position: relative;
           animation: amyCapBob 2.6s ease-in-out infinite;
         }
         .amy-face-wrap::before {
           content: "";
           position: absolute;
-          top: -4px;
-          left: 3px;
-          right: 3px;
-          height: 7px;
-          border-radius: 999px 999px 2px 2px;
-          background: linear-gradient(90deg,#5B21B6,#7C3AED,#C084FC);
-          box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset;
+          top: -5px;
+          left: 2px;
+          right: 2px;
+          height: 8px;
+          border-radius: 999px 999px 4px 4px;
+          background: linear-gradient(90deg,#4C1D95,#7C3AED,#A855F7,#C084FC);
+          box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset;
           animation: amyCapShine 2.8s ease-in-out infinite;
         }
         .amy-face-iris {
           display: inline-block;
-          width: 8px;
-          height: 8px;
+          width: 7px;
+          height: 7px;
           background: #fff;
           border-radius: 50%;
           position: relative;
           z-index: 1;
+          box-shadow: 0 0 0 1px rgba(30,20,60,0.25);
         }
       `}</style>
 
