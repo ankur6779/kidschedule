@@ -1,0 +1,154 @@
+Upgrade the “Parent Hub” UI in my web app "AmyNest" to a premium block-based design using glassmorphism and glow effects.
+
+IMPORTANT:
+- Focus on premium feel
+- Clean and modern UI
+- Mobile-first design
+- Smooth interactions
+
+--------------------------------
+1. Layout Structure (Core 🔥)
+--------------------------------
+Convert Parent Hub into:
+
+→ Block-based sections (cards)
+
+Each block:
+- Compact in default view
+- Expand on click
+
+Sections:
+- Ask Amy AI
+- Parenting Articles
+- Daily Tips
+- Emotional Support
+- Activities & Learning
+- Smart Olympiad Zone
+- Life Skills Mode
+
+--------------------------------
+2. Glassmorphism Design (Important 🔥🔥)
+--------------------------------
+Each block should have:
+
+- Semi-transparent background
+- backdrop blur effect
+- subtle border
+
+Example style:
+- background: rgba(255,255,255,0.08)
+- backdrop-filter: blur(12px)
+- border: 1px solid rgba(255,255,255,0.1)
+
+--------------------------------
+3. Glow Effect (Premium Feel 🔥)
+--------------------------------
+Add soft glow:
+
+- On hover / focus:
+  → glow border (purple/blue)
+
+- Active block:
+  → stronger glow
+
+--------------------------------
+4. Light + Dark Theme Support 🌗
+--------------------------------
+Dark Mode:
+- Background: #0F172A
+- Cards: rgba(255,255,255,0.05)
+
+Light Mode:
+- Background: soft gradient (light purple/peach)
+- Cards: rgba(255,255,255,0.6)
+
+--------------------------------
+5. Block Design (Important)
+--------------------------------
+Each block should include:
+
+LEFT:
+- Icon (rounded, colored background)
+
+CENTER:
+- Title (bold)
+- Subtitle (small description)
+
+RIGHT:
+- Expand arrow (chevron)
+
+--------------------------------
+6. Icon System 🎯
+--------------------------------
+- Use modern icons
+- Size: 40–48px
+- Soft gradient background
+
+Example:
+- Purple for AI
+- Green for learning
+- Orange for tips
+
+--------------------------------
+7. Expand/Collapse Interaction 🔥
+--------------------------------
+On click:
+
+- Smooth expand animation
+- Show inner content
+
+Example:
+- Articles list
+- Tips
+- Activities
+
+--------------------------------
+8. Animation (Premium UX)
+--------------------------------
+- Fade + slide animation
+- Smooth transitions
+- No lag
+
+--------------------------------
+9. Spacing & Layout
+--------------------------------
+- Padding: 14–18px
+- Margin between blocks
+- Rounded corners (16–20px)
+
+--------------------------------
+10. Typography
+--------------------------------
+- Clear font
+- Title bold
+- Subtitle lighter
+
+--------------------------------
+11. First Impression (Critical 🔥)
+--------------------------------
+Top should feel:
+
+- Clean
+- Premium
+- Not crowded
+
+--------------------------------
+12. Performance
+--------------------------------
+- Lightweight CSS
+- No heavy animations
+
+--------------------------------
+13. Keep it simple
+--------------------------------
+- No backend changes
+- Only UI upgrade
+
+--------------------------------
+Return:
+Updated Parent Hub UI with:
+- Glass blocks
+- Glow effects
+- Expandable sections
+- Dark/light theme
+- Premium feel

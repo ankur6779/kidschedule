@@ -1,8 +1,12 @@
 import React, { useState, useMemo } from "react";
 import {
   View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator,
-  Image, Platform,
+  Image, Platform, LayoutAnimation, UIManager,
 } from "react-native";
+
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -332,17 +336,41 @@ function Section({
   onToggle: () => void;
   children: React.ReactNode;
 }) {
+  const handlePress = () => {
+    LayoutAnimation.configureNext({
+      duration: 240,
+      create: { type: "easeInEaseOut", property: "opacity" },
+      update: { type: "easeInEaseOut" },
+      delete: { type: "easeInEaseOut", property: "opacity" },
+    });
+    onToggle();
+  };
   return (
     <View style={[styles.section, open && styles.sectionOpen]}>
-      <Pressable onPress={onToggle} style={styles.sectionHeader}>
-        <LinearGradient colors={accent} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.sectionIcon}>
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => [styles.sectionHeader, pressed && { opacity: 0.85 }]}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+      >
+        <LinearGradient
+          colors={accent}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={styles.sectionIcon}
+        >
           {icon}
         </LinearGradient>
         <View style={{ flex: 1 }}>
           <Text style={styles.sectionTitle}>{title}</Text>
           <Text style={styles.sectionDesc}>{desc}</Text>
         </View>
-        <Ionicons name={open ? "chevron-up" : "chevron-down"} size={18} color="rgba(255,255,255,0.6)" />
+        <View style={[styles.chevWrap, open && styles.chevWrapOpen]}>
+          <Ionicons
+            name={open ? "chevron-up" : "chevron-down"}
+            size={14}
+            color={open ? "#FF4ECD" : "rgba(255,255,255,0.65)"}
+          />
+        </View>
       </Pressable>
       {open && <View style={styles.sectionBody}>{children}</View>}
     </View>
@@ -376,16 +404,51 @@ const styles = StyleSheet.create({
   agePill: { backgroundColor: "rgba(255,210,122,0.12)", borderWidth: 1, borderColor: "rgba(255,210,122,0.4)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
   personalised: { color: "rgba(255,255,255,0.6)", fontSize: 12 },
 
+  // Glass card — RN can't do CSS backdrop-filter, so we approximate with
+  // a soft translucent fill, a subtle inner-light border, and an outer glow
+  // (shadow on iOS / elevation on Android) that intensifies when open.
   section: {
-    borderRadius: 20, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "rgba(255,255,255,0.03)", overflow: "hidden",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    overflow: "hidden",
+    shadowColor: "#7B3FF2",
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
   },
-  sectionOpen: { borderColor: "rgba(255,78,205,0.35)" },
+  sectionOpen: {
+    borderColor: "rgba(255,78,205,0.55)",
+    backgroundColor: "rgba(255,255,255,0.07)",
+    shadowColor: "#FF4ECD",
+    shadowOpacity: 0.45,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
   sectionHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
-  sectionIcon: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  sectionIcon: {
+    width: 44, height: 44, borderRadius: 14,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
+  },
   sectionTitle: { color: "#fff", fontWeight: "800", fontSize: 15 },
-  sectionDesc: { color: "rgba(255,255,255,0.5)", fontSize: 11, marginTop: 1 },
-  sectionBody: { padding: 14, paddingTop: 6, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)", gap: 10 },
+  sectionDesc: { color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 2 },
+  sectionBody: {
+    padding: 14, paddingTop: 8,
+    borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.02)",
+    gap: 10,
+  },
+  chevWrap: {
+    width: 26, height: 26, borderRadius: 13,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.15)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  chevWrapOpen: { borderColor: "rgba(255,78,205,0.6)", backgroundColor: "rgba(255,78,205,0.12)" },
   sectionLead: { color: "rgba(255,255,255,0.65)", fontSize: 13 },
 
   promptsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

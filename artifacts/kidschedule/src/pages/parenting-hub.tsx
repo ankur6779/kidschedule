@@ -42,29 +42,61 @@ interface SectionProps {
 function HubSection({ id, icon, title, description, accentClass, defaultOpen = false, children }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={`rounded-2xl border-2 overflow-hidden transition-all ${open ? "border-primary/30" : "border-border/60"}`}>
+    <div
+      data-section-id={id}
+      className={[
+        "group relative rounded-2xl overflow-hidden transition-all duration-300 ease-out",
+        // Glass surface — light & dark
+        "bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl",
+        "border border-white/50 dark:border-white/10",
+        "shadow-[0_4px_24px_-8px_rgba(15,23,42,0.08)]",
+        // Hover glow
+        "hover:border-primary/40 dark:hover:border-primary/40",
+        "hover:shadow-[0_0_0_1px_rgba(168,85,247,0.25),0_10px_36px_-10px_rgba(168,85,247,0.35)]",
+        // Active (expanded) glow — stronger
+        open
+          ? "border-primary/60 dark:border-primary/50 shadow-[0_0_0_1px_rgba(168,85,247,0.45),0_18px_50px_-12px_rgba(168,85,247,0.45)]"
+          : "",
+      ].join(" ")}
+    >
       <button
-        onClick={() => setOpen(v => !v)}
-        className={`w-full flex items-center justify-between px-4 py-4 transition-colors text-left ${
-          open ? "bg-primary/5" : "bg-card hover:bg-muted/30"
-        }`}
+        onClick={() => setOpen((v) => !v)}
+        className={[
+          "w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left",
+          "transition-colors duration-200",
+          open ? "bg-primary/[0.06] dark:bg-primary/[0.08]" : "hover:bg-white/40 dark:hover:bg-white/[0.03]",
+        ].join(" ")}
+        aria-expanded={open}
       >
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accentClass}`}>
+        <div className="flex items-center gap-3 min-w-0">
+          <div
+            className={[
+              "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0",
+              "shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]",
+              "ring-1 ring-white/40 dark:ring-white/10",
+              accentClass,
+            ].join(" ")}
+          >
             {icon}
           </div>
-          <div>
-            <p className="font-quicksand font-bold text-base text-foreground">{title}</p>
-            <p className="text-xs text-muted-foreground">{description}</p>
+          <div className="min-w-0">
+            <p className="font-quicksand font-bold text-[15px] leading-tight text-foreground truncate">{title}</p>
+            <p className="text-[11.5px] text-muted-foreground mt-0.5 truncate">{description}</p>
           </div>
         </div>
-        {open
-          ? <ChevronUp className="h-5 w-5 text-primary shrink-0" />
-          : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
-        }
+        <span
+          className={[
+            "shrink-0 w-7 h-7 rounded-full flex items-center justify-center",
+            "border border-border/50 bg-white/50 dark:bg-white/5",
+            "transition-transform duration-300",
+            open ? "rotate-180 text-primary border-primary/40" : "text-muted-foreground",
+          ].join(" ")}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </span>
       </button>
       {open && (
-        <div className="px-4 pb-5 pt-2 bg-background/60 border-t border-border/40">
+        <div className="px-4 pb-5 pt-3 border-t border-white/40 dark:border-white/10 bg-white/30 dark:bg-white/[0.015] animate-in fade-in slide-in-from-top-1 duration-300">
           {children}
         </div>
       )}
