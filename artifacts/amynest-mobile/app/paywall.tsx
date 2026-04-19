@@ -68,6 +68,8 @@ export default function PaywallScreen() {
     setSubmitting(false);
     if (res.ok) {
       router.back();
+    } else if (res.userCancelled) {
+      // user dismissed the native sheet — no error message
     } else {
       setNotice(
         res.reason ?? "Checkout is not yet available. Try again soon or contact support.",

@@ -22,6 +22,7 @@ export const PLAN_TO_PACKAGE_ID: Record<"monthly" | "six_month" | "yearly", stri
 
 let initialized = false;
 let configuredUserId: string | null = null;
+let identifyInFlight: Promise<void> | null = null;
 
 function pickApiKey(): string | null {
   // In Expo Go, dev builds, web, or running inside Storefront simulator,
@@ -51,12 +52,23 @@ export async function identifyUser(userId: string): Promise<void> {
   if (!initialized) initializeRevenueCat();
   if (!initialized) return;
   if (configuredUserId === userId) return;
-  try {
-    await Purchases.logIn(userId);
-    configuredUserId = userId;
-  } catch (e) {
-    console.warn("[RevenueCat] logIn failed", e);
-  }
+  if (identifyInFlight) return identifyInFlight;
+  identifyInFlight = (async () => {
+    try {
+      await Purchases.logIn(userId);
+      configuredUserId = userId;
+    } catch (e) {
+      console.warn("[RevenueCat] logIn failed", e);
+    } finally {
+      identifyInFlight = null;
+    }
+  })();
+  return identifyInFlight;
+}
+
+/** Resolves once the most recent identifyUser() call settles. */
+async function ensureIdentified(): Promise<void> {
+  if (identifyInFlight) await identifyInFlight;
 }
 
 export async function logoutRevenueCat(): Promise<void> {
@@ -96,6 +108,11 @@ export async function purchasePlan(
   if (!pkg) {
     return { ok: false, userCancelled: false, reason: `Package ${pkgId} not found in offering` };
   }
+
+  // Make sure the user is identified with RC before charging — otherwise the
+  // purchase is attached to an anonymous app_user_id and the webhook can't be
+  // matched to our backend user.
+  await ensureIdentified();
 
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);

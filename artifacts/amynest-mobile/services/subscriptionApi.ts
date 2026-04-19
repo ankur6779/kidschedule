@@ -71,17 +71,13 @@ export async function startTrial(): Promise<{ entitlements: Entitlements }> {
   return await res.json();
 }
 
-export async function checkout(planId: Exclude<Plan, "free">): Promise<{ ok: boolean; reason?: string }> {
-  const headers = { "Content-Type": "application/json", ...(await authHeader()) };
-  const res = await fetch(`${API_BASE_URL}/api/subscription/checkout`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ plan: planId }),
-  });
-  if (res.status === 501) {
-    const body = await res.json().catch(() => ({}));
-    return { ok: false, reason: body?.message ?? "checkout_unconfigured" };
-  }
-  if (!res.ok) return { ok: false, reason: `http_${res.status}` };
-  return { ok: true };
+export async function checkout(
+  planId: Exclude<Plan, "free">,
+): Promise<{ ok: boolean; reason?: string; userCancelled?: boolean }> {
+  // Drive the in-app purchase via RevenueCat. The RC webhook will sync
+  // server-side entitlement state once the purchase completes.
+  const { purchasePlan } = await import("@/lib/revenuecat");
+  const result = await purchasePlan(planId);
+  if (result.ok) return { ok: true };
+  return { ok: false, reason: result.reason, userCancelled: result.userCancelled };
 }

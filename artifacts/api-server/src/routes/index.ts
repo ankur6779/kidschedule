@@ -20,6 +20,11 @@ const router: IRouter = Router();
 router.use(healthRouter);
 router.use("/reels", reelsRouter);
 router.use(worksheetsRouter);
+// Subscription router contains the public RevenueCat webhook endpoint
+// (authenticated by REVENUECAT_WEBHOOK_SECRET), so it must be mounted
+// BEFORE the global requireAuth gate. Authenticated subscription
+// endpoints inside the router enforce auth on a per-route basis.
+router.use(subscriptionRouter);
 router.use(requireAuth);
 router.use(onboardingRouter);
 router.use(childrenRouter);
@@ -31,6 +36,5 @@ router.use(babysittersRouter);
 router.use(aiRouter);
 router.use(aiCoachRouter);
 router.use(appDataRouter);
-router.use(subscriptionRouter);
 
 export default router;

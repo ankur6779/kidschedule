@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Rocket, Check, X, Lock } from "lucide-react";
+import { Sparkles, Rocket, Check, X, Smartphone } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePaywall } from "@/contexts/paywall-context";
@@ -46,8 +46,24 @@ export function PaywallModal() {
     setNotice(null);
     const res = await checkout(selected);
     setSubmitting(false);
-    if (res.ok) closePaywall();
-    else setNotice(res.reason ?? "Checkout is not yet available.");
+    if (res.ok) {
+      closePaywall();
+    } else {
+      setNotice(res.reason ?? "Checkout is not yet available.");
+    }
+  };
+
+  const openMobileApp = () => {
+    // Try to launch the installed app via Expo deep link; fall back to the
+    // web landing page so the user can grab the install link.
+    const fallback = window.location.origin + "/get-app";
+    const deepLink = "amynest://paywall?reason=" + encodeURIComponent(state.reason);
+    const start = Date.now();
+    window.location.href = deepLink;
+    setTimeout(() => {
+      // If we're still here after 1.2s, the deep link didn't open the app.
+      if (Date.now() - start < 1500) window.location.href = fallback;
+    }, 1200);
   };
 
   const onTrial = async () => {
@@ -123,20 +139,29 @@ export function PaywallModal() {
           </div>
 
           {notice && (
-            <div className="flex items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 mb-4 text-amber-200 text-xs font-semibold">
-              <Lock className="h-3.5 w-3.5" />
-              {notice}
+            <div className="flex items-start gap-2 rounded-lg border border-violet-400/40 bg-violet-400/10 px-3 py-2 mb-4 text-violet-100 text-xs font-semibold">
+              <Smartphone className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+              <span className="leading-snug">{notice}</span>
             </div>
           )}
 
           <Button
-            onClick={onUpgrade}
+            onClick={openMobileApp}
             disabled={submitting || plans.length === 0}
             className="w-full h-12 text-base font-extrabold bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 border-0 shadow-[0_10px_24px_rgba(255,78,205,0.5)]"
           >
-            <Rocket className="h-4 w-4 mr-2" />
-            {submitting ? "Please wait…" : "Upgrade Now"}
+            <Smartphone className="h-4 w-4 mr-2" />
+            Continue in Mobile App
           </Button>
+
+          <button
+            type="button"
+            onClick={onUpgrade}
+            className="hidden"
+            aria-hidden="true"
+          >
+            <Rocket className="h-4 w-4" />
+          </button>
 
           {entitlements?.status === "free" && (
             <button

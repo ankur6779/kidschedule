@@ -73,21 +73,17 @@ export function useSubscription() {
   }, [authFetch, refresh]);
 
   const checkout = useCallback(
-    async (plan: Exclude<Plan, "free">): Promise<{ ok: boolean; reason?: string }> => {
-      const res = await authFetch(getApiUrl("/api/subscription/checkout"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      if (res.status === 501) {
-        const body = await res.json().catch(() => ({}));
-        return { ok: false, reason: body?.message ?? "Checkout is not yet available." };
-      }
-      if (!res.ok) return { ok: false, reason: `Server error (${res.status})` };
-      refresh();
-      return { ok: true };
+    async (_plan: Exclude<Plan, "free">): Promise<{ ok: boolean; reason?: string }> => {
+      // Subscriptions are sold through the iOS / Android stores via RevenueCat.
+      // Web users are directed to the mobile app to complete checkout; the
+      // entitlement then syncs back to web via the RC webhook.
+      return {
+        ok: false,
+        reason:
+          "Subscriptions are available in the AmyNest mobile app. Open AmyNest on your phone to upgrade — your premium will unlock here automatically.",
+      };
     },
-    [authFetch, refresh],
+    [],
   );
 
   return {

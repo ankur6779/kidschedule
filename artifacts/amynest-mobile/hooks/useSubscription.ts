@@ -15,6 +15,7 @@ import { initializeRevenueCat, identifyUser, logoutRevenueCat } from "@/lib/reve
  */
 export function useSubscriptionBootstrap(): void {
   const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { user } = useUser();
   const load = useSubscriptionStore((s) => s.load);
   const reset = useSubscriptionStore((s) => s.reset);
   const setEntitlements = useSubscriptionStore((s) => s.setEntitlements);
@@ -30,14 +31,23 @@ export function useSubscriptionBootstrap(): void {
     });
   }, [getToken]);
 
+  // Initialise RevenueCat once at app start
+  useEffect(() => {
+    initializeRevenueCat();
+  }, []);
+
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn) {
       reset();
+      void logoutRevenueCat();
       return;
     }
+    if (user?.id) {
+      void identifyUser(user.id);
+    }
     void load();
-  }, [isLoaded, isSignedIn, load, reset]);
+  }, [isLoaded, isSignedIn, user?.id, load, reset]);
 
   // Mirror entitlements coming from /api/app-data so a single fetch updates both
   useEffect(() => {

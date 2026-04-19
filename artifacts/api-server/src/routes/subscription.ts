@@ -6,6 +6,7 @@ import {
   PLAN_PRICES,
   type Plan,
 } from "../services/subscriptionService";
+import { requireAuth } from "../middlewares/requireAuth";
 
 // Map RevenueCat product/store identifiers back to our internal Plan code so
 // that webhook events can update the local subscription record.
@@ -19,7 +20,7 @@ function productIdToPlan(productId: string | undefined | null): Exclude<Plan, "f
 
 const router: IRouter = Router();
 
-router.get("/subscription", async (req, res): Promise<void> => {
+router.get("/subscription", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as any).auth?.userId as string | undefined;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
@@ -79,7 +80,7 @@ router.get("/subscription", async (req, res): Promise<void> => {
   });
 });
 
-router.post("/subscription/start-trial", async (req, res): Promise<void> => {
+router.post("/subscription/start-trial", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as any).auth?.userId as string | undefined;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
@@ -95,7 +96,7 @@ router.post("/subscription/start-trial", async (req, res): Promise<void> => {
  * identifier and the user identifier they should pass to Purchases.logIn().
  * The actual checkout happens client-side via the RevenueCat SDK.
  */
-router.get("/subscription/rc-config", async (req, res): Promise<void> => {
+router.get("/subscription/rc-config", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as any).auth?.userId as string | undefined;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
@@ -119,7 +120,7 @@ router.get("/subscription/rc-config", async (req, res): Promise<void> => {
  * 200 with rc-config payload so the web client can hand-off to RevenueCat.
  * Mobile clients should call /subscription/rc-config directly.
  */
-router.post("/subscription/checkout", async (req, res): Promise<void> => {
+router.post("/subscription/checkout", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as any).auth?.userId as string | undefined;
   if (!userId) {
     res.status(401).json({ error: "unauthorized" });
@@ -147,7 +148,13 @@ router.post("/subscription/checkout", async (req, res): Promise<void> => {
  */
 router.post("/subscription/webhook", async (req, res): Promise<void> => {
   const expected = process.env.REVENUECAT_WEBHOOK_SECRET;
-  if (expected) {
+  if (!expected) {
+    if (process.env.NODE_ENV === "production") {
+      res.status(503).json({ error: "webhook_secret_unconfigured" });
+      return;
+    }
+    // dev/test: allow unauthenticated calls so we can exercise the flow locally
+  } else {
     const auth = req.headers["authorization"];
     if (auth !== `Bearer ${expected}`) {
       res.status(401).json({ error: "invalid_webhook_signature" });

@@ -59,6 +59,14 @@ export async function getOrCreateSubscription(userId: string): Promise<Subscript
 export function isPremiumNow(s: Subscription): boolean {
   if (s.status === "active") return true;
   if (s.status === "trialing" && s.trialEndsAt && s.trialEndsAt.getTime() > Date.now()) return true;
+  // Cancelled / past_due subscriptions retain premium until the paid period ends.
+  if (
+    (s.status === "canceled" || s.status === "past_due") &&
+    s.currentPeriodEnd &&
+    s.currentPeriodEnd.getTime() > Date.now()
+  ) {
+    return true;
+  }
   return false;
 }
 

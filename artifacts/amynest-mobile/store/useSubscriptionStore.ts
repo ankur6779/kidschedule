@@ -19,7 +19,7 @@ type Actions = {
   load: () => Promise<void>;
   refresh: () => Promise<void>;
   beginTrial: () => Promise<void>;
-  upgrade: (planId: Exclude<Plan, "free">) => Promise<{ ok: boolean; reason?: string }>;
+  upgrade: (planId: Exclude<Plan, "free">) => Promise<{ ok: boolean; reason?: string; userCancelled?: boolean }>;
   setEntitlements: (e: Entitlements) => void;
   reset: () => void;
 };
@@ -61,7 +61,31 @@ export const useSubscriptionStore = create<State & Actions>((set, get) => ({
   },
   upgrade: async (planId) => {
     const res = await checkout(planId);
-    if (res.ok) await get().refresh();
+    if (res.ok) {
+      // Optimistically reflect premium right away; the RC webhook will sync
+      // the canonical entitlement on the server. We poll a few times in case
+      // the webhook is slightly delayed.
+      const current = get().entitlements;
+      if (current) {
+        set({
+          entitlements: {
+            ...current,
+            plan: planId,
+            status: "active",
+            isPremium: true,
+            usage: { ...current.usage, aiQueriesRemaining: null },
+          },
+        });
+      }
+      const poll = async () => {
+        for (const delay of [1500, 3000, 5000]) {
+          await new Promise((r) => setTimeout(r, delay));
+          await get().refresh();
+          if (get().entitlements?.isPremium) return;
+        }
+      };
+      void poll();
+    }
     return res;
   },
   setEntitlements: (e) => set({ entitlements: e }),
