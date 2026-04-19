@@ -17,22 +17,18 @@ export async function pruneRazorpayWebhookEvents(): Promise<number> {
   const retentionDays = getRetentionDays();
   const cutoff = new Date(Date.now() - retentionDays * ONE_DAY_MS);
   try {
-    const deleted = await db
+    // Use rowCount from the underlying pg QueryResult instead of
+    // .returning() so we don't materialize every deleted row id in
+    // memory just to compute the count — important if a long outage
+    // leaves a large backlog.
+    const result: { rowCount?: number | null } = await db
       .delete(razorpayWebhookEventsTable)
-      .where(lt(razorpayWebhookEventsTable.receivedAt, cutoff))
-      .returning({ eventId: razorpayWebhookEventsTable.eventId });
-    const count = deleted.length;
-    if (count > 0) {
-      logger.info(
-        { count, retentionDays, cutoff: cutoff.toISOString() },
-        "razorpay_webhook_events_pruned",
-      );
-    } else {
-      logger.debug(
-        { retentionDays, cutoff: cutoff.toISOString() },
-        "razorpay_webhook_events_prune_noop",
-      );
-    }
+      .where(lt(razorpayWebhookEventsTable.receivedAt, cutoff));
+    const count = result.rowCount ?? 0;
+    logger.info(
+      { count, retentionDays, cutoff: cutoff.toISOString() },
+      "razorpay_webhook_events_pruned",
+    );
     return count;
   } catch (err) {
     logger.error({ err }, "razorpay_webhook_events_prune_failed");
