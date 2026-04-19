@@ -208,6 +208,21 @@
     "add_task": "Task Add Karein",
     "save_routine": "Routine Save Karein"
   },
+  "family_routine": {
+    "handler_title": "Aaj kaun handle kar raha hai?",
+    "handler_mom": "Mom",
+    "handler_dad": "Dad",
+    "handler_grandparent": "Grandparent",
+    "handler_babysitter": "Babysitter",
+    "amy_suggests": "Amy AI Suggest Karti Hai",
+    "family_points": "Family Points",
+    "possible_today": "aaj possible",
+    "earns_pts": "~{{pts}} pts kamayega",
+    "family_bonus": "🎉 Family Bonus (sab complete karein)",
+    "shared_activities": "Shared Family Activities",
+    "shared_subtitle": "Ek saath karne ke liye choose karein — sibling bonding badhti hai.",
+    "minutes_short": "{{n}} min"
+  },
   "behavior": {
     "title": "Behavior Tracker",
     "subtitle": "Apne bachhe ke behavior ko track aur improve karein",

@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useColors } from "@/hooks/useColors";
 import {
@@ -59,6 +60,7 @@ function formatDate(iso: string): string {
 }
 
 export default function GenerateRoutineScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -271,7 +273,7 @@ export default function GenerateRoutineScreen() {
         <Text style={styles.dateHint}>{formatDate(date)}</Text>
 
         {/* Handler Type */}
-        <Text style={styles.sectionLabel}>3. Who's handling today?</Text>
+        <Text style={styles.sectionLabel}>3. {t("family_routine.handler_title")}</Text>
         <View style={styles.handlerGrid}>
           {HANDLER_TYPES.map((h) => {
             const active = handlerType === h.key;
@@ -290,7 +292,7 @@ export default function GenerateRoutineScreen() {
               >
                 <Text style={{ fontSize: 24 }}>{h.emoji}</Text>
                 <Text style={[styles.handlerLabel, { color: active ? h.fg : "rgba(255,255,255,0.92)" }]}>
-                  {h.label}
+                  {t(`family_routine.handler_${h.key}`, { defaultValue: h.label })}
                 </Text>
               </TouchableOpacity>
             );

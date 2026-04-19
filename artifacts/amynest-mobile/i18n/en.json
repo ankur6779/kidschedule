@@ -208,6 +208,21 @@
     "add_task": "Add Task",
     "save_routine": "Save Routine"
   },
+  "family_routine": {
+    "handler_title": "Who's handling today?",
+    "handler_mom": "Mom",
+    "handler_dad": "Dad",
+    "handler_grandparent": "Grandparent",
+    "handler_babysitter": "Babysitter",
+    "amy_suggests": "Amy AI Suggests",
+    "family_points": "Family Points",
+    "possible_today": "possible today",
+    "earns_pts": "earns ~{{pts}} pts",
+    "family_bonus": "🎉 Family Bonus (everyone done)",
+    "shared_activities": "Shared Family Activities",
+    "shared_subtitle": "Pick one to do together — boosts sibling bonding.",
+    "minutes_short": "{{n}} min"
+  },
   "behavior": {
     "title": "Behavior Tracker",
     "subtitle": "Track and improve your child's behavior",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, Link } from "wouter";
 import { useListChildren, getListChildrenQueryKey, useGenerateRoutine, useCreateRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -571,6 +572,7 @@ function IndividualRoutineSection({ result }: { result: FamilyResult }) {
 }
 
 export default function RoutineGenerate() {
+  const { t } = useTranslation();
   const [_, setLocation] = useLocation();
   const [mode, setMode] = useState<"single" | "family">("single");
 
@@ -1049,7 +1051,7 @@ export default function RoutineGenerate() {
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-3">
             <UserCheck className="h-4 w-4 text-primary" />
-            <p className="text-sm font-bold text-foreground">Who's handling the kid{children && children.length > 1 ? "s" : ""} today?</p>
+            <p className="text-sm font-bold text-foreground">{t("family_routine.handler_title")}</p>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {HANDLER_TYPES.map((h) => {
@@ -1068,7 +1070,7 @@ export default function RoutineGenerate() {
                     className="text-xs font-bold leading-tight"
                     style={active ? { color: h.fg } : { color: "inherit" }}
                   >
-                    {h.label}
+                    {t(`family_routine.handler_${h.key}`, { defaultValue: h.label })}
                   </span>
                 </button>
               );
@@ -1595,7 +1597,7 @@ export default function RoutineGenerate() {
                     <CardContent className="p-5">
                       <div className="flex items-center gap-2 mb-3">
                         <Brain className="h-5 w-5 text-violet-600" />
-                        <h3 className="font-quicksand font-bold text-violet-900 dark:text-violet-200 text-lg">Amy AI Suggests</h3>
+                        <h3 className="font-quicksand font-bold text-violet-900 dark:text-violet-200 text-lg">{t("family_routine.amy_suggests")}</h3>
                       </div>
                       <div className="space-y-2">
                         {suggestions.map((s, i) => (
@@ -1626,22 +1628,22 @@ export default function RoutineGenerate() {
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <Star className="h-5 w-5 text-amber-600" />
-                          <h3 className="font-quicksand font-bold text-amber-900 dark:text-amber-100 text-lg">Family Points</h3>
+                          <h3 className="font-quicksand font-bold text-amber-900 dark:text-amber-100 text-lg">{t("family_routine.family_points")}</h3>
                         </div>
                         <div className="text-right">
                           <p className="text-3xl font-black text-amber-700 dark:text-amber-200 leading-none">{totalPossible + 20}</p>
-                          <p className="text-[10px] text-amber-600 dark:text-amber-300 font-bold uppercase tracking-wide">possible today</p>
+                          <p className="text-[10px] text-amber-600 dark:text-amber-300 font-bold uppercase tracking-wide">{t("family_routine.possible_today")}</p>
                         </div>
                       </div>
                       <div className="space-y-1.5">
                         {fp.perChild.map((p) => (
                           <div key={p.name} className="flex items-center justify-between text-sm bg-white/60 dark:bg-white/5 rounded-xl px-3 py-2">
                             <span className="font-bold text-amber-900 dark:text-amber-100">{p.name}</span>
-                            <span className="text-amber-700 dark:text-amber-300 font-bold">earns ~{Math.round(totalPossible / familyResults.length)} pts</span>
+                            <span className="text-amber-700 dark:text-amber-300 font-bold">{t("family_routine.earns_pts", { pts: Math.round(totalPossible / familyResults.length) })}</span>
                           </div>
                         ))}
                         <div className="flex items-center justify-between text-sm bg-amber-200/60 dark:bg-amber-400/10 rounded-xl px-3 py-2 mt-2 border border-amber-300/60">
-                          <span className="font-bold text-amber-900 dark:text-amber-100">🎉 Family Bonus (everyone done)</span>
+                          <span className="font-bold text-amber-900 dark:text-amber-100">{t("family_routine.family_bonus")}</span>
                           <span className="text-amber-700 dark:text-amber-300 font-black">+20 pts</span>
                         </div>
                       </div>
@@ -1661,15 +1663,15 @@ export default function RoutineGenerate() {
                     <CardContent className="p-5">
                       <div className="flex items-center gap-2 mb-3">
                         <Users className="h-5 w-5 text-primary" />
-                        <h3 className="font-quicksand font-bold text-foreground text-lg">Shared Family Activities</h3>
+                        <h3 className="font-quicksand font-bold text-foreground text-lg">{t("family_routine.shared_activities")}</h3>
                       </div>
-                      <p className="text-xs text-muted-foreground mb-3">Pick one to do together — boosts sibling bonding.</p>
+                      <p className="text-xs text-muted-foreground mb-3">{t("family_routine.shared_subtitle")}</p>
                       <div className="grid sm:grid-cols-3 gap-3">
                         {shared.map((a, i) => (
                           <div key={i} className="bg-muted/40 hover:bg-primary/5 rounded-2xl p-3 border border-border/50 transition-all">
                             <div className="text-2xl mb-1">{a.emoji}</div>
                             <p className="font-bold text-sm text-foreground leading-tight">{a.title}</p>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">{a.duration} min</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{t("family_routine.minutes_short", { n: a.duration })}</p>
                             <p className="text-xs text-muted-foreground mt-1.5 leading-snug">{a.description}</p>
                           </div>
                         ))}

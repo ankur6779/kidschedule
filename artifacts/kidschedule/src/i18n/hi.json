@@ -208,6 +208,21 @@
     "add_task": "कार्य जोड़ें",
     "save_routine": "रूटीन सेव करें"
   },
+  "family_routine": {
+    "handler_title": "आज कौन संभाल रहा है?",
+    "handler_mom": "माँ",
+    "handler_dad": "पिताजी",
+    "handler_grandparent": "दादा-दादी",
+    "handler_babysitter": "बेबीसिटर",
+    "amy_suggests": "Amy AI सुझाव देती है",
+    "family_points": "फैमिली पॉइंट्स",
+    "possible_today": "आज संभव",
+    "earns_pts": "~{{pts}} पॉइंट्स कमाएगा",
+    "family_bonus": "🎉 फैमिली बोनस (सब पूरा करें)",
+    "shared_activities": "साझा पारिवारिक गतिविधियाँ",
+    "shared_subtitle": "एक साथ करने के लिए चुनें — भाई-बहन का बंधन बढ़ता है।",
+    "minutes_short": "{{n}} मिनट"
+  },
   "behavior": {
     "title": "व्यवहार ट्रैकर",
     "subtitle": "अपने बच्चे के व्यवहार को ट्रैक करें और सुधारें",
