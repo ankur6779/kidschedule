@@ -1,0 +1,186 @@
+Implement a complete referral-based premium unlock system in my web app "AmyNest".
+
+IMPORTANT:
+- Focus on real user growth  
+- Do NOT give instant rewards
+- Use subscription expiry logic (not simple unlock)
+- Keep system simple and scalable
+
+--------------------------------
+1. Referral Core Logic (🔥)
+--------------------------------
+
+User gets reward ONLY if:
+
+- validReferrals >= 3
+- paidReferrals >= 1
+- reward not already claimed
+
+Reward:
+→ 30 days premium access
+
+--------------------------------
+2. Define Valid Referral
+--------------------------------
+
+A referral is valid only if:
+
+- User signs up using referral link/code
+- Email or OTP is verified
+- User uses at least 1 feature
+
+--------------------------------
+3. Paid Referral Condition (🔥🔥)
+--------------------------------
+
+Out of 3 referrals:
+
+→ At least 1 must purchase a paid subscription
+
+--------------------------------
+4. Data Structure
+--------------------------------
+
+For each user store:
+
+{
+  userId,
+  referralCode,
+  referredUsers: [],
+  validReferrals,
+  paidReferrals,
+  rewardUnlocked: false,
+  premiumExpiresAt,
+  subscriptionSource: "free" | "paid" | "referral"
+}
+
+--------------------------------
+5. Referral Flow
+--------------------------------
+
+Step 1:
+- Generate unique referral link:
+  amynest.app?ref=USERCODE
+
+Step 2:
+- New user signs up → store referrerId
+
+Step 3:
+- After verification + first feature use:
+  → increment validReferrals
+
+Step 4:
+- If referred user buys subscription:
+  → increment paidReferrals
+
+--------------------------------
+6. Reward Trigger Logic
+--------------------------------
+
+If:
+validReferrals >= 3
+AND paidReferrals >= 1
+AND rewardUnlocked == false
+
+→ call giveFreePremium(userId, 30)
+
+--------------------------------
+7. Premium Extension Logic (CORE 🔥)
+--------------------------------
+
+- Do NOT just enable premium
+- Extend expiry date
+
+Rules:
+
+- If user already premium:
+  → add +30 days to existing expiry
+
+- If expired:
+  → start from current date
+
+--------------------------------
+8. Premium Function Example
+--------------------------------
+
+Function:
+
+giveFreePremium(userId, days):
+
+- get current premiumExpiresAt
+- compare with current date
+- extend properly
+- update user:
+  isPremium = true
+  premiumExpiresAt = newDate
+
+--------------------------------
+9. UI (Important for conversion 🔥)
+--------------------------------
+
+Referral Dashboard should show:
+
+- “Invite & Earn Premium 🎁”
+- Referrals count (e.g., 2/3)
+- Paid referrals (e.g., 0/1)
+- Progress bar
+
+Message:
+“Invite 1 more friend + 1 paid user to unlock 30 days free”
+
+--------------------------------
+10. Locked State Messaging
+--------------------------------
+
+If condition not met:
+
+“You need 3 referrals and 1 paid user to unlock premium”
+
+--------------------------------
+11. Reward Notification
+--------------------------------
+
+On unlock show:
+
+“🎉 You unlocked 30 days premium via referral!”
+
+--------------------------------
+
+
+--------------------------------
+13. Reward Limits
+--------------------------------
+
+- Max reward cap (e.g., 3 months total)
+- No unlimited stacking
+
+--------------------------------
+14. Integration with Paywall
+--------------------------------
+
+- Show option:
+
+“Unlock premium OR invite friends”
+
+--------------------------------
+15. Performance
+--------------------------------
+
+- Lightweight logic
+- No heavy backend required
+- Store data efficiently
+
+--------------------------------
+16. Keep it simple
+--------------------------------
+
+- Clean structure
+- Avoid over-engineering
+
+--------------------------------
+Return:
+Fully working referral system with:
+- Secure tracking
+- Premium extension logic
+- Paid condition validation
+- UI dashboard

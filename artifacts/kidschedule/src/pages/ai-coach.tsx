@@ -198,10 +198,29 @@ export default function AICoachPage() {
 
   const selectedGoal = ALL_GOALS.find((g) => g.id === goalId);
 
-  // ─── Goals → Questions (or → Infant Problem detail for the 0–2 yr topic)
+  // ─── Goals → Questions (or → 12-card Result for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
     setGoalId(id);
     if (isInfantProblemId(id)) {
+      const problem = getInfantProblem(id);
+      if (problem && problem.wins && problem.wins.length > 0) {
+        // Build a static, science-backed Plan from the infant problem dataset
+        // and route through the standard 12-card swipeable result UI.
+        const staticPlan: Plan = {
+          title: `${problem.emoji} ${problem.title.en}`,
+          root_cause: problem.rootCause,
+          summary: problem.summary,
+          wins: problem.wins,
+        };
+        setPlan(staticPlan);
+        originalWinCountRef.current = staticPlan.wins.length;
+        setSessionId(`infant-${id}-${Date.now()}`);
+        setActiveIdx(0);
+        setFeedbackByWin({});
+        setPhase("result");
+        return;
+      }
+      // Fallback to the legacy 1-page view if the problem has no wins yet.
       setPhase("infantProblem");
       return;
     }
@@ -339,11 +358,13 @@ export default function AICoachPage() {
     const newPct = Math.min(100, Math.round((newSum / denom) * 100));
     const isLastCard = activeIdx === plan.wins.length - 1;
 
-    // Rule: extend ONLY when progress < 100%
+    // Rule: extend ONLY when progress < 100% AND we have an AI payload
+    // (infant static plans have no payload — they're pre-built, not AI-generated).
     //   - "Not worked for me" on any card → extend (adaptive help)
     //   - Any button on the LAST card while still below 100% → extend (keep going)
     // At 100% — no more extensions, ever.
-    if (newPct < 100 && (feedback === "no" || isLastCard)) {
+    const canExtend = !!lastPayloadRef.current;
+    if (canExtend && newPct < 100 && (feedback === "no" || isLastCard)) {
       await requestExtension(winNumber);
     } else {
       toast({
