@@ -1,7 +1,9 @@
 import { Router, type IRouter } from "express";
+import { eq } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import {
   getEntitlements,
+  getOrCreateSubscription,
   startTrial,
   activateSubscription,
   PLAN_PRICES,
@@ -306,8 +308,17 @@ router.post(
 /**
  * POST /subscription/razorpay/verify
  * Body: { razorpay_payment_id, razorpay_subscription_id, razorpay_signature, plan }
- * Verifies the HMAC signature and writes a pending row so the UI can reflect
- * intent immediately. The webhook is the canonical source of truth.
+ *
+ * Verifies the Checkout HMAC signature, then enforces ownership
+ * (sub.notes.userId === auth user) and plan binding against the
+ * Razorpay subscription record. On success it persists ONLY the
+ * provider linkage (provider, providerSubscriptionId) — it does NOT
+ * flip status to "active". Activation happens exclusively in the
+ * webhook handler when `subscription.activated` / `.charged` /
+ * `.resumed` arrives, which is the canonical confirmation that the
+ * first charge actually succeeded. The client should poll
+ * `/api/subscription` (or refresh on the
+ * `amynest:refresh-subscription` event) until the webhook lands.
  */
 router.post(
   "/subscription/razorpay/verify",
@@ -373,17 +384,32 @@ router.post(
     }
     const planCode = planFromSub;
 
-    // Optimistically activate. Webhook is canonical and will reconcile
-    // period_end + lifecycle state.
-    const periodEnd = sub.current_end ? new Date(sub.current_end * 1000) : undefined;
-    await activateSubscription(userId, planCode, {
-      provider: "razorpay",
-      periodEnd,
-      providerCustomerId: userId,
-      providerSubscriptionId: subscriptionId,
-    });
+    // Persist provider linkage ONLY (intent). We do NOT flip status to
+    // "active" here — the webhook (`subscription.activated` /
+    // `subscription.charged`) is the canonical source of truth for the
+    // first successful charge. The client should poll `/api/subscription`
+    // (or refresh on the `amynest:refresh-subscription` event) until the
+    // webhook lands, which usually takes a few seconds.
+    const { db, subscriptionsTable } = await import("@workspace/db");
+    await getOrCreateSubscription(userId);
+    await db
+      .update(subscriptionsTable)
+      .set({
+        provider: "razorpay",
+        providerCustomerId: userId,
+        providerSubscriptionId: subscriptionId,
+        updatedAt: new Date(),
+      })
+      .where(eq(subscriptionsTable.userId, userId));
+
     const ent = await getEntitlements(userId);
-    res.json({ ok: true, entitlements: ent });
+    res.json({
+      ok: true,
+      pending: true,
+      message: "payment_verified_awaiting_webhook",
+      plan: planCode,
+      entitlements: ent,
+    });
   },
 );
 
