@@ -4,8 +4,9 @@ import {
   ArrowLeft, Lock, Sparkles, Gamepad2, Trophy, X, Coins, Gift, Plus, Trash2, Check,
 } from "lucide-react";
 import {
-  GAMES, CATEGORY_LABEL, isUnlocked, unlockGame, recordPlay,
-  gamesPlayedToday, dailyLimit, dailyLimitReached, amySuggestion, type GameDef,
+  GAMES, CATEGORY_LABEL, CATEGORY_EMOJI, isUnlocked, unlockGame, recordPlay,
+  gamesPlayedToday, dailyLimit, dailyLimitReached, amySuggestion, getSkillPercent,
+  type GameDef, type GameCategory,
 } from "@/lib/games";
 import {
   getTotalPoints, getRewards, saveRewards, redeemReward, getRedemptions,
@@ -16,6 +17,11 @@ import { OddOneOutGame } from "@/components/games/OddOneOut";
 import { CardFlipGame } from "@/components/games/CardFlip";
 import { SequenceMemoryGame } from "@/components/games/SequenceMemory";
 import { BehaviorChoiceGame } from "@/components/games/BehaviorChoice";
+import { SpeedMathGame } from "@/components/games/SpeedMath";
+import { NumberMatchGame } from "@/components/games/NumberMatch";
+import { FindMistakeGame } from "@/components/games/FindMistake";
+import { ColorMemoryGame } from "@/components/games/ColorMemory";
+import { TargetTapGame } from "@/components/games/TargetTap";
 
 type ActiveGame =
   | { kind: "play"; game: GameDef }
@@ -60,9 +66,24 @@ export default function GamesPage() {
     const earned = perfect
       ? g.rewardMax
       : Math.max(g.rewardMin, Math.round(g.rewardMin + (g.rewardMax - g.rewardMin) * ratio));
-    recordPlay(g.id, earned, perfect);
+    recordPlay(g.id, score, total, perfect, earned);
     setActive({ kind: "result", game: g, score, total, pointsEarned: earned, perfect });
   };
+
+  // Group games by category for the grid
+  const gamesByCategory = useMemo(() => {
+    const order: GameCategory[] = ["brain", "memory", "math", "focus", "creativity", "behavior", "action", "puzzle"];
+    const map = new Map<GameCategory, GameDef[]>();
+    for (const g of GAMES) {
+      if (!map.has(g.category)) map.set(g.category, []);
+      map.get(g.category)!.push(g);
+    }
+    return order.filter((c) => map.has(c)).map((c) => [c, map.get(c)!] as const);
+  }, []);
+
+  // Skills (re-read on every render via tick)
+  const skillCats: GameCategory[] = ["brain", "memory", "math", "focus", "behavior", "action"];
+  const skills = skillCats.map((c) => ({ cat: c, pct: getSkillPercent(c) }));
 
   return (
     <div style={{
@@ -142,72 +163,125 @@ export default function GamesPage() {
         </div>
       )}
 
-      {/* Game grid */}
-      <div style={{
-        maxWidth: 720, margin: "0 auto",
-        padding: "16px 16px",
-        display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12,
-      }}>
-        {GAMES.map((g) => {
-          const unlocked = isUnlocked(g.id);
-          const soon = g.status === "soon";
-          return (
-            <div
-              key={g.id}
-              style={{
-                position: "relative",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(139,92,246,0.25)",
-                borderRadius: 16, padding: 14,
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                opacity: soon ? 0.6 : 1,
-                filter: !unlocked && !soon ? "blur(0.4px)" : "none",
-              }}
-            >
-              <div style={{
-                fontSize: 36, lineHeight: 1, width: 56, height: 56,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                background: "rgba(139,92,246,0.15)", borderRadius: 14,
-                filter: !unlocked && !soon ? "grayscale(0.6)" : "none",
-              }}>{g.emoji}</div>
-              <div style={{ fontSize: 13.5, fontWeight: 800, fontFamily: "Quicksand, sans-serif", textAlign: "center", lineHeight: 1.2 }}>
-                {g.title}
+      {/* Skill Progress strip */}
+      <div style={{ maxWidth: 720, margin: "12px auto 0", padding: "0 16px" }}>
+        <div style={{
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(139,92,246,0.22)",
+          borderRadius: 14, padding: "12px 14px",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "#c4b5fd", textTransform: "uppercase", letterSpacing: 0.6 }}>Skill Progress</span>
+            <span style={{ fontSize: 11, color: "#7c6fb8" }}>Accuracy across all plays</span>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 10 }}>
+            {skills.map(({ cat, pct }) => (
+              <div key={cat}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#e6e1f5", marginBottom: 4 }}>
+                  <span>{CATEGORY_EMOJI[cat]} {CATEGORY_LABEL[cat].split(" &")[0]}</span>
+                  <span style={{ fontWeight: 800, color: pct >= 75 ? "#4ade80" : pct >= 40 ? "#fbbf24" : "#a99fd9" }}>{pct}%</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 999, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                  <div style={{
+                    width: `${pct}%`, height: "100%",
+                    background: pct >= 75 ? "linear-gradient(90deg,#22c55e,#4ade80)"
+                      : pct >= 40 ? "linear-gradient(90deg,#f59e0b,#fbbf24)"
+                      : "linear-gradient(90deg,#8b5cf6,#a78bfa)",
+                    transition: "width 0.4s",
+                  }} />
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: "#a99fd9" }}>{CATEGORY_LABEL[g.category]}{g.ageHint ? " · " + g.ageHint : ""}</div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-              {soon ? (
-                <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#fbbf24" }}>Coming soon</div>
-              ) : unlocked ? (
-                <button
-                  onClick={() => onPlay(g)}
-                  disabled={limitHit}
-                  style={{
-                    marginTop: 6, width: "100%",
-                    background: limitHit ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #8b5cf6, #ec4899)",
-                    color: "#fff", border: "none", borderRadius: 999,
-                    padding: "7px 0", fontSize: 12.5, fontWeight: 700,
-                    cursor: limitHit ? "default" : "pointer",
-                    boxShadow: limitHit ? "none" : "0 4px 12px rgba(139,92,246,0.35)",
-                    opacity: limitHit ? 0.5 : 1,
-                  }}
-                >Play</button>
-              ) : (
-                <button
-                  onClick={() => onUnlock(g)}
-                  style={{
-                    marginTop: 6, width: "100%",
-                    background: "rgba(255,255,255,0.08)",
-                    color: "#fff", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 999,
-                    padding: "7px 0", fontSize: 12, fontWeight: 700, cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                  }}
-                >
-                  <Lock size={11} /> {g.unlockCost} pts
-                </button>
-              )}
+      {/* Games grouped by category */}
+      <div style={{ maxWidth: 720, margin: "0 auto", padding: "16px 16px 0" }}>
+        {gamesByCategory.map(([cat, list]) => (
+          <div key={cat} style={{ marginBottom: 18 }}>
+            <div style={{
+              display: "flex", alignItems: "baseline", gap: 8, marginBottom: 10,
+            }}>
+              <span style={{ fontSize: 18 }}>{CATEGORY_EMOJI[cat]}</span>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#e6e1f5", fontFamily: "Quicksand, sans-serif", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                {CATEGORY_LABEL[cat]}
+              </h3>
+              <span style={{ fontSize: 11, color: "#7c6fb8", marginLeft: "auto" }}>{list.length} game{list.length === 1 ? "" : "s"}</span>
             </div>
-          );
-        })}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 12 }}>
+              {list.map((g) => {
+                const unlocked = isUnlocked(g.id);
+                const soon = g.status === "soon";
+                return (
+                  <div
+                    key={g.id}
+                    style={{
+                      position: "relative",
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(139,92,246,0.25)",
+                      borderRadius: 16, padding: 14,
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+                      opacity: soon ? 0.6 : 1,
+                      filter: !unlocked && !soon ? "blur(0.4px)" : "none",
+                    }}
+                  >
+                    {!unlocked && !soon && (
+                      <div style={{
+                        position: "absolute", top: 8, right: 8,
+                        background: "rgba(0,0,0,0.4)", borderRadius: 999,
+                        padding: 4,
+                      }}><Lock size={11} color="#fbbf24" /></div>
+                    )}
+                    <div style={{
+                      fontSize: 36, lineHeight: 1, width: 56, height: 56,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "rgba(139,92,246,0.15)", borderRadius: 14,
+                      filter: !unlocked && !soon ? "grayscale(0.6)" : "none",
+                    }}>{g.emoji}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, fontFamily: "Quicksand, sans-serif", textAlign: "center", lineHeight: 1.2 }}>
+                      {g.title}
+                    </div>
+                    {g.ageHint && (
+                      <div style={{ fontSize: 11, color: "#a99fd9" }}>{g.ageHint}</div>
+                    )}
+
+                    {soon ? (
+                      <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#fbbf24" }}>Coming soon</div>
+                    ) : unlocked ? (
+                      <button
+                        onClick={() => onPlay(g)}
+                        disabled={limitHit}
+                        style={{
+                          marginTop: 6, width: "100%",
+                          background: limitHit ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                          color: "#fff", border: "none", borderRadius: 999,
+                          padding: "7px 0", fontSize: 12.5, fontWeight: 700,
+                          cursor: limitHit ? "default" : "pointer",
+                          boxShadow: limitHit ? "none" : "0 4px 12px rgba(139,92,246,0.35)",
+                          opacity: limitHit ? 0.5 : 1,
+                        }}
+                      >Play</button>
+                    ) : (
+                      <button
+                        onClick={() => onUnlock(g)}
+                        style={{
+                          marginTop: 6, width: "100%",
+                          background: "rgba(255,255,255,0.08)",
+                          color: "#fff", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 999,
+                          padding: "7px 0", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        }}
+                      >
+                        <Lock size={11} /> {g.unlockCost} pts
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Active game / result modal */}
@@ -264,6 +338,11 @@ function GameModal({
             {game.id === "odd-one-out" && <OddOneOutGame onFinish={onFinish} />}
             {game.id === "card-flip" && <CardFlipGame onFinish={onFinish} />}
             {game.id === "sequence" && <SequenceMemoryGame onFinish={onFinish} />}
+            {game.id === "color-memory" && <ColorMemoryGame onFinish={onFinish} />}
+            {game.id === "speed-math" && <SpeedMathGame onFinish={onFinish} />}
+            {game.id === "number-match" && <NumberMatchGame onFinish={onFinish} />}
+            {game.id === "find-mistake" && <FindMistakeGame onFinish={onFinish} />}
+            {game.id === "target-tap" && <TargetTapGame onFinish={onFinish} />}
             {game.id === "what-should-you-do" && <BehaviorChoiceGame onFinish={onFinish} />}
           </div>
         )}
