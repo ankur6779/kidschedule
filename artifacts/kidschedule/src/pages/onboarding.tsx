@@ -14,7 +14,6 @@ interface ChildData {
   childClass: string;
   schoolStartTime: string;
   schoolEndTime: string;
-  travelMode: string;
   wakeUpTime: string;
   sleepTime: string;
   foodType: string;
@@ -38,7 +37,7 @@ interface ChatMessage {
 type Step =
   | "intro"
   | "child-name" | "child-dob" | "child-school" | "child-class"
-  | "child-school-start" | "child-school-end" | "child-travel"
+  | "child-school-start" | "child-school-end"
   | "child-wake" | "child-sleep" | "child-food"
   | "add-more"
   | "parent-name" | "parent-role" | "parent-work"
@@ -198,7 +197,7 @@ function GridChips({ options, selected, onSelect }: { options: string[]; selecte
 function ProgressBar({ step }: { step: Step }) {
   const order: Step[] = [
     "child-name", "child-dob", "child-school", "child-class",
-    "child-school-start", "child-school-end", "child-travel",
+    "child-school-start", "child-school-end",
     "child-wake", "child-sleep", "child-food",
     "add-more", "parent-name", "parent-role", "parent-work",
     "parent-region", "parent-mobile", "parent-allergies",
@@ -302,7 +301,6 @@ export default function OnboardingPage() {
             schoolEndTime: child.schoolEndTime || "15:00",
             wakeUpTime: child.wakeUpTime || "07:00",
             sleepTime: child.sleepTime || "21:00",
-            travelMode: child.travelMode || "car",
             foodType: child.foodType || "veg",
             goals: goalsParts.join(" | "),
           }),
@@ -525,28 +523,9 @@ export default function OnboardingPage() {
             onSelect={(v) => {
               setSelected(v);
               setCurr((c) => ({ ...c, schoolEndTime: to24h(v) }));
-              userReplies(v, "child-travel", `How does ${curr.name || "your child"} travel to school? 🚐`);
+              userReplies(v, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
             }}
           />
-        );
-
-      case "child-travel":
-        return (
-          <div className="grid grid-cols-2 gap-2">
-            {TRAVEL_OPTS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => {
-                  setCurr((c) => ({ ...c, travelMode: opt.value }));
-                  userReplies(opt.label, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
-                }}
-                className="py-3.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
-                style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
         );
 
       case "child-wake":
