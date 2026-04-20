@@ -143,14 +143,30 @@ const GOAL_CATEGORIES: GoalCategory[] = [
       { id: "moving-houses",        title: "Moving to a New Home",       emoji: "📦", gradient: "from-emerald-100 dark:from-emerald-500/20 to-teal-200 dark:to-teal-500/25" },
     ],
   },
+  // ─── For You (Parent Self-Care) — age question is skipped for this category ─
+  {
+    id: "for-you", title: "For You (Parent Self-Care)", emoji: "💖",
+    gradient: "from-fuchsia-100 dark:from-fuchsia-500/20 via-pink-50 dark:via-pink-500/15 to-rose-100 dark:to-rose-500/20",
+    items: [
+      { id: "parent-burnout",        title: "Beat Parent Burnout",         emoji: "🪫", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "stay-calm-anger",       title: "Stay Calm When Angry",        emoji: "🧘", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
+      { id: "guilt-after-yelling",   title: "Handle Guilt After Yelling",  emoji: "💔", gradient: "from-pink-100 dark:from-pink-500/20 to-rose-200 dark:to-rose-500/25" },
+      { id: "find-me-time",          title: "Find 'Me Time' Daily",        emoji: "☕", gradient: "from-amber-100 dark:from-amber-500/20 to-orange-200 dark:to-orange-500/25" },
+      { id: "couple-time-balance",   title: "Balance Partner & Parent Time", emoji: "💑", gradient: "from-fuchsia-100 dark:from-fuchsia-500/20 to-pink-200 dark:to-pink-500/25" },
+      { id: "improve-own-sleep",     title: "Improve Your Own Sleep",      emoji: "🌙", gradient: "from-indigo-100 dark:from-indigo-500/20 to-violet-200 dark:to-violet-500/25" },
+      { id: "manage-overwhelm",      title: "Manage Daily Overwhelm",      emoji: "🌪️", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
+    ],
+  },
 ];
 
 const ALL_GOALS: GoalItem[] = GOAL_CATEGORIES.flatMap((c) => c.items);
 
-// Goals whose parent category already implies an age → skip the ageGroup question
+// Goals whose parent category already implies an age → skip the ageGroup question.
+// "for-you" is parent self-care, so age is irrelevant — we mark it as adult.
 const CATEGORY_IMPLIED_AGE: Record<string, string> = {
   "toddler-behavior": "2–4 years",
   "daily-skills":     "2–4 years",
+  "for-you":          "Adult (parent self-care)",
 };
 // Build a fast lookup: goalId → implied age answer
 const GOAL_IMPLIED_AGE: Record<string, string> = {};
