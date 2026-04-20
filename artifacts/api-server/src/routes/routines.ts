@@ -257,10 +257,12 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
 
   // Parent availability logic
   const {
-    hasSchool, isWorkingDay, specialPlans, fridgeItems, mood,
+    hasSchool, isWorkingDay, mood,
     parent1Role, parent1WorkType, parent1IsWorking,
     parent2Role, parent2WorkType, parent2IsWorking,
   } = parsed.data;
+  const specialPlans = parsed.data.specialPlans ?? undefined;
+  const fridgeItems = parsed.data.fridgeItems ?? undefined;
 
   const p1Free = parent1WorkType === "homemaker" || parent1IsWorking === false || isWorkingDay === false;
   const p2Free = parent2Role
@@ -338,10 +340,12 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
     : "pre_teen";
 
   const {
-    hasSchool, isWorkingDay, specialPlans, mood, fridgeItems,
+    hasSchool, isWorkingDay, mood,
     parent1Role, parent1WorkType, parent1IsWorking,
     parent2Role, parent2WorkType, parent2IsWorking,
   } = parsed.data;
+  const specialPlans = parsed.data.specialPlans ?? undefined;
+  const fridgeItems = parsed.data.fridgeItems ?? undefined;
 
   let foodType = (child as any).foodType ?? "veg";
   let region: string = "pan_indian";

@@ -8,8 +8,19 @@
 
 export interface UpdateChildBody {
   name?: string;
+  dob?: string | null;
   age?: number;
+  ageMonths?: number;
+  isSchoolGoing?: boolean | null;
+  childClass?: string | null;
   schoolStartTime?: string;
   schoolEndTime?: string;
+  wakeUpTime?: string;
+  sleepTime?: string;
+  travelMode?: string;
+  travelModeOther?: string | null;
+  foodType?: string;
   goals?: string;
+  babysitterId?: number | null;
+  photoUrl?: string | null;
 }

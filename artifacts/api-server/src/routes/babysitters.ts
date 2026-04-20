@@ -4,7 +4,7 @@ import { db, babysittersTable } from "@workspace/db";
 import { getAuth } from "@clerk/express";
 import {
   ListBabysittersResponse,
-  BabysitterSchema,
+  ListBabysittersResponseItem as BabysitterSchema,
   CreateBabysitterBody,
   DeleteBabysitterParams,
 } from "@workspace/api-zod";

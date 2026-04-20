@@ -53,6 +53,13 @@ export type AppDataResponse = {
     title: string;
     description: string;
   }>;
+  subscription?: {
+    isPremium: boolean;
+    plan?: string | null;
+    status?: string | null;
+    currentPeriodEnd?: string | null;
+    [key: string]: unknown;
+  };
   meta: { generatedAt: string; cached: boolean };
 };
 

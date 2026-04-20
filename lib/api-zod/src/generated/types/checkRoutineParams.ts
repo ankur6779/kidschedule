@@ -5,12 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import type { RoutineItem } from "./routineItem";
 
-export interface CreateRoutineBody {
+export type CheckRoutineParams = {
   childId: number;
   date: string;
-  title: string;
-  items: RoutineItem[];
-  override?: boolean;
-}
+};

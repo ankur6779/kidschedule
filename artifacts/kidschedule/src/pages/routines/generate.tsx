@@ -744,7 +744,7 @@ export default function RoutineGenerate() {
   // ── Core save helper ───────────────────────────────────────────────────────
   const saveGeneratedRoutine = React.useCallback((data: GeneratedRoutine, shouldOverride: boolean | undefined) => {
     createMutation.mutate(
-      { data: { childId: selectedChild!, date, title: data.title, items: data.items, override: shouldOverride } },
+      { data: { childId: selectedChild!, date, title: data.title, items: data.items as never, override: shouldOverride } },
       {
         onSuccess: (savedRoutine) => {
           toast({ title: shouldOverride ? "🔄 Routine replaced!" : "✨ Routine generated!" });
@@ -1016,7 +1016,7 @@ export default function RoutineGenerate() {
                 childId: child.id,
                 date: familyDate,
                 title: routine.title,
-                items: routine.items,
+                items: routine.items as never,
               }
             },
             {

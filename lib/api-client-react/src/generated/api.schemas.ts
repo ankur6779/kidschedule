@@ -12,35 +12,81 @@ export interface HealthStatus {
 export interface Child {
   id: number;
   name: string;
+  dob?: string | null;
   age: number;
+  ageMonths: number;
+  isSchoolGoing?: boolean | null;
+  childClass?: string | null;
   schoolStartTime: string;
   schoolEndTime: string;
+  wakeUpTime: string;
+  sleepTime: string;
+  travelMode: string;
+  travelModeOther?: string | null;
+  foodType: string;
   goals: string;
+  babysitterId?: number | null;
+  photoUrl?: string | null;
   createdAt: string;
 }
 
 export interface CreateChildBody {
   name: string;
+  dob?: string | null;
   age: number;
+  ageMonths?: number;
+  isSchoolGoing?: boolean | null;
+  childClass?: string | null;
   schoolStartTime: string;
   schoolEndTime: string;
+  wakeUpTime?: string;
+  sleepTime?: string;
+  travelMode?: string;
+  travelModeOther?: string | null;
+  foodType?: string;
   goals: string;
+  babysitterId?: number | null;
+  photoUrl?: string | null;
 }
 
 export interface UpdateChildBody {
   name?: string;
+  dob?: string | null;
   age?: number;
+  ageMonths?: number;
+  isSchoolGoing?: boolean | null;
+  childClass?: string | null;
   schoolStartTime?: string;
   schoolEndTime?: string;
+  wakeUpTime?: string;
+  sleepTime?: string;
+  travelMode?: string;
+  travelModeOther?: string | null;
+  foodType?: string;
   goals?: string;
+  babysitterId?: number | null;
+  photoUrl?: string | null;
 }
 
+export type RoutineItemStatus =
+  (typeof RoutineItemStatus)[keyof typeof RoutineItemStatus];
+
+export const RoutineItemStatus = {
+  pending: "pending",
+  completed: "completed",
+  skipped: "skipped",
+  delayed: "delayed",
+} as const;
+
 export interface RoutineItem {
+  id?: string;
   time: string;
   activity: string;
   duration: number;
   category: string;
   notes?: string;
+  rewardPoints?: number;
+  status?: RoutineItemStatus;
 }
 
 export interface Routine {
@@ -58,16 +104,140 @@ export interface CreateRoutineBody {
   date: string;
   title: string;
   items: RoutineItem[];
+  override?: boolean;
 }
 
 export interface GenerateRoutineBody {
   childId: number;
   date: string;
+  hasSchool?: boolean;
+  isWorkingDay?: boolean;
+  specialPlans?: string | null;
+  fridgeItems?: string | null;
+  mood?: string | null;
+  parent1Role?: string | null;
+  parent1WorkType?: string | null;
+  parent1IsWorking?: boolean | null;
+  parent2Role?: string | null;
+  parent2WorkType?: string | null;
+  parent2IsWorking?: boolean | null;
 }
 
 export interface GeneratedRoutine {
   title: string;
   items: RoutineItem[];
+}
+
+export interface CheckRoutineResponse {
+  exists: boolean;
+  routineId?: number;
+}
+
+export interface UpdateRoutineItemsBody {
+  items: RoutineItem[];
+}
+
+export type InsightsItemType =
+  (typeof InsightsItemType)[keyof typeof InsightsItemType];
+
+export const InsightsItemType = {
+  positive: "positive",
+  warning: "warning",
+  suggestion: "suggestion",
+} as const;
+
+export interface InsightsItem {
+  type: InsightsItemType;
+  message: string;
+  icon: string;
+}
+
+export interface GenerateInsightsResponse {
+  insights: InsightsItem[];
+  summary: string;
+}
+
+export interface BabysitterSchema {
+  id: number;
+  userId: string;
+  name: string;
+  mobileNumber?: string | null;
+  notes?: string | null;
+  createdAt: string;
+}
+
+export interface CreateBabysitterBody {
+  name: string;
+  mobileNumber?: string | null;
+  notes?: string | null;
+}
+
+export interface ParentProfileFreeSlot {
+  day?: string;
+  start?: string;
+  end?: string;
+}
+
+export interface GetParentProfileResponse {
+  id: number;
+  userId: string;
+  name?: string | null;
+  role: string;
+  gender?: string | null;
+  mobileNumber?: string | null;
+  workType: string;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
+  freeSlots?: ParentProfileFreeSlot[];
+  foodType: string;
+  allergies?: string | null;
+  region: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpsertParentProfileBody {
+  name?: string | null;
+  role?: string;
+  gender?: string | null;
+  mobileNumber?: string | null;
+  workType?: string;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
+  freeSlots?: ParentProfileFreeSlot[];
+  foodType?: string;
+  allergies?: string | null;
+  region?: string;
+}
+
+export interface GetRecipeBody {
+  mealName: string;
+  foodType?: string | null;
+}
+
+export interface RecipeStep {
+  step: number;
+  instruction: string;
+}
+
+export interface GetRecipeResponse {
+  name: string;
+  prepTime: string;
+  cookTime: string;
+  servings: string;
+  ingredients: string[];
+  steps: RecipeStep[];
+  tips?: string;
+}
+
+export interface AskAssistantBody {
+  question: string;
+  childName?: string | null;
+  childAge?: number | null;
+}
+
+export interface AskAssistantResponse {
+  answer: string;
 }
 
 export interface BehaviorLog {
@@ -114,4 +284,9 @@ export type ListRoutinesParams = {
 export type ListBehaviorsParams = {
   childId?: number;
   date?: string;
+};
+
+export type CheckRoutineParams = {
+  childId: number;
+  date: string;
 };

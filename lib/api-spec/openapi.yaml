@@ -302,6 +302,185 @@ paths:
                 items:
                   $ref: "#/components/schemas/Routine"
 
+  /routines/check:
+    get:
+      operationId: checkRoutine
+      tags: [routines]
+      summary: Check if a routine exists for child + date
+      parameters:
+        - name: childId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Routine existence check
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckRoutineResponse"
+
+  /routines/{id}/items:
+    patch:
+      operationId: updateRoutineItems
+      tags: [routines]
+      summary: Update routine items (mark complete/skipped/delayed)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoutineItemsBody"
+      responses:
+        "200":
+          description: Updated routine
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Routine"
+
+  /insights:
+    post:
+      operationId: generateInsights
+      tags: [ai]
+      summary: Generate weekly insights from routine completion data
+      responses:
+        "200":
+          description: Generated insights
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateInsightsResponse"
+
+  /babysitters:
+    get:
+      operationId: listBabysitters
+      tags: [children]
+      summary: List babysitters
+      responses:
+        "200":
+          description: Babysitters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BabysitterSchema"
+    post:
+      operationId: createBabysitter
+      tags: [children]
+      summary: Add a babysitter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBabysitterBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BabysitterSchema"
+
+  /babysitters/{id}:
+    delete:
+      operationId: deleteBabysitter
+      tags: [children]
+      summary: Delete a babysitter
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /parent-profile:
+    get:
+      operationId: getParentProfile
+      tags: [children]
+      summary: Get current user's parent profile
+      responses:
+        "200":
+          description: Parent profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetParentProfileResponse"
+        "404":
+          description: Not found
+    put:
+      operationId: upsertParentProfile
+      tags: [children]
+      summary: Create or update parent profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertParentProfileBody"
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetParentProfileResponse"
+
+  /ai/recipe:
+    post:
+      operationId: getRecipe
+      tags: [ai]
+      summary: Look up a rule-based recipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetRecipeBody"
+      responses:
+        "200":
+          description: Recipe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetRecipeResponse"
+
+  /ai/assistant:
+    post:
+      operationId: askAssistant
+      tags: [ai]
+      summary: Ask the rule-based parenting assistant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskAssistantBody"
+      responses:
+        "200":
+          description: Answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AskAssistantResponse"
+
   /dashboard/behavior-stats:
     get:
       operationId: getBehaviorStats
@@ -334,22 +513,55 @@ components:
           type: integer
         name:
           type: string
+        dob:
+          type: string
+          nullable: true
         age:
           type: integer
+        ageMonths:
+          type: integer
+        isSchoolGoing:
+          type: boolean
+          nullable: true
+        childClass:
+          type: string
+          nullable: true
         schoolStartTime:
           type: string
         schoolEndTime:
           type: string
+        wakeUpTime:
+          type: string
+        sleepTime:
+          type: string
+        travelMode:
+          type: string
+        travelModeOther:
+          type: string
+          nullable: true
+        foodType:
+          type: string
         goals:
           type: string
+        babysitterId:
+          type: integer
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
         createdAt:
           type: string
       required:
         - id
         - name
         - age
+        - ageMonths
         - schoolStartTime
         - schoolEndTime
+        - wakeUpTime
+        - sleepTime
+        - travelMode
+        - foodType
         - goals
         - createdAt
 
@@ -358,14 +570,42 @@ components:
       properties:
         name:
           type: string
+        dob:
+          type: string
+          nullable: true
         age:
           type: integer
+        ageMonths:
+          type: integer
+        isSchoolGoing:
+          type: boolean
+          nullable: true
+        childClass:
+          type: string
+          nullable: true
         schoolStartTime:
           type: string
         schoolEndTime:
           type: string
+        wakeUpTime:
+          type: string
+        sleepTime:
+          type: string
+        travelMode:
+          type: string
+        travelModeOther:
+          type: string
+          nullable: true
+        foodType:
+          type: string
         goals:
           type: string
+        babysitterId:
+          type: integer
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
       required:
         - name
         - age
@@ -378,18 +618,48 @@ components:
       properties:
         name:
           type: string
+        dob:
+          type: string
+          nullable: true
         age:
           type: integer
+        ageMonths:
+          type: integer
+        isSchoolGoing:
+          type: boolean
+          nullable: true
+        childClass:
+          type: string
+          nullable: true
         schoolStartTime:
           type: string
         schoolEndTime:
           type: string
+        wakeUpTime:
+          type: string
+        sleepTime:
+          type: string
+        travelMode:
+          type: string
+        travelModeOther:
+          type: string
+          nullable: true
+        foodType:
+          type: string
         goals:
           type: string
+        babysitterId:
+          type: integer
+          nullable: true
+        photoUrl:
+          type: string
+          nullable: true
 
     RoutineItem:
       type: object
       properties:
+        id:
+          type: string
         time:
           type: string
         activity:
@@ -402,6 +672,9 @@ components:
           type: string
         rewardPoints:
           type: integer
+        status:
+          type: string
+          enum: [pending, completed, skipped, delayed]
       required:
         - time
         - activity
@@ -449,6 +722,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RoutineItem"
+        override:
+          type: boolean
       required:
         - childId
         - date
@@ -462,6 +737,37 @@ components:
           type: integer
         date:
           type: string
+        hasSchool:
+          type: boolean
+        isWorkingDay:
+          type: boolean
+        specialPlans:
+          type: string
+          nullable: true
+        fridgeItems:
+          type: string
+          nullable: true
+        mood:
+          type: string
+          nullable: true
+        parent1Role:
+          type: string
+          nullable: true
+        parent1WorkType:
+          type: string
+          nullable: true
+        parent1IsWorking:
+          type: boolean
+          nullable: true
+        parent2Role:
+          type: string
+          nullable: true
+        parent2WorkType:
+          type: string
+          nullable: true
+        parent2IsWorking:
+          type: boolean
+          nullable: true
       required:
         - childId
         - date
@@ -478,6 +784,259 @@ components:
       required:
         - title
         - items
+
+    CheckRoutineResponse:
+      type: object
+      properties:
+        exists:
+          type: boolean
+        routineId:
+          type: integer
+      required:
+        - exists
+
+    UpdateRoutineItemsBody:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoutineItem"
+      required:
+        - items
+
+    InsightsItem:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [positive, warning, suggestion]
+        message:
+          type: string
+        icon:
+          type: string
+      required:
+        - type
+        - message
+        - icon
+
+    GenerateInsightsResponse:
+      type: object
+      properties:
+        insights:
+          type: array
+          items:
+            $ref: "#/components/schemas/InsightsItem"
+        summary:
+          type: string
+      required:
+        - insights
+        - summary
+
+    BabysitterSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+        mobileNumber:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - userId
+        - name
+        - createdAt
+
+    CreateBabysitterBody:
+      type: object
+      properties:
+        name:
+          type: string
+        mobileNumber:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - name
+
+    ParentProfileFreeSlot:
+      type: object
+      properties:
+        day:
+          type: string
+        start:
+          type: string
+        end:
+          type: string
+
+    GetParentProfileResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+        gender:
+          type: string
+          nullable: true
+        mobileNumber:
+          type: string
+          nullable: true
+        workType:
+          type: string
+        workStartTime:
+          type: string
+          nullable: true
+        workEndTime:
+          type: string
+          nullable: true
+        freeSlots:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParentProfileFreeSlot"
+        foodType:
+          type: string
+        allergies:
+          type: string
+          nullable: true
+        region:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - userId
+        - role
+        - workType
+        - foodType
+        - region
+        - createdAt
+        - updatedAt
+
+    UpsertParentProfileBody:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        role:
+          type: string
+        gender:
+          type: string
+          nullable: true
+        mobileNumber:
+          type: string
+          nullable: true
+        workType:
+          type: string
+        workStartTime:
+          type: string
+          nullable: true
+        workEndTime:
+          type: string
+          nullable: true
+        freeSlots:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParentProfileFreeSlot"
+        foodType:
+          type: string
+        allergies:
+          type: string
+          nullable: true
+        region:
+          type: string
+
+    GetRecipeBody:
+      type: object
+      properties:
+        mealName:
+          type: string
+        foodType:
+          type: string
+          nullable: true
+      required:
+        - mealName
+
+    RecipeStep:
+      type: object
+      properties:
+        step:
+          type: integer
+        instruction:
+          type: string
+      required:
+        - step
+        - instruction
+
+    GetRecipeResponse:
+      type: object
+      properties:
+        name:
+          type: string
+        prepTime:
+          type: string
+        cookTime:
+          type: string
+        servings:
+          type: string
+        ingredients:
+          type: array
+          items:
+            type: string
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeStep"
+        tips:
+          type: string
+      required:
+        - name
+        - prepTime
+        - cookTime
+        - servings
+        - ingredients
+        - steps
+
+    AskAssistantBody:
+      type: object
+      properties:
+        question:
+          type: string
+        childName:
+          type: string
+          nullable: true
+        childAge:
+          type: integer
+          nullable: true
+      required:
+        - question
+
+    AskAssistantResponse:
+      type: object
+      properties:
+        answer:
+          type: string
+      required:
+        - answer
 
     BehaviorLog:
       type: object

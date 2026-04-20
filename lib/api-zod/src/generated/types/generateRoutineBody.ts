@@ -9,4 +9,15 @@
 export interface GenerateRoutineBody {
   childId: number;
   date: string;
+  hasSchool?: boolean;
+  isWorkingDay?: boolean;
+  specialPlans?: string | null;
+  fridgeItems?: string | null;
+  mood?: string | null;
+  parent1Role?: string | null;
+  parent1WorkType?: string | null;
+  parent1IsWorking?: boolean | null;
+  parent2Role?: string | null;
+  parent2WorkType?: string | null;
+  parent2IsWorking?: boolean | null;
 }

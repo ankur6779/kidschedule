@@ -7,10 +7,6 @@
  */
 import type { RoutineItem } from "./routineItem";
 
-export interface CreateRoutineBody {
-  childId: number;
-  date: string;
-  title: string;
+export interface UpdateRoutineItemsBody {
   items: RoutineItem[];
-  override?: boolean;
 }

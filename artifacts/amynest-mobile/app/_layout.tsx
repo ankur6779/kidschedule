@@ -98,7 +98,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inTabsGroup = segments[0] === "(tabs)";
     const inOnboarding = segments[0] === "onboarding";
     const inAuth = segments[0] === "sign-in" || segments[0] === "sign-up";
-    const inWelcome = segments[0] === "welcome" || segments.length === 0;
+    const inWelcome = segments[0] === "welcome" || (segments.length as number) === 0;
 
     if (!isSignedIn) {
       if (!inAuth && !inWelcome) router.replace("/welcome");

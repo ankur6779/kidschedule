@@ -22,7 +22,7 @@ export const ListChildrenResponseItem = zod.object({
   name: zod.string(),
   dob: zod.string().nullish(),
   age: zod.number(),
-  ageMonths: zod.number().default(0),
+  ageMonths: zod.number(),
   isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
@@ -31,7 +31,7 @@ export const ListChildrenResponseItem = zod.object({
   sleepTime: zod.string(),
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
-  foodType: zod.string().default("veg"),
+  foodType: zod.string(),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
   photoUrl: zod.string().nullish(),
@@ -44,21 +44,21 @@ export const ListChildrenResponse = zod.array(ListChildrenResponseItem);
  */
 export const CreateChildBody = zod.object({
   name: zod.string(),
-  dob: zod.string().optional(),
+  dob: zod.string().nullish(),
   age: zod.number(),
   ageMonths: zod.number().optional(),
-  isSchoolGoing: zod.boolean().optional(),
-  childClass: zod.string().optional(),
+  isSchoolGoing: zod.boolean().nullish(),
+  childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
-  wakeUpTime: zod.string(),
-  sleepTime: zod.string(),
-  travelMode: zod.string(),
-  travelModeOther: zod.string().optional(),
+  wakeUpTime: zod.string().optional(),
+  sleepTime: zod.string().optional(),
+  travelMode: zod.string().optional(),
+  travelModeOther: zod.string().nullish(),
   foodType: zod.string().optional(),
   goals: zod.string(),
-  babysitterId: zod.number().optional(),
-  photoUrl: zod.string().optional(),
+  babysitterId: zod.number().nullish(),
+  photoUrl: zod.string().nullish(),
 });
 
 /**
@@ -73,7 +73,7 @@ export const GetChildResponse = zod.object({
   name: zod.string(),
   dob: zod.string().nullish(),
   age: zod.number(),
-  ageMonths: zod.number().default(0),
+  ageMonths: zod.number(),
   isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
@@ -82,7 +82,7 @@ export const GetChildResponse = zod.object({
   sleepTime: zod.string(),
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
-  foodType: zod.string().default("veg"),
+  foodType: zod.string(),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
   photoUrl: zod.string().nullish(),
@@ -98,17 +98,17 @@ export const UpdateChildParams = zod.object({
 
 export const UpdateChildBody = zod.object({
   name: zod.string().optional(),
-  dob: zod.string().optional(),
+  dob: zod.string().nullish(),
   age: zod.number().optional(),
   ageMonths: zod.number().optional(),
-  isSchoolGoing: zod.boolean().optional(),
-  childClass: zod.string().optional(),
+  isSchoolGoing: zod.boolean().nullish(),
+  childClass: zod.string().nullish(),
   schoolStartTime: zod.string().optional(),
   schoolEndTime: zod.string().optional(),
   wakeUpTime: zod.string().optional(),
   sleepTime: zod.string().optional(),
   travelMode: zod.string().optional(),
-  travelModeOther: zod.string().optional(),
+  travelModeOther: zod.string().nullish(),
   foodType: zod.string().optional(),
   goals: zod.string().optional(),
   babysitterId: zod.number().nullish(),
@@ -120,7 +120,7 @@ export const UpdateChildResponse = zod.object({
   name: zod.string(),
   dob: zod.string().nullish(),
   age: zod.number(),
-  ageMonths: zod.number().default(0),
+  ageMonths: zod.number(),
   isSchoolGoing: zod.boolean().nullish(),
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
@@ -129,7 +129,7 @@ export const UpdateChildResponse = zod.object({
   sleepTime: zod.string(),
   travelMode: zod.string(),
   travelModeOther: zod.string().nullish(),
-  foodType: zod.string().default("veg"),
+  foodType: zod.string(),
   goals: zod.string(),
   babysitterId: zod.number().nullish(),
   photoUrl: zod.string().nullish(),
@@ -141,19 +141,6 @@ export const UpdateChildResponse = zod.object({
  */
 export const DeleteChildParams = zod.object({
   id: zod.coerce.number(),
-});
-
-/**
- * Routine item shape (shared)
- */
-export const RoutineItemSchema = zod.object({
-  time: zod.string(),
-  activity: zod.string(),
-  duration: zod.number(),
-  category: zod.string(),
-  notes: zod.string().optional(),
-  status: zod.enum(["pending", "completed", "skipped", "delayed"]).optional(),
-  rewardPoints: zod.number().optional(),
 });
 
 /**
@@ -169,7 +156,20 @@ export const ListRoutinesResponseItem = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(RoutineItemSchema),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
   createdAt: zod.string(),
 });
 export const ListRoutinesResponse = zod.array(ListRoutinesResponseItem);
@@ -181,18 +181,21 @@ export const CreateRoutineBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(RoutineItemSchema),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
   override: zod.boolean().optional(),
-});
-
-export const CheckRoutineQueryParams = zod.object({
-  childId: zod.coerce.number(),
-  date: zod.string(),
-});
-
-export const CheckRoutineResponse = zod.object({
-  exists: zod.boolean(),
-  routineId: zod.number().optional(),
 });
 
 /**
@@ -208,7 +211,20 @@ export const GetRoutineResponse = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(RoutineItemSchema),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
   createdAt: zod.string(),
 });
 
@@ -220,41 +236,40 @@ export const DeleteRoutineParams = zod.object({
 });
 
 /**
- * @summary Update routine items (status tracking)
- */
-export const UpdateRoutineItemsParams = zod.object({
-  id: zod.coerce.number(),
-});
-
-export const UpdateRoutineItemsBody = zod.object({
-  items: zod.array(RoutineItemSchema),
-});
-
-/**
  * @summary Generate a daily routine with AI
  */
 export const GenerateRoutineBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
-  fridgeItems: zod.string().optional(),
   hasSchool: zod.boolean().optional(),
   isWorkingDay: zod.boolean().optional(),
-  specialPlans: zod.string().optional(),
-  mood: zod.enum(["happy", "angry", "lazy", "normal"]).optional(),
-  // Per-date parent availability
-  parent1Role: zod.string().optional(),
-  parent1WorkType: zod.string().optional(),
-  parent1IsWorking: zod.boolean().optional(),
-  parent1WorkHours: zod.string().optional(),
-  parent2Role: zod.string().optional(),
-  parent2WorkType: zod.string().optional(),
-  parent2IsWorking: zod.boolean().optional(),
-  parent2WorkHours: zod.string().optional(),
+  specialPlans: zod.string().nullish(),
+  fridgeItems: zod.string().nullish(),
+  mood: zod.string().nullish(),
+  parent1Role: zod.string().nullish(),
+  parent1WorkType: zod.string().nullish(),
+  parent1IsWorking: zod.boolean().nullish(),
+  parent2Role: zod.string().nullish(),
+  parent2WorkType: zod.string().nullish(),
+  parent2IsWorking: zod.boolean().nullish(),
 });
 
 export const GenerateRoutineResponse = zod.object({
   title: zod.string(),
-  items: zod.array(RoutineItemSchema),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
 });
 
 /**
@@ -278,14 +293,14 @@ export const ListBehaviorsResponseItem = zod.object({
 export const ListBehaviorsResponse = zod.array(ListBehaviorsResponseItem);
 
 /**
- * @summary Create a behavior log
+ * @summary Log a behavior
  */
 export const CreateBehaviorLogBody = zod.object({
   childId: zod.number(),
   date: zod.string(),
   behavior: zod.string(),
   type: zod.string(),
-  notes: zod.string().optional(),
+  notes: zod.string().nullish(),
 });
 
 /**
@@ -315,12 +330,244 @@ export const GetRecentRoutinesResponseItem = zod.object({
   childName: zod.string(),
   date: zod.string(),
   title: zod.string(),
-  items: zod.array(RoutineItemSchema),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
   createdAt: zod.string(),
 });
 export const GetRecentRoutinesResponse = zod.array(
   GetRecentRoutinesResponseItem,
 );
+
+/**
+ * @summary Check if a routine exists for child + date
+ */
+export const CheckRoutineQueryParams = zod.object({
+  childId: zod.coerce.number(),
+  date: zod.coerce.string(),
+});
+
+export const CheckRoutineResponse = zod.object({
+  exists: zod.boolean(),
+  routineId: zod.number().optional(),
+});
+
+/**
+ * @summary Update routine items (mark complete/skipped/delayed)
+ */
+export const UpdateRoutineItemsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateRoutineItemsBody = zod.object({
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
+});
+
+export const UpdateRoutineItemsResponse = zod.object({
+  id: zod.number(),
+  childId: zod.number(),
+  childName: zod.string(),
+  date: zod.string(),
+  title: zod.string(),
+  items: zod.array(
+    zod.object({
+      id: zod.string().optional(),
+      time: zod.string(),
+      activity: zod.string(),
+      duration: zod.number(),
+      category: zod.string(),
+      notes: zod.string().optional(),
+      rewardPoints: zod.number().optional(),
+      status: zod
+        .enum(["pending", "completed", "skipped", "delayed"])
+        .optional(),
+    }),
+  ),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Generate weekly insights from routine completion data
+ */
+export const GenerateInsightsResponse = zod.object({
+  insights: zod.array(
+    zod.object({
+      type: zod.enum(["positive", "warning", "suggestion"]),
+      message: zod.string(),
+      icon: zod.string(),
+    }),
+  ),
+  summary: zod.string(),
+});
+
+/**
+ * @summary List babysitters
+ */
+export const ListBabysittersResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string(),
+  mobileNumber: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListBabysittersResponse = zod.array(ListBabysittersResponseItem);
+
+/**
+ * @summary Add a babysitter
+ */
+export const CreateBabysitterBody = zod.object({
+  name: zod.string(),
+  mobileNumber: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete a babysitter
+ */
+export const DeleteBabysitterParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Get current user's parent profile
+ */
+export const GetParentProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string().nullish(),
+  role: zod.string(),
+  gender: zod.string().nullish(),
+  mobileNumber: zod.string().nullish(),
+  workType: zod.string(),
+  workStartTime: zod.string().nullish(),
+  workEndTime: zod.string().nullish(),
+  freeSlots: zod
+    .array(
+      zod.object({
+        day: zod.string().optional(),
+        start: zod.string().optional(),
+        end: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  foodType: zod.string(),
+  allergies: zod.string().nullish(),
+  region: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Create or update parent profile
+ */
+export const UpsertParentProfileBody = zod.object({
+  name: zod.string().nullish(),
+  role: zod.string().optional(),
+  gender: zod.string().nullish(),
+  mobileNumber: zod.string().nullish(),
+  workType: zod.string().optional(),
+  workStartTime: zod.string().nullish(),
+  workEndTime: zod.string().nullish(),
+  freeSlots: zod
+    .array(
+      zod.object({
+        day: zod.string().optional(),
+        start: zod.string().optional(),
+        end: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  foodType: zod.string().optional(),
+  allergies: zod.string().nullish(),
+  region: zod.string().optional(),
+});
+
+export const UpsertParentProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.string(),
+  name: zod.string().nullish(),
+  role: zod.string(),
+  gender: zod.string().nullish(),
+  mobileNumber: zod.string().nullish(),
+  workType: zod.string(),
+  workStartTime: zod.string().nullish(),
+  workEndTime: zod.string().nullish(),
+  freeSlots: zod
+    .array(
+      zod.object({
+        day: zod.string().optional(),
+        start: zod.string().optional(),
+        end: zod.string().optional(),
+      }),
+    )
+    .optional(),
+  foodType: zod.string(),
+  allergies: zod.string().nullish(),
+  region: zod.string(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Look up a rule-based recipe
+ */
+export const GetRecipeBody = zod.object({
+  mealName: zod.string(),
+  foodType: zod.string().nullish(),
+});
+
+export const GetRecipeResponse = zod.object({
+  name: zod.string(),
+  prepTime: zod.string(),
+  cookTime: zod.string(),
+  servings: zod.string(),
+  ingredients: zod.array(zod.string()),
+  steps: zod.array(
+    zod.object({
+      step: zod.number(),
+      instruction: zod.string(),
+    }),
+  ),
+  tips: zod.string().optional(),
+});
+
+/**
+ * @summary Ask the rule-based parenting assistant
+ */
+export const AskAssistantBody = zod.object({
+  question: zod.string(),
+  childName: zod.string().nullish(),
+  childAge: zod.number().nullish(),
+});
+
+export const AskAssistantResponse = zod.object({
+  answer: zod.string(),
+});
 
 /**
  * @summary Get behavior stats per child
@@ -333,125 +580,3 @@ export const GetBehaviorStatsResponseItem = zod.object({
   neutral: zod.number(),
 });
 export const GetBehaviorStatsResponse = zod.array(GetBehaviorStatsResponseItem);
-
-/**
- * @summary Parent profile
- */
-export const FreeSlotSchema = zod.object({
-  start: zod.string(),
-  end: zod.string(),
-});
-
-export const GetParentProfileResponse = zod.object({
-  id: zod.number(),
-  userId: zod.string(),
-  name: zod.string().nullish(),
-  role: zod.string(),
-  gender: zod.string().nullish(),
-  mobileNumber: zod.string().nullish(),
-  workType: zod.string(),
-  workStartTime: zod.string().nullish(),
-  workEndTime: zod.string().nullish(),
-  freeSlots: zod.array(FreeSlotSchema).default([]),
-  foodType: zod.string().default("non_veg"),
-  allergies: zod.string().nullish(),
-  region: zod.string().default("pan_indian"),
-  createdAt: zod.string(),
-  updatedAt: zod.string(),
-});
-
-export const UpsertParentProfileBody = zod.object({
-  name: zod.string().optional(),
-  role: zod.string(),
-  gender: zod.string().optional(),
-  mobileNumber: zod.string().optional(),
-  workType: zod.string(),
-  workStartTime: zod.string().optional(),
-  workEndTime: zod.string().optional(),
-  freeSlots: zod.array(FreeSlotSchema).optional(),
-  foodType: zod.string().optional(),
-  allergies: zod.string().optional(),
-  region: zod.string().optional(),
-});
-
-/**
- * @summary AI recipe endpoint
- */
-export const GetRecipeBody = zod.object({
-  mealName: zod.string(),
-  childAge: zod.number().optional(),
-  foodType: zod.string().optional(),
-  allergies: zod.string().optional(),
-});
-
-export const RecipeStep = zod.object({
-  step: zod.number(),
-  instruction: zod.string(),
-});
-
-export const GetRecipeResponse = zod.object({
-  name: zod.string(),
-  prepTime: zod.string(),
-  cookTime: zod.string(),
-  servings: zod.string(),
-  ingredients: zod.array(zod.string()),
-  steps: zod.array(RecipeStep),
-  tips: zod.string().optional(),
-});
-
-/**
- * @summary AI parenting assistant
- */
-export const AskAssistantBody = zod.object({
-  question: zod.string(),
-  childName: zod.string().optional(),
-  childAge: zod.number().optional(),
-});
-
-export const AskAssistantResponse = zod.object({
-  answer: zod.string(),
-});
-
-/**
- * @summary Generate routine with fridge items
- */
-export const GenerateRoutineBodyExtended = zod.object({
-  childId: zod.number(),
-  date: zod.string(),
-  fridgeItems: zod.string().optional(),
-});
-
-/**
- * @summary Babysitters
- */
-export const BabysitterSchema = zod.object({
-  id: zod.number(),
-  userId: zod.string(),
-  name: zod.string(),
-  mobileNumber: zod.string().nullish(),
-  notes: zod.string().nullish(),
-  createdAt: zod.string(),
-});
-export const ListBabysittersResponse = zod.array(BabysitterSchema);
-
-export const CreateBabysitterBody = zod.object({
-  name: zod.string(),
-  mobileNumber: zod.string().optional(),
-  notes: zod.string().optional(),
-});
-
-export const DeleteBabysitterParams = zod.object({
-  id: zod.coerce.number(),
-});
-
-/**
- * @summary AI weekly insights
- */
-export const GenerateInsightsResponse = zod.object({
-  insights: zod.array(zod.object({
-    type: zod.string(),
-    message: zod.string(),
-    icon: zod.string(),
-  })),
-  summary: zod.string(),
-});

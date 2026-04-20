@@ -5,11 +5,15 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RoutineItemStatus } from "./routineItemStatus";
 
 export interface RoutineItem {
+  id?: string;
   time: string;
   activity: string;
   duration: number;
   category: string;
   notes?: string;
+  rewardPoints?: number;
+  status?: RoutineItemStatus;
 }
