@@ -8,6 +8,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useQuery } from "@tanstack/react-query";
 import { useTheme } from "@/contexts/ThemeContext";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
@@ -28,6 +29,17 @@ export default function AmyAIScreen() {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
+  // Pull primary child for richer Amy context — best-effort
+  const { data: childrenData } = useQuery<Array<{ name?: string; age?: number | null }>>({
+    queryKey: ["children-for-amy-ai"],
+    queryFn: async () => {
+      const r = await authFetch("/api/children");
+      return r.ok ? r.json() : [];
+    },
+    staleTime: 60_000,
+  });
+  const primaryChild = Array.isArray(childrenData) && childrenData.length > 0 ? childrenData[0] : null;
+
   // Auto-send if a prompt was passed via params
   useEffect(() => {
     if (params.q && typeof params.q === "string") {
@@ -41,6 +53,11 @@ export default function AmyAIScreen() {
     if (!trimmed || loading) return;
     setInput("");
     const userMsg: Message = { id: `u-${Date.now()}`, role: "user", text: trimmed };
+    // Snapshot history BEFORE appending the new question so we can send it as context
+    const history = messages
+      .filter(m => m.id !== "welcome")
+      .slice(-6)
+      .map(m => ({ role: m.role === "amy" ? "assistant" : "user", content: m.text }));
     setMessages(m => [...m, userMsg]);
     setLoading(true);
     try {
@@ -48,7 +65,13 @@ export default function AmyAIScreen() {
       const res = await authFetch("/api/ai/assistant-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed, language: i18nInstance.language || "en" }),
+        body: JSON.stringify({
+          question: trimmed,
+          language: i18nInstance.language || "en",
+          history,
+          childName: primaryChild?.name ?? undefined,
+          childAge: typeof primaryChild?.age === "number" ? primaryChild.age : undefined,
+        }),
       });
       if (res.status === 402) {
         // Quota exhausted — refresh entitlements and route to paywall

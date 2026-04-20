@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,21 +45,41 @@ export default function AssistantPage() {
   const remaining = isPremium ? Infinity : Math.max(0, remainingRaw ?? dailyLimit);
   const limitReached = !isPremium && remaining <= 0;
 
+  // Pull primary child for richer Amy context (name + age) — best-effort, no error if empty
+  const { data: childrenData } = useQuery<Array<{ name?: string; age?: number | null }>>({
+    queryKey: ["children-for-assistant"],
+    queryFn: async () => {
+      const r = await authFetch("/api/children");
+      return r.ok ? r.json() : [];
+    },
+    staleTime: 60_000,
+  });
+  const primaryChild = Array.isArray(childrenData) && childrenData.length > 0 ? childrenData[0] : null;
+
   const sendMessage = async (question?: string) => {
     const text = (question ?? input).trim();
     if (!text || loading) return;
 
     const userMsg: Message = { role: "user", content: text };
-    setMessages((prev) => [...prev, userMsg]);
+    const nextMessages = [...messages, userMsg];
+    setMessages(nextMessages);
     setInput("");
     setLoading(true);
 
     try {
       const { default: i18nInstance } = await import("@/i18n");
+      // Send last 6 turns (excluding the new question, which goes as `question`) for context
+      const history = messages.slice(-6).map((m) => ({ role: m.role, content: m.content }));
       const res = await authFetch("/api/ai/assistant-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text, language: i18nInstance.language || "en" }),
+        body: JSON.stringify({
+          question: text,
+          language: i18nInstance.language || "en",
+          history,
+          childName: primaryChild?.name ?? undefined,
+          childAge: typeof primaryChild?.age === "number" ? primaryChild.age : undefined,
+        }),
       });
       if (res.status === 402) {
         refreshSubscription();

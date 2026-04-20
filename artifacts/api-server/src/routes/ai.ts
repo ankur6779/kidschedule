@@ -46,6 +46,19 @@ router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => 
   const langRaw = typeof req.body?.language === "string" ? req.body.language.toLowerCase().split("-")[0] : "en";
   const language: "en" | "hi" | "hinglish" = langRaw === "hi" ? "hi" : langRaw === "hinglish" ? "hinglish" : "en";
 
+  // Optional conversation history — last few turns from the client (low-budget cap)
+  type ChatTurn = { role: "user" | "assistant"; content: string };
+  const rawHistory = Array.isArray(req.body?.history) ? req.body.history : [];
+  const history: ChatTurn[] = rawHistory
+    .filter((m: unknown): m is ChatTurn =>
+      !!m && typeof m === "object" &&
+      ((m as ChatTurn).role === "user" || (m as ChatTurn).role === "assistant") &&
+      typeof (m as ChatTurn).content === "string" &&
+      (m as ChatTurn).content.trim().length > 0,
+    )
+    .slice(-6) // last 6 turns max — keeps tokens (and cost) low
+    .map((m: ChatTurn) => ({ role: m.role, content: m.content.slice(0, 800) }));
+
   try {
     const { openai } = await import("@workspace/integrations-openai-ai-server");
 
@@ -56,27 +69,42 @@ router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => 
         ? "\nIMPORTANT: Respond in Hinglish — Roman-script Hindi mixed naturally with common English words (e.g. 'Aapke bachche ke liye routine set karna important hai'). Keep it warm and conversational."
         : "";
 
-    const systemPrompt = `You are Amy, a warm and knowledgeable parenting expert and child development specialist.
-You give practical, evidence-based parenting advice with genuine empathy and zero judgment.
-Your responses are conversational, warm, and deeply actionable — never generic or preachy.
-Keep responses to 3-4 clear paragraphs. Be specific and age-appropriate.
-Always acknowledge the parent's feelings first before giving advice.${langDirective}`;
-
-    const childContext = childName
-      ? `My child ${childName}${childAge ? ` (${childAge} years old)` : ""}: `
+    const childLine = childName
+      ? `\nThe parent's child is ${childName}${childAge ? `, age ${childAge}` : ""}. Use the name naturally when it adds warmth — do not force it into every sentence.`
       : "";
+
+    const systemPrompt = `You are Amy — a warm, sharp, deeply human parenting coach who talks like a trusted friend who happens to be a child-development expert. You are NOT a chatbot and you must never sound like one.
+
+CONVERSATION STYLE
+- Sound like a real person texting a friend: natural, specific, sometimes one short sentence, sometimes two paragraphs — never a wall of bullet points unless the parent explicitly asks for steps.
+- Reference what the parent has already told you in this chat. Build on the previous turn instead of repeating yourself.
+- If the question is vague or you genuinely need one missing detail to give a useful answer (age, what already tried, when it happens), ask ONE short clarifying question first and stop. Don't dump a generic answer. Don't ask more than one.
+- If you have enough context, skip the clarifier and answer directly.
+
+ANSWER QUALITY
+- Acknowledge the feeling in one sentence (only if the parent shared a struggle — skip the empathy line for casual or factual questions, it sounds fake).
+- Give 1–3 concrete, age-appropriate things to actually try tonight or this week. Be specific (exact words to say, exact timing, exact swap) — not generic advice.
+- Use evidence-based child development knowledge but explain it in plain language. No jargon, no preaching, no "as a parent you should…".
+- If the parent's plan is fine, say so — don't invent a problem.
+- Never refuse a normal parenting question. Never add medical/legal disclaimers unless the topic is genuinely safety-critical (medication, self-harm, abuse) — then briefly suggest a professional and continue helping.
+
+LENGTH
+- Default: 60–180 words. Match the parent's energy — short question gets a short answer.${childLine}${langDirective}`;
+
+    const userTurn = `${question}`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-5.2",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `${childContext}${question}` },
+        ...history,
+        { role: "user", content: userTurn },
       ],
-      max_tokens: 650,
+      max_tokens: 400,
     });
 
     const answer =
-      completion.choices[0]?.message?.content ??
+      completion.choices[0]?.message?.content?.trim() ||
       getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
 
     res.json(AskAssistantResponse.parse({ answer }));
