@@ -17,14 +17,14 @@ interface Message {
   content: string;
 }
 
-const SUGGESTED_QUESTIONS = [
-  "My child won't eat vegetables — what can I do?",
-  "How do I establish a better bedtime routine?",
-  "My 7-year-old is having tantrums — is this normal?",
-  "How can I encourage my child to read more?",
-  "What screen time is appropriate for a 5-year-old?",
-  "My child is anxious about going to school — how do I help?",
-];
+const SUGGESTED_QUESTION_KEYS = [
+  "ai.suggested_q1",
+  "ai.suggested_q2",
+  "ai.suggested_q3",
+  "ai.suggested_q4",
+  "ai.suggested_q5",
+  "ai.suggested_q6",
+] as const;
 
 export default function AssistantPage() {
   const { t } = useTranslation();
@@ -96,7 +96,7 @@ export default function AssistantPage() {
       setMessages((prev) => [...prev, assistantMsg]);
       window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
     } catch {
-      toast({ title: "Failed to get a response. Please try again.", variant: "destructive" });
+      toast({ title: t("ai.error_response"), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -123,18 +123,18 @@ export default function AssistantPage() {
         <div>
           <h1 className="font-quicksand text-3xl font-bold text-foreground flex items-center gap-2">
             <AmyIcon size={38} bounce ring />
-            Amy AI Assistant
+            {t("ai.page_title")}
             <Badge className="bg-gradient-to-r from-violet-500 to-pink-500 text-white text-xs font-bold border-0 ml-1">
               <Zap className="h-3 w-3 mr-1" />
               Amy AI
             </Badge>
           </h1>
-          <p className="text-muted-foreground mt-1">Hi 😊 I'm Amy — ask me anything about parenting, I'm here to help ❤️</p>
+          <p className="text-muted-foreground mt-1">{t("ai.subtitle")}</p>
         </div>
         {!isEmpty && (
           <Button variant="ghost" size="sm" onClick={clearChat} className="rounded-full gap-2 text-muted-foreground">
             <RefreshCw className="h-4 w-4" />
-            Clear
+            {t("ai.clear_chat")}
           </Button>
         )}
       </div>
@@ -186,23 +186,23 @@ export default function AssistantPage() {
           <div className="flex flex-col items-center justify-center h-full gap-6 text-center py-8">
             <AmyIcon size={96} bounce ring />
             <div>
-              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Hi 😊 I'm Amy, your parenting co-pilot</h2>
+              <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">{t("ai.empty_heading")}</h2>
               <p className="text-muted-foreground text-sm max-w-xs">
-                Don't worry, I'm here to help ❤️ Ask me about sleep, food, behavior, school anxiety, screen time — anything.
+                {t("ai.empty_body")}
               </p>
             </div>
 
             <div className="w-full max-w-lg">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-3">Popular Questions</p>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-3">{t("ai.popular_questions")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {SUGGESTED_QUESTIONS.map((q, i) => (
+                {SUGGESTED_QUESTION_KEYS.map((key, i) => (
                   <button
                     key={i}
-                    onClick={() => sendMessage(q)}
+                    onClick={() => sendMessage(t(key))}
                     disabled={limitReached}
                     className="text-left text-sm p-3 rounded-2xl border border-border bg-card hover:border-primary/50 hover:bg-primary/5 transition-all text-foreground/80 font-medium disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    {q}
+                    {t(key)}
                   </button>
                 ))}
               </div>
@@ -246,7 +246,7 @@ export default function AssistantPage() {
                   </Card>
                   {msg.role === "assistant" && (
                     <Badge variant="outline" className="text-xs text-muted-foreground border-none px-0 h-auto">
-                      Amy AI · always consult a professional for medical concerns
+                      {t("ai.disclaimer")}
                     </Badge>
                   )}
                 </div>
@@ -262,7 +262,7 @@ export default function AssistantPage() {
                   <CardContent className="p-3.5">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Amy is thinking…
+                      {t("ai.thinking")}
                     </div>
                   </CardContent>
                 </Card>
@@ -291,7 +291,7 @@ export default function AssistantPage() {
             <div className="flex gap-3 items-end bg-card rounded-2xl border border-border p-3 shadow-sm focus-within:border-primary transition-colors">
               <Textarea
                 ref={textareaRef}
-                placeholder="Ask about sleep, tantrums, food, school anxiety..."
+                placeholder={t("ai.input_placeholder")}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -308,7 +308,7 @@ export default function AssistantPage() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Press Enter to send · Shift+Enter for new line
+              {t("ai.send_hint")}
             </p>
           </>
         )}
