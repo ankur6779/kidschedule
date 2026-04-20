@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Modal, View, Text, StyleSheet, Pressable, ScrollView,
   TouchableOpacity, Dimensions,
@@ -7,6 +7,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import SlideToComplete from "./SlideToComplete";
+import { useColors } from "@/hooks/useColors";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 export type RoutineItemLike = {
@@ -29,7 +30,7 @@ interface Props {
   onComplete: () => void;
   onDelay: (mins: number) => void;
   onSkip: () => void;
-  onReopen: () => void; // mark as pending again
+  onReopen: () => void;
 }
 
 const CATEGORY_ICON: Record<string, { icon: keyof typeof Ionicons.glyphMap; gradient: readonly [string, string] }> = {
@@ -68,6 +69,9 @@ export default function RoutineItemModal({
   item, visible, isInteractive = true,
   onClose, onComplete, onDelay, onSkip, onReopen,
 }: Props) {
+  const c = useColors();
+  const s = useMemo(() => makeStyles(c), [c]);
+
   if (!item) return null;
   const status = (item.status ?? "pending") as ItemStatus;
   const isPending = status === "pending";
@@ -76,7 +80,7 @@ export default function RoutineItemModal({
 
   const isMealOptions = !!item.notes && item.notes.startsWith("Options:");
   const mealOpts = isMealOptions
-    ? item.notes!.replace("Options:", "").split("|").map((s) => s.trim()).filter(Boolean)
+    ? item.notes!.replace("Options:", "").split("|").map((x) => x.trim()).filter(Boolean)
     : [];
 
   return (
@@ -138,7 +142,6 @@ export default function RoutineItemModal({
 
             {/* Body */}
             <View style={s.body}>
-              {/* Skip reason */}
               {item.skipReason ? (
                 <View style={s.skipBox}>
                   <Text style={s.skipEmoji}>⚠️</Text>
@@ -146,7 +149,6 @@ export default function RoutineItemModal({
                 </View>
               ) : null}
 
-              {/* Notes / meal options */}
               {isMealOptions ? (
                 <View style={{ gap: 8 }}>
                   <Text style={s.sectionLabel}>🍽️ Meal options</Text>
@@ -165,7 +167,6 @@ export default function RoutineItemModal({
                 </View>
               ) : null}
 
-              {/* Slide to complete (pending only) */}
               {isInteractive && isPending && (
                 <View style={{ gap: 10, marginTop: 4 }}>
                   <SlideToComplete onComplete={onComplete} />
@@ -173,32 +174,30 @@ export default function RoutineItemModal({
                     <TouchableOpacity
                       onPress={() => onDelay(15)}
                       activeOpacity={0.85}
-                      style={[s.secondaryBtn, { backgroundColor: "rgba(245,158,11,0.18)", borderColor: "rgba(245,158,11,0.5)" }]}
+                      style={[s.secondaryBtn, { backgroundColor: c.statusWarningBg, borderColor: c.statusWarningBorder }]}
                     >
-                      <Ionicons name="time" size={16} color="#fbbf24" />
-                      <Text style={[s.secondaryText, { color: "#fbbf24" }]}>Delay +15m</Text>
+                      <Ionicons name="time" size={16} color={c.statusWarningText} />
+                      <Text style={[s.secondaryText, { color: c.statusWarningText }]}>Delay +15m</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={onSkip}
                       activeOpacity={0.85}
-                      style={[s.secondaryBtn, { backgroundColor: "rgba(148,163,184,0.18)", borderColor: "rgba(148,163,184,0.5)" }]}
+                      style={[s.secondaryBtn, { backgroundColor: c.calloutBg, borderColor: c.glassBorder }]}
                     >
-                      <MaterialCommunityIcons name="skip-next" size={16} color="#cbd5e1" />
-                      <Text style={[s.secondaryText, { color: "#cbd5e1" }]}>Skip</Text>
+                      <MaterialCommunityIcons name="skip-next" size={16} color={c.textBody} />
+                      <Text style={[s.secondaryText, { color: c.textBody }]}>Skip</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
               )}
 
-              {/* Re-open if not pending */}
               {isInteractive && !isPending && (
                 <TouchableOpacity onPress={onReopen} activeOpacity={0.85} style={s.reopenBtn}>
-                  <Ionicons name="arrow-undo" size={16} color="#fff" />
+                  <Ionicons name="arrow-undo" size={16} color={c.foreground} />
                   <Text style={s.reopenText}>Mark as pending again</Text>
                 </TouchableOpacity>
               )}
 
-              {/* Close */}
               <TouchableOpacity onPress={onClose} activeOpacity={0.85} style={s.closeFooter}>
                 <Text style={s.closeFooterText}>Close</Text>
               </TouchableOpacity>
@@ -210,116 +209,118 @@ export default function RoutineItemModal({
   );
 }
 
-const s = StyleSheet.create({
-  scrim: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.65)",
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    backgroundColor: "#0f172a",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
+function makeStyles(c: ReturnType<typeof useColors>) {
+  return StyleSheet.create({
+    scrim: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.65)",
+      justifyContent: "flex-end",
+    },
+    sheet: {
+      backgroundColor: c.background,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: c.glassBorder,
+    },
 
-  hero: {
-    paddingTop: 14,
-    paddingBottom: 22,
-    paddingHorizontal: 20,
-    position: "relative",
-  },
-  handle: {
-    alignSelf: "center",
-    width: 40, height: 4, borderRadius: 2,
-    backgroundColor: "rgba(255,255,255,0.4)",
-    marginBottom: 12,
-  },
-  closeBtn: {
-    position: "absolute", top: 10, right: 10,
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    alignItems: "center", justifyContent: "center",
-  },
-  heroIconWrap: {
-    width: 72, height: 72, borderRadius: 24,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center", justifyContent: "center",
-    marginBottom: 12,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.25)",
-  },
-  heroTitle: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "800",
-    lineHeight: 28,
-  },
-  heroMeta: {
-    flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10,
-  },
-  metaPill: {
-    flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 8, paddingVertical: 4,
-    borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.28)",
-  },
-  metaText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+    hero: {
+      paddingTop: 14,
+      paddingBottom: 22,
+      paddingHorizontal: 20,
+      position: "relative",
+    },
+    handle: {
+      alignSelf: "center",
+      width: 40, height: 4, borderRadius: 2,
+      backgroundColor: "rgba(255,255,255,0.4)",
+      marginBottom: 12,
+    },
+    closeBtn: {
+      position: "absolute", top: 10, right: 10,
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: "rgba(0,0,0,0.4)",
+      alignItems: "center", justifyContent: "center",
+    },
+    heroIconWrap: {
+      width: 72, height: 72, borderRadius: 24,
+      backgroundColor: "rgba(255,255,255,0.18)",
+      alignItems: "center", justifyContent: "center",
+      marginBottom: 12,
+      borderWidth: 1, borderColor: "rgba(255,255,255,0.25)",
+    },
+    heroTitle: {
+      color: "#fff",
+      fontSize: 22,
+      fontWeight: "800",
+      lineHeight: 28,
+    },
+    heroMeta: {
+      flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 10,
+    },
+    metaPill: {
+      flexDirection: "row", alignItems: "center", gap: 4,
+      paddingHorizontal: 8, paddingVertical: 4,
+      borderRadius: 999,
+      backgroundColor: "rgba(0,0,0,0.28)",
+    },
+    metaText: { color: "#fff", fontSize: 11, fontWeight: "700" },
 
-  body: { padding: 20, gap: 14 },
+    body: { padding: 20, gap: 14 },
 
-  skipBox: {
-    flexDirection: "row", gap: 8,
-    backgroundColor: "rgba(245,158,11,0.12)",
-    borderWidth: 1, borderColor: "rgba(245,158,11,0.4)",
-    borderRadius: 14, padding: 12,
-  },
-  skipEmoji: { fontSize: 16 },
-  skipText: { flex: 1, color: "#fcd34d", fontSize: 13, fontWeight: "600", lineHeight: 18 },
+    skipBox: {
+      flexDirection: "row", gap: 8,
+      backgroundColor: c.statusWarningBg,
+      borderWidth: 1, borderColor: c.statusWarningBorder,
+      borderRadius: 14, padding: 12,
+    },
+    skipEmoji: { fontSize: 16 },
+    skipText: { flex: 1, color: c.statusWarningText, fontSize: 13, fontWeight: "600", lineHeight: 18 },
 
-  sectionLabel: { color: "#fff", fontSize: 13, fontWeight: "800" },
+    sectionLabel: { color: c.foreground, fontSize: 13, fontWeight: "800" },
 
-  optionsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  optionPill: {
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: "rgba(251,146,60,0.18)",
-    borderWidth: 1, borderColor: "rgba(251,146,60,0.45)",
-  },
-  optionText: { color: "#fdba74", fontSize: 12, fontWeight: "700" },
+    optionsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    optionPill: {
+      paddingHorizontal: 12, paddingVertical: 6,
+      borderRadius: 999,
+      backgroundColor: "rgba(251,146,60,0.18)",
+      borderWidth: 1, borderColor: "rgba(251,146,60,0.45)",
+    },
+    optionText: { color: "#c2410c", fontSize: 12, fontWeight: "700" },
 
-  notesBox: {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-    borderRadius: 14, padding: 14, gap: 6,
-  },
-  notesText: { color: "rgba(255,255,255,0.78)", fontSize: 13, lineHeight: 19 },
+    notesBox: {
+      backgroundColor: c.calloutBg,
+      borderWidth: 1, borderColor: c.glassBorder,
+      borderRadius: 14, padding: 14, gap: 6,
+    },
+    notesText: { color: c.textBody, fontSize: 13, lineHeight: 19 },
 
-  secondaryRow: { flexDirection: "row", gap: 8 },
-  secondaryBtn: {
-    flex: 1,
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    paddingVertical: 11,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  secondaryText: { fontSize: 13, fontWeight: "700" },
+    secondaryRow: { flexDirection: "row", gap: 8 },
+    secondaryBtn: {
+      flex: 1,
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+      paddingVertical: 11,
+      borderRadius: 14,
+      borderWidth: 1,
+    },
+    secondaryText: { fontSize: 13, fontWeight: "700" },
 
-  reopenBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.15)",
-  },
-  reopenText: { color: "#fff", fontSize: 13, fontWeight: "700" },
+    reopenBtn: {
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+      paddingVertical: 12,
+      borderRadius: 14,
+      backgroundColor: c.calloutBg,
+      borderWidth: 1, borderColor: c.glassBorder,
+    },
+    reopenText: { color: c.foreground, fontSize: 13, fontWeight: "700" },
 
-  closeFooter: {
-    paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
-    alignItems: "center",
-  },
-  closeFooterText: { color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: "700" },
-});
+    closeFooter: {
+      paddingVertical: 12,
+      borderRadius: 14,
+      borderWidth: 1, borderColor: c.glassBorder,
+      alignItems: "center",
+    },
+    closeFooterText: { color: c.textMuted, fontSize: 13, fontWeight: "700" },
+  });
+}

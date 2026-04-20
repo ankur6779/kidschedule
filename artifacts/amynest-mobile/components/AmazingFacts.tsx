@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useColors } from "@/hooks/useColors";
 
 type AgeGroup = "infant" | "toddler" | "preschool" | "early_school" | "pre_teen";
 type FactCategory = "animal" | "science" | "gk";
@@ -84,6 +85,9 @@ const CATEGORY_LABEL: Record<FactCategory | "all", string> = {
 };
 
 export function AmazingFacts({ ageMonths = 60 }: { ageMonths?: number }) {
+  const c = useColors();
+  const s = useMemo(() => makeStyles(c), [c]);
+
   const grp = ageMonthsToGroup(ageMonths);
   const ageFacts = useMemo(() => FACTS.filter(f => f.ageGroups.includes(grp)), [grp]);
   const [category, setCategory] = useState<FactCategory | "all">("all");
@@ -107,16 +111,16 @@ export function AmazingFacts({ ageMonths = 60 }: { ageMonths?: number }) {
     <View style={{ gap: 12 }}>
       {/* Category pills */}
       <View style={s.pills}>
-        {(["all", "animal", "science", "gk"] as const).map(c => {
-          const active = category === c;
+        {(["all", "animal", "science", "gk"] as const).map(cat => {
+          const active = category === cat;
           return (
             <Pressable
-              key={c}
-              onPress={() => setCategory(c)}
+              key={cat}
+              onPress={() => setCategory(cat)}
               style={[s.pill, active && s.pillActive]}
             >
               <Text style={[s.pillText, active && s.pillTextActive]}>
-                {CATEGORY_LABEL[c]}
+                {CATEGORY_LABEL[cat]}
               </Text>
             </Pressable>
           );
@@ -141,33 +145,35 @@ export function AmazingFacts({ ageMonths = 60 }: { ageMonths?: number }) {
   );
 }
 
-const s = StyleSheet.create({
-  dim: { color: "rgba(255,255,255,0.55)", fontSize: 13 },
-  pills: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  pill: {
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-  },
-  pillActive: {
-    backgroundColor: "rgba(255,78,205,0.25)", borderColor: "rgba(255,78,205,0.6)",
-  },
-  pillText: { color: "rgba(255,255,255,0.7)", fontSize: 11.5, fontWeight: "600" },
-  pillTextActive: { color: "#fff" },
+function makeStyles(c: ReturnType<typeof useColors>) {
+  return StyleSheet.create({
+    dim: { color: c.textMuted, fontSize: 13 },
+    pills: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+    pill: {
+      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999,
+      backgroundColor: c.calloutBg, borderWidth: 1, borderColor: c.glassBorder,
+    },
+    pillActive: {
+      backgroundColor: "rgba(255,78,205,0.25)", borderColor: "rgba(255,78,205,0.6)",
+    },
+    pillText: { color: c.textBody, fontSize: 11.5, fontWeight: "600" },
+    pillTextActive: { color: "#fff" },
 
-  factCard: {
-    backgroundColor: "rgba(255,255,255,0.05)", borderRadius: 14, padding: 16,
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", alignItems: "center", gap: 10,
-  },
-  factEmoji: { fontSize: 48 },
-  factText: { color: "#fff", fontSize: 14, lineHeight: 20, textAlign: "center" },
-  factMeta: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 2 },
-  factTag: { color: "#FFD27A", fontSize: 11, fontWeight: "700" },
-  factCounter: { color: "rgba(255,255,255,0.5)", fontSize: 11 },
+    factCard: {
+      backgroundColor: c.calloutBg, borderRadius: 14, padding: 16,
+      borderWidth: 1, borderColor: c.glassBorder, alignItems: "center", gap: 10,
+    },
+    factEmoji: { fontSize: 48 },
+    factText: { color: c.foreground, fontSize: 14, lineHeight: 20, textAlign: "center" },
+    factMeta: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 2 },
+    factTag: { color: c.statusWarningText, fontSize: 11, fontWeight: "700" },
+    factCounter: { color: c.textDim, fontSize: 11 },
 
-  nextBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    backgroundColor: "rgba(123,63,242,0.35)", borderRadius: 12, paddingVertical: 10,
-    borderWidth: 1, borderColor: "rgba(255,78,205,0.4)",
-  },
-  nextText: { color: "#fff", fontWeight: "700", fontSize: 13 },
-});
+    nextBtn: {
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+      backgroundColor: "rgba(123,63,242,0.35)", borderRadius: 12, paddingVertical: 10,
+      borderWidth: 1, borderColor: "rgba(255,78,205,0.4)",
+    },
+    nextText: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  });
+}

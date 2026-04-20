@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View, Text, Image, Pressable, ActivityIndicator, StyleSheet, TextInput,
 } from "react-native";
@@ -9,6 +9,8 @@ import {
   fetchWorksheets, type Worksheet,
   driveThumbnailUrl, drivePreviewUrl,
 } from "@/services/hubApi";
+import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const DAILY_LIMIT = 5;
 const PAGE_SIZE = 8;
@@ -52,6 +54,10 @@ async function bumpDaily(): Promise<DailyRecord> {
 }
 
 export function PrintableWorksheets() {
+  const c = useColors();
+  const { mode } = useTheme();
+  const s = useMemo(() => makeStyles(c), [c]);
+
   const [all, setAll] = useState<Worksheet[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,24 +104,21 @@ export function PrintableWorksheets() {
     let result: WebBrowser.WebBrowserResult;
     try {
       result = await WebBrowser.openBrowserAsync(drivePreviewUrl(ws.id), {
-        toolbarColor: "#1e293b",
-        controlsColor: "#fff",
+        toolbarColor: mode === "light" ? "#FFFFFF" : "#1e293b",
+        controlsColor: mode === "light" ? "#0F172A" : "#fff",
         showTitle: true,
       });
     } catch (e) {
       setOpenErr("Could not open the browser. Please try again.");
       return;
     }
-    // Only count when the browser actually opened. Expo returns
-    // type 'opened' (Android) or 'dismiss' (iOS, user closed normally).
-    // 'cancel' means the user cancelled the open prompt before viewing.
     if (result?.type === "opened" || result?.type === "dismiss") {
       await saveDownloaded(ws.id);
       const next = await bumpDaily();
       setDownloadedIds(await getDownloadedIds());
       setDaily(next);
     }
-  }, [limitReached]);
+  }, [limitReached, mode]);
 
   if (loading) {
     return (
@@ -141,10 +144,13 @@ export function PrintableWorksheets() {
   return (
     <View style={{ gap: 12 }}>
       {/* Daily counter */}
-      <View style={[s.dailyBar, { backgroundColor: limitReached ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)", borderColor: limitReached ? "rgba(239,68,68,0.5)" : "rgba(34,197,94,0.5)" }]}>
+      <View style={[s.dailyBar, {
+        backgroundColor: limitReached ? c.statusErrorBg : c.statusSuccessBg,
+        borderColor: limitReached ? c.statusErrorBorder : c.statusSuccessBorder,
+      }]}>
         <Text style={{ fontSize: 18 }}>{limitReached ? "🚫" : "✅"}</Text>
         <View style={{ flex: 1 }}>
-          <Text style={[s.dailyTitle, { color: limitReached ? "#fca5a5" : "#86efac" }]}>
+          <Text style={[s.dailyTitle, { color: limitReached ? c.statusErrorText : c.statusSuccessText }]}>
             {limitReached ? "Daily limit reached" : `${remaining} download${remaining !== 1 ? "s" : ""} left today`}
           </Text>
           <Text style={s.dailySub}>
@@ -155,17 +161,17 @@ export function PrintableWorksheets() {
 
       {/* Search */}
       <View style={s.searchWrap}>
-        <Ionicons name="search" size={14} color="rgba(255,255,255,0.5)" />
+        <Ionicons name="search" size={14} color={c.textDim} />
         <TextInput
           value={query}
           onChangeText={(t) => { setQuery(t); setPage(1); }}
           placeholder="Search worksheets…"
-          placeholderTextColor="rgba(255,255,255,0.4)"
+          placeholderTextColor={c.textDim}
           style={s.searchInput}
         />
         {query ? (
           <Pressable onPress={() => { setQuery(""); setPage(1); }}>
-            <Ionicons name="close-circle" size={16} color="rgba(255,255,255,0.5)" />
+            <Ionicons name="close-circle" size={16} color={c.textDim} />
           </Pressable>
         ) : null}
       </View>
@@ -193,7 +199,7 @@ export function PrintableWorksheets() {
         <>
           <View style={s.grid}>
             {paginated.map(ws => (
-              <WorksheetCard key={ws.id} worksheet={ws} disabled={limitReached} onOpen={() => onOpen(ws)} />
+              <WorksheetCard key={ws.id} worksheet={ws} disabled={limitReached} onOpen={() => onOpen(ws)} styles={s} />
             ))}
           </View>
 
@@ -223,8 +229,8 @@ export function PrintableWorksheets() {
 }
 
 function WorksheetCard({
-  worksheet, disabled, onOpen,
-}: { worksheet: Worksheet; disabled: boolean; onOpen: () => void }) {
+  worksheet, disabled, onOpen, styles: s,
+}: { worksheet: Worksheet; disabled: boolean; onOpen: () => void; styles: ReturnType<typeof makeStyles> }) {
   const displayName = worksheet.name.replace(/\.[^.]+$/, "").replace(/_/g, " ");
   const isPdf = worksheet.fileType === "pdf";
   const ext = isPdf ? "PDF" : worksheet.mimeType === "image/png" ? "PNG" : "JPG";
@@ -264,53 +270,55 @@ function WorksheetCard({
   );
 }
 
-const s = StyleSheet.create({
-  center: { paddingVertical: 24, alignItems: "center", gap: 8 },
-  dim: { color: "rgba(255,255,255,0.55)", fontSize: 13 },
-  errText: { color: "#fca5a5", fontSize: 13 },
-  retryBtn: { backgroundColor: "#1e293b", paddingHorizontal: 18, paddingVertical: 9, borderRadius: 10, marginTop: 6 },
-  retryText: { color: "#fff", fontWeight: "700", fontSize: 12 },
+function makeStyles(c: ReturnType<typeof useColors>) {
+  return StyleSheet.create({
+    center: { paddingVertical: 24, alignItems: "center", gap: 8 },
+    dim: { color: c.textMuted, fontSize: 13 },
+    errText: { color: c.statusErrorText, fontSize: 13 },
+    retryBtn: { backgroundColor: c.surfaceElevated, paddingHorizontal: 18, paddingVertical: 9, borderRadius: 10, marginTop: 6 },
+    retryText: { color: c.foreground, fontWeight: "700", fontSize: 12 },
 
-  dailyBar: {
-    flexDirection: "row", alignItems: "center", gap: 10,
-    borderWidth: 1, borderRadius: 12, padding: 10,
-  },
-  dailyTitle: { fontSize: 12.5, fontWeight: "700" },
-  dailySub: { fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 1 },
+    dailyBar: {
+      flexDirection: "row", alignItems: "center", gap: 10,
+      borderWidth: 1, borderRadius: 12, padding: 10,
+    },
+    dailyTitle: { fontSize: 12.5, fontWeight: "700" },
+    dailySub: { fontSize: 11, color: c.textMuted, marginTop: 1 },
 
-  searchWrap: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-  },
-  searchInput: { flex: 1, color: "#fff", fontSize: 13, padding: 0 },
+    searchWrap: {
+      flexDirection: "row", alignItems: "center", gap: 8,
+      paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10,
+      backgroundColor: c.calloutBg, borderWidth: 1, borderColor: c.glassBorder,
+    },
+    searchInput: { flex: 1, color: c.foreground, fontSize: 13, padding: 0 },
 
-  countText: { color: "rgba(255,255,255,0.5)", fontSize: 11 },
+    countText: { color: c.textDim, fontSize: 11 },
 
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  card: {
-    width: "48%", borderRadius: 14, overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-  },
-  thumbWrap: { height: 110, backgroundColor: "#1e293b", position: "relative" },
-  thumb: { width: "100%", height: "100%", backgroundColor: "#1e293b" },
-  badge: { position: "absolute", top: 6, right: 6, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
-  badgeText: { color: "#fff", fontWeight: "800", fontSize: 9, letterSpacing: 0.3 },
-  cardBody: { padding: 8, gap: 8 },
-  cardTitle: { color: "#fff", fontSize: 12, fontWeight: "600", lineHeight: 16, minHeight: 32 },
-  openBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
-    backgroundColor: "#1e293b", borderRadius: 8, paddingVertical: 7,
-  },
-  openBtnText: { color: "#fff", fontSize: 11, fontWeight: "700" },
+    grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+    card: {
+      width: "48%", borderRadius: 14, overflow: "hidden",
+      backgroundColor: c.calloutBg, borderWidth: 1, borderColor: c.glassBorder,
+    },
+    thumbWrap: { height: 110, backgroundColor: c.surfaceElevated, position: "relative" },
+    thumb: { width: "100%", height: "100%", backgroundColor: c.surfaceElevated },
+    badge: { position: "absolute", top: 6, right: 6, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
+    badgeText: { color: "#fff", fontWeight: "800", fontSize: 9, letterSpacing: 0.3 },
+    cardBody: { padding: 8, gap: 8 },
+    cardTitle: { color: c.foreground, fontSize: 12, fontWeight: "600", lineHeight: 16, minHeight: 32 },
+    openBtn: {
+      flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4,
+      backgroundColor: c.primary, borderRadius: 8, paddingVertical: 7,
+    },
+    openBtnText: { color: "#fff", fontSize: 11, fontWeight: "700" },
 
-  empty: { alignItems: "center", paddingVertical: 30, gap: 6 },
-  emptyTitle: { color: "#fff", fontWeight: "700", fontSize: 14 },
-  emptyDesc: { color: "rgba(255,255,255,0.55)", fontSize: 12, textAlign: "center", maxWidth: 240 },
+    empty: { alignItems: "center", paddingVertical: 30, gap: 6 },
+    emptyTitle: { color: c.foreground, fontWeight: "700", fontSize: 14 },
+    emptyDesc: { color: c.textMuted, fontSize: 12, textAlign: "center", maxWidth: 240 },
 
-  pager: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 4 },
-  pageBtn: { backgroundColor: "#1e293b", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
-  pageBtnDisabled: { opacity: 0.4 },
-  pageBtnText: { color: "#fff", fontWeight: "700", fontSize: 12 },
-  pageInfo: { color: "rgba(255,255,255,0.6)", fontSize: 12, minWidth: 48, textAlign: "center" },
-});
+    pager: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, marginTop: 4 },
+    pageBtn: { backgroundColor: c.surfaceElevated, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8 },
+    pageBtnDisabled: { opacity: 0.4 },
+    pageBtnText: { color: c.foreground, fontWeight: "700", fontSize: 12 },
+    pageInfo: { color: c.textMuted, fontSize: 12, minWidth: 48, textAlign: "center" },
+  });
+}

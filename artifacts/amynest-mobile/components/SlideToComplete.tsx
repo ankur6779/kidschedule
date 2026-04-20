@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, StyleSheet, LayoutChangeEvent } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -7,6 +7,8 @@ import Animated, {
   runOnJS, interpolate, Extrapolation,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useColors } from "@/hooks/useColors";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const KNOB = 44;
 const PADDING = 4;
@@ -18,6 +20,10 @@ interface Props {
 }
 
 export default function SlideToComplete({ onComplete, disabled = false, label = "Slide to complete" }: Props) {
+  const c = useColors();
+  const { mode } = useTheme();
+  const s = useMemo(() => makeStyles(c, mode), [c, mode]);
+
   const [trackW, setTrackW] = useState(0);
   const [done, setDone] = useState(false);
 
@@ -81,6 +87,8 @@ export default function SlideToComplete({ onComplete, disabled = false, label = 
 
   const onLayout = (e: LayoutChangeEvent) => setTrackW(e.nativeEvent.layout.width);
 
+  const knobIconColor = done ? "#16a34a" : (mode === "light" ? "#fff" : "#94a3b8");
+
   return (
     <View style={[s.track, disabled && { opacity: 0.5 }]} onLayout={onLayout}>
       <Animated.View style={[s.fill, fillStyle]} pointerEvents="none" />
@@ -95,55 +103,57 @@ export default function SlideToComplete({ onComplete, disabled = false, label = 
 
       <GestureDetector gesture={pan}>
         <Animated.View style={[s.knob, knobStyle]}>
-          <Ionicons name="checkmark" size={20} color={done ? "#16a34a" : "#94a3b8"} />
+          <Ionicons name="checkmark" size={20} color={knobIconColor} />
         </Animated.View>
       </GestureDetector>
     </View>
   );
 }
 
-const s = StyleSheet.create({
-  track: {
-    height: KNOB + PADDING * 2,
-    borderRadius: (KNOB + PADDING * 2) / 2,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    overflow: "hidden",
-    justifyContent: "center",
-    position: "relative",
-  },
-  fill: {
-    position: "absolute",
-    top: 0, bottom: 0, left: 0,
-    backgroundColor: "rgba(34,197,94,0.55)",
-    borderRadius: (KNOB + PADDING * 2) / 2,
-  },
-  labelWrap: {
-    position: "absolute",
-    top: 0, bottom: 0, left: 0, right: 0,
-    alignItems: "center", justifyContent: "center",
-  },
-  label: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0.4,
-  },
-  successLabel: {
-    color: "#bbf7d0",
-    fontSize: 13,
-    fontWeight: "800",
-    letterSpacing: 0.4,
-  },
-  knob: {
-    position: "absolute",
-    left: PADDING,
-    width: KNOB, height: KNOB,
-    borderRadius: KNOB / 2,
-    backgroundColor: "#fff",
-    alignItems: "center", justifyContent: "center",
-    shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
-    elevation: 4,
-  },
-});
+function makeStyles(c: ReturnType<typeof useColors>, mode: "light" | "dark") {
+  return StyleSheet.create({
+    track: {
+      height: KNOB + PADDING * 2,
+      borderRadius: (KNOB + PADDING * 2) / 2,
+      backgroundColor: c.calloutBg,
+      borderWidth: 1,
+      borderColor: c.glassBorder,
+      overflow: "hidden",
+      justifyContent: "center",
+      position: "relative",
+    },
+    fill: {
+      position: "absolute",
+      top: 0, bottom: 0, left: 0,
+      backgroundColor: "rgba(34,197,94,0.55)",
+      borderRadius: (KNOB + PADDING * 2) / 2,
+    },
+    labelWrap: {
+      position: "absolute",
+      top: 0, bottom: 0, left: 0, right: 0,
+      alignItems: "center", justifyContent: "center",
+    },
+    label: {
+      color: c.textMuted,
+      fontSize: 13,
+      fontWeight: "700",
+      letterSpacing: 0.4,
+    },
+    successLabel: {
+      color: mode === "light" ? "#15803d" : "#bbf7d0",
+      fontSize: 13,
+      fontWeight: "800",
+      letterSpacing: 0.4,
+    },
+    knob: {
+      position: "absolute",
+      left: PADDING,
+      width: KNOB, height: KNOB,
+      borderRadius: KNOB / 2,
+      backgroundColor: mode === "light" ? c.primary : "#fff",
+      alignItems: "center", justifyContent: "center",
+      shadowColor: "#000", shadowOpacity: 0.25, shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
+    },
+  });
+}

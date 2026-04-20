@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View, Text, ScrollView, StyleSheet, Pressable, ActivityIndicator,
   Image, Platform, LayoutAnimation, UIManager,
@@ -23,6 +23,7 @@ import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import colors, { brand } from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const LOGO = require("../../assets/images/amynest-logo.png");
 
@@ -58,7 +59,9 @@ export default function HubScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
-  const { theme } = useTheme();
+  const { theme, mode } = useTheme();
+  const c = useColors();
+  const styles = useMemo(() => makeStyles(c, mode), [c, mode]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("amy");
 
@@ -442,6 +445,9 @@ function Section({
   onToggle: () => void;
   children: React.ReactNode;
 }) {
+  const c = useColors();
+  const { mode } = useTheme();
+  const styles = useMemo(() => makeStyles(c, mode), [c, mode]);
   const handlePress = () => {
     LayoutAnimation.configureNext({
       duration: 240,
@@ -474,7 +480,7 @@ function Section({
           <Ionicons
             name={open ? "chevron-up" : "chevron-down"}
             size={14}
-            color={open ? "#FF4ECD" : "rgba(255,255,255,0.65)"}
+            color={open ? "#FF4ECD" : (mode === "light" ? c.textBody : "rgba(255,255,255,0.65)")}
           />
         </View>
       </Pressable>
@@ -483,114 +489,140 @@ function Section({
   );
 }
 
-const styles = StyleSheet.create({
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  logo: { width: 40, height: 40, borderRadius: 10 },
-  title: { color: "#fff", fontSize: 22, fontWeight: "800", fontFamily: Platform.select({ default: undefined }) },
-  subtitle: { color: "rgba(255,255,255,0.55)", fontSize: 12, marginTop: 2 },
-  askAmyBtn: { borderRadius: 999, overflow: "hidden" },
-  askAmyGrad: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8 },
-  askAmyText: { color: "#fff", fontWeight: "700", fontSize: 12 },
+function makeStyles(c: ReturnType<typeof useColors>, mode: "light" | "dark") {
+  const isLight = mode === "light";
+  // Glass surfaces: semi-transparent on dark gradient, soft white on light gradient.
+  const glassBg = isLight ? "rgba(255,255,255,0.78)" : "rgba(255,255,255,0.05)";
+  const glassBgOpen = isLight ? "rgba(255,255,255,0.92)" : "rgba(255,255,255,0.07)";
+  const glassBgSoft = isLight ? "rgba(255,255,255,0.55)" : "rgba(255,255,255,0.04)";
+  const glassBorder = isLight ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.10)";
+  const innerDivider = isLight ? "rgba(15,23,42,0.06)" : "rgba(255,255,255,0.08)";
 
-  emptyCard: {
-    padding: 24, borderRadius: 24, alignItems: "center", gap: 10,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
-  },
-  emptyTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  emptyDesc: { color: "rgba(255,255,255,0.6)", textAlign: "center", fontSize: 13 },
-  primaryBtn: { backgroundColor: brand.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 },
-  primaryBtnText: { color: "#fff", fontWeight: "700" },
+  return StyleSheet.create({
+    headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+    logo: { width: 40, height: 40, borderRadius: 10 },
+    title: { color: c.foreground, fontSize: 22, fontWeight: "800", fontFamily: Platform.select({ default: undefined }) },
+    subtitle: { color: c.textMuted, fontSize: 12, marginTop: 2 },
+    askAmyBtn: { borderRadius: 999, overflow: "hidden" },
+    askAmyGrad: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8 },
+    askAmyText: { color: "#fff", fontWeight: "700", fontSize: 12 },
 
-  chip: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },
-  chipActive: { backgroundColor: "rgba(123,63,242,0.4)", borderColor: "#FF4ECD" },
-  chipName: { color: "rgba(255,255,255,0.9)", fontWeight: "700", fontSize: 13 },
-  chipAge: { color: "rgba(255,255,255,0.55)", fontSize: 10 },
+    emptyCard: {
+      padding: 24, borderRadius: 24, alignItems: "center", gap: 10,
+      backgroundColor: glassBg, borderWidth: 1, borderColor: glassBorder,
+    },
+    emptyTitle: { color: c.foreground, fontWeight: "800", fontSize: 16 },
+    emptyDesc: { color: c.textMuted, textAlign: "center", fontSize: 13 },
+    primaryBtn: { backgroundColor: brand.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 999, marginTop: 8 },
+    primaryBtnText: { color: "#fff", fontWeight: "700" },
 
-  agePillRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
-  agePill: { backgroundColor: "rgba(255,210,122,0.12)", borderWidth: 1, borderColor: "rgba(255,210,122,0.4)", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999 },
-  personalised: { color: "rgba(255,255,255,0.6)", fontSize: 12 },
+    chip: {
+      flexDirection: "row", alignItems: "center", gap: 8,
+      paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18,
+      backgroundColor: glassBg, borderWidth: 1, borderColor: glassBorder,
+    },
+    chipActive: { backgroundColor: "rgba(123,63,242,0.4)", borderColor: "#FF4ECD" },
+    chipName: { color: c.foreground, fontWeight: "700", fontSize: 13 },
+    chipAge: { color: c.textMuted, fontSize: 10 },
 
-  // Glass card — RN can't do CSS backdrop-filter, so we approximate with
-  // a soft translucent fill, a subtle inner-light border, and an outer glow
-  // (shadow on iOS / elevation on Android) that intensifies when open.
-  section: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-    backgroundColor: "rgba(255,255,255,0.05)",
-    overflow: "hidden",
-    shadowColor: brand.primary,
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-  sectionOpen: {
-    borderColor: "rgba(255,78,205,0.55)",
-    backgroundColor: "rgba(255,255,255,0.07)",
-    shadowColor: "#FF4ECD",
-    shadowOpacity: 0.45,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
-  },
-  sectionHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
-  sectionIcon: {
-    width: 44, height: 44, borderRadius: 14,
-    alignItems: "center", justifyContent: "center",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
-  },
-  sectionTitle: { color: "#fff", fontWeight: "800", fontSize: 15 },
-  sectionDesc: { color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 2 },
-  sectionBody: {
-    padding: 14, paddingTop: 8,
-    borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "rgba(255,255,255,0.02)",
-    gap: 10,
-  },
-  chevWrap: {
-    width: 26, height: 26, borderRadius: 13,
-    alignItems: "center", justifyContent: "center",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.15)",
-    backgroundColor: "rgba(255,255,255,0.05)",
-  },
-  chevWrapOpen: { borderColor: "rgba(255,78,205,0.6)", backgroundColor: "rgba(255,78,205,0.12)" },
-  sectionLead: { color: "rgba(255,255,255,0.65)", fontSize: 13 },
+    agePillRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+    agePill: {
+      backgroundColor: isLight ? "rgba(217,119,6,0.10)" : "rgba(255,210,122,0.12)",
+      borderWidth: 1,
+      borderColor: isLight ? "rgba(217,119,6,0.30)" : "rgba(255,210,122,0.4)",
+      paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+    },
+    personalised: { color: c.textMuted, fontSize: 12 },
 
-  promptsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  promptChip: {
-    flexDirection: "row", alignItems: "center", gap: 8,
-    paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
-    flexBasis: "48%", flexGrow: 1,
-  },
-  promptLabel: { color: "rgba(255,255,255,0.85)", fontWeight: "600", fontSize: 12 },
-  askAmyFull: {
-    marginTop: 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    paddingVertical: 12, borderRadius: 14, backgroundColor: "rgba(123,63,242,0.25)",
-    borderWidth: 1, borderColor: "rgba(255,78,205,0.4)",
-  },
-  askAmyFullText: { color: "#fff", fontWeight: "700", flex: 1, textAlign: "center" },
+    section: {
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: glassBorder,
+      backgroundColor: glassBg,
+      overflow: "hidden",
+      shadowColor: brand.primary,
+      shadowOpacity: isLight ? 0.10 : 0.18,
+      shadowRadius: 14,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 2,
+    },
+    sectionOpen: {
+      borderColor: "rgba(255,78,205,0.55)",
+      backgroundColor: glassBgOpen,
+      shadowColor: "#FF4ECD",
+      shadowOpacity: isLight ? 0.25 : 0.45,
+      shadowRadius: 22,
+      shadowOffset: { width: 0, height: 10 },
+      elevation: 8,
+    },
+    sectionHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
+    sectionIcon: {
+      width: 44, height: 44, borderRadius: 14,
+      alignItems: "center", justifyContent: "center",
+      borderWidth: 1, borderColor: "rgba(255,255,255,0.18)",
+    },
+    sectionTitle: { color: c.foreground, fontWeight: "800", fontSize: 15 },
+    sectionDesc: { color: c.textMuted, fontSize: 11, marginTop: 2 },
+    sectionBody: {
+      padding: 14, paddingTop: 8,
+      borderTopWidth: 1, borderTopColor: innerDivider,
+      backgroundColor: glassBgSoft,
+      gap: 10,
+    },
+    chevWrap: {
+      width: 26, height: 26, borderRadius: 13,
+      alignItems: "center", justifyContent: "center",
+      borderWidth: 1, borderColor: glassBorder,
+      backgroundColor: glassBgSoft,
+    },
+    chevWrapOpen: { borderColor: "rgba(255,78,205,0.6)", backgroundColor: "rgba(255,78,205,0.12)" },
+    sectionLead: { color: c.textBody, fontSize: 13 },
 
-  articleList: { gap: 6 },
-  articleItem: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.04)" },
-  articleTitle: { color: "#fff", flex: 1, fontWeight: "600", fontSize: 13 },
+    promptsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    promptChip: {
+      flexDirection: "row", alignItems: "center", gap: 8,
+      paddingHorizontal: 12, paddingVertical: 10, borderRadius: 14,
+      backgroundColor: glassBg, borderWidth: 1, borderColor: glassBorder,
+      flexBasis: "48%", flexGrow: 1,
+    },
+    promptLabel: { color: c.foreground, fontWeight: "600", fontSize: 12 },
+    askAmyFull: {
+      marginTop: 4, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
+      paddingVertical: 12, borderRadius: 14, backgroundColor: "rgba(123,63,242,0.25)",
+      borderWidth: 1, borderColor: "rgba(255,78,205,0.4)",
+    },
+    askAmyFullText: { color: "#fff", fontWeight: "700", flex: 1, textAlign: "center" },
 
-  tipsList: { gap: 8 },
-  tipCard: { flexDirection: "row", gap: 10, padding: 12, borderRadius: 12, backgroundColor: "rgba(167,139,250,0.1)", borderWidth: 1, borderColor: "rgba(167,139,250,0.25)" },
-  tipNum: { color: "#FF4ECD", fontWeight: "800", fontSize: 16 },
-  tipText: { color: "rgba(255,255,255,0.85)", flex: 1, fontSize: 13, lineHeight: 18 },
+    articleList: { gap: 6 },
+    articleItem: {
+      flexDirection: "row", alignItems: "center", gap: 10, padding: 12, borderRadius: 12,
+      backgroundColor: glassBgSoft, borderWidth: 1, borderColor: glassBorder,
+    },
+    articleTitle: { color: c.foreground, flex: 1, fontWeight: "600", fontSize: 13 },
 
-  emotionalGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  emoCard: {
-    padding: 12, borderRadius: 14, gap: 4, flexBasis: "48%", flexGrow: 1,
-    backgroundColor: "rgba(244,114,182,0.1)", borderWidth: 1, borderColor: "rgba(244,114,182,0.25)",
-  },
-  emoTitle: { color: "#fff", fontWeight: "700", fontSize: 13 },
+    tipsList: { gap: 8 },
+    tipCard: {
+      flexDirection: "row", gap: 10, padding: 12, borderRadius: 12,
+      backgroundColor: "rgba(167,139,250,0.10)",
+      borderWidth: 1, borderColor: "rgba(167,139,250,0.25)",
+    },
+    tipNum: { color: "#FF4ECD", fontWeight: "800", fontSize: 16 },
+    tipText: { color: c.foreground, flex: 1, fontSize: 13, lineHeight: 18 },
 
-  activityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  activityCard: { paddingHorizontal: 18, paddingVertical: 14, borderRadius: 12, backgroundColor: "rgba(251,113,133,0.18)", borderWidth: 1, borderColor: "rgba(251,113,133,0.3)" },
+    emotionalGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    emoCard: {
+      padding: 12, borderRadius: 14, gap: 4, flexBasis: "48%", flexGrow: 1,
+      backgroundColor: "rgba(244,114,182,0.10)", borderWidth: 1, borderColor: "rgba(244,114,182,0.25)",
+    },
+    emoTitle: { color: c.foreground, fontWeight: "700", fontSize: 13 },
 
-  bottomCta: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 12 },
-  bottomCtaText: { color: "#FF4ECD", fontWeight: "700" },
-});
+    activityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+    activityCard: {
+      paddingHorizontal: 18, paddingVertical: 14, borderRadius: 12,
+      backgroundColor: "rgba(251,113,133,0.18)", borderWidth: 1, borderColor: "rgba(251,113,133,0.3)",
+    },
+
+    bottomCta: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 12 },
+    bottomCtaText: { color: "#FF4ECD", fontWeight: "700" },
+  });
+}

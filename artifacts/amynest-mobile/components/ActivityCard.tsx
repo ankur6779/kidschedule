@@ -46,7 +46,7 @@ export default function ActivityCard({
         if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      style={[styles.card, { backgroundColor: c.surface }, style]}
+      style={[styles.card, { backgroundColor: c.surface, borderColor: c.border }, style]}
       accessibilityRole="button"
       accessibilityLabel={`${title}, ${count}`}
     >
@@ -73,7 +73,6 @@ const styles = StyleSheet.create({
     padding: 16,
     minHeight: 130,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.04)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
