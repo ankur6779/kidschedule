@@ -39,6 +39,9 @@ AmyNest is an AI-powered daily routine planner designed for parents. It enables 
 
 The system is built as a monorepo using pnpm workspaces, Node.js 24, and TypeScript 5.9. The frontend is developed with React, Vite, Tailwind CSS, and shadcn/ui. The API backend is powered by Express 5, using PostgreSQL with Drizzle ORM for database management. Authentication is handled by Clerk, with `@clerk/react` for the frontend and `@clerk/express` for the backend, proxied at `/api/__clerk`. Zod is used for validation, and Orval generates API codegen from an OpenAPI spec. The build process uses esbuild for CJS bundles.
 
+### AI / OpenAI Configuration
+All AI features (Amy Chat, Smart Routine, Recipe, AI Coach) route through `lib/integrations-openai-ai-server/src/client.ts`. The client prefers user-provided `OPENAI_API_KEY` (direct OpenAI); falls back to the Replit AI Integration (`AI_INTEGRATIONS_OPENAI_API_KEY` + `AI_INTEGRATIONS_OPENAI_BASE_URL`) if the user key is absent. Active model across all endpoints: **`gpt-4o-mini`** — cheap (~₹0.005 / chat hit), non-reasoning (so `max_completion_tokens` maps directly to reply length), consistent ChatGPT-like tone. Note: gpt-5.x "mini" variants are reasoning models and consume most tokens internally before producing visible output, so they require much higher `max_completion_tokens` and are not used here. All calls use `max_completion_tokens` (not `max_tokens`) for forward-compatibility.
+
 **UI/UX Decisions:**
 - **Amy AI Brand:** Features a cute SVG character (AmyIcon), a floating assistant button (AmyFab), and Amy avatars/copy throughout.
 - **Mobile-friendly:** Responsive layouts with bottom navigation on mobile and full sidebar on desktop.

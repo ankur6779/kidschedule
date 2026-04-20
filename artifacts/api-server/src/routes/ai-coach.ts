@@ -653,7 +653,7 @@ ${goalBrief}`;
   try {
     const { openai } = await import("@workspace/integrations-openai-ai-server");
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
@@ -745,7 +745,7 @@ STRICT:
   try {
     const { openai } = await import("@workspace/integrations-openai-ai-server");
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
