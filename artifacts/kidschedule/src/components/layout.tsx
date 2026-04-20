@@ -92,7 +92,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
         <div className="flex items-center gap-2">
           <BrandLogo size="sm" showTagline={false} />
-          <AmyIcon size={28} bounce />
+          <AmyIcon size={34} bounce ring />
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher compact />
@@ -155,7 +155,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <aside className="hidden w-64 flex-col border-r bg-card md:flex">
           <div className="flex h-20 items-center justify-between border-b px-5 shadow-sm">
             <BrandLogo size="md" showTagline={true} />
-            <AmyIcon size={32} bounce />
+            <AmyIcon size={38} bounce ring />
           </div>
           <div className="px-4 pt-3">
             <LanguageSwitcher />

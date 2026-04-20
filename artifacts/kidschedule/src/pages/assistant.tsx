@@ -98,7 +98,7 @@ export default function AssistantPage() {
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div>
           <h1 className="font-quicksand text-3xl font-bold text-foreground flex items-center gap-2">
-            <AmyIcon size={32} bounce />
+            <AmyIcon size={38} bounce ring />
             Amy AI Assistant
             <Badge className="bg-gradient-to-r from-violet-500 to-pink-500 text-white text-xs font-bold border-0 ml-1">
               <Zap className="h-3 w-3 mr-1" />
@@ -149,9 +149,7 @@ export default function AssistantPage() {
       <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-1">
         {isEmpty ? (
           <div className="flex flex-col items-center justify-center h-full gap-6 text-center py-8">
-            <div className="bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 w-24 h-24 rounded-full flex items-center justify-center shadow-md">
-              <AmyIcon size={68} bounce />
-            </div>
+            <AmyIcon size={96} bounce ring />
             <div>
               <h2 className="font-quicksand text-xl font-bold text-foreground mb-1">Hi 😊 I'm Amy, your parenting co-pilot</h2>
               <p className="text-muted-foreground text-sm max-w-xs">
@@ -187,11 +185,9 @@ export default function AssistantPage() {
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${
-                  msg.role === "assistant"
-                    ? "bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 shadow-sm"
-                    : "bg-secondary/20 text-secondary-foreground"
+                  msg.role !== "assistant" ? "bg-secondary/20 text-secondary-foreground" : ""
                 }`}>
-                  {msg.role === "assistant" ? <AmyIcon size={28} /> : <User className="h-4 w-4" />}
+                  {msg.role === "assistant" ? <AmyIcon size={36} ring /> : <User className="h-4 w-4" />}
                 </div>
                 <div className={`max-w-[80%] ${msg.role === "user" ? "items-end" : "items-start"} flex flex-col gap-1`}>
                   <Card className={`rounded-2xl shadow-sm ${
@@ -218,8 +214,8 @@ export default function AssistantPage() {
 
             {loading && (
               <div className="flex gap-3">
-                <div className="shrink-0 w-9 h-9 rounded-full bg-gradient-to-br from-amber-100 via-rose-100 to-violet-200 flex items-center justify-center shadow-sm">
-                  <AmyIcon size={28} bounce />
+                <div className="shrink-0">
+                  <AmyIcon size={36} bounce ring />
                 </div>
                 <Card className="rounded-2xl rounded-tl-sm border-border shadow-sm">
                   <CardContent className="p-3.5">
