@@ -2,8 +2,9 @@ import React, { useState, useMemo, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, Platform, Modal, Pressable, Alert,
-  TextInput, KeyboardAvoidingView, ScrollView, Share,
+  TextInput, KeyboardAvoidingView, ScrollView, Share, Image,
 } from "react-native";
+import { getActivityImage } from "@/lib/activity-images";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -540,7 +541,7 @@ export default function RoutineDetailScreen() {
                   borderRadius={18}
                   glowColor={item.status === "completed" ? "#22C55E" /* audit-ok: status-complete green glow */ : brand.violet500}
                 >
-                  <ItemCard item={item} />
+                  <ItemCard item={item} seed={index + ((routine?.childId ?? 0) * 7)} />
                 </SwipeableCard>
               </View>
             </Animated.View>
@@ -805,12 +806,15 @@ function AmyAISuggests({ stats, title }: { stats: { done: number; total: number;
   );
 }
 
-function ItemCard({ item }: { item: RoutineItem }) {
+function ItemCard({ item, seed = 0 }: { item: RoutineItem; seed?: number }) {
   const c = useColors();
   const catKey = item.category?.toLowerCase() ?? "default";
   const rawColor = CATEGORY_COLORS[catKey] ?? CATEGORY_COLORS.default;
   const catColor = catKey === "rest" ? c.textSubtle : (rawColor || c.textFaint);
-  const catIcon = CATEGORY_ICONS[catKey] ?? CATEGORY_ICONS.default;
+  const activityImg = useMemo(
+    () => getActivityImage(item.category ?? "", item.activity ?? "", seed),
+    [item.category, item.activity, seed],
+  );
   const status = item.status ?? "pending";
   const isDone = status === "completed";
   const isSkipped = status === "skipped";
@@ -840,8 +844,8 @@ function ItemCard({ item }: { item: RoutineItem }) {
           <Text style={[styles.durationText, { color: c.textDim }]}>{item.duration}m</Text>
         </View>
       </View>
-      <View style={[styles.catIcon, { backgroundColor: hexToRgba(catColor, 0.22), borderColor: hexToRgba(catColor, 0.5) }]}>
-        <Ionicons name={catIcon} size={20} color={catColor} />
+      <View style={[styles.catIcon, { backgroundColor: hexToRgba(catColor, 0.22), borderColor: hexToRgba(catColor, 0.5), overflow: "hidden", padding: 0 }]}>
+        <Image source={activityImg.src} style={styles.catImage} resizeMode="cover" />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[
@@ -957,6 +961,7 @@ const styles = StyleSheet.create({
   durationRow: { flexDirection: "row", alignItems: "center", gap: 3 },
   durationText: { fontSize: 9, color: "rgba(255,255,255,0.45)", fontWeight: "500" },
   catIcon: { width: 42, height: 42, borderRadius: 13, alignItems: "center", justifyContent: "center", borderWidth: 1.5 },
+  catImage: { width: "100%", height: "100%" },
   activityText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600", lineHeight: 20 },
   notesText: { fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 3 },
   skipReason: { fontSize: 10, color: "rgba(255,255,255,0.45)", marginTop: 3, fontStyle: "italic" },

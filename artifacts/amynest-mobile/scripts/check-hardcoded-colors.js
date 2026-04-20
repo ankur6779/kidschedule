@@ -48,7 +48,6 @@ const DEFERRED_FILES = [
   "app/children/[id].tsx",
   "app/coach/premium.tsx",
   "app/dev/theme.tsx",
-  "app/hub/premium.tsx",
   "app/onboarding.tsx",
   "app/paywall.tsx",
   "app/progress.tsx",

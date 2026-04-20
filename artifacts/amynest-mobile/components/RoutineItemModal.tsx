@@ -1,13 +1,25 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Modal, View, Text, StyleSheet, Pressable, ScrollView,
-  TouchableOpacity, Dimensions,
+  TouchableOpacity, Dimensions, Image, ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeIn, SlideInDown, SlideOutDown } from "react-native-reanimated";
 import SlideToComplete from "./SlideToComplete";
 import { useColors } from "@/hooks/useColors";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { getActivityImage } from "@/lib/activity-images";
+
+type Recipe = {
+  name: string;
+  prepTime: string;
+  cookTime: string;
+  servings: string;
+  ingredients: string[];
+  steps: { step: number; instruction: string }[];
+  tips?: string;
+};
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 export type RoutineItemLike = {
@@ -71,6 +83,38 @@ export default function RoutineItemModal({
 }: Props) {
   const c = useColors();
   const s = useMemo(() => makeStyles(c), [c]);
+  const authFetch = useAuthFetch();
+
+  const [selectedMeal, setSelectedMeal] = useState<string | null>(null);
+  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const [recipeLoading, setRecipeLoading] = useState(false);
+  const [recipeError, setRecipeError] = useState<string | null>(null);
+
+  const fetchRecipe = async (mealName: string) => {
+    setSelectedMeal(mealName);
+    setRecipe(null);
+    setRecipeError(null);
+    setRecipeLoading(true);
+    try {
+      const res = await authFetch("/api/ai/recipe", {
+        method: "POST",
+        body: JSON.stringify({ mealName }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      const data = (await res.json()) as Recipe;
+      setRecipe(data);
+    } catch {
+      setRecipeError("Couldn't load this recipe. Please try again.");
+    } finally {
+      setRecipeLoading(false);
+    }
+  };
+  const closeRecipe = () => {
+    setSelectedMeal(null);
+    setRecipe(null);
+    setRecipeError(null);
+    setRecipeLoading(false);
+  };
 
   if (!item) return null;
   const status = (item.status ?? "pending") as ItemStatus;
@@ -82,6 +126,9 @@ export default function RoutineItemModal({
   const mealOpts = isMealOptions
     ? item.notes!.replace("Options:", "").split("|").map((x) => x.trim()).filter(Boolean)
     : [];
+
+  const heroSeed = (item.activity?.length ?? 0) + (item.time?.length ?? 0);
+  const heroImg = getActivityImage(item.category ?? "", item.activity ?? "", heroSeed);
 
   return (
     <Modal
@@ -115,7 +162,7 @@ export default function RoutineItemModal({
               </TouchableOpacity>
 
               <View style={s.heroIconWrap}>
-                <Ionicons name={cat.icon} size={42} color="#fff" />
+                <Image source={heroImg.src} style={s.heroImage} resizeMode="cover" />
               </View>
 
               <Text style={s.heroTitle} numberOfLines={3}>{item.activity}</Text>
@@ -151,14 +198,23 @@ export default function RoutineItemModal({
 
               {isMealOptions ? (
                 <View style={{ gap: 8 }}>
-                  <Text style={s.sectionLabel}>🍽️ Meal options</Text>
+                  <Text style={s.sectionLabel}>🍽️ Today's meal options</Text>
                   <View style={s.optionsWrap}>
                     {mealOpts.map((opt, oi) => (
-                      <View key={oi} style={s.optionPill}>
+                      <TouchableOpacity
+                        key={oi}
+                        style={s.optionPill}
+                        activeOpacity={0.8}
+                        onPress={() => fetchRecipe(opt)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View recipe for ${opt}`}
+                      >
+                        <MaterialCommunityIcons name="chef-hat" size={12} color="#c2410c" />
                         <Text style={s.optionText}>{opt}</Text>
-                      </View>
+                      </TouchableOpacity>
                     ))}
                   </View>
+                  <Text style={s.optionHint}>Tap a meal to view its recipe</Text>
                 </View>
               ) : item.notes ? (
                 <View style={s.notesBox}>
@@ -205,6 +261,110 @@ export default function RoutineItemModal({
           </ScrollView>
         </Animated.View>
       </Animated.View>
+
+      {/* Recipe sheet */}
+      <Modal
+        visible={selectedMeal !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeRecipe}
+        statusBarTranslucent
+      >
+        <View style={s.scrim}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeRecipe} />
+          <View style={[s.sheet, { maxHeight: SCREEN_H * 0.88 }]}>
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+              <LinearGradient colors={["#FB923C", "#F43F5E"] as const} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.hero}>
+                <View style={s.handle} />
+                <TouchableOpacity onPress={closeRecipe} style={s.closeBtn} activeOpacity={0.85} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close recipe">
+                  <Ionicons name="close" size={20} color="#fff" />
+                </TouchableOpacity>
+                <View style={s.heroIconWrap}>
+                  <MaterialCommunityIcons name="chef-hat" size={36} color="#fff" />
+                </View>
+                <Text style={s.heroTitle} numberOfLines={3}>
+                  {recipeLoading ? "Loading recipe…" : (recipe?.name ?? selectedMeal ?? "Recipe")}
+                </Text>
+              </LinearGradient>
+
+              <View style={s.body}>
+                {recipeLoading && (
+                  <View style={{ alignItems: "center", paddingVertical: 24, gap: 10 }}>
+                    <ActivityIndicator color="#F97316" />
+                    <Text style={[s.notesText, { textAlign: "center" }]}>Generating recipe…</Text>
+                  </View>
+                )}
+
+                {recipeError && !recipeLoading && (
+                  <View style={s.skipBox}>
+                    <Text style={s.skipEmoji}>⚠️</Text>
+                    <Text style={s.skipText}>{recipeError}</Text>
+                  </View>
+                )}
+
+                {recipe && !recipeLoading && (
+                  <View style={{ gap: 16 }}>
+                    <View style={s.statsRow}>
+                      <View style={[s.statBox, { backgroundColor: "rgba(251,146,60,0.12)" }]}>
+                        <Ionicons name="timer-outline" size={16} color="#F97316" />
+                        <Text style={s.statValue}>{recipe.prepTime}</Text>
+                        <Text style={s.statLabel}>Prep</Text>
+                      </View>
+                      <View style={[s.statBox, { backgroundColor: "rgba(244,63,94,0.12)" }]}>
+                        <Ionicons name="flame-outline" size={16} color="#F43F5E" />
+                        <Text style={s.statValue}>{recipe.cookTime}</Text>
+                        <Text style={s.statLabel}>Cook</Text>
+                      </View>
+                      <View style={[s.statBox, { backgroundColor: "rgba(16,185,129,0.12)" }]}>
+                        <Ionicons name="people-outline" size={16} color="#10B981" />
+                        <Text style={s.statValue}>{recipe.servings}</Text>
+                        <Text style={s.statLabel}>Serves</Text>
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={s.sectionLabel}>Ingredients</Text>
+                      <View style={{ marginTop: 6, gap: 6 }}>
+                        {recipe.ingredients.map((ing, i) => (
+                          <View key={i} style={{ flexDirection: "row", gap: 8 }}>
+                            <Text style={{ color: "#F97316", fontWeight: "800" }}>•</Text>
+                            <Text style={[s.notesText, { flex: 1 }]}>{ing}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={s.sectionLabel}>Instructions</Text>
+                      <View style={{ marginTop: 8, gap: 12 }}>
+                        {recipe.steps.map((st) => (
+                          <View key={st.step} style={{ flexDirection: "row", gap: 10 }}>
+                            <View style={s.stepNum}>
+                              <Text style={s.stepNumText}>{st.step}</Text>
+                            </View>
+                            <Text style={[s.notesText, { flex: 1 }]}>{st.instruction}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+
+                    {recipe.tips ? (
+                      <View style={s.tipBox}>
+                        <Text style={s.tipLabel}>💡 Parent tip</Text>
+                        <Text style={s.tipText}>{recipe.tips}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+
+                <TouchableOpacity onPress={closeRecipe} activeOpacity={0.85} style={s.closeFooter}>
+                  <Text style={s.closeFooterText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }
@@ -282,12 +442,33 @@ function makeStyles(c: ReturnType<typeof useColors>) {
 
     optionsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
     optionPill: {
+      flexDirection: "row", alignItems: "center", gap: 5,
       paddingHorizontal: 12, paddingVertical: 6,
       borderRadius: 999,
       backgroundColor: "rgba(251,146,60,0.18)",
       borderWidth: 1, borderColor: "rgba(251,146,60,0.45)",
     },
     optionText: { color: "#c2410c", fontSize: 12, fontWeight: "700" },
+    optionHint: { color: c.textMuted, fontSize: 11, fontStyle: "italic" },
+    heroImage: { width: 72, height: 72, borderRadius: 24 },
+    statsRow: { flexDirection: "row", gap: 8 },
+    statBox: { flex: 1, alignItems: "center", padding: 10, borderRadius: 14, gap: 2 },
+    statValue: { color: c.foreground, fontSize: 13, fontWeight: "800", marginTop: 2 },
+    statLabel: { color: c.textMuted, fontSize: 10, fontWeight: "600" },
+    stepNum: {
+      width: 22, height: 22, borderRadius: 11,
+      alignItems: "center", justifyContent: "center",
+      backgroundColor: "rgba(251,146,60,0.2)", borderWidth: 1, borderColor: "rgba(251,146,60,0.4)",
+      marginTop: 2,
+    },
+    stepNumText: { color: "#c2410c", fontSize: 11, fontWeight: "800" },
+    tipBox: {
+      backgroundColor: "rgba(245,158,11,0.12)",
+      borderWidth: 1, borderColor: "rgba(245,158,11,0.35)",
+      borderRadius: 14, padding: 12, gap: 4,
+    },
+    tipLabel: { color: "#92400E", fontSize: 11, fontWeight: "800" },
+    tipText: { color: "#92400E", fontSize: 12, lineHeight: 17 },
 
     notesBox: {
       backgroundColor: c.calloutBg,
