@@ -29,7 +29,7 @@ async function getApiKey(): Promise<string> {
       headers: { Accept: "application/json", "X-Replit-Token": xReplitToken },
     },
   )
-    .then((res) => res.json())
+    .then((res) => res.json() as Promise<{ items?: Array<{ settings?: { access_token?: string; oauth?: { credentials?: { access_token?: string } } } }> }>)
     .then((data) => data.items?.[0]);
 
   const accessToken =

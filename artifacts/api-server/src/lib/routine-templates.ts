@@ -1019,7 +1019,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   }
 
   // 4. School block or no-school activities
-  if (hasSchool && ageGroup !== "toddler" && ageGroup !== "infant") {
+  if (hasSchool && ageGroup !== "toddler") {
     // Tiffin preparation — 20 min before travel departure
     const tiffinStart = schoolStartMins - travelMins - 20;
     if (tiffinStart > cursor + 5) {
@@ -1171,7 +1171,7 @@ export function generateRuleBasedRoutine(params: RoutineParams): GeneratedRoutin
   }
 
   // 7. Screen time (age-appropriate) if budget allows
-  const screenAllowed = ageGroup !== "infant" && cursor + 30 < dinnerMins;
+  const screenAllowed = cursor + 30 < dinnerMins;
   if (screenAllowed) {
     const screenDur = ageGroup === "toddler" ? 20 : ageGroup === "preschool" ? 25 : 30;
     const screenNote = ageGroup === "toddler" || ageGroup === "preschool"

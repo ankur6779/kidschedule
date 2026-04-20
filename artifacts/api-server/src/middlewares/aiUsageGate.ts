@@ -52,7 +52,7 @@ export async function aiUsageGate(
   // Refund the reservation if downstream handler ends up non-2xx.
   const origEnd = res.end.bind(res);
   let settled = false;
-  // @ts-expect-error - express.end has multiple overloads
+  // express.end has multiple overloads; cast through unknown to satisfy TS.
   res.end = function (...args: unknown[]) {
     if (!settled) {
       settled = true;

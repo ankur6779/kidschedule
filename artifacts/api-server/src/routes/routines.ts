@@ -435,7 +435,7 @@ router.get("/routines", async (req, res): Promise<void> => {
   const childMap = new Map(children.map((c) => [c.id, c.name]));
   const childIds = children.map((c) => c.id);
 
-  let results;
+  let results: Array<typeof routinesTable.$inferSelect> = [];
   if (queryParams.data.childId) {
     if (!childIds.includes(queryParams.data.childId)) {
       res.json(ListRoutinesResponse.parse([]));
