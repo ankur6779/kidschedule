@@ -16,6 +16,7 @@ import { paletteFor } from "@/lib/theme";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
+import RoutineItemModal from "@/components/RoutineItemModal";
 import colors, { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 
@@ -285,9 +286,13 @@ export default function RoutineDetailScreen() {
   };
 
   const handleTap = (idx: number) => {
-    const cur = items[idx]?.status;
-    setItemStatus(idx, cur === "completed" ? "pending" : "completed");
+    hapticTap();
+    setExpandedIndex(idx);
   };
+
+  // Expand modal state
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const closeExpanded = () => setExpandedIndex(null);
 
   // ── Edit ──────────────────────────────────────────────────────────────────
   const openEdit = (idx: number) => {
@@ -571,7 +576,38 @@ export default function RoutineDetailScreen() {
         </View>
       )}
 
-      {/* Item action sheet */}
+      {/* Tap-to-expand item modal (matches web) */}
+      <RoutineItemModal
+        visible={expandedIndex !== null}
+        item={expandedIndex !== null ? items[expandedIndex] : null}
+        onClose={closeExpanded}
+        onComplete={() => {
+          if (expandedIndex !== null) {
+            setItemStatus(expandedIndex, "completed");
+            closeExpanded();
+          }
+        }}
+        onDelay={(mins) => {
+          if (expandedIndex !== null) {
+            delayItem(expandedIndex, mins);
+            closeExpanded();
+          }
+        }}
+        onSkip={() => {
+          if (expandedIndex !== null) {
+            setItemStatus(expandedIndex, "skipped");
+            closeExpanded();
+          }
+        }}
+        onReopen={() => {
+          if (expandedIndex !== null) {
+            setItemStatus(expandedIndex, "pending");
+            closeExpanded();
+          }
+        }}
+      />
+
+      {/* Item action sheet (long-press) */}
       <Modal visible={actionItem !== null} transparent animationType="fade" onRequestClose={() => setActionItem(null)}>
         <Pressable style={styles.modalScrim} onPress={() => setActionItem(null)}>
           <Pressable style={[styles.actionSheet, { backgroundColor: c.card }]} onPress={e => e.stopPropagation()}>
