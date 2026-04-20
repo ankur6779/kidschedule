@@ -19,6 +19,7 @@ import InfantHub from "@/components/InfantHub";
 import { ArtCraftReels } from "@/components/ArtCraftReels";
 import { PrintableWorksheets } from "@/components/PrintableWorksheets";
 import { AmazingFacts } from "@/components/AmazingFacts";
+import FuturePredictor from "@/components/FuturePredictor";
 import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
@@ -186,6 +187,11 @@ export default function HubScreen() {
             </View>
             <Text style={styles.personalised}>Personalised for <Text style={{ color: "#fff", fontWeight: "700" }}>{effective.name}</Text></Text>
           </View>
+        )}
+
+        {/* 🔮 Future Predictor — top placement */}
+        {effective && (
+          <FuturePredictor childId={effective.id} />
         )}
 
         {/* Sections */}

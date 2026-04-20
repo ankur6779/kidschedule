@@ -1,0 +1,150 @@
+Add a new feature “Future Predictor” in my web app "AmyNest" powered by Amy AI to predict possible child behavior, mood, and routine challenges for the next day.
+
+IMPORTANT:
+- Keep predictions simple and understandable
+- Do NOT use heavy AI models (use rule-based + lightweight logic)
+- Focus on actionable insights
+- Mobile + web friendly UI
+
+--------------------------------
+1. Feature Name
+--------------------------------
+“🔮 Amy AI Future Predictor”
+
+--------------------------------
+2. Prediction Scope (Core 🔥)
+--------------------------------
+Predict for:
+
+- Mood (Happy / Irritated / Low energy)
+- Behavior issues (tantrum, not listening)
+- Sleep quality (good / disturbed)
+- Energy level
+
+--------------------------------
+3. Input Data Sources
+--------------------------------
+
+Use existing data:
+
+- Sleep history (last 2–3 days)
+- Behavior logs
+- Routine completion
+- Screen time (if available)
+
+--------------------------------
+4. Prediction Logic (Lightweight 🔥)
+--------------------------------
+
+Use simple rules:
+
+Example:
+
+- If sleep < normal:
+  → predict “Low energy” next day
+
+- If high tantrum count:
+  → predict “Irritated mood”
+
+- If routine incomplete:
+  → predict “Unstable day”
+
+--------------------------------
+5. Output Format 🎯
+--------------------------------
+
+Show:
+
+“Amy AI Prediction for Tomorrow”
+
+Example:
+
+- Mood: Slightly Irritated 😐
+- Energy: Low ⚡
+- Risk: Evening tantrum ⚠️
+
+--------------------------------
+6. Action Suggestions (VERY IMPORTANT 🔥)
+--------------------------------
+
+Along with prediction show:
+
+“What you should do”
+
+Example:
+- “Keep routine light”
+- “Add calm activity before sleep”
+
+--------------------------------
+7. Confidence Level
+--------------------------------
+
+Show simple indicator:
+
+- Low / Medium / High confidence
+
+--------------------------------
+8. UI Design (Premium 🔥)
+--------------------------------
+
+- Glass card style
+- Icon-based predictions
+- Color indicators:
+  - Green → good
+  - Yellow → caution
+  - Red → risk
+
+--------------------------------
+9. Placement
+--------------------------------
+
+Show in:
+
+- Parent Hub (top section)
+- Routine screen (before tasks)
+
+--------------------------------
+10. Update Frequency
+--------------------------------
+
+- Generate once per day (morning)
+- Optional refresh button
+
+--------------------------------
+11. Amy AI Tone 🤖
+--------------------------------
+
+Friendly and supportive:
+
+“Tomorrow might be a little challenging, let’s prepare ❤️”
+
+--------------------------------
+12. Language Support
+--------------------------------
+
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- No API required
+- Local rule-based logic
+- Fast computation
+
+--------------------------------
+14. Keep it simple
+--------------------------------
+
+- Avoid complex predictions
+- Focus on clarity
+
+--------------------------------
+Return:
+Working Future Predictor with:
+- Daily predictions
+- Action suggestions
+- Clean UI
+- Amy AI integration

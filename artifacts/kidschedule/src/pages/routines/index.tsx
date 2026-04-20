@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Plus, ChevronRight, Wand2, Sparkles, List, ChevronLeft, School, Sun } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { FuturePredictor } from "@/components/future-predictor";
 
 type RoutineItem = {
   time: string;
@@ -232,6 +233,9 @@ export default function RoutinesList() {
           </Link>
         </Button>
       </header>
+
+      {/* 🔮 Future Predictor — before tasks */}
+      <FuturePredictor variant="compact" />
 
       {/* View toggle */}
       <div className="flex gap-2 p-1 bg-muted rounded-2xl">

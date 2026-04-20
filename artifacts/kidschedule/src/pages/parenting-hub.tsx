@@ -28,6 +28,7 @@ import { PrintableWorksheets } from "@/components/printable-worksheets";
 import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
+import { FuturePredictor } from "@/components/future-predictor";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Section Wrapper ─────────────────────────────────────────────────────────
@@ -412,6 +413,11 @@ export default function ParentingHub() {
             Personalised for <strong>{effectiveChild.name}</strong>
           </span>
         </div>
+      )}
+
+      {/* 🔮 Future Predictor — top placement */}
+      {effectiveChild && (
+        <FuturePredictor childId={effectiveChild.id} />
       )}
 
       {/* ── 5 Sections ──────────────────────────────────────────────────── */}

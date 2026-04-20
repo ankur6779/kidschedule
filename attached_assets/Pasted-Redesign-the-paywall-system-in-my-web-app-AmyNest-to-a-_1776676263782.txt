@@ -1,0 +1,150 @@
+Redesign the paywall system in my web app "AmyNest" to a smart usage-based freemium model instead of forcing payment immediately after login.
+
+IMPORTANT:
+- Do NOT block users at login
+- Allow limited usage to show value first
+- Then lock features intelligently
+- Keep UX smooth and premium
+
+--------------------------------
+1. Overall Paywall Strategy (Core 🔥)
+--------------------------------
+- User can explore app freely
+- Each major feature allows LIMITED FREE usage
+- After usage → lock + show upgrade screen
+
+--------------------------------
+2. Feature-Level Unlock Logic 🔥🔥
+--------------------------------
+
+For sections like:
+- Amy AI Coach
+- Parenting Hub
+- Life Skills
+- Olympiad
+- Activities
+
+Each section contains:
+→ Multiple blocks (e.g., 7 blocks)
+→ Each block contains sub-blocks
+
+--------------------------------
+3. Free Usage Rule (Critical)
+--------------------------------
+
+User can:
+
+- Use ONLY 1 block (any one)
+- Inside that block → use ONLY 1 sub-block
+
+Once used:
+→ ALL blocks in that section get LOCKED
+
+--------------------------------
+4. Lock Behavior
+--------------------------------
+After 1 usage:
+
+- Remaining blocks become blurred/locked
+- Show lock icon 🔒
+
+--------------------------------
+5. Click on Locked Block
+--------------------------------
+When user clicks locked item:
+
+→ Open Premium Paywall Screen
+
+--------------------------------
+6. Paywall Screen (Conversion Optimized 🔥)
+--------------------------------
+
+Show:
+
+- Title:
+  “Unlock Full Parenting Power 🚀”
+
+- Benefits:
+  - Unlimited routines
+  - Full AI personalization
+  - All activities unlocked
+  - Smart insights
+
+- Pricing:
+  - Monthly
+  - Yearly (highlight best value)
+
+- CTA:
+  “Unlock Now”
+
+--------------------------------
+7. Routine Section Exception 🔥
+--------------------------------
+
+- Routine:
+  → Keep current logic (limited generation)
+
+- Do NOT apply block-based restriction here
+
+--------------------------------
+8. Usage Tracking System
+--------------------------------
+
+Track per user:
+
+- sectionUsed (true/false)
+- blockUsedId
+- subBlockUsedId
+
+--------------------------------
+9. Reset Logic
+--------------------------------
+
+- Free usage is ONE-TIME only (not daily)
+
+--------------------------------
+10. UI Behavior (Premium Feel)
+--------------------------------
+
+- Locked blocks:
+  - Blur effect
+  - Lock icon
+  - Slight opacity
+
+- Smooth transition when locking
+
+--------------------------------
+11. Upgrade Nudges
+--------------------------------
+
+Show message:
+
+“You’ve explored 1 feature. Unlock all to continue.”
+
+--------------------------------
+12. Trial Option (Optional)
+--------------------------------
+
+- 7-day full access (optional toggle)
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- Use local state/database
+- No heavy backend logic
+
+--------------------------------
+14. Keep it simple
+--------------------------------
+
+- No complex conditions
+- Clean logic
+
+--------------------------------
+Return:
+Updated paywall system with:
+- Free limited usage
+- Smart locking
+- Premium upgrade flow
+- Smooth UX

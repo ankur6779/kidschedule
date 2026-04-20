@@ -14,6 +14,7 @@ import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import * as Haptics from "expo-haptics";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
+import FuturePredictor from "@/components/FuturePredictor";
 import colors, { brand } from "@/constants/colors";
 
 type RoutineItem = {
@@ -81,6 +82,8 @@ export default function RoutinesScreen() {
       return authFetch(`/api/routines${q}`).then(r => r.json()) as Promise<Routine[]>;
     },
   });
+
+  const effectiveChildId = selectedChild ?? children[0]?.id ?? null;
 
   const onRefresh = useCallback(() => { refetch(); }, [refetch]);
 
@@ -225,6 +228,11 @@ export default function RoutinesScreen() {
             }}
           />
         )}
+
+        {/* 🔮 Future Predictor — before tasks */}
+        <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
+          <FuturePredictor childId={effectiveChildId} variant="compact" />
+        </View>
 
         {/* Loading / Error / Empty */}
         {isLoading ? (

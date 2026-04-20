@@ -13,6 +13,7 @@ import subscriptionRouter from "./subscription";
 import reelsRouter from "./reels";
 import worksheetsRouter from "./worksheets";
 import onboardingRouter from "./onboarding";
+import futurePredictorRouter from "./future-predictor";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -36,5 +37,6 @@ router.use(babysittersRouter);
 router.use(aiRouter);
 router.use(aiCoachRouter);
 router.use(appDataRouter);
+router.use(futurePredictorRouter);
 
 export default router;
