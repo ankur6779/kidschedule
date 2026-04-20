@@ -644,14 +644,14 @@ export default function AICoachPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {activeCat.items.map((g) => (
-              <button key={g.id} onClick={() => handlePickGoal(g.id)}
-                className="relative rounded-2xl p-5 border border-white/10 text-left backdrop-blur-md hover:border-violet-400/50 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center gap-4 overflow-hidden"
-                style={{ background: "linear-gradient(135deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%)", boxShadow: "0 0 18px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.06)" }}
+              <button key={g.id} data-on-dark onClick={() => handlePickGoal(g.id)}
+                className="relative rounded-2xl p-5 border border-violet-400/40 text-left backdrop-blur-md hover:border-violet-300/70 hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center gap-4 overflow-hidden"
+                style={{ background: "linear-gradient(135deg,rgba(76,29,149,0.85) 0%,rgba(124,58,237,0.78) 60%,rgba(190,24,93,0.72) 100%)", boxShadow: "0 6px 22px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.14)" }}
               >
                 <span className="text-3xl shrink-0">{g.emoji}</span>
                 <div className="flex-1">
                   <p className="font-quicksand font-bold text-base text-white leading-tight">{g.title}</p>
-                  <p className="text-[11px] text-white/40 mt-1">Tap to start →</p>
+                  <p className="text-[11px] text-white/80 mt-1">Tap to start →</p>
                 </div>
               </button>
             ))}
@@ -675,22 +675,22 @@ export default function AICoachPage() {
         </div>
 
         {/* Premium hero panel */}
-        <div className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/20 p-5"
-          style={{ background: "linear-gradient(135deg,rgba(139,92,246,0.25) 0%,rgba(236,72,153,0.12) 100%)", boxShadow: "0 0 50px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.08)" }}>
-          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(139,92,246,0.35)" }} />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(236,72,153,0.2)" }} />
+        <div data-on-dark className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/40 p-5"
+          style={{ background: "linear-gradient(135deg,rgba(76,29,149,0.92) 0%,rgba(124,58,237,0.85) 50%,rgba(190,24,93,0.82) 100%)", boxShadow: "0 0 50px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.18)" }}>
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(139,92,246,0.55)" }} />
+          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(236,72,153,0.4)" }} />
           <div className="relative flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)", boxShadow: "0 0 20px rgba(139,92,246,0.5)" }}>
+              style={{ background: "linear-gradient(135deg,#a78bfa,#f472b6)", boxShadow: "0 0 20px rgba(139,92,246,0.7)" }}>
               <Sparkles className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="font-quicksand text-2xl font-bold">
-                <span className="text-violet-300">Amy</span>{" "}
+                <span className="text-violet-200">Amy</span>{" "}
                 <span className="text-white">Co-Parent</span>{" "}
-                <span className="text-pink-300">AI</span>
+                <span className="text-pink-200">AI</span>
               </h1>
-              <p className="text-xs text-white/60 mt-0.5">Choose a goal — I'll build your 12-step science plan.</p>
+              <p className="text-xs text-white/85 mt-0.5">Choose a goal — I'll build your 12-step science plan.</p>
             </div>
           </div>
         </div>
@@ -705,38 +705,39 @@ export default function AICoachPage() {
 
         {/* Audio Lessons entry card */}
         <button
+          data-on-dark
           onClick={() => setLocation("/audio-lessons")}
-          className="relative w-full rounded-3xl p-4 border border-violet-400/30 text-left backdrop-blur-md hover:border-violet-400/60 hover:scale-[1.01] active:scale-[0.98] transition-all overflow-hidden flex items-center gap-4"
+          className="relative w-full rounded-3xl p-4 border border-violet-400/50 text-left backdrop-blur-md hover:border-violet-400/80 hover:scale-[1.01] active:scale-[0.98] transition-all overflow-hidden flex items-center gap-4"
           style={{
-            background: "linear-gradient(135deg,rgba(139,92,246,0.18) 0%,rgba(236,72,153,0.10) 100%)",
-            boxShadow: "0 0 20px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.06)",
+            background: "linear-gradient(135deg,rgba(76,29,149,0.88) 0%,rgba(190,24,93,0.78) 100%)",
+            boxShadow: "0 0 24px rgba(139,92,246,0.35), inset 0 1px 0 rgba(255,255,255,0.14)",
           }}
         >
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-2xl"
-            style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)" }}>
+            style={{ background: "linear-gradient(135deg,#a78bfa,#f472b6)" }}>
             🎙️
           </div>
           <div className="flex-1">
             <p className="font-quicksand font-bold text-base text-white leading-tight">Amy Audio Lessons</p>
-            <p className="text-[11.5px] text-white/60 mt-0.5">Hands full? Listen to age-curated parenting lessons (3–5 min each).</p>
+            <p className="text-[11.5px] text-white/85 mt-0.5">Hands full? Listen to age-curated parenting lessons (3–5 min each).</p>
           </div>
-          <span className="text-violet-300 text-lg shrink-0">→</span>
+          <span className="text-violet-100 text-lg shrink-0">→</span>
         </button>
 
         <div className="grid grid-cols-2 gap-3">
           {GOAL_CATEGORIES.map((cat, i) => (
-            <button key={cat.id} onClick={() => setSelectedCategoryId(cat.id)}
-              className="relative rounded-3xl p-5 border border-white/10 text-left backdrop-blur-md hover:border-violet-400/50 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 overflow-hidden"
+            <button key={cat.id} data-on-dark onClick={() => setSelectedCategoryId(cat.id)}
+              className="relative rounded-3xl p-5 border border-violet-400/40 text-left backdrop-blur-md hover:border-violet-300/70 hover:scale-[1.02] active:scale-[0.97] transition-all duration-200 overflow-hidden"
               style={{
-                background: "linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%)",
-                boxShadow: "0 0 20px rgba(139,92,246,0.12), inset 0 1px 0 rgba(255,255,255,0.06)",
+                background: "linear-gradient(135deg,rgba(76,29,149,0.85) 0%,rgba(124,58,237,0.78) 60%,rgba(190,24,93,0.75) 100%)",
+                boxShadow: "0 6px 24px rgba(124,58,237,0.45), inset 0 1px 0 rgba(255,255,255,0.14)",
                 animationDelay: `${i * 60}ms`,
               }}
             >
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full blur-2xl opacity-50 pointer-events-none" style={{ background: "rgba(139,92,246,0.3)" }} />
-              <span className="text-4xl block mb-3">{cat.emoji}</span>
-              <p className="font-quicksand font-bold text-base text-white leading-tight">{cat.title}</p>
-              <p className="text-[11px] text-white/40 mt-1">{cat.items.length} goals →</p>
+              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-full blur-2xl opacity-60 pointer-events-none" style={{ background: "rgba(236,72,153,0.45)" }} />
+              <span className="text-4xl block mb-3 relative">{cat.emoji}</span>
+              <p className="font-quicksand font-bold text-base text-white leading-tight relative">{cat.title}</p>
+              <p className="text-[11px] text-white/80 mt-1 relative">{cat.items.length} goals →</p>
             </button>
           ))}
         </div>
@@ -794,6 +795,7 @@ export default function AICoachPage() {
         </div>
 
         <button
+          data-on-dark
           onClick={handleNextQ}
           disabled={!isAnswered}
           className="w-full py-4 rounded-2xl font-bold text-base text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
@@ -960,7 +962,7 @@ export default function AICoachPage() {
           </button>
 
           {/* Progress % pill (TOP-RIGHT) */}
-          <div style={{
+          <div data-on-dark style={{
             display: "flex", alignItems: "center", gap: 8,
             background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
             color: "#fff", padding: "7px 14px", borderRadius: 999,
@@ -1079,6 +1081,7 @@ export default function AICoachPage() {
             <ArrowLeft size={14} /> Prev
           </button>
           <button
+            data-on-dark
             onClick={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
             disabled={activeIdx === plan.wins.length - 1}
             style={{

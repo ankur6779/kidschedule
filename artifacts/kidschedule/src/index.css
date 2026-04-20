@@ -423,3 +423,34 @@
   @page { margin: 14mm; }
 }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ─── Light-mode legacy-color safety net ────────────────────────────────
+ * The app was originally authored assuming the always-dark theme, so many
+ * surfaces use raw `text-white`, `text-white/60`, `border-white/10`, etc.
+ * On the light cream background those utilities become invisible.
+ *
+ * This block remaps them to readable theme tokens in light mode — EXCEPT
+ * inside elements (or descendants of elements) tagged with `data-on-dark`.
+ * Tag any intentionally-dark surface (e.g. a violet gradient card) with
+ * `data-on-dark` to preserve its white text in both modes.
+ * ─────────────────────────────────────────────────────────────────────── */
+:root:not(.dark) :where(
+  .text-white, .text-white\/90, .text-white\/85, .text-white\/80
+):not(:where([data-on-dark], [data-on-dark] *)) {
+  color: hsl(var(--foreground));
+}
+:root:not(.dark) :where(
+  .text-white\/40, .text-white\/50, .text-white\/60, .text-white\/70
+):not(:where([data-on-dark], [data-on-dark] *)) {
+  color: hsl(var(--muted-foreground));
+}
+:root:not(.dark) :where(
+  .bg-white\/5, .bg-white\/10, .bg-white\/20
+):not(:where([data-on-dark], [data-on-dark] *)) {
+  background-color: hsl(var(--card));
+}
+:root:not(.dark) :where(
+  .border-white\/5, .border-white\/10, .border-white\/20
+):not(:where([data-on-dark], [data-on-dark] *)) {
+  border-color: hsl(var(--border));
+}
