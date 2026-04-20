@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft, Volume2, Pause, Play, SkipBack, SkipForward, Headphones,
   Sparkles, Gauge, X, Clock,
 } from "lucide-react";
-import { LESSONS, AGE_LABELS, lessonsForAge, type AgeBucket, type Lesson } from "@/lib/audio-lessons";
+import {
+  LESSONS, lessonsForAge, getLessonText, getAgeLabel,
+  type AgeBucket, type Lesson,
+} from "@/lib/audio-lessons";
 
 const AGE_ORDER: AgeBucket[] = ["0-2", "2-4", "5-7", "8-10", "10+"];
 
@@ -19,8 +23,10 @@ export default function AudioLessonsPage() {
   const [, setLocation] = useLocation();
   const [age, setAge] = useState<AgeBucket>("2-4");
   const [open, setOpen] = useState<Lesson | null>(null);
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
 
-  const lessons = useMemo(() => lessonsForAge(age), [age]);
+  const lessons = lessonsForAge(age);
 
   return (
     <div style={{
@@ -55,8 +61,11 @@ export default function AudioLessonsPage() {
       {/* Intro */}
       <div style={{ padding: "20px 16px 8px", maxWidth: 720, margin: "0 auto" }}>
         <p style={{ color: "#c7c0e8", fontSize: 14, lineHeight: 1.55, margin: 0 }}>
-          Hands full? Let Amy talk you through the most important parenting topics for your child's age group.
-          Each lesson is 3–5 minutes. Tap any lesson to listen.
+          {lang === "hi"
+            ? "हाथ भरे हैं? Amy आपको आपके बच्चे की उम्र के हिसाब से सबसे जरूरी parenting topics समझाएगी। हर lesson 3–5 मिनट का है।"
+            : lang === "hinglish"
+            ? "Haath bhare hain? Amy aapko bacche ki umra ke hisaab se important parenting topics samjhayegi. Har lesson 3–5 minute ka hai."
+            : "Hands full? Let Amy talk you through the most important parenting topics for your child's age group. Each lesson is 3–5 minutes. Tap any lesson to listen."}
         </p>
       </div>
 
@@ -86,7 +95,7 @@ export default function AudioLessonsPage() {
                 boxShadow: active ? "0 4px 12px rgba(139,92,246,0.4)" : "none",
               }}
             >
-              {AGE_LABELS[a]}
+              {getAgeLabel(a, lang)}
             </button>
           );
         })}
@@ -98,81 +107,90 @@ export default function AudioLessonsPage() {
         padding: "8px 16px",
         display: "grid", gridTemplateColumns: "1fr", gap: 12,
       }}>
-        {lessons.map((l) => (
-          <button
-            key={l.id}
-            onClick={() => setOpen(l)}
-            style={{
-              textAlign: "left",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(139,92,246,0.25)",
-              borderRadius: 16,
-              padding: 16,
-              cursor: "pointer",
-              display: "flex",
-              gap: 12,
-              alignItems: "flex-start",
-              color: "#fff",
-              transition: "transform 0.15s, background 0.15s",
-            }}
-            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.99)")}
-            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-          >
-            <div style={{
-              fontSize: 30, lineHeight: 1, width: 48, height: 48,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(139,92,246,0.15)", borderRadius: 12,
-              flexShrink: 0,
-            }}>{l.emoji}</div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, fontFamily: "Quicksand, sans-serif" }}>
-                  {l.title}
-                </h3>
+        {lessons.map((l) => {
+          const text = getLessonText(l, lang);
+          return (
+            <button
+              key={l.id}
+              onClick={() => setOpen(l)}
+              style={{
+                textAlign: "left",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(139,92,246,0.25)",
+                borderRadius: 16,
+                padding: 16,
+                cursor: "pointer",
+                display: "flex",
+                gap: 12,
+                alignItems: "flex-start",
+                color: "#fff",
+                transition: "transform 0.15s, background 0.15s",
+              }}
+              onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.99)")}
+              onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+              onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <div style={{
+                fontSize: 30, lineHeight: 1, width: 48, height: 48,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(139,92,246,0.15)", borderRadius: 12,
+                flexShrink: 0,
+              }}>{l.emoji}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, fontFamily: "Quicksand, sans-serif" }}>
+                    {text.title}
+                  </h3>
+                </div>
+                <p style={{ margin: "0 0 8px", color: "#c7c0e8", fontSize: 13, lineHeight: 1.45 }}>
+                  {text.description}
+                </p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11.5, color: "#a99fd9" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <Clock size={12} /> {l.durationMin} min
+                  </span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    <Sparkles size={12} /> {l.expert}
+                  </span>
+                </div>
               </div>
-              <p style={{ margin: "0 0 8px", color: "#c7c0e8", fontSize: 13, lineHeight: 1.45 }}>
-                {l.description}
-              </p>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11.5, color: "#a99fd9" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  <Clock size={12} /> {l.durationMin} min
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  <Sparkles size={12} /> {l.expert}
-                </span>
-              </div>
-            </div>
-            <Volume2 size={18} color="#c4b5fd" style={{ flexShrink: 0, marginTop: 4 }} />
-          </button>
-        ))}
+              <Volume2 size={18} color="#c4b5fd" style={{ flexShrink: 0, marginTop: 4 }} />
+            </button>
+          );
+        })}
         {lessons.length === 0 && (
           <div style={{ textAlign: "center", color: "#a99fd9", padding: 30 }}>
-            More lessons for this age group coming soon.
+            {lang === "hi" ? "इस आयु वर्ग के लिए जल्द और lessons आएंगे।"
+              : lang === "hinglish" ? "Is age group ke liye aur lessons jald aayenge."
+              : "More lessons for this age group coming soon."}
           </div>
         )}
       </div>
 
-      {open && <PlayerSheet lesson={open} onClose={() => setOpen(null)} />}
+      {open && <PlayerSheet lesson={open} lang={lang} onClose={() => setOpen(null)} />}
     </div>
   );
 }
 
 // ─── Player ─────────────────────────────────────────────────────────
-function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void }) {
+function PlayerSheet({ lesson, lang, onClose }: { lesson: Lesson; lang: string; onClose: () => void }) {
   const [playing, setPlaying] = useState(false);
   const [paragraphIdx, setParagraphIdx] = useState(0);
   const [rate, setRate] = useState<number>(1);
   const [supported, setSupported] = useState(true);
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
 
+  const text = getLessonText(lesson, lang);
+  const paragraphs = text.paragraphs;
+  const ttsLang = lang === "hi" ? "hi-IN" : "en-IN";
+
   // Resume from saved index
   useEffect(() => {
     const r = loadResume();
     const saved = r[lesson.id] ?? 0;
-    if (saved > 0 && saved < lesson.paragraphs.length) setParagraphIdx(saved);
-    else if (saved >= lesson.paragraphs.length) setParagraphIdx(0);
-  }, [lesson.id]);
+    if (saved > 0 && saved < paragraphs.length) setParagraphIdx(saved);
+    else if (saved >= paragraphs.length) setParagraphIdx(0);
+  }, [lesson.id, paragraphs.length]);
 
   // Persist position
   useEffect(() => {
@@ -190,22 +208,21 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
     };
   }, []);
 
-  // Whenever play state, paragraph or rate changes, restart utterance for that paragraph.
+  // Whenever play state, paragraph, rate or lang changes, restart utterance.
   useEffect(() => {
     if (!supported) return;
     const synth = window.speechSynthesis;
     synth.cancel();
     if (!playing) return;
-    const text = lesson.paragraphs[paragraphIdx];
-    if (!text) { setPlaying(false); return; }
-    const utt = new SpeechSynthesisUtterance(text);
+    const txt = paragraphs[paragraphIdx];
+    if (!txt) { setPlaying(false); return; }
+    const utt = new SpeechSynthesisUtterance(txt);
     utt.rate = rate;
     utt.pitch = 1;
-    utt.lang = "en-IN";
+    utt.lang = ttsLang;
     utt.onend = () => {
-      // auto-advance
       setParagraphIdx((i) => {
-        if (i + 1 >= lesson.paragraphs.length) {
+        if (i + 1 >= paragraphs.length) {
           setPlaying(false);
           return i;
         }
@@ -216,10 +233,10 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
     utterRef.current = utt;
     synth.speak(utt);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, paragraphIdx, rate, supported]);
+  }, [playing, paragraphIdx, rate, supported, ttsLang]);
 
   const next = () => {
-    if (paragraphIdx + 1 < lesson.paragraphs.length) setParagraphIdx(paragraphIdx + 1);
+    if (paragraphIdx + 1 < paragraphs.length) setParagraphIdx(paragraphIdx + 1);
   };
   const prev = () => {
     if (paragraphIdx > 0) setParagraphIdx(paragraphIdx - 1);
@@ -250,7 +267,7 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ fontSize: 28 }}>{lesson.emoji}</div>
             <div>
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, fontFamily: "Quicksand, sans-serif" }}>{lesson.title}</h3>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, fontFamily: "Quicksand, sans-serif" }}>{text.title}</h3>
               <div style={{ fontSize: 11, color: "#a99fd9" }}>{lesson.expert} · {lesson.durationMin} min</div>
             </div>
           </div>
@@ -266,13 +283,17 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
             background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)",
             color: "#fecaca", fontSize: 13, marginBottom: 12,
           }}>
-            Audio playback is not supported in this browser. You can still read the lesson below.
+            {lang === "hi"
+              ? "इस browser में audio playback support नहीं है। आप नीचे lesson पढ़ सकते हैं।"
+              : lang === "hinglish"
+              ? "Is browser mein audio playback support nahi hai. Aap neeche lesson padh sakte hain."
+              : "Audio playback is not supported in this browser. You can still read the lesson below."}
           </div>
         )}
 
         {/* Progress dots */}
         <div style={{ display: "flex", gap: 4, marginBottom: 14 }}>
-          {lesson.paragraphs.map((_, i) => (
+          {paragraphs.map((_, i) => (
             <div key={i} style={{
               flex: 1, height: 3, borderRadius: 2,
               background: i <= paragraphIdx ? "#8b5cf6" : "rgba(139,92,246,0.2)",
@@ -290,16 +311,16 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
           fontSize: 15, lineHeight: 1.6,
           color: "#fff",
         }}>
-          {lesson.paragraphs[paragraphIdx]}
+          {paragraphs[paragraphIdx]}
         </div>
 
         {/* Mini transcript of all paragraphs */}
         <details style={{ marginBottom: 14, color: "#c7c0e8" }}>
           <summary style={{ cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#c4b5fd" }}>
-            Show full transcript
+            {lang === "hi" ? "पूरा transcript दिखाएं" : lang === "hinglish" ? "Poora transcript dikhayein" : "Show full transcript"}
           </summary>
           <div style={{ marginTop: 10, display: "grid", gap: 10 }}>
-            {lesson.paragraphs.map((p, i) => (
+            {paragraphs.map((p, i) => (
               <button
                 key={i}
                 onClick={() => setParagraphIdx(i)}
@@ -349,14 +370,14 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
 
           <button
             onClick={next}
-            disabled={paragraphIdx === lesson.paragraphs.length - 1}
+            disabled={paragraphIdx === paragraphs.length - 1}
             aria-label="Next"
             style={{
               color: "#fff", background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(139,92,246,0.3)", borderRadius: 999,
               width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: paragraphIdx === lesson.paragraphs.length - 1 ? "default" : "pointer",
-              opacity: paragraphIdx === lesson.paragraphs.length - 1 ? 0.4 : 1,
+              cursor: paragraphIdx === paragraphs.length - 1 ? "default" : "pointer",
+              opacity: paragraphIdx === paragraphs.length - 1 ? 0.4 : 1,
             }}
           ><SkipForward size={18} /></button>
         </div>
@@ -364,7 +385,9 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
         {/* Rate */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
           <Gauge size={14} color="#a99fd9" />
-          <span style={{ fontSize: 12, color: "#a99fd9", marginRight: 6 }}>Speed</span>
+          <span style={{ fontSize: 12, color: "#a99fd9", marginRight: 6 }}>
+            {lang === "hi" ? "गति" : lang === "hinglish" ? "Speed" : "Speed"}
+          </span>
           {[0.85, 1, 1.15, 1.3, 1.5].map((r) => (
             <button
               key={r}
@@ -381,7 +404,11 @@ function PlayerSheet({ lesson, onClose }: { lesson: Lesson; onClose: () => void 
         </div>
 
         <div style={{ marginTop: 14, fontSize: 11, color: "#7a749b", textAlign: "center" }}>
-          Voice uses your browser. Works offline. Tap a paragraph in the transcript to jump to it.
+          {lang === "hi"
+            ? "आवाज़ आपके browser से आती है। Offline काम करता है। Jump करने के लिए transcript में paragraph tap करें।"
+            : lang === "hinglish"
+            ? "Awaaz aapke browser se aati hai. Offline kaam karta hai. Jump karne ke liye transcript mein paragraph tap karein."
+            : "Voice uses your browser. Works offline. Tap a paragraph in the transcript to jump to it."}
         </div>
       </div>
     </div>
