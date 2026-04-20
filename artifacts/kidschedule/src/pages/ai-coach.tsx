@@ -757,52 +757,63 @@ export default function AICoachPage() {
           <ChevronLeft className="h-4 w-4" /> Back
         </button>
 
-        <div>
-          <div className="flex items-center justify-between text-xs text-white/50 mb-1.5">
-            <span className="font-semibold">Question {visibleNum} of {visibleTotal}</span>
-            <span>{selectedGoal?.title}</span>
-          </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 transition-all"
-              style={{ width: `${progressPct}%`, boxShadow: "0 0 8px rgba(139,92,246,0.7)" }} />
-          </div>
-        </div>
-
-        <h2 className="font-quicksand text-xl font-bold text-white">{currentQ.prompt}</h2>
-        {currentQ.type === "multi" && (
-          <p className="text-xs text-white/40 -mt-3">Pick any that apply</p>
-        )}
-
-        <div className="space-y-2">
-          {currentQ.options.map((opt) => {
-            const selected = currentQ.type === "multi"
-              ? ((answers[currentQ.id] as string[]) ?? []).includes(opt)
-              : answers[currentQ.id] === opt;
-            return (
-              <button
-                key={opt}
-                onClick={() => handleSelectOption(opt)}
-                className="w-full text-left px-4 py-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 backdrop-blur-sm"
-                style={selected
-                  ? { background: "linear-gradient(135deg,rgba(139,92,246,0.35) 0%,rgba(236,72,153,0.2) 100%)", border: "1px solid rgba(139,92,246,0.6)", color: "#fff", boxShadow: "0 0 20px rgba(139,92,246,0.25)" }
-                  : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}
-              >
-                <span className="font-semibold text-sm">{opt}</span>
-                {selected && <Check className="h-5 w-5 text-violet-300 shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-
-        <button
+        <div
           data-on-dark
-          onClick={handleNextQ}
-          disabled={!isAnswered}
-          className="w-full py-4 rounded-2xl font-bold text-base text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-          style={{ background: "linear-gradient(135deg,#8b5cf6,#ec4899)", boxShadow: isAnswered ? "0 0 30px rgba(139,92,246,0.5)" : "none" }}
+          className="relative rounded-3xl overflow-hidden backdrop-blur-md border border-violet-400/40 p-5 space-y-5"
+          style={{ background: "linear-gradient(135deg,rgba(76,29,149,0.92) 0%,rgba(124,58,237,0.85) 50%,rgba(190,24,93,0.82) 100%)", boxShadow: "0 0 50px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.18)" }}
         >
-          {qIndex < QUESTIONS.length - 1 ? "Next →" : "Build My Plan ✨"}
-        </button>
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(139,92,246,0.55)" }} />
+          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full blur-2xl pointer-events-none" style={{ background: "rgba(236,72,153,0.4)" }} />
+
+          <div className="relative">
+            <div className="flex items-center justify-between text-xs text-white/70 mb-1.5">
+              <span className="font-semibold">Question {visibleNum} of {visibleTotal}</span>
+              <span>{selectedGoal?.title}</span>
+            </div>
+            <div className="h-2 bg-white/15 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-violet-300 to-pink-300 transition-all"
+                style={{ width: `${progressPct}%`, boxShadow: "0 0 8px rgba(255,255,255,0.6)" }} />
+            </div>
+          </div>
+
+          <div className="relative space-y-1">
+            <h2 className="font-quicksand text-xl font-bold text-white">{currentQ.prompt}</h2>
+            {currentQ.type === "multi" && (
+              <p className="text-xs text-white/70">Pick any that apply</p>
+            )}
+          </div>
+
+          <div className="relative space-y-2">
+            {currentQ.options.map((opt) => {
+              const selected = currentQ.type === "multi"
+                ? ((answers[currentQ.id] as string[]) ?? []).includes(opt)
+                : answers[currentQ.id] === opt;
+              return (
+                <button
+                  key={opt}
+                  onClick={() => handleSelectOption(opt)}
+                  className="w-full text-left px-4 py-3.5 rounded-2xl border transition-all flex items-center justify-between gap-3 backdrop-blur-sm"
+                  style={selected
+                    ? { background: "linear-gradient(135deg,rgba(255,255,255,0.28) 0%,rgba(255,255,255,0.15) 100%)", border: "1px solid rgba(255,255,255,0.7)", color: "#fff", boxShadow: "0 0 20px rgba(255,255,255,0.25)" }
+                    : { background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff" }}
+                >
+                  <span className="font-semibold text-sm">{opt}</span>
+                  {selected && <Check className="h-5 w-5 text-white shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            data-on-dark
+            onClick={handleNextQ}
+            disabled={!isAnswered}
+            className="relative w-full py-4 rounded-2xl font-bold text-base text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            style={{ background: "linear-gradient(135deg,#a78bfa,#f472b6)", boxShadow: isAnswered ? "0 0 30px rgba(255,255,255,0.45)" : "none" }}
+          >
+            {qIndex < QUESTIONS.length - 1 ? "Next →" : "Build My Plan ✨"}
+          </button>
+        </div>
       </div>
     );
   }
