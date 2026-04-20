@@ -94,7 +94,7 @@ LENGTH
     const userTurn = `${question}`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+      model: "gpt-5-mini",
       messages: [
         { role: "system", content: systemPrompt },
         ...history,
@@ -161,7 +161,7 @@ router.post("/ai/rewrite-tip", async (req, res): Promise<void> => {
       : `Tip: ${text}`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-5.2",
+      model: "gpt-5-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
