@@ -567,13 +567,17 @@ export default function CoachScreen() {
         <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: botPad + 120 }}>
           <TouchableOpacity onPress={handleBackQ} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={20} color={c.textSubtle} />
-            <Text style={styles.backText}>Back</Text>
+            <Text style={[styles.backText, { color: c.textSubtle }]}>Back</Text>
           </TouchableOpacity>
 
           <View style={{ marginTop: 18 }}>
             <View style={styles.qProgressRow}>
-              <Text style={styles.qProgressText}>Question {qIndex + 1} of {QUESTIONS.length}</Text>
-              <Text style={styles.qProgressGoal}>{selectedGoal?.title}</Text>
+              <Text style={[styles.qProgressText, { color: c.textMuted }]}>
+                Question {qIndex + 1} of {QUESTIONS.length}
+              </Text>
+              <Text style={[styles.qProgressGoal, { color: c.textMuted }]}>
+                {selectedGoal?.title}
+              </Text>
             </View>
             <View style={[styles.qProgressBar, { backgroundColor: c.surfaceTrack }]}>
               <LinearGradient
@@ -584,9 +588,9 @@ export default function CoachScreen() {
             </View>
           </View>
 
-          <Text style={styles.qPrompt}>{currentQ.prompt}</Text>
+          <Text style={[styles.qPrompt, { color: c.text }]}>{currentQ.prompt}</Text>
           {currentQ.type === "multi" && (
-            <Text style={styles.qHint}>Pick any that apply</Text>
+            <Text style={[styles.qHint, { color: c.textMuted }]}>Pick any that apply</Text>
           )}
 
           <View style={{ gap: 8, marginTop: 16 }}>
@@ -597,9 +601,21 @@ export default function CoachScreen() {
               return (
                 <TouchableOpacity
                   key={opt} onPress={() => handleSelectOption(opt)} activeOpacity={0.8}
-                  style={[styles.qOption, selected && styles.qOptionSelected]}
+                  style={[
+                    styles.qOption,
+                    { backgroundColor: c.surface, borderColor: c.border },
+                    selected && styles.qOptionSelected,
+                  ]}
                 >
-                  <Text style={[styles.qOptionText, selected && styles.qOptionTextSelected]}>{opt}</Text>
+                  <Text
+                    style={[
+                      styles.qOptionText,
+                      { color: c.text },
+                      selected && styles.qOptionTextSelected,
+                    ]}
+                  >
+                    {opt}
+                  </Text>
                   {selected && <Ionicons name="checkmark" size={20} color={brand.violet600} />}
                 </TouchableOpacity>
               );
