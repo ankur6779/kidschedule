@@ -21,7 +21,7 @@ export const PLAN_PRICES: Record<Exclude<Plan, "free">, { amount: number; period
 };
 
 export const FREE_LIMITS = {
-  aiQueriesPerDay: 5,
+  aiQueriesPerDay: 10,
   childrenMax: 1,
   routinesMax: 30,
   hubArticlesMax: 3,

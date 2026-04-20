@@ -34,7 +34,7 @@ router.post("/ai/assistant", async (req, res): Promise<void> => {
   res.json(AskAssistantResponse.parse({ answer }));
 });
 
-// AI-powered parenting assistant — uses OpenAI, rate-limited server-side via aiUsageGate (free=5/day)
+// AI-powered parenting assistant — uses OpenAI, rate-limited server-side via aiUsageGate (free=10/day)
 router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => {
   const parsed = AskAssistantBody.safeParse(req.body);
   if (!parsed.success) {
