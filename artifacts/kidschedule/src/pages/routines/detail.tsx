@@ -1177,7 +1177,7 @@ export default function RoutineDetail() {
                             </div>
                           ) : (
                           <>
-                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug ${status === "skipped" ? "line-through text-muted-foreground" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" }}>
+                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug ${status === "skipped" ? "line-through text-muted-foreground" : status === "completed" ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" }}>
                             {item.activity}
                           </h3>
                           {/* Priority badge for high-priority tasks */}
