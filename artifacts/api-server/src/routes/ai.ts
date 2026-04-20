@@ -100,16 +100,33 @@ LENGTH
         ...history,
         { role: "user", content: userTurn },
       ],
-      max_tokens: 400,
+      max_completion_tokens: 600,
     });
 
-    const answer =
-      completion.choices[0]?.message?.content?.trim() ||
-      getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
+    const aiAnswer = completion.choices[0]?.message?.content?.trim();
+    if (!aiAnswer) {
+      // OpenAI returned empty — log and fall back so we can debug from logs
+      // eslint-disable-next-line no-console
+      console.warn("[amy-ai] empty completion from OpenAI", {
+        finish_reason: completion.choices[0]?.finish_reason,
+        usage: completion.usage,
+      });
+      const answer = getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
+      res.json(AskAssistantResponse.parse({ answer }));
+      return;
+    }
 
-    res.json(AskAssistantResponse.parse({ answer }));
-  } catch {
-    // Graceful fallback to static FAQ
+    res.json(AskAssistantResponse.parse({ answer: aiAnswer }));
+  } catch (err: unknown) {
+    // Loud log so we can see in production logs if OpenAI is down or misconfigured
+    const e = err as { status?: number; message?: string; code?: string };
+    // eslint-disable-next-line no-console
+    console.error("[amy-ai] OpenAI call failed", {
+      status: e?.status,
+      code: e?.code,
+      message: e?.message?.slice(0, 300),
+    });
+    // Graceful fallback to static FAQ so the user still gets *something* useful
     const answer = getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
     res.json(AskAssistantResponse.parse({ answer }));
   }
@@ -149,7 +166,7 @@ router.post("/ai/rewrite-tip", async (req, res): Promise<void> => {
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      max_tokens: 80,
+      max_completion_tokens: 120,
     });
 
     const raw = completion.choices[0]?.message?.content?.trim() ?? text;
