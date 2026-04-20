@@ -14,15 +14,20 @@ interface ChildData {
   childClass: string;
   schoolStartTime: string;
   schoolEndTime: string;
+  travelMode: string;
   wakeUpTime: string;
   sleepTime: string;
   foodType: string;
+  dietNote: string;
 }
 
 interface ParentData {
   name: string;
   role: string;
   workType: string;
+  region: string;
+  mobileNumber: string;
+  allergies: string;
 }
 
 interface ChatMessage {
@@ -33,10 +38,11 @@ interface ChatMessage {
 type Step =
   | "intro"
   | "child-name" | "child-dob" | "child-school" | "child-class"
-  | "child-school-start" | "child-school-end"
+  | "child-school-start" | "child-school-end" | "child-travel"
   | "child-wake" | "child-sleep" | "child-food"
   | "add-more"
   | "parent-name" | "parent-role" | "parent-work"
+  | "parent-region" | "parent-mobile" | "parent-allergies"
   | "saving" | "done";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -67,6 +73,34 @@ const WORK_TYPES = [
   { label: "Work from Home", value: "work_from_home" },
   { label: "Office Job", value: "office" },
   { label: "Not Working", value: "not_working" },
+];
+const TRAVEL_OPTS = [
+  { label: "🚐 School Van / Bus", value: "van" },
+  { label: "🚗 Parent Drop-off (Car)", value: "car" },
+  { label: "🚶 Walking", value: "walk" },
+  { label: "✏️ Other", value: "other" },
+];
+// Religion / diet style options. Each maps to a backend foodType (veg/non_veg)
+// plus a free-text dietNote that gets stored in child.goals so Amy AI knows
+// the religious or cultural restriction when generating meals.
+const FOOD_OPTIONS = [
+  { label: "🥦 Vegetarian",        value: "veg",        foodType: "veg",     note: "" },
+  { label: "🥚 Eggetarian",        value: "eggetarian", foodType: "veg",     note: "Eggetarian — eggs are OK, no meat or fish" },
+  { label: "🍗 Non-Vegetarian",    value: "non_veg",    foodType: "non_veg", note: "" },
+  { label: "🙏 Jain (Pure Veg)",   value: "jain",       foodType: "veg",     note: "Jain diet — strictly no onion, garlic, root vegetables (potato, carrot, radish, beetroot)" },
+  { label: "☪️ Halal",              value: "halal",      foodType: "non_veg", note: "Halal only — no pork, meat must be halal-certified" },
+  { label: "✡️ Kosher",             value: "kosher",     foodType: "non_veg", note: "Kosher only — no pork or shellfish, never mix meat & dairy" },
+  { label: "🕉️ Sattvik / Pure Veg", value: "sattvik",    foodType: "veg",     note: "Sattvik — pure vegetarian, no onion or garlic, freshly cooked" },
+];
+const REGION_OPTS = [
+  { label: "Pan-Indian (Mixed)", value: "pan_indian" },
+  { label: "North Indian",       value: "north_indian" },
+  { label: "South Indian",       value: "south_indian" },
+  { label: "Bengali",            value: "bengali" },
+  { label: "Gujarati",           value: "gujarati" },
+  { label: "Maharashtrian",      value: "maharashtrian" },
+  { label: "Punjabi",            value: "punjabi" },
+  { label: "Global / Continental", value: "global" },
 ];
 
 const GRAD = "linear-gradient(135deg,#6366F1,#A855F7)";
@@ -164,8 +198,10 @@ function GridChips({ options, selected, onSelect }: { options: string[]; selecte
 function ProgressBar({ step }: { step: Step }) {
   const order: Step[] = [
     "child-name", "child-dob", "child-school", "child-class",
-    "child-school-start", "child-school-end", "child-wake", "child-sleep", "child-food",
+    "child-school-start", "child-school-end", "child-travel",
+    "child-wake", "child-sleep", "child-food",
     "add-more", "parent-name", "parent-role", "parent-work",
+    "parent-region", "parent-mobile", "parent-allergies",
   ];
   const idx = order.indexOf(step);
   const pct = idx < 0 ? 100 : Math.round(((idx + 1) / order.length) * 100);
@@ -250,6 +286,8 @@ export default function OnboardingPage() {
 
     try {
       for (const child of children) {
+        const goalsParts = ["balanced-routine"];
+        if (child.dietNote) goalsParts.unshift(child.dietNote);
         await authFetch("/api/children", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -264,21 +302,26 @@ export default function OnboardingPage() {
             schoolEndTime: child.schoolEndTime || "15:00",
             wakeUpTime: child.wakeUpTime || "07:00",
             sleepTime: child.sleepTime || "21:00",
-            travelMode: "car",
+            travelMode: child.travelMode || "car",
             foodType: child.foodType || "veg",
-            goals: "balanced-routine",
+            goals: goalsParts.join(" | "),
           }),
         });
       }
 
+      const parentBody: any = {
+        name: parent.name || "",
+        role: (parent.role || "mother").toLowerCase(),
+        workType: parent.workType || "work_from_home",
+        region: parent.region || "pan_indian",
+      };
+      if (parent.mobileNumber) parentBody.mobileNumber = parent.mobileNumber;
+      if (parent.allergies) parentBody.allergies = parent.allergies;
+
       await authFetch("/api/parent-profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: parent.name || "",
-          role: (parent.role || "mother").toLowerCase(),
-          workType: parent.workType || "work_from_home",
-        }),
+        body: JSON.stringify(parentBody),
       });
 
       await authFetch("/api/onboarding", {
@@ -482,9 +525,28 @@ export default function OnboardingPage() {
             onSelect={(v) => {
               setSelected(v);
               setCurr((c) => ({ ...c, schoolEndTime: to24h(v) }));
-              userReplies(v, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
+              userReplies(v, "child-travel", `How does ${curr.name || "your child"} travel to school? 🚐`);
             }}
           />
+        );
+
+      case "child-travel":
+        return (
+          <div className="grid grid-cols-2 gap-2">
+            {TRAVEL_OPTS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setCurr((c) => ({ ...c, travelMode: opt.value }));
+                  userReplies(opt.label, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
+                }}
+                className="py-3.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
+                style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         );
 
       case "child-wake":
@@ -515,25 +577,29 @@ export default function OnboardingPage() {
 
       case "child-food":
         return (
-          <div className="flex gap-3">
-            {[{ label: "🥦 Vegetarian", value: "veg" }, { label: "🍗 Non-Vegetarian", value: "non_veg" }].map(({ label, value }) => (
+          <div className="grid grid-cols-2 gap-2">
+            {FOOD_OPTIONS.map((opt) => (
               <button
-                key={value}
+                key={opt.value}
                 onClick={() => {
-                  const finalChild = { ...curr, foodType: value } as ChildData;
+                  const finalChild = {
+                    ...curr,
+                    foodType: opt.foodType,
+                    dietNote: opt.note,
+                  } as ChildData;
                   setChildren((prev) => [...prev, finalChild]);
                   setCurr({});
                   const childCount = children.length + 1;
-                  userReplies(label, "add-more",
+                  userReplies(opt.label, "add-more",
                     childCount === 1
                       ? "Got it! Do you have another child to add as well? 👨‍👩‍👧‍👦"
                       : "Do you have one more child to add?",
                   );
                 }}
-                className="flex-1 py-3.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
+                className="py-3.5 px-3 rounded-2xl text-sm font-semibold border active:scale-95 transition-all text-center"
                 style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
               >
-                {label}
+                {opt.label}
               </button>
             ))}
           </div>
@@ -622,8 +688,7 @@ export default function OnboardingPage() {
                 key={value}
                 onClick={() => {
                   setParent((p) => ({ ...p, workType: value }));
-                  userReplies(label, "saving");
-                  setTimeout(() => saveEverything(), 800);
+                  userReplies(label, "parent-region", "Last few quick things to make Amy AI smarter for your family. Which regional cuisine should I plan meals from? 🍛");
                 }}
                 className="w-full py-3.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
                 style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
@@ -631,6 +696,110 @@ export default function OnboardingPage() {
                 {label}
               </button>
             ))}
+          </div>
+        );
+
+      case "parent-region":
+        return (
+          <div className="grid grid-cols-2 gap-2">
+            {REGION_OPTS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => {
+                  setParent((p) => ({ ...p, region: opt.value }));
+                  userReplies(opt.label, "parent-mobile", "Got it! 📱 What's a mobile number where Amy can send reminders? (You can skip this for now.)");
+                }}
+                className="py-3.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
+                style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        );
+
+      case "parent-mobile":
+        return (
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <input
+                type="tel"
+                inputMode="tel"
+                className="flex-1 rounded-2xl px-4 py-3.5 text-sm outline-none border border-indigo-100 focus:border-indigo-400 transition-colors"
+                style={{ background: "rgba(255,255,255,0.95)", color: "#1e1b4b" }}
+                placeholder="+91 98765 43210"
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && textInput.trim()) {
+                    const m = textInput.trim();
+                    setParent((p) => ({ ...p, mobileNumber: m }));
+                    userReplies(m, "parent-allergies", "Great! 🌾 Any food allergies or things to avoid in meals? (Type them or skip if none.)");
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  if (!textInput.trim()) return;
+                  const m = textInput.trim();
+                  setParent((p) => ({ ...p, mobileNumber: m }));
+                  userReplies(m, "parent-allergies", "Great! 🌾 Any food allergies or things to avoid in meals? (Type them or skip if none.)");
+                }}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0"
+                style={{ background: GRAD }}
+              >→</button>
+            </div>
+            <button
+              onClick={() => userReplies("Skip for now", "parent-allergies", "No problem! 🌾 Any food allergies or things to avoid in meals? (Type them or skip if none.)")}
+              className="text-xs text-indigo-400 hover:text-indigo-600 self-center mt-1"
+            >
+              Skip — I'll add it later
+            </button>
+          </div>
+        );
+
+      case "parent-allergies":
+        return (
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <input
+                className="flex-1 rounded-2xl px-4 py-3.5 text-sm outline-none border border-indigo-100 focus:border-indigo-400 transition-colors"
+                style={{ background: "rgba(255,255,255,0.95)", color: "#1e1b4b" }}
+                placeholder="e.g. peanuts, shellfish, dairy..."
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && textInput.trim()) {
+                    const a = textInput.trim();
+                    setParent((p) => ({ ...p, allergies: a }));
+                    userReplies(a, "saving");
+                    setTimeout(() => saveEverything(), 800);
+                  }
+                }}
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  if (!textInput.trim()) return;
+                  const a = textInput.trim();
+                  setParent((p) => ({ ...p, allergies: a }));
+                  userReplies(a, "saving");
+                  setTimeout(() => saveEverything(), 800);
+                }}
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0"
+                style={{ background: GRAD }}
+              >→</button>
+            </div>
+            <button
+              onClick={() => {
+                userReplies("No allergies", "saving");
+                setTimeout(() => saveEverything(), 800);
+              }}
+              className="text-xs text-indigo-400 hover:text-indigo-600 self-center mt-1"
+            >
+              No allergies — finish setup
+            </button>
           </div>
         );
 
@@ -653,24 +822,9 @@ export default function OnboardingPage() {
               <p className="text-xs text-indigo-400">Setting up your profile</p>
             </div>
           </div>
-          <button
-            onClick={async () => {
-              try {
-                await authFetch("/api/onboarding", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ onboardingComplete: true }),
-                });
-                localStorage.setItem("onboardingComplete", "true");
-                queryClient.setQueryData(["onboarding-status"], { onboardingComplete: true });
-              } catch (_) {}
-              setLocation("/dashboard");
-            }}
-            className="text-xs font-semibold text-indigo-400 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-xl hover:bg-indigo-50 active:scale-95"
-            title="Skip onboarding"
-          >
-            Skip onboarding — will do it manually
-          </button>
+          <span className="text-[11px] font-semibold text-indigo-400 px-3 py-1.5">
+            Setup required ✨
+          </span>
         </div>
         <ProgressBar step={step} />
       </div>
