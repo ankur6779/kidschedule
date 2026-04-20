@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { useTheme } from "@/contexts/theme-context";
-import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_01_56_21_PM_1776587201948.png";
 
 interface BrandLogoProps {
   size?: "sm" | "md" | "lg";
@@ -31,22 +30,11 @@ export function BrandLogo({ size = "md", showTagline = false }: BrandLogoProps) 
   const { mode } = useTheme();
   const isDark = mode === "dark";
 
-  const logoSize  = size === "sm" ? "h-7 w-7"  : size === "lg" ? "h-12 w-12" : "h-9 w-9";
-  const fontSize  = size === "sm" ? "1rem"      : size === "lg" ? "1.7rem"    : "1.25rem";
-  const aiFontSz  = size === "sm" ? "0.6rem"    : size === "lg" ? "0.9rem"    : "0.72rem";
+  const fontSize  = size === "sm" ? "1.25rem"   : size === "lg" ? "2rem"      : "1.6rem";
+  const aiFontSz  = size === "sm" ? "0.65rem"   : size === "lg" ? "1rem"      : "0.8rem";
 
   return (
     <div className="flex items-center gap-2.5 relative">
-      {/* Logo image */}
-      <motion.img
-        src={logoImg}
-        alt="AmyNest"
-        className={`${logoSize} rounded-xl object-contain shrink-0`}
-        animate={{ y: [0, -3, 0] }}
-        transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-        style={{ filter: isDark ? "drop-shadow(0 0 8px rgba(155,89,182,0.6))" : "drop-shadow(0 2px 6px rgba(99,102,241,0.18))" }}
-      />
-
       {/* Text block */}
       <div className="flex flex-col leading-none relative">
         {/* Glow behind text */}
@@ -152,7 +140,7 @@ export function BrandLogo({ size = "md", showTagline = false }: BrandLogoProps) 
             animate={{ opacity: 1 }}
             transition={{ delay: 0.55 }}
           >
-            Smart Parenting · Powered by AI
+            Where Smart Parenting Starts
           </motion.span>
         )}
       </div>

@@ -140,10 +140,10 @@ export default function WelcomeScreen() {
           {/* NAV — minimal (matches web) */}
           <View style={styles.nav}>
             <View style={styles.navBrand}>
-              <Image source={LOGO} style={styles.navLogo} resizeMode="contain" />
               <Text style={styles.navBrandText}>
                 AmyNest <Text style={styles.navBrandAi}>AI</Text>
               </Text>
+              <Text style={styles.navBrandTag}>Where Smart Parenting Starts</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
               {/* Language picker pill */}
@@ -428,12 +428,11 @@ export default function WelcomeScreen() {
           {/* FOOTER */}
           <View style={styles.footer}>
             <View style={styles.footerBrand}>
-              <Image source={LOGO} style={styles.footerLogo} resizeMode="contain" />
               <Text style={styles.footerBrandText}>
                 AmyNest <Text style={styles.navBrandAi}>AI</Text>
               </Text>
             </View>
-            <Text style={styles.footerTag}>{t("landing.footer_tagline")}</Text>
+            <Text style={styles.footerTag}>Where Smart Parenting Starts</Text>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -460,17 +459,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
   },
-  navBrand: { flexDirection: "row", alignItems: "center", gap: 8 },
-  navLogo: { width: 32, height: 32, borderRadius: 8 },
+  navBrand: { flexDirection: "column", gap: 1 },
   navBrandText: {
-    fontSize: 16,
+    fontSize: 22,
     fontFamily: "Inter_700Bold",
     color: "#fff",
-    letterSpacing: -0.3,
+    letterSpacing: -0.5,
+    lineHeight: 26,
   },
   navBrandAi: {
     color: brand.purple500,
     fontFamily: "Inter_700Bold",
+  },
+  navBrandTag: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.45)",
+    letterSpacing: 0.5,
   },
   navSignIn: {
     fontSize: 14,

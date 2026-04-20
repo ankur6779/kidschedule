@@ -662,12 +662,9 @@ function SideDrawer({
           style={{ flex: 1, paddingTop: 56, paddingHorizontal: 16, paddingBottom: 20 }}
         >
           <View style={styles.drawerHeader}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Image source={LOGO_IMG} style={{ width: 38, height: 38, borderRadius: 10 }} resizeMode="contain" />
-              <View>
-                <Text style={styles.drawerBrand}>AmyNest</Text>
-                <Text style={styles.drawerBrandSub}>AI Parenting Coach</Text>
-              </View>
+            <View style={{ flexDirection: "column", gap: 2 }}>
+              <Text style={styles.drawerBrand}>AmyNest AI</Text>
+              <Text style={styles.drawerBrandSub}>Where Smart Parenting Starts</Text>
             </View>
             <TouchableOpacity onPress={onClose} hitSlop={12}>
               <Ionicons name="close" size={22} color="rgba(255,255,255,0.85)" />

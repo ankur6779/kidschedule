@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { AmyFaceSVG } from "@/components/amy-face-svg";
-import logoImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776624219075.png";
+
 import heroImg from "@assets/ChatGPT_Image_Apr_19,_2026,_02_10_25_PM_1776588039438.png";
 import { useTranslation } from "react-i18next";
 
@@ -411,30 +411,21 @@ export default function LandingPage() {
       {/* NAV */}
       <header className="relative z-20 flex items-center justify-between px-5 py-4">
         <Link href="/">
-          <div className="flex items-center gap-2 cursor-pointer">
-            <img
-              src={logoImg}
-              alt="AmyNest AI"
-              className="h-14 w-auto object-contain"
-              style={{
-                mixBlendMode: "screen",
-                filter: "drop-shadow(0 0 14px rgba(168,85,247,0.6)) brightness(1.1)",
-              }}
-            />
-            <div className="flex flex-col leading-tight hidden sm:flex">
+          <div className="flex items-center gap-3 cursor-pointer">
+            <AmyFaceSVG size={40} />
+            <div className="flex flex-col leading-tight">
               <span
-                className="font-quicksand font-black text-base"
+                className="font-quicksand font-black text-xl"
                 style={{
                   background: "linear-gradient(90deg,#A855F7,#EC4899,#06B6D4)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Amy Nest AI
+                AmyNest AI
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] text-white/50 font-medium">
-                <AmyFaceSVG size={22} />
-                AI Parenting Coach
+              <span className="text-[10px] text-white/45 font-medium tracking-wide">
+                Where Smart Parenting Starts
               </span>
             </div>
           </div>
@@ -951,30 +942,21 @@ export default function LandingPage() {
       <footer className="relative z-10 px-5 py-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex flex-col items-center md:items-start gap-2">
-            <div className="flex items-center gap-2">
-              <img
-                src={logoImg}
-                alt="AmyNest AI"
-                className="h-12 w-auto object-contain"
-                style={{
-                  mixBlendMode: "screen",
-                  filter: "drop-shadow(0 0 12px rgba(168,85,247,0.55)) brightness(1.1)",
-                }}
-              />
+            <div className="flex items-center gap-3">
+              <AmyFaceSVG size={36} />
               <div className="flex flex-col leading-tight">
                 <span
-                  className="font-quicksand font-black text-sm"
+                  className="font-quicksand font-black text-lg"
                   style={{
                     background: "linear-gradient(90deg,#A855F7,#EC4899,#06B6D4)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  Amy Nest AI
+                  AmyNest AI
                 </span>
-                <span className="flex items-center gap-1.5 text-[10px] text-white/45 font-medium">
-                  <AmyFaceSVG size={20} />
-                  Where Smart Parenting Begins
+                <span className="text-[10px] text-white/40 font-medium tracking-wide">
+                  Where Smart Parenting Starts
                 </span>
               </div>
             </div>

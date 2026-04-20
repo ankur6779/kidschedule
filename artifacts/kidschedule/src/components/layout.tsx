@@ -89,9 +89,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
+      <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
         <div className="flex items-center gap-2">
-          <BrandLogo size="sm" showTagline={false} />
+          <BrandLogo size="sm" showTagline={true} />
           <AmyIcon size={34} bounce ring />
         </div>
         <div className="flex items-center gap-2">
@@ -153,9 +153,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 flex-col border-r bg-card md:flex">
-          <div className="flex h-20 items-center justify-between border-b px-5 shadow-sm">
+          <div className="flex h-24 items-center justify-between border-b px-5 shadow-sm">
             <BrandLogo size="md" showTagline={true} />
-            <AmyIcon size={38} bounce ring />
+            <AmyIcon size={42} bounce ring />
           </div>
           <div className="px-4 pt-3">
             <LanguageSwitcher />

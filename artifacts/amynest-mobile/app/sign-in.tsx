@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Image,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
 } from "react-native";
 import { useSignIn, useOAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
@@ -17,7 +17,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const LOGO = require("../assets/images/amynest-logo.png");
+
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -94,11 +94,8 @@ export default function SignInScreen() {
 
           {/* Brand */}
           <View style={styles.brandRow}>
-            <Image source={LOGO} style={styles.logoBox} resizeMode="contain" />
-            <Text style={styles.brandName}>AmyNest</Text>
-            <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBadge}>
-              <Text style={styles.aiBadgeText}>AI</Text>
-            </LinearGradient>
+            <Text style={styles.brandName}>AmyNest AI</Text>
+            <Text style={styles.brandTag}>Where Smart Parenting Starts</Text>
           </View>
 
           <Text style={styles.title}>{t("auth.welcome_back")}</Text>
@@ -227,14 +224,9 @@ function makeStyles(c: ReturnType<typeof useColors>, mode: "light" | "dark") {
       backgroundColor: orb2Bg,
     },
     scroll: { flexGrow: 1, paddingHorizontal: 28, justifyContent: "center", paddingVertical: 32 },
-    brandRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 36 },
-    logoBox: { width: 44, height: 44, borderRadius: 12 },
-    brandName: { fontSize: 22, fontWeight: "700", color: c.foreground, fontFamily: "Inter_700Bold" },
-    aiBadge: {
-      paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
-      marginLeft: 2,
-    },
-    aiBadgeText: { fontSize: 11, fontWeight: "700", color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+    brandRow: { flexDirection: "column", gap: 2, marginBottom: 36 },
+    brandName: { fontSize: 28, fontWeight: "800", color: c.foreground, fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+    brandTag: { fontSize: 12, color: c.textMuted, fontFamily: "Inter_400Regular" },
     title: { fontSize: 30, fontWeight: "700", color: c.foreground, fontFamily: "Inter_700Bold", marginBottom: 6 },
     subtitle: { fontSize: 15, color: c.textMuted, fontFamily: "Inter_400Regular", marginBottom: 32 },
     form: { gap: 16 },

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Image,
+  KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
 } from "react-native";
 import { useSignUp, useOAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
@@ -15,7 +15,7 @@ import { brand } from "@/constants/colors";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const LOGO = require("../assets/images/amynest-logo.png");
+
 
 export default function SignUpScreen() {
   const { signUp, setActive, isLoaded } = useSignUp();
@@ -101,11 +101,8 @@ export default function SignUpScreen() {
 
           {/* Brand */}
           <View style={styles.brandRow}>
-            <Image source={LOGO} style={styles.logoBox} resizeMode="contain" />
-            <Text style={styles.brandName}>AmyNest</Text>
-            <LinearGradient colors={[brand.primary, "#FF4ECD"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.aiBadge}>
-              <Text style={styles.aiBadgeText}>AI</Text>
-            </LinearGradient>
+            <Text style={styles.brandName}>AmyNest AI</Text>
+            <Text style={styles.brandTag}>Where Smart Parenting Starts</Text>
           </View>
 
           {step === "form" ? (
@@ -285,11 +282,9 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,78,205,0.12)",
   },
   scroll: { flexGrow: 1, paddingHorizontal: 28, justifyContent: "center", paddingVertical: 32 },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 36 },
-  logoBox: { width: 44, height: 44, borderRadius: 12 },
-  brandName: { fontSize: 22, fontWeight: "700", color: "#FFFFFF", fontFamily: "Inter_700Bold" },
-  aiBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginLeft: 2 },
-  aiBadgeText: { fontSize: 11, fontWeight: "700", color: "#FFFFFF", fontFamily: "Inter_700Bold" },
+  brandRow: { flexDirection: "column", gap: 2, marginBottom: 36 },
+  brandName: { fontSize: 28, fontWeight: "800", color: "#FFFFFF", fontFamily: "Inter_700Bold", letterSpacing: -0.5 },
+  brandTag: { fontSize: 12, color: "rgba(255,255,255,0.5)", fontFamily: "Inter_400Regular" },
   title: { fontSize: 30, fontWeight: "700", color: "#FFFFFF", fontFamily: "Inter_700Bold", marginBottom: 6 },
   subtitle: { fontSize: 15, color: "rgba(255,255,255,0.5)", fontFamily: "Inter_400Regular", marginBottom: 32 },
   form: { gap: 16 },
