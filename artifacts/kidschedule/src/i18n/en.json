@@ -150,7 +150,8 @@
     "thinking": "Amy is thinking…",
     "input_placeholder": "Ask about sleep, tantrums, food, school anxiety...",
     "send_hint": "Press Enter to send · Shift+Enter for new line",
-    "error_response": "Failed to get a response. Please try again."
+    "error_response": "Failed to get a response. Please try again.",
+    "badge_label": "Amy AI"
   },
   "pricing": {
     "title": "Unlock Full Parenting Power",

@@ -126,7 +126,7 @@ export default function AssistantPage() {
             {t("ai.page_title")}
             <Badge className="bg-gradient-to-r from-violet-500 to-pink-500 text-white text-xs font-bold border-0 ml-1">
               <Zap className="h-3 w-3 mr-1" />
-              Amy AI
+              {t("ai.badge_label")}
             </Badge>
           </h1>
           <p className="text-muted-foreground mt-1">{t("ai.subtitle")}</p>

@@ -150,7 +150,8 @@
     "thinking": "Amy soch rahi hai…",
     "input_placeholder": "Neend, gussa, khaana, school anxiety ke baare mein poochein...",
     "send_hint": "Bhejne ke liye Enter dabayein · Nayi line ke liye Shift+Enter",
-    "error_response": "Jawab nahi mila. Kripya phir try karein."
+    "error_response": "Jawab nahi mila. Kripya phir try karein.",
+    "badge_label": "Amy AI"
   },
   "pricing": {
     "title": "Puri Parenting Power Unlock Karein",
