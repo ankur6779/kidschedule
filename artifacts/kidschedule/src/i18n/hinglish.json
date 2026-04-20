@@ -123,7 +123,17 @@
     "ask_amy": "Amy AI se poochein",
     "welcome_msg": "Hi! Main Amy hoon 💜 aapki AI parenting coach. Mujhse kuch bhi poochein — neend, gussa, nakhre, school ki chintayein. Main yahaan hoon.",
     "type_message": "Message likhein…",
-    "send": "Bhejein"
+    "send": "Bhejein",
+    "quota_remaining": "{{limit}} mein se {{remaining}} free Amy AI messages baaki hain",
+    "quota_remaining_singular": "{{limit}} mein se {{remaining}} free Amy AI message baaki hai",
+    "quota_exhausted": "Free Amy AI limit khatam ho gayi",
+    "quota_exhausted_go_premium": "Free Amy AI limit khatam — premium lein",
+    "quota_exhausted_upgrade": "Free Amy AI limit khatam — unlimited messages ke liye upgrade karein.",
+    "quota_exhausted_body": "Aapne apne {{limit}} free Amy AI messages use kar liye hain. Unlimited sawalon, gehri jaankari aur priority support ke liye Premium mein upgrade karein.",
+    "quota_exhausted_input": "Saare {{limit}} free messages use ho gaye. Unlimited sawalon ke liye Premium mein upgrade karein.",
+    "upgrade": "Upgrade Karein",
+    "upgrade_premium": "Premium mein Upgrade Karein",
+    "upgrade_arrow": "Upgrade Karein →"
   },
   "pricing": {
     "title": "Puri Parenting Power Unlock Karein",

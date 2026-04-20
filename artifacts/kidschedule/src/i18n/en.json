@@ -123,7 +123,17 @@
     "ask_amy": "Ask Amy AI",
     "welcome_msg": "Hi! I'm Amy 💜 your AI parenting coach. Ask me anything — sleep, tantrums, picky eating, school worries. I'm here.",
     "type_message": "Type a message…",
-    "send": "Send"
+    "send": "Send",
+    "quota_remaining": "{{remaining}} of {{limit}} free Amy AI messages remaining",
+    "quota_remaining_singular": "{{remaining}} of {{limit}} free Amy AI message remaining",
+    "quota_exhausted": "Free Amy AI limit reached",
+    "quota_exhausted_go_premium": "Free Amy AI limit reached — go premium",
+    "quota_exhausted_upgrade": "Free Amy AI limit reached — upgrade for unlimited messages.",
+    "quota_exhausted_body": "You've used all {{limit}} of your free Amy AI messages. Upgrade to Premium for unlimited questions, deeper insights, and priority support.",
+    "quota_exhausted_input": "All {{limit}} free messages used. Upgrade to Premium for unlimited questions.",
+    "upgrade": "Upgrade",
+    "upgrade_premium": "Upgrade to Premium",
+    "upgrade_arrow": "Upgrade →"
   },
   "pricing": {
     "title": "Unlock Full Parenting Power",

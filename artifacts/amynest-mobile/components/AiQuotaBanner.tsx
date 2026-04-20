@@ -2,12 +2,14 @@ import React from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useSubscriptionStore, selectAiRemaining, selectIsPremium } from "@/store/useSubscriptionStore";
 import { brand } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 
 export default function AiQuotaBanner() {
   const router = useRouter();
+  const { t } = useTranslation();
   const isPremium = useSubscriptionStore(selectIsPremium);
   const remaining = useSubscriptionStore(selectAiRemaining);
   const c = useColors();
@@ -25,6 +27,12 @@ export default function AiQuotaBanner() {
   const iconColor = exhausted ? c.statusErrorText : low ? c.statusWarningText : c.textSubtle;
   const textColor = exhausted ? c.statusErrorText : low ? c.statusWarningText : c.textSubtle;
 
+  const quotaText = exhausted
+    ? t("ai.quota_exhausted_go_premium")
+    : remaining === 1
+    ? t("ai.quota_remaining_singular", { remaining, limit: 10 })
+    : t("ai.quota_remaining", { remaining, limit: 10 });
+
   return (
     <Pressable
       onPress={() => router.push({ pathname: "/paywall", params: { reason: "ai_quota" } })}
@@ -36,11 +44,9 @@ export default function AiQuotaBanner() {
         color={iconColor}
       />
       <Text style={[styles.text, { color: textColor }]}>
-        {exhausted
-          ? "Free Amy AI limit reached — go premium"
-          : `${remaining} of 10 free Amy AI ${remaining === 1 ? "message" : "messages"} left`}
+        {quotaText}
       </Text>
-      {(exhausted || low) && <Text style={styles.cta}>Upgrade →</Text>}
+      {(exhausted || low) && <Text style={styles.cta}>{t("ai.upgrade_arrow")}</Text>}
     </Pressable>
   );
 }
