@@ -90,7 +90,7 @@ export default function AssistantPage() {
         window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
         return;
       }
-      if (!res.ok) throw new Error("Failed to get response");
+      if (!res.ok) throw new Error("api_error");
       const data = await res.json();
       const assistantMsg: Message = { role: "assistant", content: data.answer };
       setMessages((prev) => [...prev, assistantMsg]);
