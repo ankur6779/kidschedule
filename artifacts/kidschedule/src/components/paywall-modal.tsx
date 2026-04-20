@@ -27,6 +27,11 @@ const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
     title: "Unlock Full Parenting Power",
     subtitle: "Get unlimited AI, smart coaching, and premium insights.",
   },
+  section_locked: {
+    title: "Unlock Full Parenting Power 🚀",
+    subtitle:
+      "You've explored 1 feature. Unlock unlimited routines, full AI personalization, all activities & smart insights.",
+  },
 };
 
 export function PaywallModal() {

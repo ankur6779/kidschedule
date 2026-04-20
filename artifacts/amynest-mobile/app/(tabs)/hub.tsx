@@ -22,6 +22,8 @@ import { AmazingFacts } from "@/components/AmazingFacts";
 import FuturePredictor from "@/components/FuturePredictor";
 import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
+import { useSectionUsage } from "@/hooks/useSectionUsage";
+import LockedBlock from "@/components/LockedBlock";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import colors, { brand } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
@@ -65,6 +67,8 @@ export default function HubScreen() {
   const styles = useMemo(() => makeStyles(c, mode), [c, mode]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [openSection, setOpenSection] = useState<string | null>("amy");
+  // Smart usage-based paywall — free users may open exactly ONE premium block.
+  const hubUsage = useSectionUsage("parenting_hub");
 
   const { data: children = [], isLoading } = useQuery<Child[]>({
     queryKey: ["children"],
@@ -296,6 +300,11 @@ export default function HubScreen() {
           </View>
         </Section>
 
+        <LockedBlock
+          locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("activities")}
+          reason="section_locked"
+          label="Premium feature"
+        >
         <Section
           id="activities"
           icon={<Ionicons name="color-palette" size={20} color="#fff" />}
@@ -304,6 +313,7 @@ export default function HubScreen() {
           desc="Games, audio lessons & more"
           open={openSection === "activities"}
           onToggle={() => setOpenSection(s => s === "activities" ? null : "activities")}
+          onOpen={() => hubUsage.markBlockUsed("activities")}
         >
           <Text style={styles.sectionLead}>Educational activities curated by Amy for your child's age group.</Text>
 
@@ -350,6 +360,7 @@ export default function HubScreen() {
           </Pressable>
 
         </Section>
+        </LockedBlock>
 
         {/* Art & Craft Videos — Google Drive */}
         <Section
@@ -395,17 +406,24 @@ export default function HubScreen() {
         </Section>
 
         {effective && effective.age >= 2 && effective.age <= 15 && (
-          <Section
-            id="life-skills"
-            icon={<Ionicons name="compass" size={20} color="#fff" />}
-            accent={["#10B981", "#34D399"]}
-            title="🧭 Life Skills Mode"
-            desc="Daily real-life skills, ages 2–15"
-            open={openSection === "life-skills"}
-            onToggle={() => setOpenSection(s => s === "life-skills" ? null : "life-skills")}
+          <LockedBlock
+            locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("life_skills")}
+            reason="section_locked"
+            label="Premium feature"
           >
-            <LifeSkillsZone child={{ id: effective.id, name: effective.name, age: effective.age }} />
-          </Section>
+            <Section
+              id="life-skills"
+              icon={<Ionicons name="compass" size={20} color="#fff" />}
+              accent={["#10B981", "#34D399"]}
+              title="🧭 Life Skills Mode"
+              desc="Daily real-life skills, ages 2–15"
+              open={openSection === "life-skills"}
+              onToggle={() => setOpenSection(s => s === "life-skills" ? null : "life-skills")}
+              onOpen={() => hubUsage.markBlockUsed("life_skills")}
+            >
+              <LifeSkillsZone child={{ id: effective.id, name: effective.name, age: effective.age }} />
+            </Section>
+          </LockedBlock>
         )}
 
         {/* Bottom CTA */}
@@ -419,7 +437,7 @@ export default function HubScreen() {
 }
 
 function Section({
-  id, icon, accent, title, desc, open, onToggle, children,
+  id, icon, accent, title, desc, open, onToggle, onOpen, children,
 }: {
   id: string;
   icon: React.ReactNode;
@@ -428,6 +446,7 @@ function Section({
   desc: string;
   open: boolean;
   onToggle: () => void;
+  onOpen?: () => void;
   children: React.ReactNode;
 }) {
   const c = useColors();
@@ -440,6 +459,7 @@ function Section({
       update: { type: "easeInEaseOut" },
       delete: { type: "easeInEaseOut", property: "opacity" },
     });
+    if (!open) onOpen?.();
     onToggle();
   };
   return (

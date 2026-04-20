@@ -1,11 +1,12 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
-type PaywallReason =
+export type PaywallReason =
   | "ai_quota"
   | "personalized_coaching"
   | "premium_insight"
   | "child_limit"
-  | "feature";
+  | "feature"
+  | "section_locked";
 
 type PaywallState = {
   open: boolean;

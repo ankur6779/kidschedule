@@ -29,6 +29,8 @@ import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
 import { FuturePredictor } from "@/components/future-predictor";
+import { LockedBlock } from "@/components/locked-block";
+import { useSectionUsage } from "@/hooks/use-section-usage";
 import type { AgeGroup } from "@/lib/age-groups";
 
 // ─── Section Wrapper ─────────────────────────────────────────────────────────
@@ -42,8 +44,15 @@ interface SectionProps {
   children: React.ReactNode;
 }
 
-function HubSection({ id, icon, title, description, accentClass, defaultOpen = false, children }: SectionProps) {
+function HubSection({ id, icon, title, description, accentClass, defaultOpen = false, onOpen, children }: SectionProps & { onOpen?: () => void }) {
   const [open, setOpen] = useState(defaultOpen);
+  const toggle = () => {
+    setOpen((v) => {
+      const next = !v;
+      if (next) onOpen?.();
+      return next;
+    });
+  };
   return (
     <div
       data-section-id={id}
@@ -63,7 +72,7 @@ function HubSection({ id, icon, title, description, accentClass, defaultOpen = f
       ].join(" ")}
     >
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={toggle}
         className={[
           "w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left",
           "transition-colors duration-200",
@@ -312,6 +321,10 @@ export default function ParentingHub() {
     ? (effectiveChild.age * 12) + ((effectiveChild as any).ageMonths ?? 0)
     : 0;
 
+  // Smart usage-based paywall: free users may open exactly ONE of the
+  // premium-feel blocks (Activities / Olympiad / Life Skills) within this hub.
+  const hubUsage = useSectionUsage("parenting_hub");
+
   const handleChildSelect = (id: number) => {
     setSelectedChildId(id);
   };
@@ -475,45 +488,66 @@ export default function ParentingHub() {
 
         {/* 5. Activities & Learning */}
         {effectiveChild && ageGroup && (
-          <HubSection
-            id="activities"
-            icon={<Palette className="h-5 w-5 text-fuchsia-600" />}
-            title="Activities & Learning"
-            description="Age-based games, stories & skills"
-            accentClass="bg-fuchsia-100 dark:bg-fuchsia-500/20"
+          <LockedBlock
+            locked={hubUsage.isBlockLocked("activities")}
+            reason="section_locked"
+            label="Premium feature"
           >
-            <ActivitiesSection
-              ageGroup={ageGroup}
-              effectiveChild={effectiveChild}
-              totalAgeMonths={totalAgeMonths}
-            />
-          </HubSection>
+            <HubSection
+              id="activities"
+              icon={<Palette className="h-5 w-5 text-fuchsia-600" />}
+              title="Activities & Learning"
+              description="Age-based games, stories & skills"
+              accentClass="bg-fuchsia-100 dark:bg-fuchsia-500/20"
+              onOpen={() => hubUsage.markBlockUsed("activities")}
+            >
+              <ActivitiesSection
+                ageGroup={ageGroup}
+                effectiveChild={effectiveChild}
+                totalAgeMonths={totalAgeMonths}
+              />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* 6. Smart Olympiad Zone */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 15 && (
-          <HubSection
-            id="olympiad"
-            icon={<Trophy className="h-5 w-5 text-amber-600" />}
-            title="Smart Olympiad Zone"
-            description="Daily 5 MCQs, weekly tests, badges & insights"
-            accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-yellow-100 dark:to-yellow-500/20"
+          <LockedBlock
+            locked={hubUsage.isBlockLocked("olympiad")}
+            reason="section_locked"
+            label="Premium feature"
           >
-            <OlympiadZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
-          </HubSection>
+            <HubSection
+              id="olympiad"
+              icon={<Trophy className="h-5 w-5 text-amber-600" />}
+              title="Smart Olympiad Zone"
+              description="Daily 5 MCQs, weekly tests, badges & insights"
+              accentClass="bg-gradient-to-br from-amber-100 dark:from-amber-500/20 to-yellow-100 dark:to-yellow-500/20"
+              onOpen={() => hubUsage.markBlockUsed("olympiad")}
+            >
+              <OlympiadZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* 7. Life Skills Mode */}
         {effectiveChild && effectiveChild.age >= 2 && effectiveChild.age <= 15 && (
-          <HubSection
-            id="life-skills"
-            icon={<Compass className="h-5 w-5 text-emerald-600" />}
-            title="🧭 Life Skills Mode"
-            description="Daily real-life skills tailored to your child's age"
-            accentClass="bg-gradient-to-br from-emerald-100 dark:from-emerald-500/20 to-teal-100 dark:to-teal-500/20"
+          <LockedBlock
+            locked={hubUsage.isBlockLocked("life_skills")}
+            reason="section_locked"
+            label="Premium feature"
           >
-            <LifeSkillsZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
-          </HubSection>
+            <HubSection
+              id="life-skills"
+              icon={<Compass className="h-5 w-5 text-emerald-600" />}
+              title="🧭 Life Skills Mode"
+              description="Daily real-life skills tailored to your child's age"
+              accentClass="bg-gradient-to-br from-emerald-100 dark:from-emerald-500/20 to-teal-100 dark:to-teal-500/20"
+              onOpen={() => hubUsage.markBlockUsed("life_skills")}
+            >
+              <LifeSkillsZone child={{ id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age }} />
+            </HubSection>
+          </LockedBlock>
         )}
 
       </div>
