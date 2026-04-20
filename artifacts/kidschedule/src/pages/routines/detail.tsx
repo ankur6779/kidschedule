@@ -1053,6 +1053,23 @@ export default function RoutineDetail() {
       </header>
 
 
+      {/* Amy AI editing tip — guides parents to the Edit button on every task */}
+      {dateMode !== "past" && items.some((i) => i.status !== "completed" && i.status !== "skipped") && (
+        <div className="rounded-2xl border-2 border-violet-200 bg-violet-50 dark:bg-violet-950/30 dark:border-violet-700/50 p-3 flex items-start gap-2.5">
+          <div className="bg-violet-500 text-white w-7 h-7 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+            <Sparkles className="h-3.5 w-3.5" />
+          </div>
+          <p className="text-xs text-violet-900 dark:text-violet-100 font-medium leading-snug">
+            <strong className="text-violet-700 dark:text-violet-200">Tip from Amy AI:</strong>{" "}
+            Tap the{" "}
+            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full border border-violet-300 bg-violet-100 text-violet-700 dark:bg-violet-900/60 dark:text-violet-100 font-bold text-[10px] align-middle">
+              <Pencil className="h-2.5 w-2.5" /> Edit
+            </span>{" "}
+            chip on any task to change its time, name, or duration. I'll keep the rest of the day in sync. ❤️
+          </p>
+        </div>
+      )}
+
       <div className="relative mt-2">
         <div className="absolute left-[39px] sm:left-[55px] top-4 bottom-4 w-0.5 bg-border/60 z-0 rounded-full" />
 
@@ -1108,7 +1125,7 @@ export default function RoutineDetail() {
                   )}
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex flex-col gap-2.5">
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-start gap-2.5">
                         {/* Activity Illustration — static image library */}
                         <div className="relative shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-muted/50 shadow-sm">
                           {(() => {
@@ -1177,15 +1194,38 @@ export default function RoutineDetail() {
                             </div>
                           ) : (
                           <>
-                          <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug ${status === "skipped" ? "line-through text-muted-foreground" : status === "completed" ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" }}>
-                            {item.activity}
-                          </h3>
-                          {/* Priority badge for high-priority tasks */}
-                          {priority === "high" && status === "pending" && !isCurrentTask && (
-                            <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 bg-rose-50 border border-rose-200 rounded-full px-1.5 py-0.5 mt-0.5">
-                              ★ Essential
-                            </span>
-                          )}
+                          {/* Title row + always-visible Edit pencil (mobile-friendly) */}
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className={`font-bold text-sm sm:text-base text-foreground leading-snug flex-1 min-w-0 ${status === "skipped" ? "line-through text-muted-foreground" : status === "completed" ? "line-through opacity-60" : ""}`} style={{ wordBreak: "break-word", overflowWrap: "break-word", whiteSpace: "normal" }}>
+                              {item.activity}
+                            </h3>
+                            {isInteractive && status !== "completed" && status !== "skipped" && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleEditStart(index); }}
+                                className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold border-2 border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                                title="Edit this task"
+                              >
+                                <Pencil className="h-3 w-3" />
+                                <span className="hidden sm:inline">Edit</span>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Status & category chips — wrap onto new line on small screens */}
+                          <div className="flex items-center gap-1.5 flex-wrap mt-1">
+                            {status === "completed" && <Badge className="bg-green-100 text-green-700 border-green-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">✓ Done</Badge>}
+                            {status === "skipped" && item.skipReason && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">⏭️ Auto-skipped</Badge>}
+                            {status === "skipped" && !item.skipReason && <Badge className="bg-muted text-muted-foreground border-border rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">Skipped</Badge>}
+                            {status === "delayed" && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">⏱ Delayed</Badge>}
+                            <Badge className={`rounded-full text-[10px] sm:text-xs font-bold border px-2 py-0.5 ${catStyle}`}>
+                              {item.category}
+                            </Badge>
+                            {priority === "high" && status === "pending" && !isCurrentTask && (
+                              <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wide text-rose-600 bg-rose-50 border border-rose-200 rounded-full px-1.5 py-0.5">
+                                ★ Essential
+                              </span>
+                            )}
+                          </div>
                           {/* Auto-skip reason */}
                           {item.skipReason && (
                             <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 mt-1 font-medium">
@@ -1216,24 +1256,6 @@ export default function RoutineDetail() {
                             <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-3 break-words" style={{ overflowWrap: "break-word" }}>{item.notes}</p>
                           ) : null}
                           </>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {status === "completed" && <Badge className="bg-green-100 text-green-700 border-green-200 rounded-full text-xs font-bold">✓ Done</Badge>}
-                          {status === "skipped" && item.skipReason && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-xs font-bold">⏭️ Auto-skipped</Badge>}
-                          {status === "skipped" && !item.skipReason && <Badge className="bg-muted text-muted-foreground border-border rounded-full text-xs font-bold">Skipped</Badge>}
-                          {status === "delayed" && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-xs font-bold">⏱ Delayed</Badge>}
-                          <Badge className={`rounded-full text-xs font-bold border ${catStyle}`}>
-                            {item.category}
-                          </Badge>
-                          {isInteractive && editingIndex !== index && status !== "completed" && status !== "skipped" && (
-                            <button
-                              onClick={() => handleEditStart(index)}
-                              className="ml-1 p-1 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
-                              title="Edit task"
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </button>
                           )}
                         </div>
                       </div>

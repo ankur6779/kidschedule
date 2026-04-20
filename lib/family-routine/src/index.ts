@@ -4,7 +4,7 @@
 // Pure TS — no React, no platform deps. Runs on web + Expo + Node.
 // ─────────────────────────────────────────────────────────────────────────
 
-export type HandlerKey = "mom" | "dad" | "grandparent" | "babysitter";
+export type HandlerKey = "mom" | "dad" | "both" | "grandparent" | "babysitter";
 
 export type HandlerInfo = {
   key: HandlerKey;
@@ -47,6 +47,18 @@ export const HANDLER_TYPES: HandlerInfo[] = [
     border: "#818CF8",
     fg: "#3730A3",
     note: "Full routine with extra outdoor and active play.",
+    skipCategories: [],
+    maxActivities: 99,
+    addEasySteps: false,
+  },
+  {
+    key: "both",
+    label: "Both Parents",
+    emoji: "👨‍👩‍👧",
+    bg: "#F3E8FF",
+    border: "#A78BFA",
+    fg: "#5B21B6",
+    note: "Both parents available — Amy will plan extra family bonding moments and shared activities.",
     skipCategories: [],
     maxActivities: 99,
     addEasySteps: false,
@@ -392,6 +404,8 @@ export function buildHandlerSpecialPlansSuffix(handlerKey: HandlerKey): string {
       return "Today is being handled by a babysitter — give clear step-by-step instructions and easy tasks only.";
     case "dad":
       return "Today is being handled by Dad — include extra outdoor and active play.";
+    case "both":
+      return "Today both parents (Mom AND Dad) are handling the child together — plan extra family bonding activities, shared meals, joint playtime, and co-parenting moments. Distribute responsibilities between both parents and highlight 'family time' tasks.";
     case "mom":
     default:
       return "Today is being handled by Mom — include bonding moments and learning time.";

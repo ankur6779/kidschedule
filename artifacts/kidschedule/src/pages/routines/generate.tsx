@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, Link } from "wouter";
+import { useLocation, Link, useSearch } from "wouter";
 import { useListChildren, getListChildrenQueryKey, useGenerateRoutine, useCreateRoutine, getListRoutinesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw, Home, Building2, UserCheck, PlusCircle, MinusCircle, Zap, Brain } from "lucide-react";
+import { ArrowLeft, Sparkles, Calendar, User, Clock, GraduationCap, Car, Refrigerator, School, Briefcase, Heart, Star, Users, CheckCircle2, ChevronDown, ChevronUp, AlertTriangle, ExternalLink, RefreshCw, Home, Building2, UserCheck, Zap, Brain } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { getApiUrl } from "@/lib/api";
@@ -213,28 +213,9 @@ function ParentEntryForm({
   label: string;
 }) {
   const needsWorkingDayQ = entry.workType === "work_from_home" || entry.workType === "work_from_office";
-  const roleOptions = ["Mother", "Father", "Parent"];
 
   return (
     <div className="rounded-2xl border border-border bg-muted/30 p-4 space-y-4">
-      {/* Role selector */}
-      <div className="space-y-2">
-        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{label} — Role</p>
-        <div className="flex gap-2 flex-wrap">
-          {roleOptions.map((r) => (
-            <button
-              key={r}
-              onClick={() => onChange({ ...entry, role: r })}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
-                entry.role === r ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:border-primary/40"
-              }`}
-            >
-              {r === "Mother" ? "👩 Mother" : r === "Father" ? "👨 Father" : "🧑 Parent"}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Work type */}
       <div className="space-y-2">
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Work Type</p>
@@ -331,15 +312,11 @@ function ParentAvailSection({
   date: string;
 }) {
   const p1Complete = isParentAvailComplete(avail.p1);
-  const p2Complete = !avail.hasSecondParent || isParentAvailComplete(avail.p2 ?? DEFAULT_P2);
 
-  // Status badges for summary
+  // Status badge for summary
   const p1Status = avail.p1.workType
     ? (avail.p1.workType === "homemaker" ? "free" : avail.p1.isWorking === true ? "busy" : avail.p1.isWorking === false ? "free" : "pending")
     : "pending";
-  const p2Status = avail.hasSecondParent && avail.p2?.workType
-    ? (avail.p2.workType === "homemaker" ? "free" : avail.p2.isWorking === true ? "busy" : avail.p2.isWorking === false ? "free" : "pending")
-    : null;
 
   const statusColor = {
     busy: "bg-amber-100 text-amber-800 border-amber-300",
@@ -352,63 +329,31 @@ function ParentAvailSection({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="bg-primary/20 text-primary w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs">{stepNum}</div>
-          <Label className="text-lg font-bold flex items-center gap-2">
+          <Label className="text-base sm:text-lg font-bold flex items-center gap-2 flex-wrap">
             <UserCheck className="h-5 w-5 text-primary" />
-            Parent Schedule for{" "}
+            Your Schedule for{" "}
             <span className="text-primary font-bold">
               {new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
             </span>
           </Label>
         </div>
         {/* Status summary */}
-        {(p1Complete || p2Status !== null) && (
+        {p1Complete && (
           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {p1Complete && (
-              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor[p1Status as "busy" | "free" | "pending"]}`}>
-                {avail.p1.role}: {p1Status === "busy" ? "Busy" : "Free"}
-              </span>
-            )}
-            {p2Status && (
-              <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor[p2Status as "busy" | "free"]}`}>
-                {avail.p2?.role}: {p2Status === "busy" ? "Busy" : "Free"}
-              </span>
-            )}
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${statusColor[p1Status as "busy" | "free" | "pending"]}`}>
+              {p1Status === "busy" ? "Busy" : "Free"}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Parent 1 */}
+      {/* Single caregiver schedule (role / second-parent removed — handler card above
+          already says who is taking care, so we only need work-availability here). */}
       <ParentEntryForm
         entry={avail.p1}
-        label="Parent 1"
+        label="Today"
         onChange={(e) => onChange({ ...avail, p1: e })}
       />
-
-      {/* Second parent toggle */}
-      <button
-        onClick={() => {
-          if (avail.hasSecondParent) {
-            onChange({ ...avail, hasSecondParent: false, p2: null });
-          } else {
-            onChange({ ...avail, hasSecondParent: true, p2: { ...DEFAULT_P2 } });
-          }
-        }}
-        className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors py-1"
-      >
-        {avail.hasSecondParent
-          ? <><MinusCircle className="h-4 w-4" /> Remove second parent</>
-          : <><PlusCircle className="h-4 w-4" /> Add second parent (for co-parenting coordination)</>
-        }
-      </button>
-
-      {/* Parent 2 */}
-      {avail.hasSecondParent && avail.p2 && (
-        <ParentEntryForm
-          entry={avail.p2}
-          label="Parent 2"
-          onChange={(e) => onChange({ ...avail, p2: e })}
-        />
-      )}
     </div>
   );
 }
@@ -578,7 +523,18 @@ export default function RoutineGenerate() {
 
   // Single mode
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
-  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  // Read ?date= from URL so links from the calendar (Tomorrow / specific day)
+  // open the generator pre-filled to the requested date instead of always today.
+  const search = useSearch();
+  const initialDate = (() => {
+    try {
+      const sp = new URLSearchParams(search);
+      const q = sp.get("date");
+      if (q && /^\d{4}-\d{2}-\d{2}$/.test(q)) return q;
+    } catch {}
+    return format(new Date(), "yyyy-MM-dd");
+  })();
+  const [date, setDate] = useState(initialDate);
   const [hasSchool, setHasSchool] = useState<boolean | null>(null);
   const [specialPlans, setSpecialPlans] = useState("");
   const [fridgeItems, setFridgeItems] = useState("");
