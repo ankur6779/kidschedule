@@ -471,15 +471,6 @@ export default function LandingPage() {
           {t("landing.hero_headline")}
         </h1>
 
-        <Link href="/sign-in">
-          <p className="amy-fade-up-2 text-white/55 text-sm mb-5 hover:text-white/80 transition-colors cursor-pointer">
-            Already a Smart Parent - Kindly sign in{" "}
-            <span className="text-purple-300 font-semibold underline underline-offset-2">
-              here
-            </span>
-          </p>
-        </Link>
-
         <p className="amy-fade-up-3 text-white/75 text-base md:text-xl max-w-xl leading-relaxed mb-10">
           {t("landing.hero_sub")}
         </p>
@@ -496,8 +487,7 @@ export default function LandingPage() {
           </Link>
           <Link href="/sign-in">
             <button className="amy-glass inline-flex items-center gap-2 text-sm font-semibold px-7 py-4 rounded-2xl text-white/80 hover:text-white hover:border-white/20 transition-all">
-              <Play className="h-4 w-4 text-purple-300" />
-              See How It Works
+              {t("landing.nav_sign_in")}
             </button>
           </Link>
         </div>
