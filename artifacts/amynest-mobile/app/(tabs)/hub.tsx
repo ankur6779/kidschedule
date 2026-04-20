@@ -16,6 +16,9 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LifeSkillsZone } from "@/components/LifeSkillsZone";
 import InfantHub from "@/components/InfantHub";
+import { ArtCraftReels } from "@/components/ArtCraftReels";
+import { PrintableWorksheets } from "@/components/PrintableWorksheets";
+import { AmazingFacts } from "@/components/AmazingFacts";
 import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
@@ -358,14 +361,49 @@ export default function HubScreen() {
             </LinearGradient>
           </Pressable>
 
-          {/* Activity chips */}
-          <View style={[styles.activityRow, { marginTop: 8 }]}>
-            {["Stories", "Puzzles", "Crafts", "Songs"].map(a => (
-              <View key={a} style={styles.activityCard}>
-                <Text style={{ color: "#fff", fontWeight: "700" }}>{a}</Text>
-              </View>
-            ))}
-          </View>
+        </Section>
+
+        {/* Art & Craft Videos — Google Drive */}
+        <Section
+          id="art-craft"
+          icon={<MaterialCommunityIcons name="palette" size={20} color="#fff" />}
+          accent={["#F472B6", "#A855F7"]}
+          title="🎨 Art & Craft Videos"
+          desc="Short creative videos to inspire your child"
+          open={openSection === "art-craft"}
+          onToggle={() => setOpenSection(s => s === "art-craft" ? null : "art-craft")}
+        >
+          <ArtCraftReels />
+        </Section>
+
+        {/* Printable Worksheets — Google Drive */}
+        <Section
+          id="worksheets"
+          icon={<MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />}
+          accent={["#0EA5E9", "#6366F1"]}
+          title="📄 Printable Worksheets"
+          desc="Coloring, math, tracing & more · 5 free / day"
+          open={openSection === "worksheets"}
+          onToggle={() => setOpenSection(s => s === "worksheets" ? null : "worksheets")}
+        >
+          <PrintableWorksheets />
+        </Section>
+
+        {/* Amazing Facts */}
+        <Section
+          id="facts"
+          icon={<Ionicons name="sparkles" size={20} color="#fff" />}
+          accent={["#F59E0B", "#FB7185"]}
+          title="✨ Amazing Facts"
+          desc="Mind-blowing facts for curious kids"
+          open={openSection === "facts"}
+          onToggle={() => setOpenSection(s => s === "facts" ? null : "facts")}
+        >
+          {effective ? (
+            <AmazingFacts ageMonths={effective.age * 12 + (effective.ageMonths ?? 0)} />
+          ) : (
+            <Text style={styles.sectionLead}>Add a child to unlock age-matched facts.</Text>
+          )}
         </Section>
 
         {effective && effective.age >= 2 && effective.age <= 15 && (
