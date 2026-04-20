@@ -1036,16 +1036,16 @@ export default function HomeScreen() {
   const topPad = insets.top + (Platform.OS === "web" ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 34 : 0);
 
-  if (!profileLoading && !profileComplete) {
-    return <ProfileLockScreen sectionName="Dashboard" />;
-  }
-
-  if (summaryLoading) {
+  if (profileLoading || summaryLoading) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
         <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
+  }
+
+  if (!profileComplete) {
+    return <ProfileLockScreen sectionName="Dashboard" />;
   }
 
   return (

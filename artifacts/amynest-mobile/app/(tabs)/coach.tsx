@@ -351,7 +351,15 @@ export default function CoachScreen() {
   const topPad = insets.top + (Platform.OS === "web" ? 16 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 16 : 0);
 
-  if (!profileLoading && !profileComplete) {
+  if (profileLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.background, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={c.primary} />
+      </View>
+    );
+  }
+
+  if (!profileComplete) {
     return <ProfileLockScreen sectionName="Amy Coach" />;
   }
 

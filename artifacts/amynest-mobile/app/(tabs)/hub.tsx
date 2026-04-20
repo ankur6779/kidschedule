@@ -85,7 +85,15 @@ export default function HubScreen() {
     router.push({ pathname: "/amy-ai", params: { q } });
   };
 
-  if (!profileLoading && !profileComplete) {
+  if (profileLoading) {
+    return (
+      <LinearGradient colors={theme.gradient} style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color={c.primary} />
+      </LinearGradient>
+    );
+  }
+
+  if (!profileComplete) {
     return <ProfileLockScreen sectionName="Hub" />;
   }
 

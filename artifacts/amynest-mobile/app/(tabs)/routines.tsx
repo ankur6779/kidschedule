@@ -132,7 +132,15 @@ export default function RoutinesScreen() {
     router.push(`/routines/generate${qs}` as never);
   };
 
-  if (!profileLoading && !profileComplete) {
+  if (profileLoading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (!profileComplete) {
     return <ProfileLockScreen sectionName="Routines" />;
   }
 
