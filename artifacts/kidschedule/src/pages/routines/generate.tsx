@@ -751,7 +751,17 @@ export default function RoutineGenerate() {
           queryClient.invalidateQueries({ queryKey: getListRoutinesQueryKey() });
           setLocation(`/routines/${savedRoutine.id}`);
         },
-        onError: () => toast({ title: "Failed to save routine", variant: "destructive" }),
+        onError: (err: unknown) => {
+          const msg = err instanceof Error ? err.message : "";
+          const isLimit = msg.toLowerCase().includes("limit") || msg.includes("402");
+          toast({
+            title: isLimit ? "Routine limit reached" : "Could not save routine",
+            description: isLimit
+              ? "You've reached the free plan limit. Upgrade to save more routines."
+              : "Please try again in a moment.",
+            variant: "destructive",
+          });
+        },
       }
     );
   }, [createMutation, selectedChild, date, toast, queryClient, setLocation]);
