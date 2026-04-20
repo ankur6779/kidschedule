@@ -789,28 +789,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Quick access (Gaming Reward) ─────────────────────────── */}
-      <div>
-        <SectionLabel>Quick access</SectionLabel>
-        <Link href="/games">
-          <button
-            type="button"
-            className="w-full text-left mt-2 rounded-2xl p-4 border border-border hover:border-violet-300 dark:hover:border-violet-400/40 bg-card hover:bg-violet-50/40 dark:hover:bg-violet-500/8 hover:shadow-sm transition-all flex items-center gap-4"
-          >
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-xl bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20">
-              🎮
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-quicksand font-bold text-sm leading-tight text-foreground">Gaming Reward</p>
-              <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
-                Earn points from routines, unlock mini-games, and redeem real rewards.
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-          </button>
-        </Link>
-      </div>
-
       {/* ── Below-fold: Recent Routines + Behavior Highlights ────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Recent Routines */}
@@ -944,6 +922,25 @@ export default function Dashboard() {
 
       {/* Rewards Card */}
       <RewardsCard streak={streak} />
+
+      {/* ── Gaming Reward ─────────────────────────────────────────── */}
+      <Link href="/games">
+        <button
+          type="button"
+          className="w-full text-left rounded-2xl p-4 border border-border hover:border-violet-300 dark:hover:border-violet-400/40 bg-card hover:bg-violet-50/40 dark:hover:bg-violet-500/8 hover:shadow-sm transition-all flex items-center gap-4"
+        >
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-xl bg-violet-50 dark:bg-violet-500/15 border border-violet-100 dark:border-violet-400/20">
+            🎮
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-quicksand font-bold text-sm leading-tight text-foreground">Gaming Reward</p>
+            <p className="text-[11.5px] text-muted-foreground mt-0.5 leading-snug">
+              Earn points from routines, unlock mini-games, and redeem real rewards.
+            </p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </button>
+      </Link>
 
       {/* ── Primary CTA ──────────────────────────────────────────── */}
       <Link href="/routines/generate">
