@@ -531,11 +531,26 @@ export default function CoachScreen() {
                 onPress={() => { Haptics.selectionAsync(); setSelectedCategoryId(cat.id); }}
                 activeOpacity={0.85}
               >
-                <LinearGradient colors={cat.bg} style={styles.catCellInner}>
-                  <Text style={{ fontSize: 36, marginBottom: 8 }}>{cat.emoji}</Text>
-                  <Text style={styles.catCellTitle}>{cat.title}</Text>
-                  <Text style={styles.catCellSub}>{cat.items.length} goals →</Text>
-                </LinearGradient>
+                <View style={styles.catCellGlow}>
+                  <LinearGradient
+                    colors={[
+                      "rgba(124,58,237,0.32)" /* audit-ok: brand violet glass start */,
+                      "rgba(168,85,247,0.18)" /* audit-ok: brand purple glass mid */,
+                      "rgba(236,72,153,0.20)" /* audit-ok: brand pink glass end */,
+                    ]}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                    style={styles.catCellInner}
+                  >
+                    <View style={styles.catEmojiBadge}>
+                      <Text style={styles.catEmoji}>{cat.emoji}</Text>
+                    </View>
+                    <Text style={styles.catCellTitle}>{cat.title}</Text>
+                    <View style={styles.catCellMetaRow}>
+                      <Text style={styles.catCellSub}>{cat.items.length} goals</Text>
+                      <Ionicons name="arrow-forward" size={12} color="rgba(255,255,255,0.85)" />
+                    </View>
+                  </LinearGradient>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -1102,9 +1117,34 @@ const styles = StyleSheet.create({
 
   catGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 },
   catCell: { width: "47.5%" },
-  catCellInner: { borderRadius: 18, padding: 18 },
+  catCellGlow: {
+    borderRadius: 20,
+    backgroundColor: "rgba(20,20,43,0.55)" /* audit-ok: dark glass base for theme-agnostic violet glow card */,
+    shadowColor: "#7C3AED" /* audit-ok: brand violet glow */,
+    shadowOpacity: 0.55,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  catCellInner: {
+    borderRadius: 20,
+    padding: 16,
+    minHeight: 132,
+    borderWidth: 1,
+    borderColor: "rgba(167,139,250,0.45)" /* audit-ok: brand violet400 glass border */,
+    backgroundColor: "rgba(15,10,40,0.55)" /* audit-ok: deep violet-navy glass overlay */,
+  },
+  catEmojiBadge: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.12)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.22)",
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 10,
+  },
+  catEmoji: { fontSize: 24, lineHeight: 28 },
   catCellTitle: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#FFFFFF", lineHeight: 18 },
-  catCellSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 4 },
+  catCellMetaRow: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 4 },
+  catCellSub: { fontSize: 11, color: "rgba(255,255,255,0.85)", fontFamily: "Inter_500Medium" },
 
   catHeader: { fontSize: 11, fontFamily: "Inter_700Bold", color: "rgba(255,255,255,0.6)", letterSpacing: 0.6 },
 
