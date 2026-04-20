@@ -35,11 +35,11 @@ export const GAMES: GameDef[] = [
   // ── Behavior (USP) ──────────────────────────────────────────
   { id: "what-should-you-do", title: "What Should You Do?", category: "behavior", emoji: "💛", blurb: "Pick the kind, smart choice in real-life situations.", unlockCost: 50, rewardMin: 8, rewardMax: 15, status: "ready", ageHint: "6+" },
   // ── Coming soon ─────────────────────────────────────────────
-  { id: "spot-difference",  title: "Spot the Difference", category: "focus",     emoji: "👀", blurb: "Find what changed between two pictures.",  unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "soon" },
-  { id: "hidden-objects",   title: "Hidden Objects",      category: "focus",     emoji: "🔭", blurb: "Find hidden items in the scene.",          unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "soon" },
-  { id: "color-fill",       title: "Color Fill",          category: "creativity",emoji: "🖍️", blurb: "Fill the picture with the right colours.", unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "soon" },
-  { id: "shape-match",      title: "Shape Matching",      category: "creativity",emoji: "🔷", blurb: "Drag shapes into matching slots.",         unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "soon" },
-  { id: "maze-escape",      title: "Maze Escape",         category: "action",    emoji: "🗺️", blurb: "Guide the dot out of the maze.",           unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "soon" },
+  { id: "spot-difference",  title: "Spot the Difference", category: "focus",     emoji: "👀", blurb: "Find what changed between two pictures.",  unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "ready" },
+  { id: "hidden-objects",   title: "Hidden Objects",      category: "focus",     emoji: "🔭", blurb: "Find hidden items in the scene.",          unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "ready" },
+  { id: "color-fill",       title: "Color Fill",          category: "creativity",emoji: "🖍️", blurb: "Fill the picture with the right colours.", unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "ready" },
+  { id: "shape-match",      title: "Shape Matching",      category: "creativity",emoji: "🔷", blurb: "Drag shapes into matching slots.",         unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "ready" },
+  { id: "maze-escape",      title: "Maze Escape",         category: "action",    emoji: "🗺️", blurb: "Guide the dot out of the maze.",           unlockCost: 60, rewardMin: 5, rewardMax: 12, status: "ready" },
 ];
 
 export const CATEGORY_LABEL: Record<GameCategory, string> = {
