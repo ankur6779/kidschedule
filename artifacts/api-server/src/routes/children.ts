@@ -17,6 +17,7 @@ import {
   isPremiumNow,
   FREE_LIMITS,
 } from "../services/subscriptionService";
+import { markReferralValid } from "../services/referralService";
 
 const router: IRouter = Router();
 
@@ -64,6 +65,11 @@ router.post("/children", async (req, res): Promise<void> => {
   }
 
   const [child] = await db.insert(childrenTable).values({ ...parsed.data, userId }).returning();
+
+  // Referral system: creating a child counts as the user's first
+  // meaningful feature use. Idempotent (only flips pending → valid).
+  markReferralValid(userId).catch(() => {});
+
   res.status(201).json(GetChildResponse.parse({ ...child, createdAt: child.createdAt.toISOString() }));
 });
 

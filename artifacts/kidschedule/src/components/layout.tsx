@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain, Moon, Sun, Sparkles, Gamepad2 } from "lucide-react";
+import { Home, Users, Calendar, Star, Menu, LogOut, UserCircle, Baby, Bot, TrendingUp, BookOpen, Brain, Moon, Sun, Sparkles, Gamepad2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useClerk, useUser } from "@clerk/react";
@@ -59,6 +59,7 @@ const NAV_ITEMS = [
   { href: "/games",         labelKey: "nav.games",         icon: Gamepad2 },
   { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
   { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
+  { href: "/referrals",     labelKey: "nav.referrals",     icon: Gift },
 ];
 
 const BOTTOM_NAV_ITEMS = [

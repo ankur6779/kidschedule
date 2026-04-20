@@ -58,9 +58,14 @@
   "dependencies": {
     "@clerk/clerk-expo": "^2.19.31",
     "@gorhom/bottom-sheet": "^5.2.9",
-    "@workspace/life-skills": "workspace:*",
     "@react-native-community/netinfo": "^12.0.1",
+    "@workspace/behavior-tracker": "workspace:*",
+    "@workspace/family-routine": "workspace:*",
+    "@workspace/infant-hub": "workspace:*",
+    "@workspace/infant-problems": "workspace:*",
+    "@workspace/life-skills": "workspace:*",
     "expo-auth-session": "~7.0.10",
+    "expo-clipboard": "^55.0.13",
     "expo-crypto": "~15.0.8",
     "expo-localization": "^55.0.13",
     "expo-secure-store": "~15.0.8",
@@ -68,10 +73,6 @@
     "react-i18next": "^17.0.4",
     "react-native-purchases": "9.7.2",
     "react-native-razorpay": "^2.3.1",
-    "zustand": "^5.0.12",
-    "@workspace/behavior-tracker": "workspace:*",
-    "@workspace/family-routine": "workspace:*",
-    "@workspace/infant-hub": "workspace:*",
-    "@workspace/infant-problems": "workspace:*"
+    "zustand": "^5.0.12"
   }
 }

@@ -12,6 +12,7 @@ import { API_BASE_URL } from "@/constants/api";
 import { ActivityIndicator, View } from "react-native";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ReferralAttributionBridge } from "@/components/ReferralAttributionBridge";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/hooks/useColors";
 import { ProgressProvider } from "@/contexts/ProgressContext";
@@ -62,6 +63,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   useOfflineSyncBootstrap();
   // Bootstrap freemium subscription + entitlements
   useSubscriptionBootstrap();
+
+  // Hidden component — captures `?ref=CODE` from deep links and submits to API.
+  // Rendering inline keeps it inside the QueryClient + ClerkProvider tree.
 
   const checkOnboardingStatus = useCallback(async (): Promise<"complete" | "incomplete"> => {
     if (checkInFlightRef.current || !getToken) return "incomplete";
@@ -161,6 +165,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 function RootLayoutNav() {
   const c = useColors();
   return (
+    <>
+    <ReferralAttributionBridge />
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
       <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
@@ -193,6 +199,16 @@ function RootLayoutNav() {
       />
       <Stack.Screen name="games"          options={{ headerShown: false }} />
       <Stack.Screen name="audio-lessons"  options={{ headerShown: false }} />
+      <Stack.Screen
+        name="referrals"
+        options={{
+          headerShown: true,
+          headerTitle: "Invite & Earn",
+          headerBackTitle: "Back",
+          headerTintColor: c.accent,
+          headerStyle: { backgroundColor: c.background },
+        }}
+      />
       {__DEV__ && (
         <Stack.Screen
           name="dev/theme"
@@ -200,6 +216,7 @@ function RootLayoutNav() {
         />
       )}
     </Stack>
+    </>
   );
 }
 

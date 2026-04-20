@@ -413,6 +413,19 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Invite & Earn */}
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: "#A855F715", borderColor: "#A855F755" }]}
+          onPress={() => {
+            Haptics.selectionAsync();
+            router.push("/referrals");
+          }}
+        >
+          <Ionicons name="gift" size={20} color="#A855F7" />
+          <Text style={[styles.logoutText, { color: "#A855F7" }]}>Invite & Earn Premium</Text>
+          <Ionicons name="chevron-forward" size={16} color="#A855F7" style={{ marginLeft: "auto" }} />
+        </TouchableOpacity>
+
         {/* Sign out */}
         <TouchableOpacity
           style={[styles.logoutBtn, { backgroundColor: colors.statusErrorBg, borderColor: colors.statusErrorBorder }]}

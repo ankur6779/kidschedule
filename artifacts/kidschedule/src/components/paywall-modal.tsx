@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Check, X, Smartphone, Zap } from "lucide-react";
+import { Sparkles, Check, X, Smartphone, Zap, Gift } from "lucide-react";
 import { useUser } from "@clerk/react";
+import { useLocation } from "wouter";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePaywall } from "@/contexts/paywall-context";
@@ -38,6 +39,7 @@ export function PaywallModal() {
   const { state, closePaywall } = usePaywall();
   const { plans, entitlements, checkoutRazorpay, startTrial } = useSubscription();
   const { user } = useUser();
+  const [, setLocation] = useLocation();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -189,8 +191,20 @@ export function PaywallModal() {
 
           <button
             type="button"
+            onClick={() => {
+              closePaywall();
+              setLocation("/referrals");
+            }}
+            className="w-full mt-3 inline-flex items-center justify-center gap-2 text-pink-300 hover:text-pink-200 font-extrabold text-sm py-2"
+          >
+            <Gift className="h-4 w-4" />
+            Or invite friends to earn premium free
+          </button>
+
+          <button
+            type="button"
             onClick={closePaywall}
-            className="w-full text-center mt-2 text-white/55 text-sm py-2 hover:text-white/80"
+            className="w-full text-center mt-1 text-white/55 text-sm py-2 hover:text-white/80"
           >
             Maybe Later
           </button>

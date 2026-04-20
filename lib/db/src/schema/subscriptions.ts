@@ -21,6 +21,12 @@ export const subscriptionsTable = pgTable(
     trialEndsAt: timestamp("trial_ends_at", { withTimezone: true }),
     currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
     cancelAtPeriodEnd: integer("cancel_at_period_end").notNull().default(0),
+    // Referral system fields
+    referralCode: text("referral_code").unique(),
+    referralRewardsGranted: integer("referral_rewards_granted").notNull().default(0),
+    // Premium extension granted by the referral system. Independent from the
+    // paid-period end so a paid renewal webhook never shrinks bonus time.
+    bonusExpiresAt: timestamp("bonus_expires_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

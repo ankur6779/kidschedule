@@ -65,6 +65,8 @@ export async function getOrCreateSubscription(
 }
 
 export function isPremiumNow(s: Subscription): boolean {
+  // Referral bonus time grants premium independently of the paid status.
+  if (s.bonusExpiresAt && s.bonusExpiresAt.getTime() > Date.now()) return true;
   if (s.status === "active") return true;
   if (s.status === "trialing" && s.trialEndsAt && s.trialEndsAt.getTime() > Date.now()) return true;
   // Cancelled / past_due subscriptions retain premium until the paid period ends.
@@ -198,5 +200,17 @@ export async function activateSubscription(
     })
     .where(eq(subscriptionsTable.userId, userId))
     .returning();
+
+  // Referral system hook: mark this user's referral row as paid (no-op if
+  // they weren't referred by anyone). Done OUTSIDE the dbExec so a webhook
+  // transaction stays small and the reward grant runs on the main
+  // connection. Failures here must not break activation, so swallow.
+  try {
+    const { markReferralPaid } = await import("./referralService");
+    await markReferralPaid(userId);
+  } catch {
+    // best-effort
+  }
+
   return updated;
 }

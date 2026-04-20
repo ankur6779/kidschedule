@@ -30,6 +30,8 @@ import AudioLessonsPage from "@/pages/audio-lessons";
 import GamesPage from "@/pages/games";
 import OnboardingPage from "@/pages/onboarding";
 import PricingPage from "@/pages/pricing";
+import ReferralsPage from "@/pages/referrals";
+import { ReferralAttributionBridge } from "@/components/referral-attribution-bridge";
 import { PaywallProvider } from "@/contexts/paywall-context";
 import { PaywallModal } from "@/components/paywall-modal";
 import { SubscriptionEventBridge } from "@/components/subscription-event-bridge";
@@ -358,6 +360,7 @@ function ClerkProviderWithRoutes() {
         <PaywallProvider>
           <ClerkAuthSetup />
           <ClerkQueryClientCacheInvalidator />
+          <ReferralAttributionBridge />
           <Switch>
             <Route path="/" component={HomeRedirect} />
             <Route path="/sign-in/*?" component={SignInPage} />
@@ -423,6 +426,9 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/pricing">
               {() => <ProtectedRoute component={PricingPage} requiresProfile={false} />}
+            </Route>
+            <Route path="/referrals">
+              {() => <ProtectedRoute component={ReferralsPage} requiresProfile={false} />}
             </Route>
             <Route component={NotFound} />
           </Switch>
