@@ -131,18 +131,6 @@ const GOAL_CATEGORIES: GoalCategory[] = [
       { id: "favouritism-feelings",  title: "Handle Favouritism Feelings",emoji: "💔", gradient: "from-violet-100 dark:from-violet-500/20 to-purple-200 dark:to-purple-500/25" },
     ],
   },
-  // ─── NEW: For You — Parent Self-Care ─────────────────────────────────
-  {
-    id: "parent-self-care", title: "For You (Parent Self-Care)", emoji: "💆",
-    gradient: "from-sky-100 dark:from-sky-500/20 via-cyan-50 dark:via-cyan-500/15 to-teal-100 dark:to-teal-500/20",
-    items: [
-      { id: "parent-burnout",          title: "Beat Parent Burnout",        emoji: "🔋", gradient: "from-sky-100 dark:from-sky-500/20 to-blue-200 dark:to-blue-500/25" },
-      { id: "anger-management-parent", title: "Manage Your Own Anger",      emoji: "🌬️", gradient: "from-rose-100 dark:from-rose-500/20 to-pink-200 dark:to-pink-500/25" },
-      { id: "find-me-time",            title: "Find 10-Min Me-Time Daily",  emoji: "🧘", gradient: "from-emerald-100 dark:from-emerald-500/20 to-teal-200 dark:to-teal-500/25" },
-      { id: "parent-sleep",            title: "Improve Your Own Sleep",     emoji: "💤", gradient: "from-indigo-100 dark:from-indigo-500/20 to-violet-200 dark:to-violet-500/25" },
-      { id: "mom-guilt",               title: "Release Mom/Dad Guilt",       emoji: "💗", gradient: "from-pink-100 dark:from-pink-500/20 to-fuchsia-200 dark:to-fuchsia-500/25" },
-    ],
-  },
   // ─── NEW: Special Situations ─────────────────────────────────────────
   {
     id: "special-situations", title: "Special Situations", emoji: "✈️",

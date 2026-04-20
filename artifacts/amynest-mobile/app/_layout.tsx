@@ -132,7 +132,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     }
 
     if (onboardingStatus === "complete") {
-      if (inAuth || inOnboarding) {
+      if (inAuth || inOnboarding || inWelcome) {
         router.replace("/(tabs)");
       }
     }
