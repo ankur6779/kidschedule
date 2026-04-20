@@ -103,8 +103,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[80vw] sm:w-[350px]">
-            <div className="flex items-center gap-3 mt-4 mb-6 pb-4 border-b">
+          <SheetContent side="right" className="w-[80vw] sm:w-[350px] flex flex-col p-0">
+            {/* User profile — fixed at top */}
+            <div className="flex items-center gap-3 px-4 pt-5 pb-4 border-b shrink-0">
               <Avatar className="h-9 w-9">
                 <AvatarImage src={user?.imageUrl} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
@@ -118,7 +119,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <span className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</span>
               </div>
             </div>
-            <nav className="flex flex-col gap-1">
+
+            {/* Nav items — scrollable */}
+            <nav className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-1">
               {NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
@@ -138,13 +141,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <ThemeToggleRow onToggle={closeSidebar} />
               </div>
             </nav>
-            <button
-              onClick={handleSignOut}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 mt-4 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-              {t("nav.sign_out")}
-            </button>
+
+            {/* Sign Out — always visible at bottom */}
+            <div className="shrink-0 border-t px-4 py-3">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+                {t("nav.sign_out")}
+              </button>
+            </div>
           </SheetContent>
         </Sheet>
         </div>
