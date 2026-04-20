@@ -224,9 +224,10 @@ export default function ChildForm() {
         { data: payload },
         {
           onSuccess: () => {
-            toast({ title: "Child added successfully" });
-            queryClient.invalidateQueries({ queryKey: getListChildrenQueryKey() });
-            setLocation("/children");
+            toast({ title: "Child added successfully — taking you to your dashboard" });
+            // Hard refresh so subscription/entitlements/onboarding-gate all reload
+            // and the user can immediately use everything.
+            window.location.href = "/dashboard";
           },
           onError: () => toast({ title: "Failed to add child", variant: "destructive" }),
         }
