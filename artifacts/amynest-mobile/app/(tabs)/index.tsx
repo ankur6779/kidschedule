@@ -557,7 +557,6 @@ const DRAWER_ITEMS: { key: string; labelKey: string; icon: keyof typeof Ionicons
   { key: "progress",    labelKey: "nav.progress",      icon: "trending-up-outline",   route: "/progress" },
   { key: "behavior",    labelKey: "nav.behavior",      icon: "happy-outline",         route: "/behavior" },
   { key: "amy",         labelKey: "nav.amy_ai",        icon: "chatbubbles-outline",   route: "/amy-ai" },
-  { key: "babysitters",   labelKey: "nav.babysitters",    icon: "heart-outline",          route: "/babysitters" },
   { key: "games",         labelKey: "nav.gaming_reward",  icon: "game-controller-outline", route: "/games" },
   { key: "audio-lessons", labelKey: "nav.audio_lessons",  icon: "headset-outline",         route: "/audio-lessons" },
   { key: "profile",       labelKey: "nav.profile",        icon: "person-outline",          route: "/(tabs)/profile" },

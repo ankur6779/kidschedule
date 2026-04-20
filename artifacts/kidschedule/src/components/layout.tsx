@@ -55,11 +55,10 @@ const NAV_ITEMS = [
   { href: "/progress",      labelKey: "nav.progress",      icon: TrendingUp },
   { href: "/behavior",      labelKey: "nav.behavior",      icon: Star },
   { href: "/assistant",     labelKey: "nav.amy_ai",        icon: Bot },
-  { href: "/babysitters",   labelKey: "nav.babysitters",   icon: Baby },
   { href: "/games",         labelKey: "nav.games",         icon: Gamepad2 },
   { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
   { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
-  { href: "/referrals",     labelKey: "nav.referrals",     icon: Gift },
+  { href: "/referrals",     labelKey: "nav.referals",      icon: Gift },
 ];
 
 const BOTTOM_NAV_ITEMS = [
