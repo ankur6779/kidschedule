@@ -76,7 +76,7 @@ export default function AmyAIScreen() {
       if (res.status === 402) {
         // Quota exhausted — refresh entitlements and route to paywall
         await useSubscriptionStore.getState().refresh();
-        setMessages(m => [...m, { id: `a-${Date.now()}`, role: "amy", text: "You've used your free Amy AI queries for today. Upgrade to keep chatting unlimited 💜" }]);
+        setMessages(m => [...m, { id: `a-${Date.now()}`, role: "amy", text: "You've used your daily limit. To use the full power of Amy AI, upgrade to Premium 💜" }]);
         router.push({ pathname: "/paywall", params: { reason: "ai_quota" } });
         return;
       }
