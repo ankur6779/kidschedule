@@ -47,7 +47,9 @@ function Block({
   children: React.ReactNode;
   accentColor?: string;
 }) {
-  const borderColor = open ? (accentColor ?? "#FF4ECD") : "rgba(255,255,255,0.10)";
+  const c = useColors();
+  const styles = React.useMemo(() => makeStyles(c), [c]);
+  const borderColor = open ? (accentColor ?? "#FF4ECD") : c.border;
   return (
     <View style={[styles.block, { borderColor }]}>
       <Pressable
@@ -65,7 +67,7 @@ function Block({
           <Ionicons
             name={open ? "chevron-up" : "chevron-down"}
             size={14}
-            color={open ? (accentColor ?? "#FF4ECD") : "rgba(255,255,255,0.55)"}
+            color={open ? (accentColor ?? "#FF4ECD") : c.textMuted}
           />
         </View>
       </Pressable>
@@ -76,6 +78,8 @@ function Block({
 
 // ─── Language Toggle ───────────────────────────────────────────────────────────
 function LangToggle({ lang, setLang }: { lang: LangKey; setLang: (l: LangKey) => void }) {
+  const c = useColors();
+  const styles = React.useMemo(() => makeStyles(c), [c]);
   const opts: { key: LangKey; label: string }[] = [
     { key: "en", label: "EN" },
     { key: "hi", label: "हिं" },
@@ -103,6 +107,7 @@ export default function BehaviorScreen() {
   const authFetch = useAuthFetch();
   const { theme } = useTheme();
   const c = useColors();
+  const styles = React.useMemo(() => makeStyles(c), [c]);
   const qc = useQueryClient();
 
   const [lang, setLang] = useState<LangKey>("en");
@@ -216,7 +221,7 @@ export default function BehaviorScreen() {
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable onPress={() => router.back()} hitSlop={12} style={{ padding: 4 }}>
-          <Ionicons name="chevron-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={22} color={c.text} />
         </Pressable>
         <LinearGradient colors={["#FBBF24", "#FB7185"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.headerIcon}>
           <Ionicons name="happy" size={18} color="#fff" />
@@ -240,7 +245,7 @@ export default function BehaviorScreen() {
               <Text style={[styles.childChipText, selectedChild === c.id && { color: "#fff" }]}>{c.name}</Text>
             </Pressable>
           ))}
-          {children.length === 0 && <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 13 }}>Add a child to start tracking</Text>}
+          {children.length === 0 && <Text style={{ color: c.textDim, fontSize: 13 }}>Add a child to start tracking</Text>}
         </ScrollView>
 
         {/* Quick Help button */}
@@ -388,20 +393,20 @@ export default function BehaviorScreen() {
                 <View style={{ width: "100%", justifyContent: "flex-end", height: 64, gap: 1 }}>
                   {d.pos > 0 && <View style={{ width: "100%", height: Math.max(4, (d.pos / maxWeek) * 60), backgroundColor: "#10B981", borderRadius: 3 }} />}
                   {d.neg > 0 && <View style={{ width: "100%", height: Math.max(4, (d.neg / maxWeek) * 60), backgroundColor: "#EF4444", borderRadius: 3 }} />}
-                  {d.total === 0 && <View style={{ width: "100%", height: 3, backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 3 }} />}
+                  {d.total === 0 && <View style={{ width: "100%", height: 3, backgroundColor: c.surfaceTrack, borderRadius: 3 }} />}
                 </View>
-                <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 9, fontWeight: "700" }}>{d.label}</Text>
+                <Text style={{ color: c.textMuted, fontSize: 9, fontWeight: "700" }}>{d.label}</Text>
               </View>
             ))}
           </View>
           <View style={{ flexDirection: "row", gap: 14, marginTop: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: "#10B981" }} />
-              <Text style={{ color: "rgba(255,255,255,0.55)", fontSize: 11 }}>{L.positive}</Text>
+              <Text style={{ color: c.textMuted, fontSize: 11 }}>{L.positive}</Text>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
               <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: "#EF4444" }} />
-              <Text style={{ color: "rgba(255,255,255,0.55)", fontSize: 11 }}>{L.challenging}</Text>
+              <Text style={{ color: c.textMuted, fontSize: 11 }}>{L.challenging}</Text>
             </View>
           </View>
         </Block>
@@ -422,7 +427,7 @@ export default function BehaviorScreen() {
               <View key={key} style={{ marginBottom: 14 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <Text style={{ fontSize: 18 }}>{def.emoji}</Text>
-                  <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>{def.label[lang]}</Text>
+                  <Text style={{ color: c.text, fontWeight: "700", fontSize: 14 }}>{def.label[lang]}</Text>
                 </View>
                 {tips.map((tip, i) => (
                   <View key={i} style={{ flexDirection: "row", gap: 10, alignItems: "flex-start", marginBottom: 5 }}>
@@ -447,7 +452,7 @@ export default function BehaviorScreen() {
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
               <Text style={styles.modalTitle}>{L.situationMode}</Text>
               <Pressable onPress={() => setSituationKey(null)} hitSlop={10}>
-                <Ionicons name="close" size={22} color="rgba(255,255,255,0.7)" />
+                <Ionicons name="close" size={22} color={c.textBody} />
               </Pressable>
             </View>
             {/* Situation tabs */}
@@ -480,22 +485,22 @@ export default function BehaviorScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   header: {
     flexDirection: "row", alignItems: "center", gap: 10,
     paddingHorizontal: 14, paddingBottom: 12,
-    borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.06)",
+    borderBottomWidth: 1, borderBottomColor: c.border,
   },
   headerIcon: { width: 34, height: 34, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  headerTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
-  headerSubtitle: { color: "rgba(255,255,255,0.55)", fontSize: 11 },
+  headerTitle: { color: c.text, fontWeight: "800", fontSize: 16 },
+  headerSubtitle: { color: c.textMuted, fontSize: 11 },
 
   childChip: {
     paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
   },
   childChipSel: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
-  childChipText: { color: "rgba(255,255,255,0.8)", fontWeight: "700", fontSize: 13 },
+  childChipText: { color: c.textBody, fontWeight: "700", fontSize: 13 },
 
   quickHelpBtn: {
     flexDirection: "row", alignItems: "center", gap: 6,
@@ -503,36 +508,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
     backgroundColor: "rgba(251,113,133,0.12)", borderWidth: 1, borderColor: "rgba(251,113,133,0.3)",
   },
-  quickHelpText: { color: "#FB7185", fontWeight: "700", fontSize: 13 },
+  quickHelpText: { color: "#FB7185" /* audit-ok: brand accent */, fontWeight: "700", fontSize: 13 },
 
   block: {
     borderRadius: 20, borderWidth: 1, overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: c.surface,
     shadowColor: colors.light.primary, shadowOpacity: 0.2, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
   blockHeader: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
   blockIconWrap: { width: 44, height: 44, borderRadius: 14, overflow: "hidden" },
   iconGrad: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  blockTitle: { color: "#fff", fontWeight: "800", fontSize: 15 },
-  blockSubtitle: { color: "rgba(255,255,255,0.55)", fontSize: 11, marginTop: 2 },
+  blockTitle: { color: c.text, fontWeight: "800", fontSize: 15 },
+  blockSubtitle: { color: c.textMuted, fontSize: 11, marginTop: 2 },
   blockBody: {
     padding: 14, paddingTop: 6,
-    borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.08)",
-    backgroundColor: "rgba(255,255,255,0.015)",
+    borderTopWidth: 1, borderTopColor: c.border,
+    backgroundColor: c.surfaceElevated,
     gap: 10,
   },
   chevWrap: {
     width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.15)", backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1, borderColor: c.border, backgroundColor: c.surface,
   },
 
-  sectionLabel: { color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 },
+  sectionLabel: { color: c.textMuted, fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 },
 
   quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   quickBtn: {
     width: "30%", alignItems: "center", paddingVertical: 12, borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1,
+    backgroundColor: c.surface, borderWidth: 1,
     gap: 4,
   },
   quickBtnLabel: { fontSize: 10, fontWeight: "800", textAlign: "center" },
@@ -540,60 +545,60 @@ const styles = StyleSheet.create({
   triggerChip: {
     flexDirection: "row", alignItems: "center", gap: 6,
     paddingHorizontal: 10, paddingVertical: 7, borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
   },
   triggerChipSel: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
-  triggerChipText: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: "600" },
+  triggerChipText: { color: c.textBody, fontSize: 12, fontWeight: "600" },
 
   logRow: {
     flexDirection: "row", alignItems: "center", gap: 10, padding: 10,
-    borderRadius: 12, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)",
+    borderRadius: 12, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border,
   },
-  logText: { color: "#fff", fontSize: 13, fontWeight: "600" },
-  logNotes: { color: "rgba(255,255,255,0.5)", fontSize: 11, fontStyle: "italic" },
-  emptyText: { color: "rgba(255,255,255,0.45)", fontSize: 13, textAlign: "center" },
+  logText: { color: c.text, fontSize: 13, fontWeight: "600" },
+  logNotes: { color: c.textDim, fontSize: 11, fontStyle: "italic" },
+  emptyText: { color: c.textDim, fontSize: 13, textAlign: "center" },
 
   scoreCard: {
     backgroundColor: "rgba(123,63,242,0.15)", borderRadius: 16, padding: 16, alignItems: "center",
     borderWidth: 1, borderColor: "rgba(123,63,242,0.3)",
   },
-  scoreNum: { color: "#fff", fontSize: 42, fontWeight: "900" },
-  scoreLabel: { color: "rgba(255,255,255,0.8)", fontSize: 14, fontWeight: "700", marginTop: 2 },
-  scoreBg: { width: "100%", height: 6, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.12)", marginTop: 10, overflow: "hidden" },
+  scoreNum: { color: c.text, fontSize: 42, fontWeight: "900" },
+  scoreLabel: { color: c.textBody, fontSize: 14, fontWeight: "700", marginTop: 2 },
+  scoreBg: { width: "100%", height: 6, borderRadius: 999, backgroundColor: c.surfaceTrack, marginTop: 10, overflow: "hidden" },
   scoreFill: { height: "100%", borderRadius: 999, backgroundColor: colors.light.primary },
 
-  countCard: { flex: 1, alignItems: "center", padding: 12, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1 },
+  countCard: { flex: 1, alignItems: "center", padding: 12, borderRadius: 12, backgroundColor: c.surface, borderWidth: 1 },
   countNum: { fontSize: 26, fontWeight: "900" },
-  countLabel: { color: "rgba(255,255,255,0.55)", fontSize: 10, fontWeight: "700", marginTop: 2 },
+  countLabel: { color: c.textMuted, fontSize: 10, fontWeight: "700", marginTop: 2 },
 
   insightRow: {
     flexDirection: "row", gap: 10, alignItems: "flex-start",
     padding: 12, borderRadius: 12,
     backgroundColor: "rgba(123,63,242,0.1)", borderWidth: 1, borderColor: "rgba(123,63,242,0.25)",
   },
-  insightText: { color: "rgba(255,255,255,0.85)", fontSize: 13, lineHeight: 19, flex: 1 },
+  insightText: { color: c.text, fontSize: 13, lineHeight: 19, flex: 1 },
 
   tipNum: { width: 20, height: 20, borderRadius: 10, alignItems: "center", justifyContent: "center", marginTop: 2, flexShrink: 0 },
-  tipText: { color: "rgba(255,255,255,0.8)", fontSize: 13, lineHeight: 19, flex: 1 },
+  tipText: { color: c.textBody, fontSize: 13, lineHeight: 19, flex: 1 },
 
-  langRow: { flexDirection: "row", borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" },
-  langBtn: { paddingHorizontal: 9, paddingVertical: 5, backgroundColor: "rgba(255,255,255,0.05)" },
+  langRow: { flexDirection: "row", borderRadius: 10, overflow: "hidden", borderWidth: 1, borderColor: c.border },
+  langBtn: { paddingHorizontal: 9, paddingVertical: 5, backgroundColor: c.surface },
   langBtnActive: { backgroundColor: colors.light.primary },
-  langBtnText: { color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "700" },
+  langBtnText: { color: c.textMuted, fontSize: 11, fontWeight: "700" },
 
   situModal: {
-    backgroundColor: "#14142B", borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    backgroundColor: c.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28,
     padding: 20, borderTopWidth: 1, borderColor: "rgba(123,63,242,0.35)",
   },
-  modalHandle: { width: 44, height: 4, borderRadius: 2, backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "center", marginBottom: 8 },
-  modalTitle: { color: "#fff", fontSize: 18, fontWeight: "800" },
+  modalHandle: { width: 44, height: 4, borderRadius: 2, backgroundColor: c.border, alignSelf: "center", marginBottom: 8 },
+  modalTitle: { color: c.text, fontSize: 18, fontWeight: "800" },
 
   sitTab: {
     flex: 1, paddingVertical: 8, borderRadius: 12, alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: c.surfaceElevated, borderWidth: 1, borderColor: c.border,
   },
   sitTabActive: { backgroundColor: colors.light.primary, borderColor: colors.light.accent },
-  sitTabText: { color: "rgba(255,255,255,0.65)", fontSize: 11, fontWeight: "700" },
+  sitTabText: { color: c.textBody, fontSize: 11, fontWeight: "700" },
 
   sitTipRow: {
     flexDirection: "row", gap: 12, alignItems: "flex-start",
@@ -604,5 +609,5 @@ const styles = StyleSheet.create({
     width: 24, height: 24, borderRadius: 12, backgroundColor: "rgba(123,63,242,0.2)",
     alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  sitTipText: { color: "rgba(255,255,255,0.85)", fontSize: 13, lineHeight: 19, flex: 1 },
+  sitTipText: { color: c.text, fontSize: 13, lineHeight: 19, flex: 1 },
 });

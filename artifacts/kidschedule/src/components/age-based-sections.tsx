@@ -108,7 +108,7 @@ export function StorySection({ group, childName }: StorySectionProps) {
                 className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold border-2 transition-all ${
                   i === activeIdx
                     ? "bg-amber-600 text-white border-amber-600"
-                    : "bg-white text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-400/30 hover:border-amber-400"
+                    : "bg-white dark:bg-amber-500/10 text-amber-700 dark:text-amber-200 border-amber-200 dark:border-amber-400/30 hover:border-amber-400"
                 }`}
               >
                 {s.emoji} {s.title}
@@ -118,7 +118,7 @@ export function StorySection({ group, childName }: StorySectionProps) {
         )}
 
         {/* Story content */}
-        <div className="bg-white rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30">
+        <div className="bg-white dark:bg-amber-500/10 rounded-2xl p-4 border border-amber-100 dark:border-amber-400/30">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-bold text-lg text-amber-900 dark:text-amber-100">
               {story.emoji} {story.title}
@@ -181,7 +181,7 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
               <p className="text-xs text-rose-700 dark:text-rose-200">Things you can do for {childName} today</p>
             </div>
           </div>
-          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 bg-white rounded-full px-3 py-1 border border-rose-200 dark:border-rose-400/30">
+          <div className="text-xs font-bold text-rose-800 dark:text-rose-200 bg-white dark:bg-rose-500/10 rounded-full px-3 py-1 border border-rose-200 dark:border-rose-400/30">
             {doneCount}/{tasks.length} done
           </div>
         </div>
@@ -191,7 +191,7 @@ export function ParentTasksSection({ group, childName }: ParentTasksSectionProps
               key={t.task}
               onClick={() => toggle(i)}
               className={`w-full flex items-start gap-3 rounded-2xl p-3 border-2 transition-all text-left ${
-                checked[i] ? "bg-rose-100 dark:bg-rose-500/20 border-rose-300 opacity-75" : "bg-white border-rose-100 dark:border-rose-400/30 hover:border-rose-300"
+                checked[i] ? "bg-rose-100 dark:bg-rose-500/20 border-rose-300 opacity-75" : "bg-white dark:bg-rose-500/10 border-rose-100 dark:border-rose-400/30 hover:border-rose-300"
               }`}
             >
               <div className={`mt-0.5 h-5 w-5 rounded-full border-2 shrink-0 flex items-center justify-center ${

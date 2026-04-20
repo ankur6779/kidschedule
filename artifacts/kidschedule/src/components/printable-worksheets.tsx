@@ -190,9 +190,9 @@ export function PrintableWorksheets({ childAgeMonths }: { childAgeMonths?: numbe
           onChange={(e) => { setQuery(e.target.value); setPage(1); }}
           style={{
             width: "100%", padding: "10px 12px 10px 36px",
-            borderRadius: 10, border: "1.5px solid #e5e7eb",
+            borderRadius: 10, border: "1.5px solid hsl(var(--border))",
             fontSize: 14, outline: "none", boxSizing: "border-box",
-            background: "#fff", color: "#111",
+            background: "hsl(var(--card))", color: "hsl(var(--foreground))",
           }}
         />
         {query && (
@@ -306,12 +306,13 @@ function WorksheetCard({
     <div
       className="ws-card"
       style={{
-        background: "#ffffff",
+        background: "hsl(var(--card))",
         borderRadius: 16,
         overflow: "hidden",
         boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
         display: "flex",
         flexDirection: "column",
+        border: "1px solid hsl(var(--border))",
       }}
     >
       {/* Preview */}
@@ -362,7 +363,7 @@ function WorksheetCard({
       <div style={{ padding: "12px 12px 14px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
         <p style={{
           margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.4,
-          color: "#111827",
+          color: "hsl(var(--foreground))",
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
           overflow: "hidden", flex: 1,
         }}>

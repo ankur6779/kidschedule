@@ -54,10 +54,10 @@ export default function PricingPage() {
                   type="button"
                   onClick={() => setSelected(p.id)}
                   className={[
-                    "relative text-left rounded-3xl p-6 border-2 bg-white transition-all hover:-translate-y-1",
+                    "relative text-left rounded-3xl p-6 border-2 bg-white dark:bg-slate-800 transition-all hover:-translate-y-1",
                     isSelected
                       ? "border-pink-400 shadow-[0_16px_40px_-8px_rgba(236,72,153,0.4)]"
-                      : "border-slate-200 hover:border-violet-300",
+                      : "border-slate-200 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-500",
                   ].join(" ")}
                   data-testid={`plan-card-${p.id}`}
                 >
@@ -66,17 +66,17 @@ export default function PricingPage() {
                       {p.badge}
                     </span>
                   )}
-                  <div className="font-bold text-slate-900 mb-2">{p.title}</div>
+                  <div className="font-bold text-slate-900 dark:text-slate-100 mb-2">{p.title}</div>
                   <div className="flex items-baseline gap-1 mb-1">
-                    <span className="text-4xl font-black text-slate-900">₹{p.price}</span>
-                    <span className="text-sm text-slate-500">/ {p.period}</span>
+                    <span className="text-4xl font-black text-slate-900 dark:text-slate-100">₹{p.price}</span>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">/ {p.period}</span>
                   </div>
                   {typeof p.savingsPercent === "number" && p.savingsPercent > 0 && (
                     <div className="text-sm font-extrabold text-pink-500 mb-4">{t("pricing.save_percent", { percent: p.savingsPercent })}</div>
                   )}
                   <ul className="space-y-2 mt-4">
                     {p.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <Check className={["h-4 w-4 mt-0.5 shrink-0", isSelected ? "text-pink-500" : "text-emerald-500"].join(" ")} />
                         <span>{f}</span>
                       </li>
