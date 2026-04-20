@@ -557,8 +557,10 @@ const DRAWER_ITEMS: { key: string; labelKey: string; icon: keyof typeof Ionicons
   { key: "progress",    labelKey: "nav.progress",      icon: "trending-up-outline",   route: "/progress" },
   { key: "behavior",    labelKey: "nav.behavior",      icon: "happy-outline",         route: "/behavior" },
   { key: "amy",         labelKey: "nav.amy_ai",        icon: "chatbubbles-outline",   route: "/amy-ai" },
-  { key: "babysitters", labelKey: "nav.babysitters",   icon: "heart-outline",         route: "/babysitters" },
-  { key: "profile",     labelKey: "nav.profile",       icon: "person-outline",        route: "/(tabs)/profile" },
+  { key: "babysitters",   labelKey: "nav.babysitters",    icon: "heart-outline",          route: "/babysitters" },
+  { key: "games",         labelKey: "nav.gaming_reward",  icon: "game-controller-outline", route: "/games" },
+  { key: "audio-lessons", labelKey: "nav.audio_lessons",  icon: "headset-outline",         route: "/audio-lessons" },
+  { key: "profile",       labelKey: "nav.profile",        icon: "person-outline",          route: "/(tabs)/profile" },
 ];
 
 function ThemeToggleRow() {
@@ -1256,6 +1258,47 @@ export default function HomeScreen() {
                 ))}
               </View>
             )}
+          </View>
+
+          {/* Gaming Reward + Audio Lessons quick-nav row */}
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 4 }}>
+            <TouchableOpacity
+              onPress={() => router.push("/games")}
+              activeOpacity={0.88}
+              style={{ flex: 1, borderRadius: 18, overflow: "hidden" }}
+            >
+              <LinearGradient
+                colors={["#7b3ff2", "#a855f7"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 16 }}
+              >
+                <Ionicons name="game-controller" size={22} color="#fff" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13, lineHeight: 17 }}>Gaming Reward</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 10.5, marginTop: 1 }}>Play & earn points</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.7)" />
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => router.push("/audio-lessons")}
+              activeOpacity={0.88}
+              style={{ flex: 1, borderRadius: 18, overflow: "hidden" }}
+            >
+              <LinearGradient
+                colors={["#0e7490", "#0891b2"]}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 16 }}
+              >
+                <Ionicons name="headset" size={22} color="#fff" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13, lineHeight: 17 }}>Audio Lessons</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 10.5, marginTop: 1 }}>Listen while parenting</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.7)" />
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           {/* Big primary CTA */}

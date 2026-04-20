@@ -191,6 +191,8 @@ function RootLayoutNav() {
         name="routines/[id]"
         options={{ headerShown: false }}
       />
+      <Stack.Screen name="games"          options={{ headerShown: false }} />
+      <Stack.Screen name="audio-lessons"  options={{ headerShown: false }} />
       {__DEV__ && (
         <Stack.Screen
           name="dev/theme"

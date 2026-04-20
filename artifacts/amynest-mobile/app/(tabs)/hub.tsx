@@ -310,12 +310,56 @@ export default function HubScreen() {
           icon={<Ionicons name="color-palette" size={20} color="#fff" />}
           accent={["#FB7185", "#F59E0B"]}
           title="Activities & Learning"
-          desc="Age-based games, stories & skills"
+          desc="Games, audio lessons & more"
           open={openSection === "activities"}
           onToggle={() => setOpenSection(s => s === "activities" ? null : "activities")}
         >
-          <Text style={styles.sectionLead}>Amy curates activities by age. Tap below to open the full library on the web app.</Text>
-          <View style={styles.activityRow}>
+          <Text style={styles.sectionLead}>Educational activities curated by Amy for your child's age group.</Text>
+
+          {/* Gaming Reward entry */}
+          <Pressable
+            onPress={() => router.push("/games" as never)}
+            style={{ borderRadius: 14, overflow: "hidden", marginTop: 4 }}
+          >
+            <LinearGradient
+              colors={["#7b3ff2", "#a855f7"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14 }}
+            >
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                <Ionicons name="game-controller" size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>Gaming Reward</Text>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 11.5, marginTop: 2 }}>10 educational mini-games · earn points</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+            </LinearGradient>
+          </Pressable>
+
+          {/* Audio Lessons entry */}
+          <Pressable
+            onPress={() => router.push("/audio-lessons" as never)}
+            style={{ borderRadius: 14, overflow: "hidden", marginTop: 8 }}
+          >
+            <LinearGradient
+              colors={["#0e7490", "#0891b2"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14 }}
+            >
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                <Ionicons name="headset" size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>Amy Audio Lessons</Text>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 11.5, marginTop: 2 }}>3–5 min parenting lessons · hands-free</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+            </LinearGradient>
+          </Pressable>
+
+          {/* Activity chips */}
+          <View style={[styles.activityRow, { marginTop: 8 }]}>
             {["Stories", "Puzzles", "Crafts", "Songs"].map(a => (
               <View key={a} style={styles.activityCard}>
                 <Text style={{ color: "#fff", fontWeight: "700" }}>{a}</Text>
