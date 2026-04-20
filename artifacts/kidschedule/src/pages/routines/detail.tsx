@@ -66,9 +66,9 @@ const CATEGORY_STYLES: Record<string, string> = {
 
 const STATUS_STYLES: Record<ItemStatus, string> = {
   pending:   "",
-  completed: "border-green-400 bg-green-50",
+  completed: "border-green-400 bg-green-50 dark:bg-green-950/40 dark:border-green-700/60",
   skipped:   "border-dashed border-muted-foreground/30 opacity-60",
-  delayed:   "border-amber-400 bg-amber-50",
+  delayed:   "border-amber-400 bg-amber-50 dark:bg-amber-950/40 dark:border-amber-700/60",
 };
 
 function parse12hToMinutes(timeStr: string): number {
