@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { createHash, randomUUID } from "crypto";
 import { eq, desc, and } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
-import { db, aiCacheTable, userProgressTable } from "@workspace/db";
+import { db, aiCacheTable, userProgressTable, userCoachSessionsTable } from "@workspace/db";
 import { logger } from "../lib/logger.js";
 import { GOAL_IDS, type GoalId } from "../lib/image-map.js";
 import { aiUsageGate } from "../middlewares/aiUsageGate.js";
@@ -558,9 +558,28 @@ async function dbSet(cacheKey: string, input: CoachInput, plan: CoachPlan): Prom
   }
 }
 
+// ─── helper: save session for "Continue plan" restore ────────────────────
+async function saveCoachSession(
+  userId: string,
+  sessionId: string,
+  goalId: string,
+  plan: CoachPlan,
+  inputs: CoachInput,
+): Promise<void> {
+  try {
+    await db
+      .insert(userCoachSessionsTable)
+      .values({ sessionId, userId, goalId, planJson: plan as unknown as Record<string, unknown>, inputs: inputs as unknown as Record<string, unknown> })
+      .onConflictDoNothing();
+  } catch (err) {
+    logger.warn({ err }, "ai-coach session save failed (non-fatal)");
+  }
+}
+
 // ─── POST /ai-coach ──────────────────────────────────────────────────────
 router.post("/ai-coach", aiUsageGate, async (req, res): Promise<void> => {
   pruneMem();
+  const { userId } = getAuth(req);
   const raw: CoachInput = req.body ?? {};
   const goal = norm(raw.goal);
   if (!GOAL_IDS.includes(goal as GoalId)) {
@@ -590,6 +609,7 @@ router.post("/ai-coach", aiUsageGate, async (req, res): Promise<void> => {
     memStats.hits++;
     logger.info({ cacheKey: cacheKey.slice(0, 8), source: "memory", stats: memStats }, "ai-coach cache hit");
     res.json({ plan: mem.plan, sessionId, cached: true, source: "memory" });
+    if (userId) void saveCoachSession(userId, sessionId, goal!, mem.plan, input);
     return;
   }
 
@@ -600,6 +620,7 @@ router.post("/ai-coach", aiUsageGate, async (req, res): Promise<void> => {
     memStats.dbHits++;
     logger.info({ cacheKey: cacheKey.slice(0, 8), source: "db", stats: memStats }, "ai-coach cache hit");
     res.json({ plan: dbHit, sessionId, cached: true, source: "db" });
+    if (userId) void saveCoachSession(userId, sessionId, goal!, dbHit, input);
     return;
   }
 
@@ -715,6 +736,7 @@ ${goalBrief}`;
   if (aiOk) await dbSet(cacheKey, input, plan);
 
   res.json({ plan, sessionId, cached: false, source: "ai", fallback: !aiOk });
+  if (userId) void saveCoachSession(userId, sessionId, goal!, plan, input);
 });
 
 // ─── POST /ai-coach/extend ───────────────────────────────────────────────
@@ -846,6 +868,45 @@ router.post("/ai-coach/feedback", async (req, res): Promise<void> => {
   } catch (err) {
     logger.error({ err }, "ai-coach feedback insert failed");
     res.status(500).json({ error: "failed to save feedback" });
+  }
+});
+
+// ─── GET /ai-coach/session/:sessionId ────────────────────────────────────
+// Loads saved plan + inputs for "Continue plan" from Progress page
+router.get("/ai-coach/session/:sessionId", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "unauthorized" }); return; }
+
+  const sid = clip(req.params.sessionId, 64);
+  if (!sid) { res.status(400).json({ error: "missing sessionId" }); return; }
+
+  try {
+    const [row] = await db
+      .select()
+      .from(userCoachSessionsTable)
+      .where(and(eq(userCoachSessionsTable.sessionId, sid), eq(userCoachSessionsTable.userId, userId)))
+      .limit(1);
+
+    if (!row) { res.status(404).json({ error: "session not found" }); return; }
+
+    const feedbackRows = await db
+      .select()
+      .from(userProgressTable)
+      .where(and(eq(userProgressTable.sessionId, sid), eq(userProgressTable.userId, userId)));
+
+    const feedbacks: Record<number, string> = {};
+    for (const f of feedbackRows) feedbacks[f.winNumber] = f.feedback;
+
+    res.json({
+      sessionId: row.sessionId,
+      goalId: row.goalId,
+      plan: row.planJson,
+      inputs: row.inputs,
+      feedbacks,
+    });
+  } catch (err) {
+    logger.error({ err }, "ai-coach session fetch failed");
+    res.status(500).json({ error: "failed to load session" });
   }
 });
 

@@ -214,7 +214,7 @@ interface Win {
 }
 interface Plan { title: string; root_cause: string; summary: string; wins: Win[]; }
 
-type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem";
+type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem" | "resuming";
 type Feedback = "yes" | "somewhat" | "no";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -226,7 +226,13 @@ export default function AICoachPage() {
   const { toast } = useToast();
   const { i18n } = useTranslation();
 
-  const [phase, setPhase] = useState<Phase>("goals");
+  // Detect ?resume=<sessionId> from URL (set by ai-coach-progress "Continue plan" button)
+  const resumeSessionId = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("resume") ?? "";
+  }, []);
+
+  const [phase, setPhase] = useState<Phase>(resumeSessionId ? "resuming" : "goals");
   const [goalSearch, setGoalSearch] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [goalId, setGoalId] = useState<string>("");
@@ -282,6 +288,61 @@ export default function AICoachPage() {
   // shown. Picking a goal that is never finished does NOT burn it.
   const coachUsage = useSectionUsage("amy_coach");
   const { openPaywall } = usePaywall();
+
+  // ─── Resume session: detect ?resume=<sessionId>, load plan + feedback ────
+  useEffect(() => {
+    if (!resumeSessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch(`/api/ai-coach/session/${encodeURIComponent(resumeSessionId)}`);
+        if (cancelled) return;
+        if (!res.ok) throw new Error("session not found");
+        const data = await res.json() as {
+          sessionId: string;
+          goalId: string;
+          plan: Plan;
+          inputs: { goal: string; ageGroup: string; severity: string; triggers: string[]; routine: string; language?: string };
+          feedbacks: Record<string, string>;
+        };
+        if (cancelled) return;
+
+        // Restore plan + session state
+        const restoredFeedbacks: Record<number, Feedback> = {};
+        for (const [k, v] of Object.entries(data.feedbacks)) {
+          restoredFeedbacks[Number(k)] = v as Feedback;
+        }
+
+        setPlan(data.plan);
+        setSessionId(data.sessionId);
+        setGoalId(data.goalId);
+        setFeedbackByWin(restoredFeedbacks);
+        originalWinCountRef.current = data.plan.wins.length;
+
+        // Restore lastPayloadRef so /extend can work if needed
+        lastPayloadRef.current = {
+          goal: data.inputs.goal,
+          ageGroup: data.inputs.ageGroup,
+          severity: data.inputs.severity,
+          triggers: data.inputs.triggers ?? [],
+          routine: data.inputs.routine,
+        };
+
+        // Jump to the first incomplete win (no feedback yet), or last win if all done
+        const firstIncomplete = data.plan.wins.findIndex(
+          (w) => !restoredFeedbacks[w.win]
+        );
+        setActiveIdx(firstIncomplete >= 0 ? firstIncomplete : data.plan.wins.length - 1);
+        setPhase("result");
+      } catch (err) {
+        if (cancelled) return;
+        toast({ title: "Could not load session", description: "Opening Amy Coach fresh.", variant: "destructive" });
+        setPhase("goals");
+      }
+    })();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeSessionId]);
 
   // ─── Goals → Questions (or → 12-card Result for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
@@ -953,6 +1014,22 @@ export default function AICoachPage() {
   }
 
   // ── PHASE: LOADING ───────────────────────────────────────────────────
+  if (phase === "resuming") {
+    return (
+      <div className="fixed inset-0 z-50 bg-gradient-to-br from-violet-900 via-purple-900 to-pink-900 flex items-center justify-center">
+        <div className="text-center text-white px-8 space-y-6">
+          <div className="relative w-20 h-20 mx-auto">
+            <Loader2 className="absolute inset-0 w-20 h-20 animate-spin" />
+          </div>
+          <h2 className="font-quicksand text-2xl font-bold">Resuming your plan…</h2>
+          <p className="text-sm text-white/80 max-w-xs mx-auto">
+            Loading where you left off.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "loading") {
     return (
       <div className="fixed inset-0 z-50 bg-gradient-to-br from-violet-900 via-purple-900 to-pink-900 flex items-center justify-center">

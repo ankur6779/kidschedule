@@ -134,7 +134,7 @@ export default function AICoachProgressPage() {
                       Last updated {new Date(s.lastUpdated).toLocaleDateString()}
                     </p>
                     <button
-                      onClick={() => setLocation("/amy-coach")}
+                      onClick={() => setLocation(`/amy-coach?resume=${s.sessionId}`)}
                       className="flex items-center gap-1 text-xs font-bold text-violet-700 hover:text-violet-900"
                     >
                       Continue plan <ArrowRight className="h-3 w-3" />
