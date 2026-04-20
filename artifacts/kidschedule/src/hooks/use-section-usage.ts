@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/react";
 import { useSubscription } from "./use-subscription";
 
+// Source the canonical Clerk userId directly — the subscription payload does
+// NOT include userId, so falling back to entitlements would silently bucket
+// every signed-in user into the "anon" key and leak usage across accounts.
+
 /**
  * Smart usage-based freemium tracking — per "section" (e.g. "parenting_hub",
  * "life_skills", "olympiad"). Free users may consume:
@@ -49,9 +53,9 @@ function save(userId: string | null, sectionId: string, value: SectionUsage) {
 }
 
 export function useSectionUsage(sectionId: string) {
-  const { isPremium, entitlements } = useSubscription();
-  const userId =
-    (entitlements as { userId?: string | null } | undefined)?.userId ?? null;
+  const { isPremium } = useSubscription();
+  const { userId: rawUserId } = useAuth();
+  const userId: string | null = rawUserId ?? null;
 
   const [state, setState] = useState<SectionUsage | null>(() =>
     load(userId, sectionId),

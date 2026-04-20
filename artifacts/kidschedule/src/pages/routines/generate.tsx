@@ -710,11 +710,17 @@ export default function RoutineGenerate() {
         onError: (err: unknown) => {
           const msg = err instanceof Error ? err.message : "";
           const isLimit = msg.toLowerCase().includes("limit") || msg.includes("402");
+          if (isLimit) {
+            // Hit the routinesMax cap → surface the universal premium paywall
+            // instead of a passive toast.
+            window.dispatchEvent(
+              new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+            );
+            return;
+          }
           toast({
-            title: isLimit ? "Routine limit reached" : "Could not save routine",
-            description: isLimit
-              ? "You've reached the free plan limit. Upgrade to save more routines."
-              : "Please try again in a moment.",
+            title: "Could not save routine",
+            description: "Please try again in a moment.",
             variant: "destructive",
           });
         },

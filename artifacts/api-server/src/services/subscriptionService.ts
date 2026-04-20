@@ -21,9 +21,10 @@ export const PLAN_PRICES: Record<Exclude<Plan, "free">, { amount: number; period
 };
 
 export const FREE_LIMITS = {
+  // Lifetime cap for free Amy AI messages (renamed semantically — field name kept for client compatibility).
   aiQueriesPerDay: 10,
   childrenMax: 1,
-  routinesMax: 30,
+  routinesMax: 1,
   hubArticlesMax: 3,
   trialDays: 3,
 };
@@ -38,13 +39,16 @@ export type EntitlementSummary = {
   cancelAtPeriodEnd: boolean;
   limits: typeof FREE_LIMITS;
   usage: {
+    // NOTE: field name kept as `aiQueriesToday` for client backwards-compat,
+    // but the value is now the lifetime count (no daily reset).
     aiQueriesToday: number;
     aiQueriesRemaining: number | null; // null = unlimited
   };
 };
 
 function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
+  // Lifetime bucket: a single usage row per (user, feature) accumulates forever.
+  return "lifetime";
 }
 
 export async function getOrCreateSubscription(

@@ -11,6 +11,19 @@ import { AmyIcon } from "@/components/amy-icon";
 import { useTheme } from "@/contexts/theme-context";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { useSubscription } from "@/hooks/use-subscription";
+
+function SmartParentBadge({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm ${className}`}
+      data-testid="badge-smart-parent"
+    >
+      <Sparkles className="h-2.5 w-2.5" />
+      Smart Parent
+    </span>
+  );
+}
 
 function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
   const { mode, toggleTheme } = useTheme();
@@ -73,6 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { signOut } = useClerk();
   const { user } = useUser();
   const { t } = useTranslation();
+  const { isPremium } = useSubscription();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const initials = user
@@ -113,8 +127,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold truncate">
-                  {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.emailAddresses?.[0]?.emailAddress}
+                <span className="text-sm font-semibold truncate flex items-center gap-1.5">
+                  <span className="truncate">
+                    {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : user?.emailAddresses?.[0]?.emailAddress}
+                  </span>
+                  {isPremium && <SmartParentBadge />}
                 </span>
                 <span className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</span>
               </div>
@@ -196,8 +213,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </AvatarFallback>
               </Avatar>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-semibold truncate">
-                  {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : "My Account"}
+                <span className="text-sm font-semibold truncate flex items-center gap-1.5">
+                  <span className="truncate">
+                    {user?.firstName ? `${user.firstName} ${user.lastName ?? ""}`.trim() : "My Account"}
+                  </span>
+                  {isPremium && <SmartParentBadge />}
                 </span>
                 <span className="text-xs text-muted-foreground truncate">{user?.emailAddresses?.[0]?.emailAddress}</span>
               </div>

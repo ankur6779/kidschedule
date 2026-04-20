@@ -16,6 +16,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
+import { useSectionUsage } from "@/hooks/useSectionUsage";
 import { useTranslation } from "react-i18next";
 import colors, { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
@@ -182,11 +183,31 @@ export default function CoachScreen() {
 
   const { i18n } = useTranslation();
 
+  // Free-tier gate: parents may COMPLETE exactly ONE coach topic for free.
+  // The free allowance is consumed only when a topic plan is successfully
+  // shown (in submitPlan / infant-problem static plan). Picking a goal that
+  // they don't finish must NOT burn the allowance.
+  const coachUsage = useSectionUsage("amy_coach");
+
   // ─── Goal pick → questions (or → Infant Problem detail for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    // Pessimistically block taps until persisted usage has loaded — prevents
+    // an exhausted free user from sneaking through during the async hydrate
+    // window on cold render or account switch.
+    if (!coachUsage.isPremium && !coachUsage.loaded) {
+      return;
+    }
+    // Block any new pick once a free topic has been completed.
+    if (!coachUsage.isPremium && coachUsage.fullyUsed) {
+      router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+      return;
+    }
     setGoalId(id);
     if (isInfantProblemId(id)) {
+      // Infant problem flow renders a static plan immediately on next screen —
+      // counts as a completion for free-quota purposes.
+      if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
       setPhase("infantProblem");
       return;
     }
@@ -258,6 +279,8 @@ export default function CoachScreen() {
       originalWinCountRef.current = data.plan.wins.length;
       setSessionId(data.sessionId);
       setPhase("result");
+      // Free allowance is consumed only on a successful topic completion.
+      if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
     } catch {
       setPhase("questions");
     }

@@ -37,8 +37,8 @@ export default function AiQuotaBanner() {
       />
       <Text style={[styles.text, { color: textColor }]}>
         {exhausted
-          ? "Daily Amy AI limit reached"
-          : `${remaining} Amy AI ${remaining === 1 ? "query" : "queries"} left today`}
+          ? "Free Amy AI limit reached — go premium"
+          : `${remaining} of 10 free Amy AI ${remaining === 1 ? "message" : "messages"} left`}
       </Text>
       {(exhausted || low) && <Text style={styles.cta}>Upgrade →</Text>}
     </Pressable>

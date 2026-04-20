@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation, Link } from "wouter";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { useToast } from "@/hooks/use-toast";
+import { useSectionUsage } from "@/hooks/use-section-usage";
+import { usePaywall } from "@/contexts/paywall-context";
 import {
   Sparkles, ArrowLeft, ArrowRight, Loader2, Search,
   Check, ChevronLeft, RotateCcw, BarChart3, Share2, Bookmark, Brain, Heart,
@@ -275,8 +277,18 @@ export default function AICoachPage() {
 
   const selectedGoal = ALL_GOALS.find((g) => g.id === goalId);
 
+  // Free-tier gate: parents may COMPLETE exactly ONE coach topic for free.
+  // The free allowance is consumed only when a topic plan is successfully
+  // shown. Picking a goal that is never finished does NOT burn it.
+  const coachUsage = useSectionUsage("amy_coach");
+  const { openPaywall } = usePaywall();
+
   // ─── Goals → Questions (or → 12-card Result for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
+    if (!coachUsage.isPremium && coachUsage.fullyUsed) {
+      openPaywall("section_locked");
+      return;
+    }
     setGoalId(id);
     if (isInfantProblemId(id)) {
       const problem = getInfantProblem(id);
@@ -295,6 +307,8 @@ export default function AICoachPage() {
         setActiveIdx(0);
         setFeedbackByWin({});
         setPhase("result");
+        // Static infant plan renders immediately — counts as completion.
+        if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
         return;
       }
       // Fallback to the legacy 1-page view if the problem has no wins yet.
@@ -389,6 +403,8 @@ export default function AICoachPage() {
       originalWinCountRef.current = data.plan.wins.length;
       setSessionId(data.sessionId);
       setPhase("result");
+      // Free allowance is consumed only on a successful topic completion.
+      if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
     } catch {
       toast({ title: "Something went wrong", description: "Please try again in a moment.", variant: "destructive" });
       setPhase("questions");

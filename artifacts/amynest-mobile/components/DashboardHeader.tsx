@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { brand } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
+import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
 
 type Props = {
   parentName: string;
@@ -14,10 +15,24 @@ type Props = {
 
 export default function DashboardHeader({ parentName, childName, onProfilePress }: Props) {
   const c = useColors();
+  const isPremium = useSubscriptionStore(selectIsPremium);
   return (
     <Animated.View entering={FadeInDown.duration(500)} style={styles.row}>
       <View style={{ flex: 1 }}>
-        <Text style={[styles.greeting, { color: c.textStrong }]}>Hi, {parentName} 👋</Text>
+        <View style={styles.greetRow}>
+          <Text style={[styles.greeting, { color: c.textStrong }]}>Hi, {parentName} 👋</Text>
+          {isPremium && (
+            <LinearGradient
+              colors={[brand.purple500, "#EC4899"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.badge}
+            >
+              <Ionicons name="sparkles" size={10} color="#fff" />
+              <Text style={styles.badgeText}>Smart Parent</Text>
+            </LinearGradient>
+          )}
+        </View>
         <Text style={[styles.subtext, { color: c.textSubtle }]}>
           Let's help <Text style={styles.childName}>{childName}</Text> grow better today
         </Text>
@@ -50,10 +65,30 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 12,
   },
+  greetRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   greeting: {
     fontSize: 24,
     fontWeight: "800",
     letterSpacing: -0.5,
+  },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
   subtext: {
     fontSize: 13.5,

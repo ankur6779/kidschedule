@@ -40,7 +40,7 @@ export default function AssistantPage() {
   }, [messages, loading]);
 
   // Server-driven gating — no local quota counter. Premium users have no limit.
-  const dailyLimit = entitlements?.limits.aiQueriesPerDay ?? 5;
+  const dailyLimit = entitlements?.limits.aiQueriesPerDay ?? 10;
   const questionsUsed = entitlements?.usage.aiQueriesToday ?? 0;
   const remainingRaw = entitlements?.usage.aiQueriesRemaining; // null for premium
   const remaining = isPremium ? Infinity : Math.max(0, remainingRaw ?? dailyLimit);
@@ -148,10 +148,10 @@ export default function AssistantPage() {
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 shrink-0" />
           {limitReached ? (
-            <span className="font-bold">You've used your daily limit. Upgrade to Premium for the full power of Amy AI.</span>
+            <span className="font-bold">Free Amy AI limit reached — upgrade for unlimited messages.</span>
           ) : (
             <span>
-              <strong>{remaining}</strong> of {dailyLimit} Amy AI questions remaining today
+              <strong>{remaining}</strong> of {dailyLimit} free Amy AI messages remaining
             </span>
           )}
         </div>
@@ -206,8 +206,8 @@ export default function AssistantPage() {
 
             {limitReached && (
               <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-sm text-rose-700 max-w-sm text-center space-y-3">
-                <p className="font-bold text-base">You've used your daily limit</p>
-                <p>To use the full power of Amy AI, upgrade to Premium for unlimited questions, deeper insights, and priority support.</p>
+                <p className="font-bold text-base">Free Amy AI limit reached</p>
+                <p>You've used all 10 of your free Amy AI messages. Upgrade to Premium for unlimited questions, deeper insights, and priority support.</p>
                 <Link href="/pricing">
                   <Button className="w-full rounded-full gap-2 bg-rose-600 hover:bg-rose-700 text-white" data-testid="button-upgrade-empty">
                     <Zap className="h-4 w-4" />
@@ -273,8 +273,8 @@ export default function AssistantPage() {
       <div className="flex-shrink-0 pt-3 border-t border-border/50">
         {limitReached ? (
           <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 text-center text-rose-700 space-y-2">
-            <p className="font-bold text-sm">You've used your daily limit</p>
-            <p className="text-xs">To use the full power of Amy AI, upgrade to Premium for unlimited questions.</p>
+            <p className="font-bold text-sm">Free Amy AI limit reached</p>
+            <p className="text-xs">All 10 free messages used. Upgrade to Premium for unlimited questions.</p>
             <Link href="/pricing">
               <Button size="sm" className="rounded-full gap-1.5 bg-rose-600 hover:bg-rose-700 text-white" data-testid="button-upgrade-input">
                 <Zap className="h-3.5 w-3.5" />

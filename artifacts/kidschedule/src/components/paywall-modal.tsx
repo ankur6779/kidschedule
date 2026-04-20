@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Check, X, Smartphone, Zap, Gift } from "lucide-react";
+import { Sparkles, Check, X, Smartphone, Zap, Gift, ArrowLeft } from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useLocation } from "wouter";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -37,7 +37,7 @@ const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
 
 export function PaywallModal() {
   const { state, closePaywall } = usePaywall();
-  const { plans, entitlements, checkoutRazorpay, startTrial } = useSubscription();
+  const { plans, checkoutRazorpay } = useSubscription();
   const { user } = useUser();
   const [, setLocation] = useLocation();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
@@ -67,29 +67,17 @@ export function PaywallModal() {
     }
   };
 
-  const openMobileApp = () => {
-    // Try to launch the installed app via Expo deep link; fall back to the
-    // web landing page so the user can grab the install link.
-    const fallback = window.location.origin + "/get-app";
-    const deepLink = "amynest://paywall?reason=" + encodeURIComponent(state.reason);
-    const start = Date.now();
-    window.location.href = deepLink;
-    setTimeout(() => {
-      // If we're still here after 1.2s, the deep link didn't open the app.
-      if (Date.now() - start < 1500) window.location.href = fallback;
-    }, 1200);
-  };
-
-  const onTrial = async () => {
-    setSubmitting(true);
-    await startTrial();
-    setSubmitting(false);
-    closePaywall();
-  };
-
   return (
     <Dialog open={state.open} onOpenChange={(o) => !o && closePaywall()}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden border-0 bg-gradient-to-br from-[#0B0B1A] via-[#1A0B2E] to-[#0B0B1A] text-white">
+        <button
+          onClick={closePaywall}
+          className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-2 text-xs font-bold text-white/85 hover:bg-white/20 transition"
+          aria-label="Back"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </button>
         <button
           onClick={closePaywall}
           className="absolute right-3 top-3 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20 transition"
@@ -167,27 +155,6 @@ export function PaywallModal() {
             <Zap className="h-4 w-4 mr-2" />
             {submitting ? "Opening Razorpay…" : "Pay with UPI / Card"}
           </Button>
-
-          <button
-            type="button"
-            onClick={openMobileApp}
-            disabled={submitting}
-            className="w-full mt-2 h-10 inline-flex items-center justify-center gap-2 rounded-md text-sm font-bold text-white/85 bg-white/5 hover:bg-white/10 border border-white/10 transition"
-          >
-            <Smartphone className="h-3.5 w-3.5" />
-            Continue in Mobile App instead
-          </button>
-
-          {entitlements?.status === "free" && (
-            <button
-              type="button"
-              onClick={onTrial}
-              disabled={submitting}
-              className="w-full text-center mt-3 text-pink-400 font-extrabold text-sm hover:underline"
-            >
-              Start 3-day free trial
-            </button>
-          )}
 
           <button
             type="button"

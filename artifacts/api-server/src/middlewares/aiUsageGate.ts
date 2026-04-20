@@ -41,10 +41,11 @@ export async function aiUsageGate(
     await incrementAiUsage(userId, -1).catch(() => undefined);
     res.status(402).json({
       error: "ai_quota_exceeded",
-      message: "Daily Amy AI limit reached. Upgrade for unlimited queries.",
+      message: "Free Amy AI limit reached. Upgrade for unlimited messages.",
       limit: FREE_LIMITS.aiQueriesPerDay,
       used: FREE_LIMITS.aiQueriesPerDay,
-      resetsAt: nextUtcMidnight(),
+      // Lifetime quota — no reset.
+      resetsAt: null,
     });
     return;
   }
@@ -64,10 +65,4 @@ export async function aiUsageGate(
     return origEnd(...args);
   };
   next();
-}
-
-function nextUtcMidnight(): string {
-  const d = new Date();
-  d.setUTCHours(24, 0, 0, 0);
-  return d.toISOString();
 }

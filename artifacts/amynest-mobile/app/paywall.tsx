@@ -121,6 +121,16 @@ export default function PaywallScreen() {
             onPress={() => router.back()}
             hitSlop={12}
             accessibilityRole="button"
+            accessibilityLabel="Back"
+            style={styles.backBtn}
+          >
+            <Ionicons name="arrow-back" size={20} color="rgba(255,255,255,0.9)" />
+            <Text style={styles.backText}>Back</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => router.back()}
+            hitSlop={12}
+            accessibilityRole="button"
             accessibilityLabel="Close"
             style={styles.closeBtn}
           >
@@ -272,19 +282,6 @@ export default function PaywallScreen() {
             </Pressable>
           )}
 
-          {/* Trial offer (only if free + never trialed) */}
-          {ent && ent.status === "free" && (
-            <Pressable
-              onPress={onTrial}
-              disabled={submitting}
-              style={styles.trialBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Start 3-day free trial"
-            >
-              <Text style={styles.trialText}>Start 3-day free trial</Text>
-            </Pressable>
-          )}
-
           <Pressable
             onPress={() => router.back()}
             hitSlop={8}
@@ -308,9 +305,26 @@ const styles = StyleSheet.create({
   bg: { flex: 1 },
   topBar: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingBottom: 4,
+  },
+  backBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  backText: {
+    color: "rgba(255,255,255,0.9)",
+    fontSize: 13,
+    fontWeight: "700",
   },
   closeBtn: {
     width: 36,
