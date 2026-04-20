@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, integer, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -50,7 +50,7 @@ export const usageDailyTable = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => ({
-    userDayFeatureIdx: index("usage_daily_user_day_feature_idx").on(t.userId, t.day, t.feature),
+    userDayFeatureIdx: uniqueIndex("usage_daily_user_day_feature_idx").on(t.userId, t.day, t.feature),
   }),
 );
 
