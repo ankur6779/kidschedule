@@ -896,8 +896,9 @@ export default function RoutineDetail() {
               <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Link>
           </Button>
+        </div>
 
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
             {dateMode !== "past" && (
               <Button
                 variant="outline"
@@ -964,7 +965,6 @@ export default function RoutineDetail() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          </div>
         </div>
 
         <div>
