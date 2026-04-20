@@ -143,6 +143,43 @@ const GOAL_LABELS: Record<string, string> = {
   "align-parenting-between-parents": "Align Parenting Between Parents",
   "handle-working-parent-guilt": "Handle Working Parent Guilt",
   "set-consistent-family-rules": "Set Consistent Family Rules",
+
+  // Toddler Behavior (2-4 yrs)
+  "toddler-tantrums": "Toddler Tantrums (2–4 yrs)",
+  "hitting-biting": "Hitting & Biting",
+  "no-phase": "The 'No' Phase",
+  "public-meltdowns": "Public Meltdowns",
+  "whining-and-clinginess": "Whining & Clinginess",
+
+  // Daily Skills & Independence
+  "potty-training-readiness": "Potty Training Readiness",
+  "potty-day-training": "Day Toilet Training",
+  "potty-night-training": "Night-Time Dry",
+  "potty-public-anxiety": "Public Toilet Anxiety",
+  "self-dressing": "Self-Dressing & Hygiene",
+
+  // Family Dynamics
+  "sibling-rivalry": "Sibling Rivalry",
+  "sharing-turn-taking": "Sharing & Turn-Taking",
+  "new-baby-adjustment": "Adjusting to New Baby",
+  "sibling-fights": "Sibling Fights & Hitting",
+  "favouritism-feelings": "Handle Favouritism Feelings",
+
+  // Special Situations
+  "travel-with-kids": "Travel With Kids",
+  "hospital-doctor-visit": "Hospital / Doctor Visit",
+  "daycare-school-transition": "Daycare / School Transition",
+  "welcoming-new-sibling": "Welcoming a New Sibling",
+  "moving-houses": "Moving to a New Home",
+
+  // For You (Parent Self-Care)
+  "parent-burnout": "Beat Parent Burnout",
+  "stay-calm-anger": "Stay Calm When Angry",
+  "guilt-after-yelling": "Handle Guilt After Yelling",
+  "find-me-time": "Find 'Me Time' Daily",
+  "couple-time-balance": "Balance Partner & Parent Time",
+  "improve-own-sleep": "Improve Your Own Sleep",
+  "manage-overwhelm": "Manage Daily Overwhelm",
 };
 
 function fallbackPlan(input: CoachInput): CoachPlan {

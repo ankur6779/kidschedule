@@ -51,6 +51,43 @@ export const GOAL_IDS = [
   "align-parenting-between-parents",
   "handle-working-parent-guilt",
   "set-consistent-family-rules",
+
+  // ── Toddler Behavior (2-4 yrs) ────────────────────────────
+  "toddler-tantrums",
+  "hitting-biting",
+  "no-phase",
+  "public-meltdowns",
+  "whining-and-clinginess",
+
+  // ── Daily Skills & Independence ───────────────────────────
+  "potty-training-readiness",
+  "potty-day-training",
+  "potty-night-training",
+  "potty-public-anxiety",
+  "self-dressing",
+
+  // ── Family Dynamics ───────────────────────────────────────
+  "sibling-rivalry",
+  "sharing-turn-taking",
+  "new-baby-adjustment",
+  "sibling-fights",
+  "favouritism-feelings",
+
+  // ── Special Situations ────────────────────────────────────
+  "travel-with-kids",
+  "hospital-doctor-visit",
+  "daycare-school-transition",
+  "welcoming-new-sibling",
+  "moving-houses",
+
+  // ── For You (Parent Self-Care) ────────────────────────────
+  "parent-burnout",
+  "stay-calm-anger",
+  "guilt-after-yelling",
+  "find-me-time",
+  "couple-time-balance",
+  "improve-own-sleep",
+  "manage-overwhelm",
 ] as const;
 
 export type GoalId = (typeof GOAL_IDS)[number];
