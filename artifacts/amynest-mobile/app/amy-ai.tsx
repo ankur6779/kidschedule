@@ -121,6 +121,18 @@ export default function AmyAIScreen() {
   };
 
   const showSuggestions = messages.length <= 1 && !loading;
+  const canClear = messages.length > 1 && !loading;
+
+  const clearChat = async () => {
+    if (!canClear) return;
+    setMessages([welcomeMessage]);
+    setInput("");
+    try {
+      await authFetch("/api/ai/messages", { method: "DELETE" });
+    } catch {
+      // non-fatal — UI is already cleared
+    }
+  };
 
   return (
     <LinearGradient colors={theme.gradient} style={{ flex: 1 }}>
@@ -135,6 +147,18 @@ export default function AmyAIScreen() {
           <Text style={styles.headerTitle}>{t("ai.page_title")}</Text>
           <Text style={styles.headerSubtitle} numberOfLines={2}>{t("ai.subtitle")}</Text>
         </View>
+        {canClear && (
+          <Pressable
+            onPress={clearChat}
+            hitSlop={10}
+            style={({ pressed }) => [styles.clearBtn, pressed && { opacity: 0.6 }]}
+            accessibilityLabel={t("ai.clear_chat")}
+            accessibilityRole="button"
+          >
+            <Ionicons name="refresh" size={14} color="rgba(255,255,255,0.85)" />
+            <Text style={styles.clearBtnText}>{t("ai.clear_chat")}</Text>
+          </Pressable>
+        )}
       </View>
 
       <AiQuotaBanner />
@@ -228,6 +252,8 @@ const styles = StyleSheet.create({
   headerIcon: { width: 34, height: 34, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   headerTitle: { color: "#fff", fontWeight: "800", fontSize: 16 },
   headerSubtitle: { color: "rgba(255,255,255,0.55)", fontSize: 11 },
+  clearBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)" },
+  clearBtnText: { color: "rgba(255,255,255,0.85)", fontSize: 12, fontWeight: "600" },
 
   bubbleRow: { flexDirection: "row", gap: 8, alignItems: "flex-end", maxWidth: "100%" },
   bubbleRowLeft: { justifyContent: "flex-start" },
