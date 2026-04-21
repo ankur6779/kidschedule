@@ -91,6 +91,15 @@ export default function HubScreen() {
     router.push({ pathname: "/amy-ai", params: { q } });
   };
 
+  // 2-col tile grid: when a section is open it spans the full row; collapsed
+  // siblings use flexBasis 48% + flexGrow 1 so an orphan (last item with no
+  // partner, or a tile sharing a row with an opened sibling that wrapped)
+  // stretches to fill the remaining space instead of leaving an empty gap.
+  const tileW = (id: string): { width: "100%" } | { flexBasis: "48%"; flexGrow: 1; minWidth: 0 } =>
+    openSection === id
+      ? { width: "100%" }
+      : { flexBasis: "48%", flexGrow: 1, minWidth: 0 };
+
   if (profileLoading) {
     return (
       <LinearGradient colors={theme.gradient} style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -204,7 +213,9 @@ export default function HubScreen() {
           <FuturePredictor childId={effective.id} />
         )}
 
-        {/* Sections */}
+        {/* Sections — 2-col tile grid (open section spans full width) */}
+        <View style={styles.sectionsGrid}>
+        <View style={tileW("amy")}>
         <Section
           id="amy"
           icon={<MaterialCommunityIcons name="brain" size={20} color="#fff" />}
@@ -229,7 +240,9 @@ export default function HubScreen() {
             <Ionicons name="arrow-forward" size={16} color="#fff" />
           </Pressable>
         </Section>
+        </View>
 
+        <View style={tileW("articles")}>
         <Section
           id="articles"
           icon={<Ionicons name="book" size={20} color="#fff" />}
@@ -258,7 +271,9 @@ export default function HubScreen() {
             ))}
           </View>
         </Section>
+        </View>
 
+        <View style={tileW("tips")}>
         <Section
           id="tips"
           icon={<Ionicons name="sparkles" size={20} color="#fff" />}
@@ -285,7 +300,9 @@ export default function HubScreen() {
             <Text style={styles.sectionLead}>Add a child to unlock daily tips.</Text>
           )}
         </Section>
+        </View>
 
+        <View style={tileW("emotional")}>
         <Section
           id="emotional"
           icon={<Ionicons name="heart" size={20} color="#fff" />}
@@ -305,11 +322,13 @@ export default function HubScreen() {
             ))}
           </View>
         </Section>
+        </View>
 
         <LockedBlock
           reason="hub_locked"
           locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("activities")}
           label="Premium feature"
+          style={tileW("activities")}
         >
         <Section
           id="activities"
@@ -369,6 +388,7 @@ export default function HubScreen() {
         </LockedBlock>
 
         {/* Art & Craft Videos — Google Drive */}
+        <View style={tileW("art-craft")}>
         <Section
           id="art-craft"
           icon={<MaterialCommunityIcons name="palette" size={20} color="#fff" />}
@@ -380,8 +400,10 @@ export default function HubScreen() {
         >
           <ArtCraftReels />
         </Section>
+        </View>
 
         {/* Printable Worksheets — Google Drive */}
+        <View style={tileW("worksheets")}>
         <Section
           id="worksheets"
           icon={<MaterialCommunityIcons name="file-document-outline" size={20} color="#fff" />}
@@ -393,8 +415,10 @@ export default function HubScreen() {
         >
           <PrintableWorksheets />
         </Section>
+        </View>
 
         {/* Amazing Facts */}
+        <View style={tileW("facts")}>
         <Section
           id="facts"
           icon={<Ionicons name="sparkles" size={20} color="#fff" />}
@@ -410,12 +434,14 @@ export default function HubScreen() {
             <Text style={styles.sectionLead}>Add a child to unlock age-matched facts.</Text>
           )}
         </Section>
+        </View>
 
         {effective && effective.age >= 2 && effective.age <= 15 && (
           <LockedBlock
             reason="hub_locked"
             locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("life_skills")}
             label="Premium feature"
+            style={tileW("life-skills")}
           >
             <Section
               id="life-skills"
@@ -431,6 +457,7 @@ export default function HubScreen() {
             </Section>
           </LockedBlock>
         )}
+        </View>
 
         {/* Bottom CTA */}
         <Pressable onPress={() => router.push("/(tabs)/routines")} style={styles.bottomCta}>
@@ -511,6 +538,7 @@ function makeStyles(c: ReturnType<typeof useColors>, mode: "light" | "dark") {
 
   return StyleSheet.create({
     headerRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+    sectionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10, alignItems: "flex-start" },
     logo: { width: 40, height: 40, borderRadius: 10 },
     title: { color: c.foreground, fontSize: 22, fontWeight: "800", fontFamily: Platform.select({ default: undefined }) },
     subtitle: { color: c.textMuted, fontSize: 12, marginTop: 2 },

@@ -72,8 +72,7 @@ export type EntitlementSummary = {
   cancelAtPeriodEnd: boolean;
   limits: typeof FREE_LIMITS;
   usage: {
-    // NOTE: field name kept as `aiQueriesToday` for client backwards-compat,
-    // but the value is now the lifetime count (no daily reset).
+    // Today's AI message count (resets every UTC day).
     aiQueriesToday: number;
     aiQueriesRemaining: number | null; // null = unlimited
     // Global Paywall: per-feature lifetime usage state.
