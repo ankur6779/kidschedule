@@ -106,6 +106,103 @@ function validatePlan(p: unknown): p is CoachPlan {
   return o.wins.every((w, i) => (w as Win).win === i + 1);
 }
 
+// ─── Incremental JSON parsers (used by /ai-coach/stream) ─────────────────
+//
+// These let us emit `plan_meta` and individual `win` SSE events as soon as
+// the streaming OpenAI response contains complete sub-objects — so the
+// client can render win 1 in ~1-2 seconds instead of waiting for all 12.
+
+/**
+ * Try to extract title / root_cause / summary from a partial JSON buffer.
+ * Returns null if any field is still mid-stream. The regex tolerates
+ * escaped quotes inside the string value.
+ */
+function tryExtractMeta(
+  buf: string,
+): { title: string; root_cause: string; summary: string } | null {
+  const pick = (key: string): string | undefined => {
+    const re = new RegExp(`"${key}"\\s*:\\s*"((?:\\\\.|[^"\\\\])*)"`);
+    const m = buf.match(re);
+    if (!m) return undefined;
+    try {
+      return JSON.parse(`"${m[1]}"`) as string;
+    } catch {
+      return undefined;
+    }
+  };
+  const title = pick("title");
+  const root_cause = pick("root_cause");
+  const summary = pick("summary");
+  if (!title || !root_cause || !summary) return null;
+  return { title, root_cause, summary };
+}
+
+/**
+ * Walks the partial buffer starting from `cursor`, locating each newly-
+ * completed top-level object inside the `wins` array. Returns the slices
+ * (raw JSON text) plus the new cursor position so the caller can resume.
+ *
+ * String/escape-aware brace counting — handles `{` / `}` inside string
+ * values like `"actions": ["use { brackets }"]` correctly.
+ */
+function extractCompletedWins(
+  buf: string,
+  cursor: number,
+): { wins: string[]; cursor: number } {
+  const winsKey = buf.match(/"wins"\s*:\s*\[/);
+  if (!winsKey || winsKey.index === undefined) return { wins: [], cursor };
+  const arrayStart = winsKey.index + winsKey[0].length;
+  let i = Math.max(cursor, arrayStart);
+  const out: string[] = [];
+
+  while (i < buf.length) {
+    while (i < buf.length && (buf[i] === "," || buf[i] === " " || buf[i] === "\n" || buf[i] === "\r" || buf[i] === "\t")) {
+      i++;
+    }
+    if (i >= buf.length) break;
+    if (buf[i] === "]") {
+      i++;
+      break;
+    }
+    if (buf[i] !== "{") break; // not at object boundary yet — wait for more bytes
+
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    let j = i;
+    let closed = false;
+    for (; j < buf.length; j++) {
+      const ch = buf[j];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escape = true;
+        continue;
+      }
+      if (ch === "\"") {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          closed = true;
+          break;
+        }
+      }
+    }
+    if (!closed) break; // incomplete object — wait for next chunk
+    out.push(buf.slice(i, j + 1));
+    i = j + 1;
+  }
+
+  return { wins: out, cursor: i };
+}
+
 // ─── Goal display labels (used in fallback + prompts) ────────────────────
 const GOAL_LABELS: Record<string, string> = {
   // Behavior
@@ -903,6 +1000,9 @@ STRICT RULES:
 
 ${goalBrief}`;
 
+  // Tell the client its sessionId immediately so feedback writes can target
+  // the right row even before the first win arrives.
+  send("session", { sessionId, totalWins: 12 });
   send("progress", { winsBuilt: 0, totalWins: 12 });
 
   let plan: CoachPlan = fallbackPlan(input);
@@ -927,14 +1027,44 @@ ${goalBrief}`;
 
     let buf = "";
     let lastWinsBuilt = 0;
+    let winCursor = 0;
+    let metaSent = false;
+    const sentWinNumbers = new Set<number>();
     // Each new win object in the JSON starts with `"win": N`. Counting that
-    // pattern in the buffer gives us a cheap, accurate progress indicator.
+    // pattern in the buffer gives us a cheap progress indicator (kept for
+    // backwards compatibility with older clients).
     const winRe = /"win"\s*:\s*\d+/g;
     for await (const chunk of stream) {
       if (ended) break;
       const delta = chunk.choices[0]?.delta?.content ?? "";
       if (!delta) continue;
       buf += delta;
+
+      // Emit plan_meta as soon as title/root_cause/summary are all complete.
+      if (!metaSent) {
+        const meta = tryExtractMeta(buf);
+        if (meta) {
+          send("plan_meta", meta);
+          metaSent = true;
+        }
+      }
+
+      // Emit each newly-completed win as a `win` event.
+      const extracted = extractCompletedWins(buf, winCursor);
+      winCursor = extracted.cursor;
+      for (const raw of extracted.wins) {
+        try {
+          const winObj = JSON.parse(raw) as unknown;
+          if (validateWin(winObj) && !sentWinNumbers.has(winObj.win)) {
+            sentWinNumbers.add(winObj.win);
+            send("win", winObj);
+          }
+        } catch {
+          // unparseable slice — skip; the final JSON.parse below remains the
+          // source of truth.
+        }
+      }
+
       const winsBuilt = Math.min(12, (buf.match(winRe) || []).length);
       if (winsBuilt > lastWinsBuilt) {
         lastWinsBuilt = winsBuilt;

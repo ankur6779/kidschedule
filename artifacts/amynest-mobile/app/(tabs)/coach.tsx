@@ -931,31 +931,50 @@ export default function CoachScreen() {
         )}
 
         {/* Bottom nav */}
-        <View style={[styles.resultBottomNav, { paddingBottom: botPad + 12 }]}>
-          <TouchableOpacity
-            onPress={() => goToCard(Math.max(0, activeIdx - 1))}
-            disabled={activeIdx === 0}
-            style={[styles.prevBtn, activeIdx === 0 && { opacity: 0.4 }]}
-          >
-            <Ionicons name="arrow-back" size={14} color={brand.violet700} />
-            <Text style={styles.prevBtnText}>Prev</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
-            disabled={activeIdx === plan.wins.length - 1}
-            activeOpacity={0.85}
-            style={{ opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1 }}
-          >
-            <LinearGradient
-              colors={[brand.violet500, "#EC4899" /* audit-ok: accent pink gradient end-stop */]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={styles.nextBtn}
-            >
-              <Text style={styles.nextBtnText}>Next</Text>
-              <Ionicons name="arrow-forward" size={14} color="#fff" />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+        {(() => {
+          const currentWin = plan.wins[activeIdx];
+          const hasFeedback = currentWin ? !!feedbackByWin[currentWin.win] : false;
+          const atLast = activeIdx >= plan.wins.length - 1;
+          // Next is gated on (a) not being on the very last card AND
+          // (b) the parent having selected a feedback option for this win.
+          const nextDisabled = atLast || !hasFeedback;
+          return (
+            <View style={[styles.resultBottomNav, { paddingBottom: botPad + 12, flexDirection: "column", gap: 8 }]}>
+              {!hasFeedback && !atLast && (
+                <View style={styles.nextHint}>
+                  <Text style={styles.nextHintText}>
+                    Pick Worked / Partially / Not for me to continue
+                  </Text>
+                </View>
+              )}
+              <View style={{ flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "center" }}>
+                <TouchableOpacity
+                  onPress={() => goToCard(Math.max(0, activeIdx - 1))}
+                  disabled={activeIdx === 0}
+                  style={[styles.prevBtn, activeIdx === 0 && { opacity: 0.4 }]}
+                >
+                  <Ionicons name="arrow-back" size={14} color={brand.violet700} />
+                  <Text style={styles.prevBtnText}>Prev</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
+                  disabled={nextDisabled}
+                  activeOpacity={0.85}
+                  style={{ opacity: nextDisabled ? 0.4 : 1 }}
+                >
+                  <LinearGradient
+                    colors={[brand.violet500, "#EC4899" /* audit-ok: accent pink gradient end-stop */]}
+                    start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                    style={styles.nextBtn}
+                  >
+                    <Text style={styles.nextBtnText}>Next</Text>
+                    <Ionicons name="arrow-forward" size={14} color="#fff" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            </View>
+          );
+        })()}
       </LinearGradient>
     );
   }
@@ -1323,4 +1342,14 @@ const styles = StyleSheet.create({
   prevBtnText: { color: brand.violet700, fontSize: 13, fontFamily: "Inter_600SemiBold" },
   nextBtn: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999 },
   nextBtnText: { color: "#fff", fontSize: 13, fontFamily: "Inter_700Bold" },
+  nextHint: {
+    alignSelf: "center",
+    backgroundColor: "rgba(251,191,36,0.12)",
+    borderColor: "rgba(251,191,36,0.35)",
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  nextHintText: { color: "#FBBF24", fontSize: 11.5, fontFamily: "Inter_700Bold", letterSpacing: 0.2 },
 });

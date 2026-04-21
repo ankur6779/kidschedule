@@ -244,6 +244,10 @@ export default function AICoachPage() {
   const [feedbackByWin, setFeedbackByWin] = useState<Record<number, Feedback>>({});
   const [extending, setExtending] = useState(false);
   const [progressWinCount, setProgressWinCount] = useState(0);
+  // True while we're still receiving streamed wins from the server. Used
+  // to distinguish "Next is disabled because we're at the last available
+  // win and more are still loading" from "we're at the genuine last card."
+  const [isStreaming, setIsStreaming] = useState(false);
 
   // Keep last submitted answers/payload around so we can call /extend later
   const lastPayloadRef = useRef<{
@@ -441,6 +445,9 @@ export default function AICoachPage() {
     setActiveIdx(0);
     setFeedbackByWin({});
     setProgressWinCount(0);
+    setIsStreaming(false);
+    setPlan(null);
+    setSessionId("");
     const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10", "10+ years (tween/teen)": "10+" };
     const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
     const payload = {
@@ -525,6 +532,38 @@ export default function AICoachPage() {
       let done: { plan: Plan; sessionId: string } | null = null;
       let streamError: string | null = null;
 
+      // Progressive plan we build as `plan_meta` + `win` events stream in,
+      // so the user can start reading win 1 long before all 12 are ready.
+      let streamedMeta: { title: string; root_cause: string; summary: string } | null = null;
+      const streamedWins: Win[] = [];
+      let promotedToResult = false;
+
+      const promoteIfReady = (streamSessionId?: string) => {
+        if (promotedToResult) return;
+        if (streamedWins.length === 0 || !streamedMeta) return;
+        promotedToResult = true;
+        const partialPlan: Plan = {
+          title: streamedMeta.title,
+          root_cause: streamedMeta.root_cause,
+          summary: streamedMeta.summary,
+          // Sort defensively in case wins arrive out of order.
+          wins: [...streamedWins].sort((a, b) => a.win - b.win),
+        };
+        setPlan(partialPlan);
+        // Denominator is frozen at the original target (12) so progress %
+        // stays stable as more wins stream in.
+        if (originalWinCountRef.current === 0) originalWinCountRef.current = 12;
+        if (streamSessionId) setSessionId(streamSessionId);
+        setIsStreaming(true);
+        setPhase("result");
+        // Treat the user reaching the result phase as "topic shown" — burns
+        // the free allowance the same as the non-streaming path does.
+        if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
+        window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
+      };
+
+      let pendingStreamSessionId = "";
+
       while (true) {
         if (ctrl.signal.aborted) {
           try { await reader.cancel(); } catch { /* noop */ }
@@ -552,6 +591,41 @@ export default function AICoachPage() {
             if (event === "progress") {
               const n = Number(data?.winsBuilt) || 0;
               setProgressWinCount(Math.max(0, Math.min(12, n)));
+            } else if (event === "session") {
+              if (typeof data?.sessionId === "string" && data.sessionId) {
+                pendingStreamSessionId = data.sessionId;
+                if (promotedToResult) setSessionId(data.sessionId);
+              }
+            } else if (event === "plan_meta") {
+              if (data?.title && data?.root_cause && data?.summary) {
+                streamedMeta = {
+                  title: String(data.title),
+                  root_cause: String(data.root_cause),
+                  summary: String(data.summary),
+                };
+                promoteIfReady(pendingStreamSessionId);
+              }
+            } else if (event === "win") {
+              const w = data as Win;
+              if (
+                typeof w?.win === "number" &&
+                !streamedWins.some((existing) => existing.win === w.win)
+              ) {
+                streamedWins.push(w);
+                if (promotedToResult) {
+                  // Already in result phase — append to the existing plan.
+                  setPlan((prev) => {
+                    if (!prev) return prev;
+                    if (prev.wins.some((existing) => existing.win === w.win)) return prev;
+                    return {
+                      ...prev,
+                      wins: [...prev.wins, w].sort((a, b) => a.win - b.win),
+                    };
+                  });
+                } else {
+                  promoteIfReady(pendingStreamSessionId);
+                }
+              }
             } else if (event === "done") {
               done = data as { plan: Plan; sessionId: string };
             } else if (event === "error") {
@@ -563,8 +637,22 @@ export default function AICoachPage() {
         }
       }
 
+      setIsStreaming(false);
       if (done) {
-        handleSuccess(done);
+        // The `done` event delivers the canonical, fully-validated plan.
+        // Replace the progressive reconstruction with it so any drift
+        // (e.g. fallback plan) is the single source of truth.
+        if (promotedToResult) {
+          // Already shown — just swap in the canonical plan + sessionId.
+          if (!coachUsage.isPremium) {
+            // markBlockUsed was already called during promotion; no-op now.
+          }
+          setPlan(done.plan);
+          setSessionId(done.sessionId);
+          originalWinCountRef.current = done.plan.wins.length;
+        } else {
+          handleSuccess(done);
+        }
         return;
       }
       throw new Error(streamError || "Stream ended without a plan");
@@ -1310,42 +1398,88 @@ export default function AICoachPage() {
         )}
 
         {/* Bottom nav */}
-        <div style={{
-          position: "absolute", bottom: 16, left: 0, right: 0, zIndex: 20,
-          display: "flex", justifyContent: "center", gap: 12,
-        }}>
-          <button
-            onClick={() => goToCard(Math.max(0, activeIdx - 1))}
-            disabled={activeIdx === 0}
-            style={{
-              color: "#c4b5fd",
-              background: "rgba(255,255,255,0.08)",
-              backdropFilter: "blur(8px)",
-              boxShadow: "0 0 15px rgba(139,92,246,0.15)",
-              borderRadius: 999, padding: "10px 16px", border: "1px solid rgba(139,92,246,0.3)",
-              cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1,
-              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
-            }}
-          >
-            <ArrowLeft size={14} /> Prev
-          </button>
-          <button
-            data-on-dark
-            onClick={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
-            disabled={activeIdx === plan.wins.length - 1}
-            style={{
-              color: "#fff",
-              background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
-              boxShadow: "0 4px 12px rgba(139,92,246,0.3)",
-              borderRadius: 999, padding: "10px 16px", border: "none",
-              cursor: activeIdx === plan.wins.length - 1 ? "default" : "pointer",
-              opacity: activeIdx === plan.wins.length - 1 ? 0.4 : 1,
-              display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700,
-            }}
-          >
-            Next <ArrowRight size={14} />
-          </button>
-        </div>
+        {(() => {
+          const currentWin = plan.wins[activeIdx];
+          const hasFeedback = currentWin ? !!feedbackByWin[currentWin.win] : false;
+          const atLastLoaded = activeIdx >= plan.wins.length - 1;
+          // While streaming, "last loaded" doesn't mean "last in plan" — the
+          // next win is still on its way, so we show a generating hint.
+          const waitingForNext = atLastLoaded && isStreaming;
+          // Next is disabled when (a) we're at the genuine last card, OR
+          // (b) the next streamed win hasn't arrived yet, OR (c) the parent
+          // hasn't selected feedback for the visible card yet.
+          const nextDisabled = atLastLoaded || !hasFeedback;
+          return (
+            <div style={{
+              position: "absolute", bottom: 16, left: 0, right: 0, zIndex: 20,
+              display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+            }}>
+              {!hasFeedback && !atLastLoaded && (
+                <div style={{
+                  fontSize: 11.5, fontWeight: 700, color: "#fbbf24",
+                  background: "rgba(251,191,36,0.12)",
+                  border: "1px solid rgba(251,191,36,0.35)",
+                  padding: "5px 12px", borderRadius: 999,
+                  letterSpacing: 0.2,
+                }}>
+                  Pick Worked / Partially / Not for me to continue
+                </div>
+              )}
+              {waitingForNext && hasFeedback && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  fontSize: 11.5, fontWeight: 700, color: "#c4b5fd",
+                  background: "rgba(139,92,246,0.12)",
+                  border: "1px solid rgba(139,92,246,0.35)",
+                  padding: "5px 12px", borderRadius: 999,
+                }}>
+                  <Loader2 size={11} style={{ animation: "spin 1s linear infinite" }} />
+                  Generating next strategy…
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+                <button
+                  onClick={() => goToCard(Math.max(0, activeIdx - 1))}
+                  disabled={activeIdx === 0}
+                  style={{
+                    color: "#c4b5fd",
+                    background: "rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(8px)",
+                    boxShadow: "0 0 15px rgba(139,92,246,0.15)",
+                    borderRadius: 999, padding: "10px 16px", border: "1px solid rgba(139,92,246,0.3)",
+                    cursor: activeIdx === 0 ? "default" : "pointer", opacity: activeIdx === 0 ? 0.4 : 1,
+                    display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  <ArrowLeft size={14} /> Prev
+                </button>
+                <button
+                  data-on-dark
+                  onClick={() => goToCard(Math.min(plan.wins.length - 1, activeIdx + 1))}
+                  disabled={nextDisabled}
+                  title={
+                    !hasFeedback
+                      ? "Mark how this win went before moving on"
+                      : waitingForNext
+                      ? "Generating next strategy…"
+                      : undefined
+                  }
+                  style={{
+                    color: "#fff",
+                    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                    boxShadow: "0 4px 12px rgba(139,92,246,0.3)",
+                    borderRadius: 999, padding: "10px 16px", border: "none",
+                    cursor: nextDisabled ? "not-allowed" : "pointer",
+                    opacity: nextDisabled ? 0.4 : 1,
+                    display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700,
+                  }}
+                >
+                  Next <ArrowRight size={14} />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     );
   }
