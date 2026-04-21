@@ -1,0 +1,186 @@
+Upgrade the “Tiffin & Meal Suggestions” system in my app "AmyNest" (Web + Mobile) to generate smart, personalized meal suggestions based on user region, fridge ingredients, and child context using Amy AI.
+
+IMPORTANT:
+- Do NOT use external APIs
+- Use local dataset + rule-based filtering + Amy AI logic
+- Keep system fast and lightweight
+- Premium UX required
+
+--------------------------------
+1. Section Name & Placement
+--------------------------------
+“🍱 Smart Tiffin & Meal Suggestions”
+
+- Show below routine
+
+--------------------------------
+2. Inputs (Core 🔥)
+--------------------------------
+
+Collect and store:
+
+(A) User Region
+- North India / South India / etc.
+
+(B) Fridge Items (optional input)
+- Example:
+  ["milk", "bread", "paneer", "egg"]
+
+(C) Child Age
+
+--------------------------------
+3. Smart Filtering Logic 🧠🔥
+--------------------------------
+
+Step 1: Filter by region
+
+Example:
+- South → Idli, Dosa
+- North → Roti, Paratha
+
+--------------------------------
+Step 2: Match with fridge items
+
+- Prioritize meals where:
+  ingredients ⊆ fridge items
+
+--------------------------------
+Step 3: Age suitability
+
+- Kids:
+  → soft / tiffin-friendly
+- Parents:
+  → healthy meals
+
+--------------------------------
+4. Amy AI Selection Layer 🤖🔥
+--------------------------------
+
+Amy AI selects best 3–4 meals based on:
+
+- Available ingredients
+- Region
+- Time of day
+- Routine intensity
+
+--------------------------------
+5. Output Sections
+--------------------------------
+
+(A) Kids Tiffin
+- Easy to carry
+- School-friendly
+
+(B) Parent Healthy Meals
+- Include calories
+
+--------------------------------
+6. Meal Card Structure
+--------------------------------
+
+Each card shows:
+
+- Image
+- Title
+- Tag (Healthy / Quick / Protein)
+- Calories (for parent meals)
+
+--------------------------------
+7. Recipe Detail View
+--------------------------------
+
+On click:
+
+- Ingredients
+- Steps (simple)
+- Calories
+
+--------------------------------
+8. Audio Feature 🔊
+--------------------------------
+
+- “Read Aloud” button
+- Plays recipe steps
+
+Voice options:
+- Male / Female
+- Indian tone
+
+--------------------------------
+9. UI Design (Netflix Style 🔥🔥)
+--------------------------------
+
+- Horizontal scroll
+- Big image cards
+- Smooth animation
+
+--------------------------------
+10. Amy AI Messaging 🤖
+--------------------------------
+
+Show:
+
+“Amy AI Suggests:
+Based on your fridge and location, try this meal”
+
+--------------------------------
+11. Fallback Logic (IMPORTANT)
+--------------------------------
+
+If no fridge match:
+
+→ Show region-based meals
+
+--------------------------------
+12. Data Structure
+--------------------------------
+
+Use local JSON:
+
+{
+  title: "Paneer Sandwich",
+  region: "north",
+  ingredients: ["bread", "paneer"],
+  calories: 300,
+  category: "kids_tiffin",
+  steps: ["Step 1", "Step 2"],
+  audioText: "Instructions"
+}
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- No API calls
+- Fast filtering
+- Lazy load images
+
+--------------------------------
+14. Mobile Optimization 📱
+--------------------------------
+
+- Swipe cards
+- Touch-friendly UI
+
+--------------------------------
+15. Web Optimization 🌐
+--------------------------------
+
+- Smooth scroll
+- Hover effects
+
+--------------------------------
+16. Keep it simple
+--------------------------------
+
+- No complex AI model
+- Use Amy AI only for selection + messaging
+
+--------------------------------
+Return:
+Smart meal system with:
+- Region-based filtering
+- Fridge-based personalization
+- Amy AI suggestions
+- Audio feature
+- Premium UI
