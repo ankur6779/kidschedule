@@ -115,24 +115,26 @@ export function PaywallModal() {
 
   return (
     <Dialog open={state.open} onOpenChange={(o) => !o && closePaywall()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden border-0 bg-gradient-to-br from-[#0B0B1A] via-[#1A0B2E] to-[#0B0B1A] text-white">
-        <button
-          onClick={closePaywall}
-          className="absolute left-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-2 text-xs font-bold text-white/85 hover:bg-white/20 transition"
-          aria-label="Back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
-        <button
-          onClick={closePaywall}
-          className="absolute right-3 top-3 z-10 rounded-full bg-white/10 p-2 hover:bg-white/20 transition"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
+      <DialogContent className="max-w-2xl w-[calc(100vw-1rem)] sm:w-full p-0 gap-0 overflow-hidden border-0 bg-gradient-to-br from-[#0B0B1A] via-[#1A0B2E] to-[#0B0B1A] text-white max-h-[95dvh] flex flex-col [&>button]:hidden">
+        <div className="sticky top-0 z-20 flex items-center justify-between px-3 py-2 bg-gradient-to-b from-[#0B0B1A]/95 to-[#0B0B1A]/70 backdrop-blur-md border-b border-white/5">
+          <button
+            onClick={closePaywall}
+            className="inline-flex items-center gap-1 rounded-full bg-white/10 px-3 py-2 text-xs font-bold text-white/85 hover:bg-white/20 transition"
+            aria-label="Back"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+          <button
+            onClick={closePaywall}
+            className="rounded-full bg-white/10 p-2 hover:bg-white/20 transition"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
 
-        <div className="px-8 pt-10 pb-8">
+        <div className="overflow-y-auto px-5 sm:px-8 pt-4 pb-8">
           {/* Hero */}
           <div className="text-center mb-6">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 mb-3 shadow-[0_8px_32px_rgba(255,78,205,0.5)]">
