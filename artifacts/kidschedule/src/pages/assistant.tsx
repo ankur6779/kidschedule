@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, User, Sparkles, RefreshCw, Zap } from "lucide-react";
+import { Send, Loader2, User, Sparkles, RefreshCw, Zap, RotateCcw } from "lucide-react";
 import { AmyIcon } from "@/components/amy-icon";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
@@ -278,6 +278,18 @@ export default function AssistantPage() {
                     <Badge variant="outline" className="text-xs text-muted-foreground border-none px-0 h-auto">
                       {t("ai.disclaimer")}
                     </Badge>
+                  )}
+                  {msg.role === "user" && !loading && !limitReached && (
+                    <button
+                      type="button"
+                      onClick={() => sendMessage(msg.content)}
+                      className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors px-1"
+                      data-testid={`ask-again-${i}`}
+                      aria-label={t("ai.ask_again")}
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      {t("ai.ask_again")}
+                    </button>
                   )}
                 </div>
               </div>

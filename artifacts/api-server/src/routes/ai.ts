@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { getAuth } from "@clerk/express";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db, userAiMessagesTable } from "@workspace/db";
 import { GetRecipeBody, GetRecipeResponse, AskAssistantBody, AskAssistantResponse } from "@workspace/api-zod";
 import { findRecipe } from "../lib/recipe-database.js";
