@@ -386,7 +386,12 @@ export default function OnboardingPage() {
               </div>
             </div>
             <button
-              onClick={() => setLocation("/dashboard")}
+              onClick={() => {
+                // Hard refresh so the app re-fetches onboarding status fresh
+                // and every section is immediately usable.
+                const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+                window.location.assign(`${base}/dashboard`);
+              }}
               className="w-full py-4 rounded-2xl text-white font-bold text-base active:scale-95 transition-all"
               style={{ background: GRAD, boxShadow: "0 6px 24px rgba(99,102,241,0.4)" }}
             >

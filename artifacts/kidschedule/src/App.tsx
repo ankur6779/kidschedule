@@ -283,7 +283,7 @@ function HomeRedirect() {
   );
 }
 
-function ProtectedRoute({ component: Component, requiresProfile = true }: { component: React.ComponentType; requiresProfile?: boolean }) {
+function ProtectedRoute({ component: Component }: { component: React.ComponentType; requiresProfile?: boolean }) {
   const { data, isLoading } = useOnboardingStatus();
   return (
     <>
@@ -292,9 +292,7 @@ function ProtectedRoute({ component: Component, requiresProfile = true }: { comp
           ? null
           : !data?.onboardingComplete
             ? <Redirect to="/onboarding" />
-            : (requiresProfile && !data.profileComplete)
-              ? <Layout><ProfileLockScreen /></Layout>
-              : <Layout><Component /></Layout>
+            : <Layout><Component /></Layout>
         }
       </Show>
       <Show when="signed-out">
