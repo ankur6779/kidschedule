@@ -21,9 +21,8 @@ export const PLAN_PRICES: Record<Exclude<Plan, "free">, { amount: number; period
 };
 
 export const FREE_LIMITS = {
-  // Lifetime cap for free Amy AI messages (renamed semantically — field name kept for client compatibility).
-  // Global Paywall: each feature gets ONE free use per lifetime, then locked.
-  aiQueriesPerDay: 1,
+  // Daily cap for free Amy AI messages — resets every UTC day.
+  aiQueriesPerDay: 10,
   childrenMax: 1,
   routinesMax: 1,
   hubArticlesMax: 3,
@@ -31,19 +30,30 @@ export const FREE_LIMITS = {
 };
 
 /**
- * Per-feature lifetime free-use cap. Global Paywall rule:
- *   "Free user can use any ONE feature only ONCE — including routine,
- *    Amy AI, and behavior log. After that, locked + paywall."
+ * Per-feature free-use cap. Global Paywall rule:
+ *   - AI chat: 10 messages per day (daily reset).
+ *   - Routine generation + behavior log: ONE use per lifetime, then locked.
  *
  * Keys MUST match the `feature` column in `usage_daily`.
  */
 export const FREE_FEATURE_LIMITS = {
-  ai_query: 1,
+  ai_query: 10,
   routine_generate: 1,
   behavior_log: 1,
 } as const;
 
 export type FeatureKey = keyof typeof FREE_FEATURE_LIMITS;
+
+/**
+ * Scope of each feature's counter bucket.
+ *   - "daily"    → resets every UTC midnight (one row per user/feature/day).
+ *   - "lifetime" → never resets (single bucket key "lifetime").
+ */
+export const FEATURE_SCOPE: Record<FeatureKey, "daily" | "lifetime"> = {
+  ai_query: "daily",
+  routine_generate: "lifetime",
+  behavior_log: "lifetime",
+};
 
 export type FeatureUsage = {
   used: number;
@@ -72,9 +82,27 @@ export type EntitlementSummary = {
 };
 
 function todayUtc(): string {
-  // Lifetime bucket: a single usage row per (user, feature) accumulates forever.
-  return "lifetime";
+  // YYYY-MM-DD in UTC for daily-scoped features.
+  return new Date().toISOString().slice(0, 10);
 }
+
+function bucketKeyFor(feature: FeatureKey): string {
+  return FEATURE_SCOPE[feature] === "daily" ? todayUtc() : "lifetime";
+}
+
+function nextResetAtFor(feature: FeatureKey): string | null {
+  if (FEATURE_SCOPE[feature] !== "daily") return null;
+  const now = new Date();
+  const next = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1,
+    0, 0, 0, 0,
+  ));
+  return next.toISOString();
+}
+
+export { nextResetAtFor };
 
 export async function getOrCreateSubscription(
   userId: string,
@@ -109,9 +137,9 @@ export function isPremiumNow(s: Subscription): boolean {
   return false;
 }
 
-/** Generic per-feature lifetime usage read. */
+/** Generic per-feature usage read (uses each feature's configured bucket). */
 export async function getFeatureUsage(userId: string, feature: FeatureKey): Promise<number> {
-  const day = todayUtc();
+  const day = bucketKeyFor(feature);
   const rows = await db
     .select({ count: usageDailyTable.count })
     .from(usageDailyTable)
@@ -139,7 +167,7 @@ export async function incrementFeatureUsage(
   feature: FeatureKey,
   by = 1,
 ): Promise<number> {
-  const day = todayUtc();
+  const day = bucketKeyFor(feature);
   const result = await db
     .insert(usageDailyTable)
     .values({ userId, feature, day, count: Math.max(0, by) })

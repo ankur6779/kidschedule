@@ -5,6 +5,7 @@ import {
   isPremiumNow,
   incrementFeatureUsage,
   FREE_FEATURE_LIMITS,
+  nextResetAtFor,
   type FeatureKey,
 } from "../services/subscriptionService.js";
 
@@ -40,13 +41,16 @@ export function featureGate(feature: FeatureKey) {
     if (newCount > limit) {
       // Roll back the reservation — over the lifetime cap.
       await incrementFeatureUsage(userId, feature, -1).catch(() => undefined);
+      const resetsAt = nextResetAtFor(feature);
       res.status(402).json({
         error: "feature_locked",
         feature,
-        message: "Free trial used. Upgrade to unlock unlimited access.",
+        message: resetsAt
+          ? "Daily limit reached. Upgrade for unlimited access."
+          : "Free trial used. Upgrade to unlock unlimited access.",
         limit,
         used: limit,
-        resetsAt: null,
+        resetsAt,
       });
       return;
     }

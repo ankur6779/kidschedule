@@ -342,7 +342,7 @@ export default function ParentingHub() {
   // ── No children ───────────────────────────────────────────────────────────
   if (childList.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">{/* keep narrow for empty state */}
         <PageHeader />
         <Card className="rounded-3xl border-2 border-dashed">
           <CardContent className="p-10 text-center space-y-4">
@@ -363,7 +363,7 @@ export default function ParentingHub() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 pb-12">
+    <div className="max-w-6xl mx-auto space-y-5 pb-12">
       <PageHeader />
 
       {/* Child selector */}
@@ -439,8 +439,8 @@ export default function ParentingHub() {
         <FuturePredictor childId={effectiveChild.id} />
       )}
 
-      {/* ── 5 Sections ──────────────────────────────────────────────────── */}
-      <div className="space-y-3">
+      {/* ── Sections — 2-column on lg+, single column on mobile/tablet ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
 
         {/* 1. Amy AI Suggestions */}
         <HubSection
