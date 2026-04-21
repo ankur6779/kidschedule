@@ -15,7 +15,7 @@ Sizes are strictly enforced by Google.
 | (Optional) 7" tablet screenshots | 1200 × 1920 PNG/JPG | `screenshots-tablet/` |
 | Short description (≤ 80 chars) | text | `descriptions/short.txt` |
 | Full description (≤ 4000 chars) | text | `descriptions/full.txt` |
-| Privacy policy | publicly hosted HTML/MD URL | `privacy-policy.md` (host this somewhere) |
+| Privacy policy | publicly hosted HTML/MD URL | `privacy-policy.md` — rendered live at `https://<your-amynest-domain>/privacy` (route added in `artifacts/kidschedule/src/pages/privacy.tsx`). Paste that URL into the Play Console. |
 
 ## Quick way to capture screenshots
 

@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/contexts/theme-context";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 import LandingPage from "@/pages/landing";
+import PrivacyPolicyPage from "@/pages/privacy";
 
 import Dashboard from "@/pages/dashboard";
 import ChildrenList from "@/pages/children/index";
@@ -361,6 +362,7 @@ function ClerkProviderWithRoutes() {
           <ReferralAttributionBridge />
           <Switch>
             <Route path="/" component={HomeRedirect} />
+            <Route path="/privacy" component={PrivacyPolicyPage} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
             <Route path="/onboarding">
