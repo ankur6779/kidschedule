@@ -14,6 +14,8 @@ import {
   SOLUTIONS, SITUATION_HELP, UI_LABELS, buildAmyInsights, computeScore, scoreLabel, encodeTriggerNote,
   type LangKey, type QuickBehaviorKey, type TriggerKey,
 } from "@workspace/behavior-tracker";
+import { LockedBlock } from "@/components/locked-block";
+import { useSubscription } from "@/hooks/use-subscription";
 
 // ─── Glass Block ──────────────────────────────────────────────────────────────
 function Block({
@@ -108,9 +110,16 @@ export default function BehaviorTracker() {
 
   const L = UI_LABELS[lang];
 
+  const { isPremium } = useSubscription();
   const { data: children = [] } = useListChildren({ query: { queryKey: getListChildrenQueryKey() } });
-  const todayParams = selectedChild
-    ? { date: today, childId: selectedChild }
+  // Free users can only see the first child's data. If they somehow selected
+  // another child (e.g. before upgrading), force the scope back to child #1.
+  const firstChildId = children[0]?.id ?? null;
+  const effectiveChildId = isPremium
+    ? selectedChild
+    : (selectedChild && selectedChild === firstChildId ? selectedChild : firstChildId);
+  const todayParams = effectiveChildId
+    ? { date: today, childId: effectiveChildId }
     : { date: today };
   const { data: todayLogs = [], isLoading: todayLoading } = useListBehaviors(
     todayParams,
@@ -176,8 +185,8 @@ export default function BehaviorTracker() {
 
   // Amy insights (all logs for child or all)
   const insightLogs = useMemo(
-    () => (selectedChild ? allLogs.filter((l) => l.childId === selectedChild) : allLogs),
-    [allLogs, selectedChild]
+    () => (effectiveChildId ? allLogs.filter((l) => l.childId === effectiveChildId) : allLogs),
+    [allLogs, effectiveChildId]
   );
   const insights = useMemo(() => buildAmyInsights(insightLogs as any, lang), [insightLogs, lang]);
 
@@ -189,7 +198,7 @@ export default function BehaviorTracker() {
       const dateStr = format(d, "yyyy-MM-dd");
       const dayLogs = allLogs.filter((l) => {
         const logDate = l.date ? l.date.slice(0, 10) : "";
-        return logDate === dateStr && (!selectedChild || l.childId === selectedChild);
+        return logDate === dateStr && (!effectiveChildId || l.childId === effectiveChildId);
       });
       days.push({
         label: L.days[d.getDay()],
@@ -199,7 +208,7 @@ export default function BehaviorTracker() {
       });
     }
     return days;
-  }, [allLogs, selectedChild, lang]);
+  }, [allLogs, effectiveChildId, lang]);
 
   const maxWeek = Math.max(...weekData.map((d) => d.total), 1);
 
@@ -225,24 +234,76 @@ export default function BehaviorTracker() {
 
       {/* Child Selector */}
       <div className="flex flex-wrap gap-2">
-        {children.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => setSelectedChild((v) => (v === c.id ? null : c.id))}
-            className={[
-              "px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all",
-              selectedChild === c.id
-                ? "bg-primary text-primary-foreground border-primary shadow-[0_0_0_2px_rgba(168,85,247,0.3)]"
-                : "bg-white/60 dark:bg-white/5 border-border/60 hover:border-primary/40",
-            ].join(" ")}
-          >
-            {c.name}
-          </button>
-        ))}
+        {children.map((c, index) => {
+          const locked = !isPremium && index > 0;
+          const chip = (
+            <button
+              onClick={() => {
+                if (locked) return;
+                setSelectedChild((v) => (v === c.id ? null : c.id));
+              }}
+              disabled={locked}
+              className={[
+                "px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all",
+                selectedChild === c.id
+                  ? "bg-primary text-primary-foreground border-primary shadow-[0_0_0_2px_rgba(168,85,247,0.3)]"
+                  : "bg-white/60 dark:bg-white/5 border-border/60 hover:border-primary/40",
+              ].join(" ")}
+            >
+              {c.name}
+            </button>
+          );
+          return (
+            <LockedBlock
+              key={c.id}
+              locked={locked}
+              reason="child_limit"
+              label="Premium"
+              cta="Unlock"
+              rounded="rounded-xl"
+            >
+              {chip}
+            </LockedBlock>
+          );
+        })}
         {children.length === 0 && (
           <p className="text-sm text-muted-foreground py-2">Add a child profile to start tracking.</p>
         )}
       </div>
+
+      {/* Per-child quick stat cards (free users see only the first; the rest are paywalled) */}
+      {children.length > 1 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {children.map((c, index) => {
+            const childLogsToday = allLogs.filter((l) => l.childId === c.id && l.date?.slice(0, 10) === today);
+            const childPos = childLogsToday.filter((l) => l.type === "positive").length;
+            const childNeg = childLogsToday.filter((l) => l.type === "negative").length;
+            const card = (
+              <div className="rounded-2xl p-3 bg-white/60 dark:bg-white/5 border border-border/50">
+                <p className="text-xs font-bold text-foreground truncate">{c.name}</p>
+                <p className="text-[10px] text-muted-foreground mb-1.5">Today</p>
+                <div className="flex gap-2">
+                  <span className="text-[11px] font-bold text-emerald-600">😊 {childPos}</span>
+                  <span className="text-[11px] font-bold text-red-500">😡 {childNeg}</span>
+                </div>
+              </div>
+            );
+            const locked = !isPremium && index > 0;
+            return (
+              <LockedBlock
+                key={c.id}
+                locked={locked}
+                reason="child_limit"
+                label="Premium"
+                cta="Unlock"
+                rounded="rounded-2xl"
+              >
+                {card}
+              </LockedBlock>
+            );
+          })}
+        </div>
+      )}
 
       {/* Blocks */}
       <div className="flex flex-col gap-3">

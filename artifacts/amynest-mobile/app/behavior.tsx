@@ -18,6 +18,8 @@ import {
   encodeTriggerNote,
   type LangKey, type QuickBehaviorKey, type TriggerKey,
 } from "@workspace/behavior-tracker";
+import LockedBlock from "@/components/LockedBlock";
+import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -109,6 +111,7 @@ export default function BehaviorScreen() {
   const c = useColors();
   const styles = React.useMemo(() => makeStyles(c), [c]);
   const qc = useQueryClient();
+  const isPremium = useSubscriptionStore(selectIsPremium);
 
   const [lang, setLang] = useState<LangKey>("en");
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
@@ -135,14 +138,21 @@ export default function BehaviorScreen() {
     queryFn: async () => { const r = await authFetch("/api/behaviors"); return r.ok ? r.json() : []; },
   });
 
+  // Free users can only see the first child's data. If they somehow have
+  // another child selected, force the scope back to child #1.
+  const firstChildId = children[0]?.id ?? null;
+  const effectiveChildId = isPremium
+    ? selectedChild
+    : (selectedChild && selectedChild === firstChildId ? selectedChild : firstChildId);
+
   const todayLogs = useMemo(
-    () => allBehaviors.filter((b) => b.date?.slice(0, 10) === today && (!selectedChild || b.childId === selectedChild)),
-    [allBehaviors, today, selectedChild]
+    () => allBehaviors.filter((b) => b.date?.slice(0, 10) === today && (!effectiveChildId || b.childId === effectiveChildId)),
+    [allBehaviors, today, effectiveChildId]
   );
 
   const insightLogs = useMemo(
-    () => (selectedChild ? allBehaviors.filter((b) => b.childId === selectedChild) : allBehaviors),
-    [allBehaviors, selectedChild]
+    () => (effectiveChildId ? allBehaviors.filter((b) => b.childId === effectiveChildId) : allBehaviors),
+    [allBehaviors, effectiveChildId]
   );
 
   const insights = useMemo(() => buildAmyInsights(insightLogs as any, lang), [insightLogs, lang]);
@@ -159,7 +169,7 @@ export default function BehaviorScreen() {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().slice(0, 10);
-      const dayLogs = allBehaviors.filter((b) => b.date?.slice(0, 10) === dateStr && (!selectedChild || b.childId === selectedChild));
+      const dayLogs = allBehaviors.filter((b) => b.date?.slice(0, 10) === dateStr && (!effectiveChildId || b.childId === effectiveChildId));
       days.push({
         label: L.days[d.getDay()],
         pos: dayLogs.filter((l) => l.type === "positive").length,
@@ -168,7 +178,7 @@ export default function BehaviorScreen() {
       });
     }
     return days;
-  }, [allBehaviors, selectedChild, lang]);
+  }, [allBehaviors, effectiveChildId, lang]);
 
   const maxWeek = Math.max(...weekData.map((d) => d.total), 1);
 
@@ -236,17 +246,70 @@ export default function BehaviorScreen() {
       <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 100, gap: 10 }} showsVerticalScrollIndicator={false}>
         {/* Child selector */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
-          {children.map((c) => (
-            <Pressable
-              key={c.id}
-              onPress={() => setSelectedChild((v) => (v === c.id ? null : c.id))}
-              style={[styles.childChip, selectedChild === c.id && styles.childChipSel]}
-            >
-              <Text style={[styles.childChipText, selectedChild === c.id && { color: "#fff" }]}>{c.name}</Text>
-            </Pressable>
-          ))}
+          {children.map((child, index) => {
+            const locked = !isPremium && index > 0;
+            const chip = (
+              <Pressable
+                onPress={() => {
+                  if (locked) return;
+                  setSelectedChild((v) => (v === child.id ? null : child.id));
+                }}
+                disabled={locked}
+                style={[styles.childChip, selectedChild === child.id && styles.childChipSel]}
+              >
+                <Text style={[styles.childChipText, selectedChild === child.id && { color: "#fff" }]}>{child.name}</Text>
+              </Pressable>
+            );
+            return (
+              <LockedBlock
+                key={child.id}
+                locked={locked}
+                reason="child_limit"
+                label="Premium"
+                cta="Unlock"
+                radius={14}
+              >
+                {chip}
+              </LockedBlock>
+            );
+          })}
           {children.length === 0 && <Text style={{ color: c.textDim, fontSize: 13 }}>Add a child to start tracking</Text>}
         </ScrollView>
+
+        {/* Per-child quick stat cards (free users see only the first; the rest are paywalled) */}
+        {children.length > 1 && (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {children.map((child, index) => {
+              const childLogsToday = allBehaviors.filter((b) => b.childId === child.id && b.date?.slice(0, 10) === today);
+              const childPos = childLogsToday.filter((l) => l.type === "positive").length;
+              const childNeg = childLogsToday.filter((l) => l.type === "negative").length;
+              const locked = !isPremium && index > 0;
+              const card = (
+                <View style={[styles.childStatCard, { borderColor: c.border }]}>
+                  <Text style={[styles.childStatName, { color: c.text }]} numberOfLines={1}>{child.name}</Text>
+                  <Text style={[styles.childStatLabel, { color: c.textMuted }]}>Today</Text>
+                  <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "800", color: "#10B981" }}>😊 {childPos}</Text>
+                    <Text style={{ fontSize: 11, fontWeight: "800", color: "#EF4444" }}>😡 {childNeg}</Text>
+                  </View>
+                </View>
+              );
+              return (
+                <LockedBlock
+                  key={child.id}
+                  locked={locked}
+                  reason="child_limit"
+                  label="Premium"
+                  cta="Unlock"
+                  radius={16}
+                  style={{ flexBasis: "48%", flexGrow: 1 }}
+                >
+                  {card}
+                </LockedBlock>
+              );
+            })}
+          </View>
+        )}
 
         {/* Quick Help button */}
         <Pressable
@@ -494,6 +557,15 @@ const makeStyles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   headerIcon: { width: 34, height: 34, borderRadius: 12, alignItems: "center", justifyContent: "center" },
   headerTitle: { color: c.text, fontWeight: "800", fontSize: 16 },
   headerSubtitle: { color: c.textMuted, fontSize: 11 },
+
+  childStatCard: {
+    padding: 10,
+    borderRadius: 16,
+    backgroundColor: c.surface,
+    borderWidth: 1,
+  },
+  childStatName: { fontSize: 12, fontWeight: "800" },
+  childStatLabel: { fontSize: 10, marginTop: 2 },
 
   childChip: {
     paddingHorizontal: 14, paddingVertical: 9, borderRadius: 14,
