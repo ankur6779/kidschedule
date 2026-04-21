@@ -2,12 +2,7 @@
 
 _Last updated: April 21, 2026_
 
-> **This is a placeholder.** Replace the operator name, contact email, and any
-> service-specific details before you publish. Then host this page at a public
-> HTTPS URL (e.g. `https://kidschedule.example.com/privacy`) and paste that URL
-> into the Play Console listing.
-
-KidSchedule ("the App") is operated by **[Your Company / Your Name]**
+KidSchedule ("the App") is operated by **AmyNest AI, Inc.**
 ("we", "us"). This policy explains what information we collect when you use the
 App and how we handle it.
 
@@ -45,7 +40,7 @@ if required by law.
 
 ## 5. Data retention and deletion
 You can delete your account and all associated data at any time from inside
-the App, or by emailing **[support@example.com]**. Backups are removed within
+the App, or by emailing **support@amynest.ai**. Backups are removed within
 30 days.
 
 ## 6. Permissions used by the Android app
@@ -54,4 +49,4 @@ the App, or by emailing **[support@example.com]**. Backups are removed within
   feature that needs them (e.g. uploading a profile picture). Always optional.
 
 ## 7. Contact
-Questions or requests: **[support@example.com]**
+Questions or requests: **support@amynest.ai**
