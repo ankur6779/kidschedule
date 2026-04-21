@@ -57,6 +57,11 @@ const REASON_COPY: Record<
     subtitle: "Free plan includes 1 routine. Upgrade to plan every day, every child, your way.",
     icon: CalendarDays,
   },
+  behavior_locked: {
+    title: "Unlock unlimited Behavior Logs",
+    subtitle: "Free plan includes 1 log. Upgrade to track every win, tantrum & pattern Amy spots.",
+    icon: BarChart3,
+  },
   coach_locked: {
     title: "Unlock Amy Coach",
     subtitle: "Get personalized 10–12 step plans for tantrums, screen time, focus & more.",

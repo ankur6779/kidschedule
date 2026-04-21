@@ -7,6 +7,7 @@ import {
   isPremiumNow,
   FREE_LIMITS,
 } from "../services/subscriptionService";
+import { featureGate } from "../middlewares/featureGate.js";
 import {
   CreateRoutineBody,
   CheckRoutineQueryParams,
@@ -249,7 +250,7 @@ async function isOverFreeRoutineLimit(
   return (n ?? 0) >= FREE_LIMITS.routinesMax;
 }
 
-router.post("/routines/generate", async (req, res): Promise<void> => {
+router.post("/routines/generate", featureGate("routine_generate"), async (req, res): Promise<void> => {
   const parsed = GenerateRoutineBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -268,15 +269,6 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
     .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
-    return;
-  }
-
-  if (await isOverFreeRoutineLimit(userId, parsed.data.childId, parsed.data.date)) {
-    res.status(403).json({
-      reason: "routine_limit_exceeded",
-      message: `Free plan supports up to ${FREE_LIMITS.routinesMax} saved routines. Upgrade for unlimited.`,
-      limit: FREE_LIMITS.routinesMax,
-    });
     return;
   }
 
@@ -343,7 +335,7 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
 });
 
 // AI-powered routine generation — uses OpenAI; rate-limited on frontend
-router.post("/routines/generate-ai", async (req, res): Promise<void> => {
+router.post("/routines/generate-ai", featureGate("routine_generate"), async (req, res): Promise<void> => {
   const parsed = GenerateRoutineBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -365,6 +357,9 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
     return;
   }
 
+  // Defense-in-depth: also enforce the legacy "no more than 1 saved routine"
+  // cap in case a free user generated, deleted, then tries again — the lifetime
+  // counter already blocks this, but keep the guard for clarity.
   if (await isOverFreeRoutineLimit(userId, parsed.data.childId, parsed.data.date)) {
     res.status(403).json({
       reason: "routine_limit_exceeded",

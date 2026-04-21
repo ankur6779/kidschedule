@@ -8,6 +8,7 @@ import {
   ListBehaviorsQueryParams,
   ListBehaviorsResponse,
 } from "@workspace/api-zod";
+import { featureGate } from "../middlewares/featureGate.js";
 
 const router: IRouter = Router();
 
@@ -72,7 +73,7 @@ router.get("/behaviors", async (req, res): Promise<void> => {
   );
 });
 
-router.post("/behaviors", async (req, res): Promise<void> => {
+router.post("/behaviors", featureGate("behavior_log"), async (req, res): Promise<void> => {
   const { userId } = getAuth(req);
   if (!userId) {
     res.status(401).json({ error: "Unauthorized" });
@@ -124,7 +125,28 @@ router.delete("/behaviors/:id", async (req, res): Promise<void> => {
     return;
   }
 
-  const [behavior] = await db.delete(behaviorsTable).where(eq(behaviorsTable.id, params.data.id)).returning();
+  // SECURITY: enforce ownership — only allow delete if the behavior belongs
+  // to a child owned by the authenticated user. Without this join an attacker
+  // could delete arbitrary behavior rows by guessing IDs (IDOR).
+  const ownedChildren = await db
+    .select({ id: childrenTable.id })
+    .from(childrenTable)
+    .where(eq(childrenTable.userId, userId));
+  const ownedChildIds = ownedChildren.map((c) => c.id);
+  if (ownedChildIds.length === 0) {
+    res.status(404).json({ error: "Behavior log not found" });
+    return;
+  }
+
+  const [behavior] = await db
+    .delete(behaviorsTable)
+    .where(
+      and(
+        eq(behaviorsTable.id, params.data.id),
+        inArray(behaviorsTable.childId, ownedChildIds),
+      ),
+    )
+    .returning();
   if (!behavior) {
     res.status(404).json({ error: "Behavior log not found" });
     return;

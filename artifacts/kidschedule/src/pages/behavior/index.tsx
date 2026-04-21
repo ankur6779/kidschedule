@@ -159,7 +159,18 @@ export default function BehaviorTracker() {
           queryClient.invalidateQueries({ queryKey: getListBehaviorsQueryKey({}) });
           queryClient.invalidateQueries({ queryKey: getGetBehaviorStatsQueryKey() });
         },
-        onError: () => toast({ title: "Failed to log", variant: "destructive" }),
+        onError: (err: unknown) => {
+          // Global Paywall: free user used their one free behavior log.
+          const status = (err as { status?: number })?.status;
+          const data = (err as { data?: { error?: string; feature?: string } })?.data;
+          if (status === 402 && (data?.error === "feature_locked" || data?.feature === "behavior_log")) {
+            window.dispatchEvent(
+              new CustomEvent("amynest:open-paywall", { detail: { reason: "behavior_locked" } }),
+            );
+            return;
+          }
+          toast({ title: "Failed to log", variant: "destructive" });
+        },
       }
     );
   }

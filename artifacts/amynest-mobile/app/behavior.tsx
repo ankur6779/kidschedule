@@ -201,6 +201,11 @@ export default function BehaviorScreen() {
           date: new Date().toISOString(),
         }),
       });
+      // Global Paywall: free tier = 1 lifetime behavior log → 402 feature_locked.
+      if (r.status === 402) {
+        router.push({ pathname: "/paywall", params: { reason: "behavior_locked" } });
+        return;
+      }
       if (!r.ok) throw new Error();
       await qc.invalidateQueries({ queryKey: ["behaviors"] });
       setPendingTrigger(null);

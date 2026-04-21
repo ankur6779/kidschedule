@@ -799,14 +799,15 @@ export default function RoutineGenerate() {
           handlePostGenerate({ ...data, items }, shouldOverride, wakeTime);
         },
         onError: (err: unknown) => {
-          // Server enforces the free-tier routinesMax cap with HTTP 403
-          // { reason: "routine_limit_exceeded" }. Surface the paywall instead
-          // of a generic error toast.
+          // Global Paywall: HTTP 402 { error: "feature_locked", feature: "routine_generate" }
+          // OR legacy 403 { reason: "routine_limit_exceeded" }. Surface the paywall.
           const status = (err as { status?: number })?.status;
-          const reason = (err as { data?: { reason?: string } })?.data?.reason;
-          if (status === 403 && reason === "routine_limit_exceeded") {
+          const data = (err as { data?: { reason?: string; error?: string; feature?: string } })?.data;
+          const isFeatureLocked = status === 402 && (data?.error === "feature_locked" || data?.feature === "routine_generate");
+          const isLegacyLimit = status === 403 && data?.reason === "routine_limit_exceeded";
+          if (isFeatureLocked || isLegacyLimit) {
             window.dispatchEvent(
-              new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+              new CustomEvent("amynest:open-paywall", { detail: { reason: "routines_limit" } }),
             );
             return;
           }
@@ -835,11 +836,13 @@ export default function RoutineGenerate() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (res.status === 403) {
-        const body = await res.json().catch(() => null) as { reason?: string } | null;
-        if (body?.reason === "routine_limit_exceeded") {
+      if (res.status === 402 || res.status === 403) {
+        const body = await res.json().catch(() => null) as { reason?: string; error?: string; feature?: string } | null;
+        const isFeatureLocked = res.status === 402 && (body?.error === "feature_locked" || body?.feature === "routine_generate");
+        const isLegacyLimit = res.status === 403 && body?.reason === "routine_limit_exceeded";
+        if (isFeatureLocked || isLegacyLimit) {
           window.dispatchEvent(
-            new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+            new CustomEvent("amynest:open-paywall", { detail: { reason: "routines_limit" } }),
           );
           return;
         }
@@ -978,10 +981,12 @@ export default function RoutineGenerate() {
         results.push({ child, routine: { ...generated, items: simplifiedItems as RoutineItem[] } });
       } catch (err: unknown) {
         const status = (err as { status?: number })?.status;
-        const reason = (err as { data?: { reason?: string } })?.data?.reason;
-        if (status === 403 && reason === "routine_limit_exceeded") {
+        const data = (err as { data?: { reason?: string; error?: string; feature?: string } })?.data;
+        const isFeatureLocked = status === 402 && (data?.error === "feature_locked" || data?.feature === "routine_generate");
+        const isLegacyLimit = status === 403 && data?.reason === "routine_limit_exceeded";
+        if (isFeatureLocked || isLegacyLimit) {
           window.dispatchEvent(
-            new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+            new CustomEvent("amynest:open-paywall", { detail: { reason: "routines_limit" } }),
           );
           break;
         }

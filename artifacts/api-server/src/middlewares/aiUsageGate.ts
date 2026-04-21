@@ -1,68 +1,8 @@
-import type { Request, Response, NextFunction } from "express";
-import { getAuth } from "@clerk/express";
-import {
-  getOrCreateSubscription,
-  isPremiumNow,
-  incrementAiUsage,
-  FREE_LIMITS,
-} from "../services/subscriptionService";
+import { featureGate } from "./featureGate.js";
 
 /**
- * Middleware: enforces the per-day Amy AI query quota for free users.
- *
- * Strategy: atomic reserve-then-check. We increment first (atomic upsert),
- * which makes concurrent calls race-safe. If the new count exceeds the
- * quota we immediately decrement and return 402. We also decrement on any
- * non-2xx outcome from the downstream handler so failed AI calls do not
- * burn quota.
- *
- * Premium users bypass entirely (no counter touched).
+ * Backwards-compatible wrapper. The Global Paywall consolidated the
+ * AI-quota check into the generic per-feature lifetime gate; this alias
+ * keeps existing call sites (ai.ts, ai-coach.ts) working unchanged.
  */
-export async function aiUsageGate(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  const userId = getAuth(req).userId;
-  if (!userId) {
-    res.status(401).json({ error: "unauthorized" });
-    return;
-  }
-  const sub = await getOrCreateSubscription(userId);
-  if (isPremiumNow(sub)) {
-    next();
-    return;
-  }
-
-  // Reserve a slot atomically.
-  const newCount = await incrementAiUsage(userId, 1);
-  if (newCount > FREE_LIMITS.aiQueriesPerDay) {
-    // Roll back the reservation — we exceeded the quota.
-    await incrementAiUsage(userId, -1).catch(() => undefined);
-    res.status(402).json({
-      error: "ai_quota_exceeded",
-      message: "Free Amy AI limit reached. Upgrade for unlimited messages.",
-      limit: FREE_LIMITS.aiQueriesPerDay,
-      used: FREE_LIMITS.aiQueriesPerDay,
-      // Lifetime quota — no reset.
-      resetsAt: null,
-    });
-    return;
-  }
-
-  // Refund the reservation if downstream handler ends up non-2xx.
-  const origEnd = res.end.bind(res);
-  let settled = false;
-  // express.end has multiple overloads; cast through unknown to satisfy TS.
-  res.end = function (...args: unknown[]) {
-    if (!settled) {
-      settled = true;
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        void incrementAiUsage(userId, -1).catch(() => undefined);
-      }
-    }
-    // @ts-expect-error - express.end has multiple overloads
-    return origEnd(...args);
-  };
-  next();
-}
+export const aiUsageGate = featureGate("ai_query");

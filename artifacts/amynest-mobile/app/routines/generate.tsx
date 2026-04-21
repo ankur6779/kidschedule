@@ -123,11 +123,14 @@ export default function GenerateRoutineScreen() {
           mood: mood !== "normal" ? mood : undefined,
         }),
       });
-      if (genRes.status === 403) {
-        const body = (await genRes.json().catch(() => null)) as { reason?: string } | null;
-        if (body?.reason === "routine_limit_exceeded") {
+      // Global Paywall: 402 feature_locked OR legacy 403 routine_limit_exceeded → paywall.
+      if (genRes.status === 402 || genRes.status === 403) {
+        const body = (await genRes.json().catch(() => null)) as { reason?: string; error?: string; feature?: string } | null;
+        const isFeatureLocked = genRes.status === 402 && (body?.error === "feature_locked" || body?.feature === "routine_generate");
+        const isLegacyLimit = genRes.status === 403 && body?.reason === "routine_limit_exceeded";
+        if (isFeatureLocked || isLegacyLimit) {
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+          router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
           return;
         }
       }

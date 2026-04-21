@@ -25,6 +25,12 @@ export type Entitlements = {
   usage: {
     aiQueriesToday: number;
     aiQueriesRemaining: number | null;
+    // Global Paywall: per-feature lifetime usage. Optional for backwards
+    // compatibility with cached responses from older clients.
+    features?: Record<
+      "ai_query" | "routine_generate" | "behavior_log",
+      { used: number; remaining: number | null; limit: number; locked: boolean }
+    >;
   };
 };
 

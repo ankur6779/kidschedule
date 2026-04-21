@@ -10,7 +10,8 @@ export type PaywallReason =
   | "audio_lessons"
   | "routines_limit"
   | "coach_locked"
-  | "hub_locked";
+  | "hub_locked"
+  | "behavior_locked";
 
 type PaywallState = {
   open: boolean;

@@ -22,11 +22,34 @@ export const PLAN_PRICES: Record<Exclude<Plan, "free">, { amount: number; period
 
 export const FREE_LIMITS = {
   // Lifetime cap for free Amy AI messages (renamed semantically — field name kept for client compatibility).
-  aiQueriesPerDay: 10,
+  // Global Paywall: each feature gets ONE free use per lifetime, then locked.
+  aiQueriesPerDay: 1,
   childrenMax: 1,
   routinesMax: 1,
   hubArticlesMax: 3,
   trialDays: 3,
+};
+
+/**
+ * Per-feature lifetime free-use cap. Global Paywall rule:
+ *   "Free user can use any ONE feature only ONCE — including routine,
+ *    Amy AI, and behavior log. After that, locked + paywall."
+ *
+ * Keys MUST match the `feature` column in `usage_daily`.
+ */
+export const FREE_FEATURE_LIMITS = {
+  ai_query: 1,
+  routine_generate: 1,
+  behavior_log: 1,
+} as const;
+
+export type FeatureKey = keyof typeof FREE_FEATURE_LIMITS;
+
+export type FeatureUsage = {
+  used: number;
+  remaining: number | null; // null = unlimited (premium)
+  limit: number;
+  locked: boolean; // true when free user has consumed the trial
 };
 
 export type EntitlementSummary = {
@@ -43,6 +66,8 @@ export type EntitlementSummary = {
     // but the value is now the lifetime count (no daily reset).
     aiQueriesToday: number;
     aiQueriesRemaining: number | null; // null = unlimited
+    // Global Paywall: per-feature lifetime usage state.
+    features: Record<FeatureKey, FeatureUsage>;
   };
 };
 
@@ -84,7 +109,8 @@ export function isPremiumNow(s: Subscription): boolean {
   return false;
 }
 
-export async function getAiUsageToday(userId: string): Promise<number> {
+/** Generic per-feature lifetime usage read. */
+export async function getFeatureUsage(userId: string, feature: FeatureKey): Promise<number> {
   const day = todayUtc();
   const rows = await db
     .select({ count: usageDailyTable.count })
@@ -93,34 +119,70 @@ export async function getAiUsageToday(userId: string): Promise<number> {
       and(
         eq(usageDailyTable.userId, userId),
         eq(usageDailyTable.day, day),
-        eq(usageDailyTable.feature, "ai_query"),
+        eq(usageDailyTable.feature, feature),
       ),
     )
     .limit(1);
   return rows[0]?.count ?? 0;
 }
 
-/** Atomic increment using ON CONFLICT — safe under concurrent calls. */
-export async function incrementAiUsage(userId: string, by = 1): Promise<number> {
+/**
+ * Generic atomic increment using ON CONFLICT — safe under concurrent calls.
+ *
+ * NOTE: the count is clamped at 0 (`GREATEST(0, count + by)`) so concurrent
+ * refund paths (e.g. featureGate's res.end interceptor + a route's manual
+ * refund on disconnect) cannot drive the counter negative and hand out extra
+ * free uses. Initial inserts are clamped at max(0, by) too.
+ */
+export async function incrementFeatureUsage(
+  userId: string,
+  feature: FeatureKey,
+  by = 1,
+): Promise<number> {
   const day = todayUtc();
   const result = await db
     .insert(usageDailyTable)
-    .values({ userId, feature: "ai_query", day, count: by })
+    .values({ userId, feature, day, count: Math.max(0, by) })
     .onConflictDoUpdate({
       target: [usageDailyTable.userId, usageDailyTable.day, usageDailyTable.feature],
-      set: { count: sql`${usageDailyTable.count} + ${by}`, updatedAt: new Date() },
+      set: {
+        count: sql`GREATEST(0, ${usageDailyTable.count} + ${by})`,
+        updatedAt: new Date(),
+      },
     })
     .returning({ count: usageDailyTable.count });
-  return result[0]?.count ?? by;
+  return result[0]?.count ?? Math.max(0, by);
+}
+
+// Backwards-compat aliases (existing call sites use these names).
+export async function getAiUsageToday(userId: string): Promise<number> {
+  return getFeatureUsage(userId, "ai_query");
+}
+export async function incrementAiUsage(userId: string, by = 1): Promise<number> {
+  return incrementFeatureUsage(userId, "ai_query", by);
 }
 
 export async function getEntitlements(userId: string): Promise<EntitlementSummary> {
-  const [sub, usedToday] = await Promise.all([
+  const featureKeys = Object.keys(FREE_FEATURE_LIMITS) as FeatureKey[];
+  const [sub, ...featureCounts] = await Promise.all([
     getOrCreateSubscription(userId),
-    getAiUsageToday(userId),
+    ...featureKeys.map((f) => getFeatureUsage(userId, f)),
   ]);
   const isPremium = isPremiumNow(sub);
   const isTrialing = sub.status === "trialing" && !!sub.trialEndsAt && sub.trialEndsAt.getTime() > Date.now();
+
+  const features = {} as Record<FeatureKey, FeatureUsage>;
+  featureKeys.forEach((key, i) => {
+    const used = featureCounts[i] ?? 0;
+    const limit = FREE_FEATURE_LIMITS[key];
+    features[key] = {
+      used,
+      limit,
+      remaining: isPremium ? null : Math.max(0, limit - used),
+      locked: !isPremium && used >= limit,
+    };
+  });
+
   return {
     plan: sub.plan as Plan,
     status: sub.status as Status,
@@ -131,8 +193,9 @@ export async function getEntitlements(userId: string): Promise<EntitlementSummar
     cancelAtPeriodEnd: sub.cancelAtPeriodEnd === 1,
     limits: FREE_LIMITS,
     usage: {
-      aiQueriesToday: usedToday,
-      aiQueriesRemaining: isPremium ? null : Math.max(0, FREE_LIMITS.aiQueriesPerDay - usedToday),
+      aiQueriesToday: features.ai_query.used,
+      aiQueriesRemaining: features.ai_query.remaining,
+      features,
     },
   };
 }
