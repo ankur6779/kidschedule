@@ -224,6 +224,31 @@ function reAnchorToWakeTime(
 
 const router: IRouter = Router();
 
+// Returns true if the request should be blocked by the free-tier routinesMax cap.
+// Caller must already have verified child ownership.
+async function isOverFreeRoutineLimit(
+  userId: string,
+  childId: number,
+  date: string,
+): Promise<boolean> {
+  const sub = await getOrCreateSubscription(userId);
+  if (isPremiumNow(sub)) return false;
+  // Allow regenerating an existing routine for the same (child, date) — the user
+  // already "spent" a slot on it, so this isn't a new save.
+  const existing = await db
+    .select({ id: routinesTable.id })
+    .from(routinesTable)
+    .where(and(eq(routinesTable.childId, childId), eq(routinesTable.date, date)))
+    .limit(1);
+  if (existing.length > 0) return false;
+  const [{ n }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(routinesTable)
+    .innerJoin(childrenTable, eq(childrenTable.id, routinesTable.childId))
+    .where(eq(childrenTable.userId, userId));
+  return (n ?? 0) >= FREE_LIMITS.routinesMax;
+}
+
 router.post("/routines/generate", async (req, res): Promise<void> => {
   const parsed = GenerateRoutineBody.safeParse(req.body);
   if (!parsed.success) {
@@ -243,6 +268,15 @@ router.post("/routines/generate", async (req, res): Promise<void> => {
     .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
+    return;
+  }
+
+  if (await isOverFreeRoutineLimit(userId, parsed.data.childId, parsed.data.date)) {
+    res.status(403).json({
+      reason: "routine_limit_exceeded",
+      message: `Free plan supports up to ${FREE_LIMITS.routinesMax} saved routines. Upgrade for unlimited.`,
+      limit: FREE_LIMITS.routinesMax,
+    });
     return;
   }
 
@@ -328,6 +362,15 @@ router.post("/routines/generate-ai", async (req, res): Promise<void> => {
     .where(and(eq(childrenTable.id, parsed.data.childId), eq(childrenTable.userId, userId)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
+    return;
+  }
+
+  if (await isOverFreeRoutineLimit(userId, parsed.data.childId, parsed.data.date)) {
+    res.status(403).json({
+      reason: "routine_limit_exceeded",
+      message: `Free plan supports up to ${FREE_LIMITS.routinesMax} saved routines. Upgrade for unlimited.`,
+      limit: FREE_LIMITS.routinesMax,
+    });
     return;
   }
 

@@ -123,6 +123,14 @@ export default function GenerateRoutineScreen() {
           mood: mood !== "normal" ? mood : undefined,
         }),
       });
+      if (genRes.status === 403) {
+        const body = (await genRes.json().catch(() => null)) as { reason?: string } | null;
+        if (body?.reason === "routine_limit_exceeded") {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+          return;
+        }
+      }
       if (!genRes.ok) throw new Error("Generate failed");
       const generated = (await genRes.json()) as { title: string; items: any[] };
 

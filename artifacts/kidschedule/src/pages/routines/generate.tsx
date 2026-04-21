@@ -798,7 +798,20 @@ export default function RoutineGenerate() {
           const items = simplifyForHandler(data.items as any, handlerType) as RoutineItem[];
           handlePostGenerate({ ...data, items }, shouldOverride, wakeTime);
         },
-        onError: () => toast({ title: "Failed to generate routine", variant: "destructive" }),
+        onError: (err: unknown) => {
+          // Server enforces the free-tier routinesMax cap with HTTP 403
+          // { reason: "routine_limit_exceeded" }. Surface the paywall instead
+          // of a generic error toast.
+          const status = (err as { status?: number })?.status;
+          const reason = (err as { data?: { reason?: string } })?.data?.reason;
+          if (status === 403 && reason === "routine_limit_exceeded") {
+            window.dispatchEvent(
+              new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+            );
+            return;
+          }
+          toast({ title: "Failed to generate routine", variant: "destructive" });
+        },
       }
     );
   }, [generateMutation, overrideMode, existingRoutine, selectedChild, date, hasSchool, specialPlans, fridgeItems, mood, parentAvail, handlePostGenerate, toast]);
@@ -822,6 +835,15 @@ export default function RoutineGenerate() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (res.status === 403) {
+        const body = await res.json().catch(() => null) as { reason?: string } | null;
+        if (body?.reason === "routine_limit_exceeded") {
+          window.dispatchEvent(
+            new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+          );
+          return;
+        }
+      }
       if (!res.ok) throw new Error("Amy AI generation failed");
       const generatedData = await res.json() as { title: string; items: RoutineItem[] };
       const simplified = simplifyForHandler(generatedData.items as any, handlerType) as RoutineItem[];
@@ -954,7 +976,15 @@ export default function RoutineGenerate() {
         // Apply handler-based simplification (grandparent / babysitter)
         const simplifiedItems = simplifyForHandler(generated.items as any, handlerType);
         results.push({ child, routine: { ...generated, items: simplifiedItems as RoutineItem[] } });
-      } catch {
+      } catch (err: unknown) {
+        const status = (err as { status?: number })?.status;
+        const reason = (err as { data?: { reason?: string } })?.data?.reason;
+        if (status === 403 && reason === "routine_limit_exceeded") {
+          window.dispatchEvent(
+            new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+          );
+          break;
+        }
         toast({ title: `Failed to generate routine for ${child.name}`, variant: "destructive" });
       }
     }
