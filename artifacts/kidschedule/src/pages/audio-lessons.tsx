@@ -9,6 +9,10 @@ import {
   LESSONS, lessonsForAge, getLessonText, getAgeLabel,
   type AgeBucket, type Lesson,
 } from "@/lib/audio-lessons";
+import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { getApiUrl } from "@/lib/api";
+import { usePaywall } from "@/contexts/paywall-context";
+import { useSubscription } from "@/hooks/use-subscription";
 
 const AGE_ORDER: AgeBucket[] = ["0-2", "2-4", "5-7", "8-10", "10+"];
 
@@ -23,10 +27,47 @@ export default function AudioLessonsPage() {
   const [, setLocation] = useLocation();
   const [age, setAge] = useState<AgeBucket>("2-4");
   const [open, setOpen] = useState<Lesson | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   const { i18n } = useTranslation();
   const lang = i18n.language;
 
+  const authFetch = useAuthFetch();
+  const { openPaywall } = usePaywall();
+  const sub = useSubscription();
+
   const lessons = lessonsForAge(age);
+
+  // Global Paywall: free users get 1 audio lesson per UTC day. Premium users
+  // bypass server-side. We always call /consume — the server returns 200
+  // (no-op for premium) or 402 feature_locked when the cap is exhausted.
+  const handlePickLesson = async (l: Lesson) => {
+    if (unlocking) return;
+    setUnlocking(true);
+    try {
+      const res = await authFetch(
+        getApiUrl("/api/features/audio_lesson/consume"),
+        { method: "POST" },
+      );
+      if (res.status === 402) {
+        openPaywall("audio_lessons");
+        return;
+      }
+      if (!res.ok) {
+        // Network / server error — best-effort: still open the lesson so the
+        // user isn't blocked by infra issues. Counter wasn't burned because
+        // featureGate refunds on non-2xx.
+        setOpen(l);
+        return;
+      }
+      sub.refresh();
+      setOpen(l);
+    } catch {
+      // Same fail-open behaviour as above.
+      setOpen(l);
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   return (
     <div style={{
@@ -112,14 +153,16 @@ export default function AudioLessonsPage() {
           return (
             <button
               key={l.id}
-              onClick={() => setOpen(l)}
+              onClick={() => void handlePickLesson(l)}
+              disabled={unlocking}
               style={{
                 textAlign: "left",
                 background: "rgba(255,255,255,0.05)",
                 border: "1px solid rgba(139,92,246,0.25)",
                 borderRadius: 16,
                 padding: 16,
-                cursor: "pointer",
+                cursor: unlocking ? "wait" : "pointer",
+                opacity: unlocking ? 0.7 : 1,
                 display: "flex",
                 gap: 12,
                 alignItems: "flex-start",

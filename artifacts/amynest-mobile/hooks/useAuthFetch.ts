@@ -14,7 +14,10 @@ export function useAuthFetch() {
         headers.set("Authorization", `Bearer ${token}`);
       }
       const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
-      if (!res.ok && res.status !== 404) {
+      // Pass through expected non-2xx responses that callers handle explicitly:
+      //   404 → resource missing (existing behaviour)
+      //   402 → Global Paywall feature_locked (callers route to /paywall)
+      if (!res.ok && res.status !== 404 && res.status !== 402) {
         throw new Error(`Request failed: ${res.status} ${res.statusText}`);
       }
       return res;

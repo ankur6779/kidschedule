@@ -15,6 +15,7 @@ import worksheetsRouter from "./worksheets";
 import onboardingRouter from "./onboarding";
 import futurePredictorRouter from "./future-predictor";
 import referralsRouter from "./referrals";
+import featuresRouter from "./features";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -40,5 +41,6 @@ router.use(aiCoachRouter);
 router.use(appDataRouter);
 router.use(futurePredictorRouter);
 router.use(referralsRouter);
+router.use(featuresRouter);
 
 export default router;

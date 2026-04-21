@@ -40,6 +40,10 @@ export const FREE_FEATURE_LIMITS = {
   ai_query: 10,
   routine_generate: 1,
   behavior_log: 1,
+  // 1 free TTS audio lesson per day (resets UTC midnight). The web/mobile
+  // audio-lesson screens call /api/features/audio_lesson/consume before
+  // playback to reserve the slot — premium users bypass entirely.
+  audio_lesson: 1,
 } as const;
 
 export type FeatureKey = keyof typeof FREE_FEATURE_LIMITS;
@@ -53,6 +57,7 @@ export const FEATURE_SCOPE: Record<FeatureKey, "daily" | "lifetime"> = {
   ai_query: "daily",
   routine_generate: "lifetime",
   behavior_log: "lifetime",
+  audio_lesson: "daily",
 };
 
 export type FeatureUsage = {

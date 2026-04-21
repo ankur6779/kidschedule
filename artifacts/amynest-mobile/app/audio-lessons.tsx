@@ -11,6 +11,8 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import { brand } from "@/constants/colors";
 import * as Haptics from "expo-haptics";
+import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 
 // ── Lesson data — trilingual ───────────────────────────────────────────────
 type AgeBucket = "0-2" | "2-4" | "5-7" | "8-10" | "10+";
@@ -254,9 +256,45 @@ export default function AudioLessonsScreen() {
 
   const [selectedAge, setSelectedAge] = useState<AgeBucket>("2-4");
   const [openLesson, setOpenLesson] = useState<Lesson | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   const lessons = useMemo(() => LESSONS.filter(l => l.age === selectedAge), [selectedAge]);
   const player = usePlayer(openLesson?.id ?? null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const authFetch = useAuthFetch();
+  const refreshSub = useSubscriptionStore((s) => s.refresh);
+
+  // Global Paywall: free users get 1 audio lesson per UTC day. Premium users
+  // bypass server-side. The /consume endpoint returns 200 (no-op for premium)
+  // or 402 feature_locked when the cap is exhausted, in which case we route
+  // to the paywall instead of opening the lesson.
+  const handlePickLesson = async (lesson: Lesson) => {
+    if (unlocking) return;
+    if (openLesson?.id === lesson.id) {
+      // Collapsing the same lesson — no need to consume again.
+      setOpenLesson(null);
+      if (Platform.OS !== "web") void Haptics.selectionAsync();
+      return;
+    }
+    setUnlocking(true);
+    try {
+      const res = await authFetch("/api/features/audio_lesson/consume", {
+        method: "POST",
+      });
+      if (res.status === 402) {
+        router.push({ pathname: "/paywall", params: { reason: "audio_lessons" } });
+        return;
+      }
+      // Any other non-2xx (network/server) — fail open so infra issues
+      // don't block the user. Counter wasn't burned (featureGate refunds).
+      void refreshSub();
+      setOpenLesson(lesson);
+      if (Platform.OS !== "web") void Haptics.selectionAsync();
+    } catch {
+      setOpenLesson(lesson);
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   const pulsePlay = () => {
     Animated.sequence([
@@ -322,9 +360,10 @@ export default function AudioLessonsScreen() {
           return (
             <View key={lesson.id} style={[styles.lessonCard, isOpen && styles.lessonCardOpen]}>
               <TouchableOpacity
-                onPress={() => { setOpenLesson(isOpen ? null : lesson); if (Platform.OS !== "web") Haptics.selectionAsync(); }}
+                onPress={() => void handlePickLesson(lesson)}
+                disabled={unlocking}
                 activeOpacity={0.85}
-                style={styles.lessonHeader}
+                style={[styles.lessonHeader, unlocking && { opacity: 0.7 }]}
               >
                 <View style={styles.lessonEmoji}><Text style={{ fontSize: 26 }}>{lesson.emoji}</Text></View>
                 <View style={{ flex: 1 }}>
