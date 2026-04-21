@@ -38,7 +38,7 @@ type Step =
   | "intro"
   | "child-name" | "child-dob" | "child-school" | "child-class"
   | "child-school-start" | "child-school-end"
-  | "child-wake" | "child-sleep" | "child-food"
+  | "child-wake" | "child-sleep"
   | "add-more"
   | "parent-name" | "parent-role" | "parent-work"
   | "parent-region" | "parent-mobile" | "parent-allergies"
@@ -198,7 +198,7 @@ function ProgressBar({ step }: { step: Step }) {
   const order: Step[] = [
     "child-name", "child-dob", "child-school", "child-class",
     "child-school-start", "child-school-end",
-    "child-wake", "child-sleep", "child-food",
+    "child-wake", "child-sleep",
     "add-more", "parent-name", "parent-role", "parent-work",
     "parent-region", "parent-mobile", "parent-allergies",
   ];
@@ -553,40 +553,22 @@ export default function OnboardingPage() {
             selected={selected}
             onSelect={(v) => {
               setSelected(v);
-              setCurr((c) => ({ ...c, sleepTime: to24h(v) }));
-              userReplies(v, "child-food", `Is ${curr.name || "your child"} vegetarian or non-vegetarian? 🥗`);
+              const finalChild = {
+                ...curr,
+                sleepTime: to24h(v),
+                foodType: "veg",
+                dietNote: "",
+              } as ChildData;
+              setChildren((prev) => [...prev, finalChild]);
+              setCurr({});
+              const childCount = children.length + 1;
+              userReplies(v, "add-more",
+                childCount === 1
+                  ? "Got it! Do you have another child to add as well? 👨‍👩‍👧‍👦"
+                  : "Do you have one more child to add?",
+              );
             }}
           />
-        );
-
-      case "child-food":
-        return (
-          <div className="grid grid-cols-2 gap-2">
-            {FOOD_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => {
-                  const finalChild = {
-                    ...curr,
-                    foodType: opt.foodType,
-                    dietNote: opt.note,
-                  } as ChildData;
-                  setChildren((prev) => [...prev, finalChild]);
-                  setCurr({});
-                  const childCount = children.length + 1;
-                  userReplies(opt.label, "add-more",
-                    childCount === 1
-                      ? "Got it! Do you have another child to add as well? 👨‍👩‍👧‍👦"
-                      : "Do you have one more child to add?",
-                  );
-                }}
-                className="py-3.5 px-3 rounded-2xl text-sm font-semibold border active:scale-95 transition-all text-center"
-                style={{ background: "rgba(255,255,255,0.9)", color: "#1e1b4b", border: "1px solid #c7d2fe" }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
         );
 
       case "add-more":

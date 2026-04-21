@@ -139,13 +139,104 @@ export default function RoutineItemModal({
       statusBarTranslucent
     >
       <Animated.View entering={FadeIn.duration(180)} style={s.scrim}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Pressable style={StyleSheet.absoluteFill} onPress={selectedMeal !== null ? closeRecipe : onClose} />
 
         <Animated.View
           entering={SlideInDown.springify().damping(18).stiffness(180)}
           exiting={SlideOutDown.duration(200)}
           style={[s.sheet, { maxHeight: SCREEN_H * 0.92 }]}
         >
+          {selectedMeal !== null ? (
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+              <LinearGradient colors={["#FB923C", "#F43F5E"] as const} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.hero}>
+                <View style={s.handle} />
+                <TouchableOpacity onPress={closeRecipe} style={s.closeBtn} activeOpacity={0.85} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close recipe">
+                  <Ionicons name="close" size={20} color="#fff" />
+                </TouchableOpacity>
+                <View style={s.heroIconWrap}>
+                  <MaterialCommunityIcons name="chef-hat" size={36} color="#fff" />
+                </View>
+                <Text style={s.heroTitle} numberOfLines={3}>
+                  {recipeLoading ? "Loading recipe…" : (recipe?.name ?? selectedMeal ?? "Recipe")}
+                </Text>
+              </LinearGradient>
+
+              <View style={s.body}>
+                {recipeLoading && (
+                  <View style={{ alignItems: "center", paddingVertical: 24, gap: 10 }}>
+                    <ActivityIndicator color="#F97316" />
+                    <Text style={[s.notesText, { textAlign: "center" }]}>Generating recipe…</Text>
+                  </View>
+                )}
+
+                {recipeError && !recipeLoading && (
+                  <View style={s.skipBox}>
+                    <Text style={s.skipEmoji}>⚠️</Text>
+                    <Text style={s.skipText}>{recipeError}</Text>
+                  </View>
+                )}
+
+                {recipe && !recipeLoading && (
+                  <View style={{ gap: 16 }}>
+                    <View style={s.statsRow}>
+                      <View style={[s.statBox, { backgroundColor: "rgba(251,146,60,0.12)" }]}>
+                        <Ionicons name="timer-outline" size={16} color="#F97316" />
+                        <Text style={s.statValue}>{recipe.prepTime}</Text>
+                        <Text style={s.statLabel}>Prep</Text>
+                      </View>
+                      <View style={[s.statBox, { backgroundColor: "rgba(244,63,94,0.12)" }]}>
+                        <Ionicons name="flame-outline" size={16} color="#F43F5E" />
+                        <Text style={s.statValue}>{recipe.cookTime}</Text>
+                        <Text style={s.statLabel}>Cook</Text>
+                      </View>
+                      <View style={[s.statBox, { backgroundColor: "rgba(16,185,129,0.12)" }]}>
+                        <Ionicons name="people-outline" size={16} color="#10B981" />
+                        <Text style={s.statValue}>{recipe.servings}</Text>
+                        <Text style={s.statLabel}>Serves</Text>
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={s.sectionLabel}>Ingredients</Text>
+                      <View style={{ marginTop: 6, gap: 6 }}>
+                        {recipe.ingredients.map((ing, i) => (
+                          <View key={i} style={{ flexDirection: "row", gap: 8 }}>
+                            <Text style={{ color: "#F97316", fontWeight: "800" }}>•</Text>
+                            <Text style={[s.notesText, { flex: 1 }]}>{ing}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={s.sectionLabel}>Instructions</Text>
+                      <View style={{ marginTop: 8, gap: 12 }}>
+                        {recipe.steps.map((st) => (
+                          <View key={st.step} style={{ flexDirection: "row", gap: 10 }}>
+                            <View style={s.stepNum}>
+                              <Text style={s.stepNumText}>{st.step}</Text>
+                            </View>
+                            <Text style={[s.notesText, { flex: 1 }]}>{st.instruction}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+
+                    {recipe.tips ? (
+                      <View style={s.tipBox}>
+                        <Text style={s.tipLabel}>💡 Parent tip</Text>
+                        <Text style={s.tipText}>{recipe.tips}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                )}
+
+                <TouchableOpacity onPress={closeRecipe} activeOpacity={0.85} style={s.closeFooter}>
+                  <Text style={s.closeFooterText}>Back</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          ) : (
           <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
             {/* Hero header */}
             <LinearGradient colors={cat.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.hero}>
@@ -259,112 +350,9 @@ export default function RoutineItemModal({
               </TouchableOpacity>
             </View>
           </ScrollView>
+          )}
         </Animated.View>
       </Animated.View>
-
-      {/* Recipe sheet */}
-      <Modal
-        visible={selectedMeal !== null}
-        transparent
-        animationType="fade"
-        onRequestClose={closeRecipe}
-        statusBarTranslucent
-      >
-        <View style={s.scrim}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeRecipe} />
-          <View style={[s.sheet, { maxHeight: SCREEN_H * 0.88 }]}>
-            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-              <LinearGradient colors={["#FB923C", "#F43F5E"] as const} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={s.hero}>
-                <View style={s.handle} />
-                <TouchableOpacity onPress={closeRecipe} style={s.closeBtn} activeOpacity={0.85} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close recipe">
-                  <Ionicons name="close" size={20} color="#fff" />
-                </TouchableOpacity>
-                <View style={s.heroIconWrap}>
-                  <MaterialCommunityIcons name="chef-hat" size={36} color="#fff" />
-                </View>
-                <Text style={s.heroTitle} numberOfLines={3}>
-                  {recipeLoading ? "Loading recipe…" : (recipe?.name ?? selectedMeal ?? "Recipe")}
-                </Text>
-              </LinearGradient>
-
-              <View style={s.body}>
-                {recipeLoading && (
-                  <View style={{ alignItems: "center", paddingVertical: 24, gap: 10 }}>
-                    <ActivityIndicator color="#F97316" />
-                    <Text style={[s.notesText, { textAlign: "center" }]}>Generating recipe…</Text>
-                  </View>
-                )}
-
-                {recipeError && !recipeLoading && (
-                  <View style={s.skipBox}>
-                    <Text style={s.skipEmoji}>⚠️</Text>
-                    <Text style={s.skipText}>{recipeError}</Text>
-                  </View>
-                )}
-
-                {recipe && !recipeLoading && (
-                  <View style={{ gap: 16 }}>
-                    <View style={s.statsRow}>
-                      <View style={[s.statBox, { backgroundColor: "rgba(251,146,60,0.12)" }]}>
-                        <Ionicons name="timer-outline" size={16} color="#F97316" />
-                        <Text style={s.statValue}>{recipe.prepTime}</Text>
-                        <Text style={s.statLabel}>Prep</Text>
-                      </View>
-                      <View style={[s.statBox, { backgroundColor: "rgba(244,63,94,0.12)" }]}>
-                        <Ionicons name="flame-outline" size={16} color="#F43F5E" />
-                        <Text style={s.statValue}>{recipe.cookTime}</Text>
-                        <Text style={s.statLabel}>Cook</Text>
-                      </View>
-                      <View style={[s.statBox, { backgroundColor: "rgba(16,185,129,0.12)" }]}>
-                        <Ionicons name="people-outline" size={16} color="#10B981" />
-                        <Text style={s.statValue}>{recipe.servings}</Text>
-                        <Text style={s.statLabel}>Serves</Text>
-                      </View>
-                    </View>
-
-                    <View>
-                      <Text style={s.sectionLabel}>Ingredients</Text>
-                      <View style={{ marginTop: 6, gap: 6 }}>
-                        {recipe.ingredients.map((ing, i) => (
-                          <View key={i} style={{ flexDirection: "row", gap: 8 }}>
-                            <Text style={{ color: "#F97316", fontWeight: "800" }}>•</Text>
-                            <Text style={[s.notesText, { flex: 1 }]}>{ing}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-
-                    <View>
-                      <Text style={s.sectionLabel}>Instructions</Text>
-                      <View style={{ marginTop: 8, gap: 12 }}>
-                        {recipe.steps.map((st) => (
-                          <View key={st.step} style={{ flexDirection: "row", gap: 10 }}>
-                            <View style={s.stepNum}>
-                              <Text style={s.stepNumText}>{st.step}</Text>
-                            </View>
-                            <Text style={[s.notesText, { flex: 1 }]}>{st.instruction}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-
-                    {recipe.tips ? (
-                      <View style={s.tipBox}>
-                        <Text style={s.tipLabel}>💡 Parent tip</Text>
-                        <Text style={s.tipText}>{recipe.tips}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                )}
-
-                <TouchableOpacity onPress={closeRecipe} activeOpacity={0.85} style={s.closeFooter}>
-                  <Text style={s.closeFooterText}>Close</Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
     </Modal>
   );
 }

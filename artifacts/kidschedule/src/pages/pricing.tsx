@@ -6,7 +6,7 @@ import { useSubscription, type Plan } from "@/hooks/use-subscription";
 
 export default function PricingPage() {
   const { t } = useTranslation();
-  const { plans, entitlements, isPremium, checkout, startTrial, loading } = useSubscription();
+  const { plans, entitlements, isPremium, checkout, loading } = useSubscription();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -18,12 +18,6 @@ export default function PricingPage() {
     setSubmitting(false);
     if (!res.ok) setNotice(res.reason ?? t("pricing.checkout_unavailable"));
   };
-  const onTrial = async () => {
-    setSubmitting(true);
-    await startTrial();
-    setSubmitting(false);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-pink-50">
       <div className="max-w-5xl mx-auto px-4 py-12">
@@ -104,17 +98,6 @@ export default function PricingPage() {
             <Rocket className="h-4 w-4 mr-2" />
             {isPremium ? t("pricing.already_premium") : submitting ? t("common.please_wait") : t("pricing.upgrade_now")}
           </Button>
-          {!isPremium && entitlements?.status === "free" && (
-            <button
-              type="button"
-              onClick={onTrial}
-              disabled={submitting}
-              className="w-full text-center mt-3 text-pink-600 font-extrabold text-sm hover:underline"
-              data-testid="button-start-trial"
-            >
-              {t("pricing.start_trial")}
-            </button>
-          )}
           <p className="text-center text-xs text-slate-400 mt-3">{t("pricing.cancel_anytime")}</p>
         </div>
       </div>

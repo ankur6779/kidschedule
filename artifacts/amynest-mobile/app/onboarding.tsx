@@ -402,29 +402,12 @@ export default function OnboardingScreen() {
                 style={[styles.chip, { backgroundColor: selected === t ? PRIMARY : colors.card, borderColor: selected === t ? PRIMARY : colors.border }]}
                 onPress={() => {
                   setSelected(t); Haptics.selectionAsync();
-                  setCurr(c => ({ ...c, sleepTime: to24h(t) }));
-                  userReplies(t, "child-food", "What kind of food does your family prefer?");
-                }}>
-                <Text style={[styles.chipText, { color: selected === t ? "#fff" : colors.foreground }]}>{t}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        );
-
-      case "child-food":
-        return (
-          <View style={styles.rowBtns}>
-            {[{ label: "Vegetarian", value: "veg" }, { label: "Non-Vegetarian", value: "non_veg" }].map(opt => (
-              <TouchableOpacity key={opt.value}
-                style={[styles.optionBtn, { backgroundColor: selected === opt.value ? PRIMARY : colors.card, borderColor: selected === opt.value ? PRIMARY : colors.border }]}
-                onPress={() => {
-                  setSelected(opt.value); Haptics.selectionAsync();
-                  const finishedChild = { ...curr, foodType: opt.value } as ChildData;
+                  const finishedChild = { ...curr, sleepTime: to24h(t), foodType: "veg" } as ChildData;
                   setChildren(cs => [...cs, finishedChild]);
                   setCurr({});
-                  userReplies(opt.label, "add-more", "Got it! Do you have another child to add?");
+                  userReplies(t, "add-more", "Got it! Do you have another child to add?");
                 }}>
-                <Text style={[styles.optionBtnText, { color: selected === opt.value ? "#fff" : colors.foreground }]}>{opt.label}</Text>
+                <Text style={[styles.chipText, { color: selected === t ? "#fff" : colors.foreground }]}>{t}</Text>
               </TouchableOpacity>
             ))}
           </View>
