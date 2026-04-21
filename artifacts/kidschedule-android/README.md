@@ -3,9 +3,10 @@
 A minimal Android app that wraps the live KidSchedule website inside a full-screen
 WebView, ready to be packaged as a signed AAB for Google Play.
 
-This is intentionally a thin shell: no native features, no offline data, no
-in-app purchases. The website is the source of truth — when you ship a website
-update, users see it on next app open without needing a Play Store update.
+This is intentionally a thin shell — the website is the source of truth, so
+shipping a website update is enough for users to see the change on next app
+open. The only native feature is **Google Play Billing** (via RevenueCat), so
+the app can sell Premium subscriptions in a Play-policy-compliant way.
 
 > **Important:** Android source code cannot be built inside Replit (no Android
 > SDK / JDK toolchain). Open this folder in **Android Studio Hedgehog (2023.1.1)
@@ -74,15 +75,31 @@ printed instructions to create `keystore.properties` in the project root.
 
 ## 7. Build the signed release AAB and APK
 
+Always pass both `wrapperUrl` AND `revenueCatApiKey` when building. Without
+the RevenueCat key, the app falls back to web payments — which Google Play
+will reject for digital subscriptions.
+
 ```bash
 # Signed AAB for Play Store upload
-./gradlew bundleRelease -PwrapperUrl=https://kidschedule.example.com
+./gradlew bundleRelease \
+  -PwrapperUrl=https://kidschedule.example.com \
+  -PrevenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
 # Output: app/build/outputs/bundle/release/app-release.aab
 
 # Optional: signed APK for sideloading / testing
-./gradlew assembleRelease -PwrapperUrl=https://kidschedule.example.com
+./gradlew assembleRelease \
+  -PwrapperUrl=https://kidschedule.example.com \
+  -PrevenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
 # Output: app/build/outputs/apk/release/app-release.apk
 ```
+
+> Tip: put both values in `~/.gradle/gradle.properties` so you don't have to
+> retype them every build:
+>
+> ```properties
+> wrapperUrl=https://kidschedule.example.com
+> revenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
+> ```
 
 ## 8. Upload to Play Console
 
@@ -100,7 +117,72 @@ printed instructions to create `keystore.properties` in the project root.
 6. For each subsequent update: bump `versionCode` + `versionName`, rebuild AAB,
    upload to a new release.
 
-## 9. When the website changes
+## 9. Google Play Billing setup (one-time)
+
+The wrapper uses RevenueCat to handle Google Play Billing. The web paywall
+inside the WebView automatically detects the bridge and replaces the
+"Pay with UPI / Card" button with **Continue with Google Play** when running
+inside the app.
+
+### a) Google Play Console — create the subscription products
+
+In the Play Console for this app: **Monetize → Subscriptions → Create
+subscription**. Create three products with these exact IDs (they're already
+hardcoded in the backend at `artifacts/api-server/src/routes/subscription.ts`,
+function `productIdToPlan`):
+
+| Plan       | Product ID         | Base plan ID  | Billing period |
+| ---------- | ------------------ | ------------- | -------------- |
+| Monthly    | `amynest_monthly`  | `monthly`     | P1M            |
+| 6-month    | `amynest_6month`   | `six-month`   | P6M            |
+| Yearly     | `amynest_yearly`   | `yearly`      | P1Y            |
+
+For each product, set the price for India (INR) and any other launch markets,
+then **activate** the base plan.
+
+### b) RevenueCat dashboard — wire up the offering
+
+1. Create a RevenueCat **project** if you haven't already, and add the
+   `kidschedule-android` app under **Project settings → Apps → + Google Play**.
+   Upload your Play Console service-account JSON so RevenueCat can verify
+   purchases server-side.
+2. **Products** → import the three Play subscriptions you created above.
+3. **Entitlements** → create one called `premium` and attach all three
+   products. (If you use a different name, set `REVENUECAT_ENTITLEMENT_ID`
+   on the API server to match.)
+4. **Offerings** → create a `default` offering with three packages whose
+   identifiers exactly match the backend map:
+   - `$rc_monthly`  → product `amynest_monthly`
+   - `$rc_six_month` → product `amynest_6month`
+   - `$rc_annual`  → product `amynest_yearly`
+5. **API keys → Public Android SDK key (`goog_…`)** → use this as
+   `revenueCatApiKey` when building the AAB.
+6. **Project settings → Integrations → Webhooks** → add
+   `https://<your-api>/api/subscription/webhook` with a bearer token; set
+   the same token on the API server as `REVENUECAT_WEBHOOK_SECRET`.
+
+### c) Test with the Play Internal Testing track
+
+You **cannot** test Google Play Billing on a debug install — purchases need a
+signed AAB on a Play track and a tester account.
+
+1. Build a signed AAB (step 7 above) with `versionCode` higher than what's
+   already on the track.
+2. Play Console → **Testing → Internal testing → Create new release** →
+   upload the AAB.
+3. Add your Google account as a tester and accept the opt-in link.
+4. Install from the Play Store on your phone, open the paywall, tap
+   **Continue with Google Play** — Play will show a fake "test card" charge.
+5. Check that your backend `subscriptions` row flips to `active` (the
+   webhook does this automatically) and the paywall closes.
+
+If purchases stay pending, check:
+- RevenueCat dashboard → **Customers** → your Clerk user id should appear.
+- API server logs for `/api/subscription/webhook` 200s.
+- Play Console → **Monetize → Subscriptions** → the product is **active**
+  and the test account is in the licence-tester list.
+
+## 10. When the website changes
 
 You **do not** need a new Play Store release for normal website updates — users
 get them automatically because the app loads the live URL.
@@ -118,7 +200,8 @@ kidschedule-android/
 │   ├── src/main/
 │   │   ├── AndroidManifest.xml            # Permissions, launcher activity
 │   │   ├── java/com/kidschedule/app/
-│   │   │   ├── KidScheduleApp.kt          # Application class
+│   │   │   ├── KidScheduleApp.kt          # Application + RevenueCat init
+│   │   │   ├── BillingBridge.kt           # @JavascriptInterface for Play Billing
 │   │   │   └── MainActivity.kt            # WebView host + offline screen
 │   │   └── res/                           # Icons, themes, strings, layout
 │   ├── build.gradle.kts                   # App module config + signing
@@ -143,3 +226,6 @@ kidschedule-android/
 - Adaptive launcher icon + splash screen using the brand colors
 - WebView state preservation across rotation
 - Release build with R8/ProGuard minification
+- **Google Play Billing** for Premium subscriptions, exposed to the WebView
+  via a `window.AmyNestBillingNative` JavaScript bridge (RevenueCat-backed,
+  with the existing backend webhook as the source of truth)

@@ -130,6 +130,13 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     private fun configureWebView() {
+        // Expose Google Play Billing (via RevenueCat) to the WebView using
+        // WebViewCompat.addWebMessageListener with a strict allowed-origin
+        // rule pinned to BuildConfig.WRAPPER_URL — so cross-origin iframes
+        // CANNOT call the bridge. The web app probes
+        // `window.AmyNestBillingNative` and uses postMessage / onmessage.
+        BillingBridge.installOn(this, webView, BuildConfig.WRAPPER_URL)
+
         val s = webView.settings
         s.javaScriptEnabled = true
         s.domStorageEnabled = true

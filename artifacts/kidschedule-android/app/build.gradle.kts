@@ -27,6 +27,13 @@ android {
         val wrapperUrl: String = (project.findProperty("wrapperUrl") as String?)
             ?: "https://kidschedule.replit.app"
         buildConfigField("String", "WRAPPER_URL", "\"$wrapperUrl\"")
+
+        // RevenueCat public Android SDK key (starts with `goog_`). Pass at
+        // build time: -PrevenueCatApiKey=goog_xxxxxxxxxxxxxxx
+        // If empty, the in-app billing bridge stays disabled and the WebView
+        // falls back to the existing web payment flow.
+        val rcKey: String = (project.findProperty("revenueCatApiKey") as String?) ?: ""
+        buildConfigField("String", "REVENUECAT_API_KEY", "\"$rcKey\"")
     }
 
     signingConfigs {
@@ -80,4 +87,8 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.9.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Google Play Billing via RevenueCat (handles purchase verification +
+    // subscription state through our existing backend RevenueCat webhook).
+    implementation("com.revenuecat.purchases:purchases:8.10.4")
 }

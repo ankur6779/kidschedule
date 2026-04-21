@@ -22,6 +22,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { usePaywall } from "@/contexts/paywall-context";
 import { useSubscription, type Plan } from "@/hooks/use-subscription";
+import { useNativeBilling } from "@/hooks/use-native-billing";
 
 const REASON_COPY: Record<
   string,
@@ -90,6 +91,7 @@ export function PaywallModal() {
   const { plans, checkoutRazorpay } = useSubscription();
   const { user } = useUser();
   const [, setLocation] = useLocation();
+  const nativeBilling = useNativeBilling();
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -115,6 +117,21 @@ export function PaywallModal() {
       closePaywall();
     } else if (!res.userCancelled) {
       setNotice(res.reason ?? "Checkout is not yet available.");
+    }
+  };
+
+  // Inside the Android Play Store wrapper, Play policy requires Google Play
+  // Billing for digital subscriptions — Razorpay is hidden and replaced with
+  // the native flow below.
+  const onPayWithGooglePlay = async () => {
+    setSubmitting(true);
+    setNotice(null);
+    const res = await nativeBilling.purchase(selected);
+    setSubmitting(false);
+    if (res.ok) {
+      closePaywall();
+    } else if (!res.userCancelled) {
+      setNotice(res.reason ?? "Google Play purchase failed. Please try again.");
     }
   };
 
@@ -200,14 +217,43 @@ export function PaywallModal() {
             </div>
           )}
 
-          <Button
-            onClick={onPayWithRazorpay}
-            disabled={submitting || plans.length === 0}
-            className="w-full h-12 text-base font-extrabold bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 border-0 shadow-[0_10px_24px_rgba(255,78,205,0.5)]"
-          >
-            <Zap className="h-4 w-4 mr-2" />
-            {submitting ? "Opening Razorpay…" : "Pay with UPI / Card"}
-          </Button>
+          {nativeBilling.available ? (
+            <>
+              <Button
+                onClick={onPayWithGooglePlay}
+                disabled={submitting || nativeBilling.purchasing || plans.length === 0}
+                className="w-full h-12 text-base font-extrabold bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 border-0 shadow-[0_10px_24px_rgba(255,78,205,0.5)]"
+              >
+                <Zap className="h-4 w-4 mr-2" />
+                {submitting || nativeBilling.purchasing
+                  ? "Opening Google Play…"
+                  : "Continue with Google Play"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => void nativeBilling.restore()}
+                className="w-full mt-2 text-white/60 text-xs font-semibold py-2 hover:text-white/85"
+              >
+                Restore Purchases
+              </button>
+            </>
+          ) : nativeBilling.wrapperPresent ? (
+            // Inside the Play wrapper but billing isn't ready — Play policy
+            // forbids falling back to Razorpay for digital subscriptions.
+            <div className="w-full rounded-xl border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-amber-100 text-xs font-semibold leading-relaxed">
+              {nativeBilling.unavailableReason ??
+                "In-app purchases aren't available right now. Please update the app from the Play Store."}
+            </div>
+          ) : (
+            <Button
+              onClick={onPayWithRazorpay}
+              disabled={submitting || plans.length === 0}
+              className="w-full h-12 text-base font-extrabold bg-gradient-to-r from-violet-500 to-pink-500 hover:opacity-90 border-0 shadow-[0_10px_24px_rgba(255,78,205,0.5)]"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              {submitting ? "Opening Razorpay…" : "Pay with UPI / Card"}
+            </Button>
+          )}
 
           <button
             type="button"
