@@ -1,0 +1,178 @@
+Apply the following product updates in my web + mobile app "AmyNest". These changes include paywall logic, UI updates, onboarding changes, and Amy AI behavior.
+
+IMPORTANT:
+- Keep system clean and consistent
+- Do NOT break existing functionality
+- Focus on smooth UX and premium feel
+- Mobile + web responsive
+
+--------------------------------
+1. Audio Lesson Paywall 🔒
+--------------------------------
+
+- Allow user to play audio lesson ONLY once (free)
+- After first use:
+  → Lock audio feature
+  → Show paywall screen
+
+Message:
+“You’ve used your free audio. Unlock premium to continue”
+
+--------------------------------
+2. Pricing Section Fix
+--------------------------------
+
+- Remove text:
+  “Free 3 days trial”
+
+- Ensure pricing reflects only actual plans
+
+--------------------------------
+3. Amy Coach Optimization (Performance + UX 🔥)
+--------------------------------
+
+During plan generation:
+
+- Show first 2 “Wins” instantly (fast response)
+- Generate remaining wins in background
+
+Flow:
+
+- Show 2 wins
+- When user clicks “Next”
+  → show next generated win
+
+Restriction:
+- User MUST select one option before moving forward:
+  - Worked for me
+  - Partially worked
+  - Not working
+
+→ Disable “Next” until selection is made
+
+--------------------------------
+4. Onboarding Change
+--------------------------------
+
+- Remove “Child Meal Option” from onboarding form
+
+--------------------------------
+5. Global Paywall System (CRITICAL 🔥🔥)
+--------------------------------
+
+Apply to ALL sections (except routine if needed):
+
+FREE USER RULE:
+- User can use ANY ONE feature ONLY ONCE
+
+After usage:
+- Lock ALL features
+- Show lock icon 🔒 on all items
+
+On click locked item:
+→ Open pricing screen
+
+--------------------------------
+5.1 Paywall UI Behavior
+--------------------------------
+
+- Show all features visible
+- Add:
+  - Blur effect
+  - Lock icon
+
+--------------------------------
+5.2 Amy AI Messaging
+--------------------------------
+
+Before use:
+“Amy AI:
+You can try this feature once for free ❤️”
+
+After use:
+“Amy AI:
+Unlock full access to continue 🚀”
+
+--------------------------------
+6. Parent Hub UI Upgrade (IMPORTANT 🔥)
+--------------------------------
+
+- Convert Parent Hub into:
+  → Clean 2-column grid layout
+
+--------------------------------
+6.1 Section Organization
+--------------------------------
+
+Each category becomes a block:
+
+Example:
+- Activities & Learning
+- Parenting Articles
+- Olympiad
+- Life Skills
+
+--------------------------------
+6.2 Nested Sections (Important)
+--------------------------------
+
+If a section has multiple modules:
+
+Example:
+Activities & Learning →
+
+- Show sub-items in 2-column grid
+- Each item clickable
+- User goes deeper ONLY after click
+
+--------------------------------
+6.3 UI Rules
+--------------------------------
+
+- Clean spacing
+- Glass + glow design
+- No clutter
+- Icons + titles
+
+--------------------------------
+6.4 Navigation
+--------------------------------
+
+- First level = categories
+- Second level = modules
+- Third level = content
+
+--------------------------------
+7. UX Rules
+--------------------------------
+
+- Keep interactions smooth
+- Avoid sudden jumps
+- Use animations (fade/slide)
+
+--------------------------------
+8. Performance
+--------------------------------
+
+- Lightweight logic
+- No heavy API calls
+- Fast loading
+
+--------------------------------
+9. Keep it simple
+--------------------------------
+
+- No over-complication
+- Maintain clarity
+
+10.Routines mai Meal recipes is not showing when user click the same , fix it
+--------------------------------
+Return:
+Updated system with:
+- Audio paywall
+- Global feature lock logic
+- Amy Coach optimization
+- Clean onboarding
+- 2-column Parent Hub UI
+- Structured navigation
+- Amy AI messaging
