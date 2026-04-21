@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useGetDashboardSummary, getGetDashboardSummaryQueryKey, useGetRecentRoutines, getGetRecentRoutinesQueryKey, useGetBehaviorStats, getGetBehaviorStatsQueryKey, useListRoutines, getListRoutinesQueryKey, useListChildren, getListChildrenQueryKey } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight } from "lucide-react";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { AmyIcon } from "@/components/amy-icon";
@@ -9,6 +9,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
+import { useSubscription } from "@/hooks/use-subscription";
+import { usePaywall } from "@/contexts/paywall-context";
 
 import { getTotalPoints, getBadges, getRewards, redeemReward, type Reward } from "@/lib/rewards";
 
@@ -669,6 +671,9 @@ export default function Dashboard() {
   const { user } = useUser();
   const authFetch = useAuthFetch();
   const [profileName, setProfileName] = useState<string | null>(null);
+  const [, setLocation] = useLocation();
+  const { isPremium, entitlements } = useSubscription();
+  const { openPaywall } = usePaywall();
 
   useEffect(() => {
     authFetch("/api/parent-profile")
@@ -724,6 +729,18 @@ export default function Dashboard() {
   const lastUpdated = Math.max(summaryUpdatedAt ?? 0, routinesUpdatedAt ?? 0, statsUpdatedAt ?? 0);
 
   const streak = computeStreak((allRoutines ?? []) as Routine[]);
+
+  const routinesCount = (allRoutines ?? []).length;
+  const routinesMax = entitlements?.limits.routinesMax ?? 1;
+  const generateRoutineLocked = !isPremium && routinesCount >= routinesMax;
+
+  function handleGenerateRoutine() {
+    if (generateRoutineLocked) {
+      openPaywall("section_locked");
+    } else {
+      setLocation("/routines/generate");
+    }
+  }
 
   const noChildren = !loadingSummary && (summary?.totalChildren ?? 0) === 0;
   if (noChildren) {
@@ -943,12 +960,15 @@ export default function Dashboard() {
       </Link>
 
       {/* ── Primary CTA ──────────────────────────────────────────── */}
-      <Link href="/routines/generate">
-        <button className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-base shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2">
-          <Sparkles className="h-5 w-5" />
-          Generate Today's Routine
-        </button>
-      </Link>
+      <button
+        type="button"
+        onClick={handleGenerateRoutine}
+        data-testid="dashboard-generate-routine-btn"
+        className="w-full h-14 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white font-black text-base shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
+      >
+        <Sparkles className="h-5 w-5" />
+        Generate Today's Routine
+      </button>
     </div>
   );
 }

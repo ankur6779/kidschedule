@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Plus, ChevronRight, Wand2, Sparkles, List, ChevronLeft, School, Sun } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FuturePredictor } from "@/components/future-predictor";
+import { LockedBlock } from "@/components/locked-block";
+import { useSubscription } from "@/hooks/use-subscription";
+import { usePaywall } from "@/contexts/paywall-context";
 
 type RoutineItem = {
   time: string;
@@ -47,13 +50,25 @@ function addDays(date: Date, n: number): Date {
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-function WeekCalendar({ routines }: { routines: Routine[] }) {
+interface WeekCalendarProps {
+  routines: Routine[];
+  isPremium: boolean;
+  routinesMax: number;
+  onGatedNavigate: (path: string) => void;
+  onLockedRoutineTap: () => void;
+}
+
+function WeekCalendar({ routines, isPremium, routinesMax, onGatedNavigate, onLockedRoutineTap }: WeekCalendarProps) {
   const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(new Date()));
   const [, setLocation] = useLocation();
 
   const todayStr = formatDate(new Date());
 
-  // Group routines by date
+  const lockedRoutineIds = new Set<number>(
+    isPremium ? [] : routines.slice(routinesMax).map((r) => r.id)
+  );
+  const isRoutineLocked = (id: number) => !isPremium && lockedRoutineIds.has(id);
+
   const routinesByDate = new Map<string, Routine[]>();
   routines.forEach((r) => {
     const key = r.date.slice(0, 10);
@@ -72,7 +87,6 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
     return `${start.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${end.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
   })();
 
-  // Compute weekly stats
   const weekRoutines = days.flatMap((d) => routinesByDate.get(formatDate(d)) ?? []);
   const weekItems = weekRoutines.flatMap((r) => r.items);
   const weekCompleted = weekItems.filter((i) => i.status === "completed").length;
@@ -81,7 +95,6 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Week navigator */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setWeekStart(addDays(weekStart, -7))}>
           <ChevronLeft className="h-5 w-5" />
@@ -97,13 +110,12 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
         </Button>
       </div>
 
-      {/* Day grid */}
       <div className="grid grid-cols-7 gap-1.5">
         {days.map((day, i) => {
           const dateStr = formatDate(day);
           const dayRoutines = routinesByDate.get(dateStr) ?? [];
           const isToday = dateStr === todayStr;
-          const isWeekend = i >= 5; // Sat, Sun
+          const isWeekend = i >= 5;
           const dayItems = dayRoutines.flatMap((r) => r.items);
           const dayTotal = dayItems.length;
           const dayDone = dayItems.filter((ii) => ii.status === "completed").length;
@@ -114,12 +126,15 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
               key={dateStr}
               onClick={() => {
                 if (dayRoutines.length === 1) {
-                  setLocation(`/routines/${dayRoutines[0].id}`);
+                  if (isRoutineLocked(dayRoutines[0].id)) {
+                    onLockedRoutineTap();
+                  } else {
+                    setLocation(`/routines/${dayRoutines[0].id}`);
+                  }
                 } else if (dayRoutines.length > 1) {
-                  // Multiple routines — scroll to list below (filtered)
                   document.getElementById("routines-list")?.scrollIntoView({ behavior: "smooth" });
                 } else {
-                  setLocation(`/routines/generate?date=${dateStr}`);
+                  onGatedNavigate(`/routines/generate?date=${dateStr}`);
                 }
               }}
               className={`flex flex-col items-center gap-1 p-1.5 rounded-2xl border-2 transition-all text-xs min-h-[72px] justify-between ${
@@ -158,7 +173,6 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
         })}
       </div>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-muted-foreground px-1">
         <span className="flex items-center gap-1"><div className="w-3 h-3 rounded border-2 border-primary bg-primary" />Today</span>
         <span className="flex items-center gap-1"><div className="w-3 h-3 rounded border-2 border-green-300 bg-green-50" />Has routine</span>
@@ -166,7 +180,6 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
         <span className="flex items-center gap-1"><div className="w-3 h-3 rounded border-2 border-border/50 bg-card" />Tap to generate</span>
       </div>
 
-      {/* This week's routines */}
       {weekRoutines.length > 0 && (
         <div id="routines-list" className="mt-2">
           <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">This Week's Routines</p>
@@ -175,32 +188,35 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
               const items = r.items;
               const done = items.filter((i) => i.status === "completed").length;
               const pct = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
+              const locked = isRoutineLocked(r.id);
               return (
-                <Link key={r.id} href={`/routines/${r.id}`}>
-                  <Card className="rounded-2xl border-border/50 shadow-sm hover:border-primary/30 transition-all cursor-pointer group">
-                    <CardContent className="p-3 flex items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">{r.title}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{r.childName}</span>
-                          <span className="text-xs text-muted-foreground">·</span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(r.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
-                          </span>
+                <LockedBlock key={r.id} locked={locked} reason="section_locked" label="Premium" cta="Unlock All Routines" rounded="rounded-2xl">
+                  <Link href={locked ? "#" : `/routines/${r.id}`} onClick={locked ? (e) => e.preventDefault() : undefined}>
+                    <Card className="rounded-2xl border-border/50 shadow-sm hover:border-primary/30 transition-all cursor-pointer group">
+                      <CardContent className="p-3 flex items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">{r.title}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-muted-foreground">{r.childName}</span>
+                            <span className="text-xs text-muted-foreground">·</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(r.date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <div className="text-right">
-                          <div className="text-xs font-bold text-foreground">{pct}%</div>
-                          <div className="text-[10px] text-muted-foreground">{done}/{items.length}</div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-right">
+                            <div className="text-xs font-bold text-foreground">{pct}%</div>
+                            <div className="text-[10px] text-muted-foreground">{done}/{items.length}</div>
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </LockedBlock>
               );
             })}
           </div>
@@ -212,12 +228,34 @@ function WeekCalendar({ routines }: { routines: Routine[] }) {
 
 export default function RoutinesList() {
   const [view, setView] = useState<"list" | "calendar">("calendar");
+  const [, setLocation] = useLocation();
 
   const { data: routines, isLoading } = useListRoutines(undefined, {
     query: { queryKey: getListRoutinesQueryKey() }
   });
 
+  const { isPremium, entitlements, loading: subLoading } = useSubscription();
+  const { openPaywall } = usePaywall();
+
   const allRoutines = (routines ?? []) as Routine[];
+  const routinesMax = entitlements?.limits.routinesMax ?? 1;
+  const generateLocked = !isPremium && allRoutines.length >= routinesMax;
+
+  function handleGenerateClick() {
+    if (generateLocked) {
+      openPaywall("section_locked");
+    } else {
+      setLocation("/routines/generate");
+    }
+  }
+
+  function handleGatedNavigate(path: string) {
+    if (generateLocked) {
+      openPaywall("section_locked");
+    } else {
+      setLocation(path);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
@@ -226,18 +264,18 @@ export default function RoutinesList() {
           <h1 className="font-quicksand text-3xl font-bold text-foreground">Routines</h1>
           <p className="text-muted-foreground mt-1">Daily schedules generated by AI</p>
         </div>
-        <Button asChild className="rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/90">
-          <Link href="/routines/generate">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Generate
-          </Link>
+        <Button
+          onClick={handleGenerateClick}
+          className="rounded-full shadow-sm bg-primary text-primary-foreground hover:bg-primary/90"
+          data-testid="routines-generate-btn"
+        >
+          <Sparkles className="mr-2 h-4 w-4" />
+          Generate
         </Button>
       </header>
 
-      {/* 🔮 Future Predictor — before tasks */}
       <FuturePredictor variant="compact" />
 
-      {/* View toggle */}
       <div className="flex gap-2 p-1 bg-muted rounded-2xl">
         <button
           onClick={() => setView("calendar")}
@@ -265,50 +303,60 @@ export default function RoutinesList() {
         </div>
       ) : (
         <>
-          {/* Calendar View */}
           {view === "calendar" && (
             <Card className="rounded-3xl border-none shadow-sm bg-card">
               <CardContent className="p-4 sm:p-6">
-                <WeekCalendar routines={allRoutines} />
+                <WeekCalendar routines={allRoutines} isPremium={isPremium} routinesMax={routinesMax} onGatedNavigate={handleGatedNavigate} onLockedRoutineTap={() => openPaywall("section_locked")} />
               </CardContent>
             </Card>
           )}
 
-          {/* List View */}
           {view === "list" && (
             <>
               {allRoutines.length > 0 ? (
                 <div className="grid gap-4">
-                  {allRoutines.map((routine, index) => (
-                    <Link key={routine.id} href={`/routines/${routine.id}`}>
-                      <Card className="rounded-2xl border-border/50 shadow-sm hover:border-primary/30 transition-all cursor-pointer group hover-elevate" style={{ animationDelay: `${index * 50}ms` }}>
-                        <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                          <div className="flex items-center gap-4 w-full">
-                            <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                              <Calendar className="h-6 w-6" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-quicksand text-lg font-bold text-foreground group-hover:text-primary transition-colors truncate">{routine.title}</h3>
-                              <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
-                                <span className="inline-flex items-center rounded-md bg-secondary/30 px-2 py-0.5 text-xs font-medium text-secondary-foreground border border-secondary/50">
-                                  {routine.childName}
-                                </span>
-                                <span className="flex items-center text-xs">
-                                  {new Date(routine.date).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                                </span>
-                                <span className="text-xs px-2 rounded-full bg-muted">
-                                  {routine.items?.length || 0} activities
-                                </span>
+                  {allRoutines.map((routine, index) => {
+                    const isLocked = !isPremium && index >= routinesMax;
+                    return (
+                      <LockedBlock
+                        key={routine.id}
+                        locked={isLocked}
+                        reason="section_locked"
+                        label="Premium"
+                        cta="Unlock All Routines"
+                        rounded="rounded-2xl"
+                      >
+                        <Link href={`/routines/${routine.id}`}>
+                          <Card className="rounded-2xl border-border/50 shadow-sm hover:border-primary/30 transition-all cursor-pointer group hover-elevate" style={{ animationDelay: `${index * 50}ms` }}>
+                            <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                              <div className="flex items-center gap-4 w-full">
+                                <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                                  <Calendar className="h-6 w-6" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-quicksand text-lg font-bold text-foreground group-hover:text-primary transition-colors truncate">{routine.title}</h3>
+                                  <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                    <span className="inline-flex items-center rounded-md bg-secondary/30 px-2 py-0.5 text-xs font-medium text-secondary-foreground border border-secondary/50">
+                                      {routine.childName}
+                                    </span>
+                                    <span className="flex items-center text-xs">
+                                      {new Date(routine.date).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                                    </span>
+                                    <span className="text-xs px-2 rounded-full bg-muted">
+                                      {routine.items?.length || 0} activities
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-muted group-hover:bg-primary/10 transition-colors flex-shrink-0">
+                                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                </div>
                               </div>
-                            </div>
-                            <div className="hidden sm:flex items-center justify-center h-10 w-10 rounded-full bg-muted group-hover:bg-primary/10 transition-colors flex-shrink-0">
-                              <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      </LockedBlock>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border/50 rounded-3xl bg-muted/20">
@@ -319,11 +367,9 @@ export default function RoutinesList() {
                   <p className="text-muted-foreground max-w-sm mb-6">
                     Let the AI build a perfect day for your child based on their goals and school times.
                   </p>
-                  <Button asChild size="lg" className="rounded-full shadow-sm hover-elevate">
-                    <Link href="/routines/generate">
-                      <Sparkles className="mr-2 h-5 w-5" />
-                      Generate First Routine
-                    </Link>
+                  <Button onClick={handleGenerateClick} size="lg" className="rounded-full shadow-sm hover-elevate">
+                    <Sparkles className="mr-2 h-5 w-5" />
+                    Generate First Routine
                   </Button>
                 </div>
               )}

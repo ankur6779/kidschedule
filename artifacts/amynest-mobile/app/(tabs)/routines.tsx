@@ -10,7 +10,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
-import { useSubscriptionStore } from "@/store/useSubscriptionStore";
+import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
+import LockedBlock from "@/components/LockedBlock";
 import * as Haptics from "expo-haptics";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
@@ -66,6 +67,7 @@ export default function RoutinesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const authFetch = useAuthFetch();
+  const isPremium = useSubscriptionStore(selectIsPremium);
   const [view, setView] = useState<"calendar" | "list">("calendar");
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [weekStart, setWeekStart] = useState(() => getMondayOfWeek(new Date()));
@@ -122,12 +124,19 @@ export default function RoutinesScreen() {
   type FilterItem = { id: number | null; name: string };
   const filterData: FilterItem[] = [{ id: null, name: "All Children" }, ...children.map(c => ({ id: c.id, name: c.name }))];
 
+  const routinesMax = useSubscriptionStore((s) => s.entitlements?.limits.routinesMax ?? 1);
+  const lockedRoutineIds = useMemo<Set<number>>(
+    () => isPremium ? new Set() : new Set(routines.slice(routinesMax).map((r) => r.id)),
+    [isPremium, routines, routinesMax],
+  );
+  const isRoutineLocked = useCallback(
+    (routineId: number) => !isPremium && lockedRoutineIds.has(routineId),
+    [isPremium, lockedRoutineIds],
+  );
+
   const goToGenerate = () => {
-    const ent = useSubscriptionStore.getState().entitlements;
-    const cap = ent?.limits.routinesMax ?? 2;
-    const isPremium = !!ent?.isPremium;
-    if (!isPremium && cap > 0 && routines.length >= cap) {
-      router.push({ pathname: "/paywall", params: { reason: "feature" } });
+    if (!isPremium && routines.length >= routinesMax) {
+      router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -296,7 +305,11 @@ export default function RoutinesScreen() {
                     onPress={() => {
                       Haptics.selectionAsync();
                       if (dayRoutines.length === 1) {
-                        router.push(`/routines/${dayRoutines[0].id}` as never);
+                        if (isRoutineLocked(dayRoutines[0].id)) {
+                          router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+                        } else {
+                          router.push(`/routines/${dayRoutines[0].id}` as never);
+                        }
                       }
                     }}
                     style={[styles.dayCell, { backgroundColor: dayBg, borderColor: dayBorder }]}
@@ -333,24 +346,28 @@ export default function RoutinesScreen() {
                     const items = r.items;
                     const done = items.filter((i) => i.status === "completed").length;
                     const pct = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
+                    const locked = isRoutineLocked(r.id);
                     return (
-                      <TouchableOpacity
-                        key={r.id}
-                        onPress={() => router.push(`/routines/${r.id}` as never)}
-                        style={[styles.weekRoutineCard, { backgroundColor: colors.background, borderColor: colors.border }]}
-                      >
-                        <View style={{ flex: 1 }}>
-                          <Text style={[styles.weekRoutineTitle, { color: colors.foreground }]} numberOfLines={1}>{r.title}</Text>
-                          <Text style={[styles.weekRoutineSub, { color: colors.mutedForeground }]}>
-                            {r.childName} · {formatRelative(r.date.slice(0, 10))}
-                          </Text>
-                        </View>
-                        <View style={{ alignItems: "flex-end" }}>
-                          <Text style={[styles.weekRoutinePct, { color: colors.foreground }]}>{pct}%</Text>
-                          <Text style={[styles.weekRoutineDone, { color: colors.mutedForeground }]}>{done}/{items.length}</Text>
-                        </View>
-                        <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
-                      </TouchableOpacity>
+                      <LockedBlock key={r.id} locked={locked}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            if (!locked) router.push(`/routines/${r.id}` as never);
+                          }}
+                          style={[styles.weekRoutineCard, { backgroundColor: colors.background, borderColor: colors.border }]}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.weekRoutineTitle, { color: colors.foreground }]} numberOfLines={1}>{r.title}</Text>
+                            <Text style={[styles.weekRoutineSub, { color: colors.mutedForeground }]}>
+                              {r.childName} · {formatRelative(r.date.slice(0, 10))}
+                            </Text>
+                          </View>
+                          <View style={{ alignItems: "flex-end" }}>
+                            <Text style={[styles.weekRoutinePct, { color: colors.foreground }]}>{pct}%</Text>
+                            <Text style={[styles.weekRoutineDone, { color: colors.mutedForeground }]}>{done}/{items.length}</Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} />
+                        </TouchableOpacity>
+                      </LockedBlock>
                     );
                   })}
                 </View>
@@ -382,40 +399,49 @@ export default function RoutinesScreen() {
             {routines.map((r) => {
               const pct = completionPct(r.items);
               const isToday = r.date.slice(0, 10) === todayStr;
+              const isLocked = isRoutineLocked(r.id);
               const progressFill: ViewStyle = {
                 height: "100%", borderRadius: 2,
                 width: `${pct}%`, backgroundColor: "#10B981",
               };
               return (
-                <TouchableOpacity
+                <LockedBlock
                   key={r.id}
-                  style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
-                  onPress={() => router.push(`/routines/${r.id}` as never)}
+                  locked={isLocked}
+                  reason="section_locked"
+                  label="Premium"
+                  cta="Unlock All Routines"
+                  radius={18}
                 >
-                  <View style={styles.cardTop}>
-                    <View style={[styles.dateBadge, { backgroundColor: isToday ? colors.primary : colors.secondary }]}>
-                      <Text style={[styles.dateBadgeText, { color: isToday ? "#fff" : colors.primary }]}>
-                        {formatRelative(r.date.slice(0, 10))}
-                      </Text>
-                    </View>
-                    <Text style={[styles.childTag, { color: colors.mutedForeground }]}>{r.childName}</Text>
-                  </View>
-                  <Text style={[styles.routineTitle, { color: colors.foreground }]} numberOfLines={2}>{r.title}</Text>
-                  <View style={styles.cardBottom}>
-                    <View style={styles.metaRow}>
-                      <Ionicons name="list-outline" size={14} color={colors.mutedForeground} />
-                      <Text style={[styles.metaText, { color: colors.mutedForeground }]}>{r.items.length} activities</Text>
-                    </View>
-                    {pct > 0 && (
-                      <View style={styles.progressRow}>
-                        <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
-                          <View style={progressFill} />
-                        </View>
-                        <Text style={[styles.pctText, { color: "#10B981" }]}>{pct}%</Text>
+                  <TouchableOpacity
+                    style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
+                    onPress={() => router.push(`/routines/${r.id}` as never)}
+                  >
+                    <View style={styles.cardTop}>
+                      <View style={[styles.dateBadge, { backgroundColor: isToday ? colors.primary : colors.secondary }]}>
+                        <Text style={[styles.dateBadgeText, { color: isToday ? "#fff" : colors.primary }]}>
+                          {formatRelative(r.date.slice(0, 10))}
+                        </Text>
                       </View>
-                    )}
-                  </View>
-                </TouchableOpacity>
+                      <Text style={[styles.childTag, { color: colors.mutedForeground }]}>{r.childName}</Text>
+                    </View>
+                    <Text style={[styles.routineTitle, { color: colors.foreground }]} numberOfLines={2}>{r.title}</Text>
+                    <View style={styles.cardBottom}>
+                      <View style={styles.metaRow}>
+                        <Ionicons name="list-outline" size={14} color={colors.mutedForeground} />
+                        <Text style={[styles.metaText, { color: colors.mutedForeground }]}>{r.items.length} activities</Text>
+                      </View>
+                      {pct > 0 && (
+                        <View style={styles.progressRow}>
+                          <View style={[styles.progressBar, { backgroundColor: colors.muted }]}>
+                            <View style={progressFill} />
+                          </View>
+                          <Text style={[styles.pctText, { color: "#10B981" }]}>{pct}%</Text>
+                        </View>
+                      )}
+                    </View>
+                  </TouchableOpacity>
+                </LockedBlock>
               );
             })}
           </View>

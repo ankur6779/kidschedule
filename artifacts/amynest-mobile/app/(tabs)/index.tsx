@@ -21,6 +21,8 @@ import { LanguageRow } from "@/components/LanguageRow";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import { brand, brandAlpha } from "@/constants/colors";
+import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
+import LockedBlock from "@/components/LockedBlock";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -983,6 +985,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const authFetch = useAuthFetch();
   const [profileName, setProfileName] = useState<string | null>(null);
+  const isPremium = useSubscriptionStore(selectIsPremium);
 
   useEffect(() => {
     authFetch("/api/parent-profile")
@@ -1248,24 +1251,32 @@ export default function HomeScreen() {
               </LinearGradient>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => router.push("/audio-lessons")}
-              activeOpacity={0.88}
-              style={{ flex: 1, borderRadius: 18, overflow: "hidden" }}
+            <LockedBlock
+              locked={!isPremium}
+              reason="section_locked"
+              label="Premium"
+              cta="Unlock Audio Lessons"
+              style={{ flex: 1, borderRadius: 18 }}
             >
-              <LinearGradient
-                colors={["#0e7490", "#0891b2"]}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 16 }}
+              <TouchableOpacity
+                onPress={() => router.push("/audio-lessons")}
+                activeOpacity={0.88}
+                style={{ flex: 1, borderRadius: 18, overflow: "hidden" }}
               >
-                <Ionicons name="headset" size={22} color="#fff" />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13, lineHeight: 17 }}>Audio Lessons</Text>
-                  <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 10.5, marginTop: 1 }}>Listen while parenting</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.7)" />
-              </LinearGradient>
-            </TouchableOpacity>
+                <LinearGradient
+                  colors={["#0e7490", "#0891b2"]}
+                  start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 10, padding: 16 }}
+                >
+                  <Ionicons name="headset" size={22} color="#fff" />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "#fff", fontWeight: "800", fontSize: 13, lineHeight: 17 }}>Audio Lessons</Text>
+                    <Text style={{ color: "rgba(255,255,255,0.75)", fontSize: 10.5, marginTop: 1 }}>Listen while parenting</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.7)" />
+                </LinearGradient>
+              </TouchableOpacity>
+            </LockedBlock>
           </View>
 
           {/* Big primary CTA */}
