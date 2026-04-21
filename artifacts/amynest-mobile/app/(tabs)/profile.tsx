@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, ActivityIndicator, Alert, Platform,
+  TextInput, ActivityIndicator, Alert, Platform, Linking,
 } from "react-native";
 import { useUser, useAuth } from "@clerk/clerk-expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -205,6 +205,19 @@ export default function ProfileScreen() {
         },
       },
     ]);
+  };
+
+  const handleContactUs = async () => {
+    Haptics.selectionAsync();
+    const subject = encodeURIComponent("AmyNest Support");
+    const body = encodeURIComponent("");
+    const url = `mailto:Support@anynest.in?subject=${subject}&body=${body}`;
+    const canOpen = await Linking.canOpenURL(url);
+    if (!canOpen) {
+      Alert.alert("Email app not available", "Please email Support@anynest.in");
+      return;
+    }
+    await Linking.openURL(url);
   };
 
   const topPad = insets.top + (Platform.OS === "web" ? 16 : 0);
@@ -424,6 +437,15 @@ export default function ProfileScreen() {
           <Ionicons name="gift" size={20} color="#A855F7" />
           <Text style={[styles.logoutText, { color: "#A855F7" }]}>Invite & Earn Premium</Text>
           <Ionicons name="chevron-forward" size={16} color="#A855F7" style={{ marginLeft: "auto" }} />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+          onPress={handleContactUs}
+        >
+          <Ionicons name="mail-outline" size={20} color={colors.primary} />
+          <Text style={[styles.logoutText, { color: colors.foreground }]}>Contact Us</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
         {/* Sign out */}
