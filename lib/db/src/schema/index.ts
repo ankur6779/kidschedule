@@ -29,3 +29,4 @@ export * from "./subscriptions";
 export * from "./razorpay_webhook_events";
 export * from "./referrals";
 export * from "./user_coach_sessions";
+export * from "./user_ai_messages";

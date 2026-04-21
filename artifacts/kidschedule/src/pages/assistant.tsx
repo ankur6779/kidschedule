@@ -34,8 +34,32 @@ export default function AssistantPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load saved chat history on mount so parents can pick up where they left off
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await authFetch("/api/ai/messages");
+        if (!r.ok) return;
+        const data = (await r.json()) as { messages?: Array<{ role: string; content: string }> };
+        if (cancelled) return;
+        const past: Message[] = (data.messages ?? [])
+          .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+          .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+        if (past.length > 0) setMessages(past);
+      } catch {
+        // non-fatal — empty chat is fine
+      } finally {
+        if (!cancelled) setHistoryLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,12 +133,18 @@ export default function AssistantPage() {
     }
   };
 
-  const clearChat = () => {
+  const clearChat = async () => {
     setMessages([]);
     setInput("");
+    try {
+      await authFetch("/api/ai/messages", { method: "DELETE" });
+    } catch {
+      // non-fatal — UI is already cleared
+    }
   };
 
-  const isEmpty = messages.length === 0;
+  // Suppress the empty-state flash while we're still loading saved history
+  const isEmpty = historyLoaded && messages.length === 0;
 
   return (
     <div className="flex flex-col h-[calc(100vh-120px)] max-w-3xl mx-auto">

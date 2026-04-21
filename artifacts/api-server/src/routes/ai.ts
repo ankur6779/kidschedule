@@ -1,10 +1,52 @@
 import { Router, type IRouter } from "express";
+import { getAuth } from "@clerk/express";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { db, userAiMessagesTable } from "@workspace/db";
 import { GetRecipeBody, GetRecipeResponse, AskAssistantBody, AskAssistantResponse } from "@workspace/api-zod";
 import { findRecipe } from "../lib/recipe-database.js";
 import { getParentingAdvice } from "../lib/parenting-faq.js";
 import { aiUsageGate } from "../middlewares/aiUsageGate.js";
 
 const router: IRouter = Router();
+
+// Cap how many messages we keep / return per user — keeps storage and tokens bounded
+const MAX_HISTORY_PER_USER = 200;
+const RETURN_HISTORY_LIMIT = 100;
+
+async function persistMessage(
+  userId: string,
+  role: "user" | "assistant",
+  content: string,
+): Promise<void> {
+  try {
+    await db
+      .insert(userAiMessagesTable)
+      .values({ userId, role, content: content.slice(0, 8000) });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[amy-ai] persist message failed (non-fatal)", err);
+  }
+}
+
+async function trimUserHistory(userId: string): Promise<void> {
+  try {
+    const rows = await db
+      .select({ id: userAiMessagesTable.id })
+      .from(userAiMessagesTable)
+      .where(eq(userAiMessagesTable.userId, userId))
+      .orderBy(desc(userAiMessagesTable.createdAt))
+      .offset(MAX_HISTORY_PER_USER);
+    if (rows.length === 0) return;
+    for (const r of rows) {
+      await db
+        .delete(userAiMessagesTable)
+        .where(and(eq(userAiMessagesTable.id, r.id), eq(userAiMessagesTable.userId, userId)));
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[amy-ai] trim history failed (non-fatal)", err);
+  }
+}
 
 // Rule-based recipe lookup — zero API cost
 router.post("/ai/recipe", async (req, res): Promise<void> => {
@@ -34,6 +76,55 @@ router.post("/ai/assistant", async (req, res): Promise<void> => {
   res.json(AskAssistantResponse.parse({ answer }));
 });
 
+// GET /ai/messages — return the user's saved Amy chat history (oldest first)
+router.get("/ai/messages", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "unauthorized" }); return; }
+
+  try {
+    const rows = await db
+      .select({
+        role: userAiMessagesTable.role,
+        content: userAiMessagesTable.content,
+        createdAt: userAiMessagesTable.createdAt,
+      })
+      .from(userAiMessagesTable)
+      .where(eq(userAiMessagesTable.userId, userId))
+      .orderBy(desc(userAiMessagesTable.createdAt))
+      .limit(RETURN_HISTORY_LIMIT);
+
+    // Newest-first from query, but the UI wants chronological — reverse to ascending
+    const messages = rows
+      .reverse()
+      .map((r) => ({
+        role: r.role === "assistant" ? "assistant" : "user",
+        content: r.content,
+        createdAt: r.createdAt,
+      }));
+
+    res.json({ messages });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[amy-ai] fetch history failed", err);
+    res.status(500).json({ error: "failed to load history" });
+  }
+});
+
+// DELETE /ai/messages — wipe the user's Amy chat history
+router.delete("/ai/messages", async (req, res): Promise<void> => {
+  const { userId } = getAuth(req);
+  if (!userId) { res.status(401).json({ error: "unauthorized" }); return; }
+
+  try {
+    await db.delete(userAiMessagesTable).where(eq(userAiMessagesTable.userId, userId));
+    res.json({ ok: true });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("[amy-ai] delete history failed", err);
+    res.status(500).json({ error: "failed to clear history" });
+  }
+});
+
 // AI-powered parenting assistant — uses OpenAI, rate-limited server-side via aiUsageGate (free=10/day)
 router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => {
   const parsed = AskAssistantBody.safeParse(req.body);
@@ -42,6 +133,7 @@ router.post("/ai/assistant-ai", aiUsageGate, async (req, res): Promise<void> => 
     return;
   }
 
+  const { userId } = getAuth(req);
   const { question, childName, childAge } = parsed.data;
   const langRaw = typeof req.body?.language === "string" ? req.body.language.toLowerCase().split("-")[0] : "en";
   const language: "en" | "hi" | "hinglish" = langRaw === "hi" ? "hi" : langRaw === "hinglish" ? "hinglish" : "en";
@@ -112,10 +204,20 @@ LENGTH
         usage: completion.usage,
       });
       const answer = getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
+      if (userId) {
+        await persistMessage(userId, "user", question);
+        await persistMessage(userId, "assistant", answer);
+        void trimUserHistory(userId);
+      }
       res.json(AskAssistantResponse.parse({ answer }));
       return;
     }
 
+    if (userId) {
+      await persistMessage(userId, "user", question);
+      await persistMessage(userId, "assistant", aiAnswer);
+      void trimUserHistory(userId);
+    }
     res.json(AskAssistantResponse.parse({ answer: aiAnswer }));
   } catch (err: unknown) {
     // Loud log so we can see in production logs if OpenAI is down or misconfigured
@@ -128,6 +230,11 @@ LENGTH
     });
     // Graceful fallback to static FAQ so the user still gets *something* useful
     const answer = getParentingAdvice(question, childName ?? undefined, childAge ?? undefined);
+    if (userId) {
+      await persistMessage(userId, "user", question);
+      await persistMessage(userId, "assistant", answer);
+      void trimUserHistory(userId);
+    }
     res.json(AskAssistantResponse.parse({ answer }));
   }
 });
