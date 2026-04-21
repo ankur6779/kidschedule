@@ -101,7 +101,11 @@
     "school": "स्कूल",
     "emotions": "भावनाएं",
     "screen_time": "स्क्रीन टाइम",
-    "social": "सामाजिक"
+    "social": "सामाजिक",
+    "building_starting": "आपका प्लान बन रहा है…",
+    "building_progress": "{{built}}/{{total}} विन तैयार हो रहा है…",
+    "building_finalising": "प्लान फाइनलाइज़ हो रहा है…",
+    "building_subtitle": "आपके जवाबों के आधार पर {{goal}} के लिए 12 गहरे, साइंस-बैक्ड विन तैयार किए जा रहे हैं।"
   },
   "hub": {
     "title": "पैरेंटिंग हब",

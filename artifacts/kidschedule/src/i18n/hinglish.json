@@ -101,7 +101,11 @@
     "school": "School",
     "emotions": "Bhavnaayein",
     "screen_time": "Screen Time",
-    "social": "Social"
+    "social": "Social",
+    "building_starting": "Aapka plan ban raha hai…",
+    "building_progress": "{{built}}/{{total}} win taiyaar ho raha hai…",
+    "building_finalising": "Plan finalise ho raha hai…",
+    "building_subtitle": "Aapke answers ke basis pe {{goal}} ke liye 12 deep, science-backed wins banaye ja rahe hain."
   },
   "hub": {
     "title": "Parenting Hub",

@@ -6,6 +6,7 @@ import { db, aiCacheTable, userProgressTable, userCoachSessionsTable } from "@wo
 import { logger } from "../lib/logger.js";
 import { GOAL_IDS, type GoalId } from "../lib/image-map.js";
 import { aiUsageGate } from "../middlewares/aiUsageGate.js";
+import { incrementAiUsage } from "../services/subscriptionService.js";
 
 const router: IRouter = Router();
 
@@ -737,6 +738,238 @@ ${goalBrief}`;
 
   res.json({ plan, sessionId, cached: false, source: "ai", fallback: !aiOk });
   if (userId) void saveCoachSession(userId, sessionId, goal!, plan, input);
+});
+
+// ─── POST /ai-coach/stream ───────────────────────────────────────────────
+// Server-Sent Events (SSE) version of /ai-coach. Streams progress events
+// as the AI generates each win, so the loading UI can show "Crafting win
+// 5 of 12…" instead of a static spinner. Same validation, same caches —
+// returns the same `{ plan, sessionId, ... }` shape inside a `done` event.
+router.post("/ai-coach/stream", aiUsageGate, async (req, res): Promise<void> => {
+  pruneMem();
+  const { userId } = getAuth(req);
+  const raw: CoachInput = req.body ?? {};
+  const goal = norm(raw.goal);
+  if (!GOAL_IDS.includes(goal as GoalId)) {
+    res.status(400).json({ error: "invalid goal", validGoals: GOAL_IDS });
+    return;
+  }
+  const langRawIn = typeof raw.language === "string" ? raw.language.toLowerCase().split("-")[0] : "en";
+  const inputLang: "en" | "hi" | "hinglish" =
+    langRawIn === "hi" ? "hi" : langRawIn === "hinglish" ? "hinglish" : "en";
+  const input: CoachInput = {
+    goal,
+    ageGroup: clip(raw.ageGroup, 30) || "5-7",
+    severity: clip(raw.severity, 30) || "moderate",
+    language: inputLang,
+    triggers: Array.isArray(raw.triggers)
+      ? raw.triggers.filter((t): t is string => typeof t === "string").slice(0, 8).map((t) => clip(t, 50))
+      : [],
+    routine: clip(raw.routine, 200) || "Inconsistent",
+  };
+
+  const cacheKey = buildCacheKey(input);
+  const sessionId = randomUUID();
+
+  // ── Open SSE stream ────────────────────────────────────────────────
+  res.status(200).set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    "Connection": "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  // flushHeaders is available on Node http.ServerResponse but not on every Express type.
+  const flushHeaders = (res as unknown as { flushHeaders?: () => void }).flushHeaders;
+  if (typeof flushHeaders === "function") flushHeaders.call(res);
+
+  let ended = false;
+  let planDelivered = false;
+  const aiAbort = new AbortController();
+  const send = (event: string, data: unknown): void => {
+    if (ended) return;
+    try {
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    } catch {
+      // socket may be half-closed; treat as ended
+      ended = true;
+    }
+  };
+  const heartbeat = setInterval(() => {
+    if (ended) return;
+    try { res.write(`: ping\n\n`); } catch { ended = true; }
+  }, 15000);
+  const finish = (): void => {
+    if (ended) return;
+    ended = true;
+    clearInterval(heartbeat);
+    aiAbort.abort();
+    try { res.end(); } catch { /* noop */ }
+    // Refund the AI quota if the user disconnected before getting any plan.
+    // (When a plan is delivered — even a fallback — we keep the slot consumed
+    // to match the non-streaming endpoint's behaviour.)
+    if (!planDelivered && userId) {
+      void incrementAiUsage(userId, -1).catch(() => undefined);
+    }
+  };
+  req.on("close", finish);
+
+  // ── L1 / L2 cache hit → instant done ──────────────────────────────
+  const mem = memCache.get(cacheKey);
+  if (mem && Date.now() - mem.ts < MEMORY_TTL_MS) {
+    memStats.hits++;
+    logger.info({ cacheKey: cacheKey.slice(0, 8), source: "memory", stats: memStats }, "ai-coach (stream) cache hit");
+    planDelivered = true;
+    send("done", { plan: mem.plan, sessionId, cached: true, source: "memory", fallback: false });
+    finish();
+    if (userId) void saveCoachSession(userId, sessionId, goal, mem.plan, input);
+    return;
+  }
+
+  const dbHit = await dbGet(cacheKey);
+  if (dbHit) {
+    memCache.set(cacheKey, { plan: dbHit, ts: Date.now() });
+    memStats.dbHits++;
+    logger.info({ cacheKey: cacheKey.slice(0, 8), source: "db", stats: memStats }, "ai-coach (stream) cache hit");
+    planDelivered = true;
+    send("done", { plan: dbHit, sessionId, cached: true, source: "db", fallback: false });
+    finish();
+    if (userId) void saveCoachSession(userId, sessionId, goal, dbHit, input);
+    return;
+  }
+
+  memStats.misses++;
+  memStats.aiCalls++;
+  logger.info({ cacheKey: cacheKey.slice(0, 8), goal, stats: memStats }, "ai-coach (stream) cache miss — calling AI");
+
+  // ── Build prompts (same as POST /ai-coach) ────────────────────────
+  const goalLabel = GOAL_LABELS[input.goal!] ?? input.goal;
+  const triggers = (input.triggers ?? []).join(", ") || "not specified";
+  const { getGoalPromptSection } = await import("../lib/goal-prompts.js");
+  const language: "en" | "hi" | "hinglish" = input.language ?? "en";
+  const goalBrief = getGoalPromptSection(input.goal!, goalLabel!, language);
+  const langDirective =
+    language === "hi"
+      ? "\nIMPORTANT: Write ALL string VALUES (title, root_cause, summary, wins[].title, objective, deep_explanation, actions, example, mistake_to_avoid, micro_task, duration, science_reference) in natural Hindi (Devanagari script). Keep JSON keys in English."
+      : language === "hinglish"
+      ? "\nIMPORTANT: Write ALL string VALUES in Hinglish (Roman-script Hindi mixed with English words, e.g. 'Bachche ko calm karne ke liye sleep routine set karein'). Keep JSON keys in English."
+      : "";
+
+  const systemPrompt = `You are a specialist child psychologist and parenting coach who adapts your expertise to the SPECIFIC parenting goal in front of you.
+You give parents DEEP, complete, step-by-step solutions — never short generic tips.
+Every win you write must feel like a complete module a parent can implement and see results from.
+When the goal is about sleep, write like a paediatric sleep consultant. When it's about tantrums, write like a co-regulation specialist. When it's about screen time, write like a behavioural-addiction expert. Mirror the requested expertise precisely.
+You ALWAYS return valid JSON only. No markdown, no commentary, no code fences, no preamble.${langDirective}`;
+
+  const userPrompt = `Build a complete 12-win behaviour-change plan for this parenting goal.
+
+Goal: ${goalLabel}
+Child age group: ${input.ageGroup} years
+Severity: ${input.severity}
+Common triggers: ${triggers}
+Current routine/approach: ${input.routine}
+
+Return ONLY valid JSON in this EXACT shape:
+{
+  "title": "Empathetic title naming the goal in 4-6 words",
+  "root_cause": "3-4 sentence neuroscience/developmental explanation of WHY this challenge happens at this age. Reference brain development, nervous system, or a specific developmental need. Be specific, not generic.",
+  "summary": "2 sentence overview of how the 12 wins progress from connection → diagnosis → skill-building → consistency → identity",
+  "wins": [
+    {
+      "win": 1,
+      "title": "Clear imperative step name (3-6 words)",
+      "objective": "ONE sentence: what this step fixes for parent and child",
+      "deep_explanation": "5-6 lines explaining WHY this works (neuroscience, developmental psychology, or behavioural science). Reference a researcher/principle. Make a parent who reads ONLY this section understand the science.",
+      "actions": ["Specific action 1 (concrete, doable today)", "Specific action 2", "Specific action 3", "Specific action 4 (optional)"],
+      "example": "ONE realistic 2-3 sentence story of a parent applying this step and what shifted",
+      "mistake_to_avoid": "ONE sentence naming the most common parenting mistake that undermines this step",
+      "micro_task": "ONE small task the parent can do TODAY in under 5 minutes to start practising this win",
+      "duration": "How long to practice (e.g. '2-3 days', '1 week', '2 weeks', 'Ongoing')",
+      "science_reference": "Short reference to the underlying scientific concept, study or theory (e.g. 'Operant conditioning (Skinner)', 'Polyvagal Theory (Porges)', 'Dopamine reward system', 'Sleep-cycle research')"
+    }
+  ]
+}
+
+STRICT RULES:
+- EXACTLY 12 wins, numbered 1 through 12 in order
+- Progression must follow: (1-2) Connect & diagnose root cause → (3-4) Set expectations & give autonomy → (5-7) Build regulation & skills → (8-9) Repair & track → (10-11) Consistency & setbacks → (12) Family identity
+- Each win is a COMPLETE module — no overlaps, no repetition
+- Tone: warm, calm, non-judgmental, specific to ${input.ageGroup} years
+- Each "actions" array MUST have 3-5 items
+- Examples must feel real, with names and specifics — not abstract
+- Reference at least 5 different researchers/principles across the 12 wins
+- "deep_explanation" must be 6-8 lines of substantive science, not generic
+- Every win MUST include a "science_reference" naming a real researcher, theory, study, or guideline body (AAP/WHO/CDC/NIH/RCPCH etc.). Generic phrases like "research shows" are NOT acceptable — name the source.
+- Output ONLY the JSON object — no other text
+
+${goalBrief}`;
+
+  send("progress", { winsBuilt: 0, totalWins: 12 });
+
+  let plan: CoachPlan = fallbackPlan(input);
+  let aiOk = false;
+  try {
+    const { openai } = await import("@workspace/integrations-openai-ai-server");
+    const stream = await openai.chat.completions.create(
+      {
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        response_format: { type: "json_object" },
+        max_completion_tokens: 8000,
+        stream: true,
+      },
+      // Cancel the upstream OpenAI request as soon as the client disconnects
+      // so we don't keep burning tokens for an abandoned plan.
+      { signal: aiAbort.signal },
+    );
+
+    let buf = "";
+    let lastWinsBuilt = 0;
+    // Each new win object in the JSON starts with `"win": N`. Counting that
+    // pattern in the buffer gives us a cheap, accurate progress indicator.
+    const winRe = /"win"\s*:\s*\d+/g;
+    for await (const chunk of stream) {
+      if (ended) break;
+      const delta = chunk.choices[0]?.delta?.content ?? "";
+      if (!delta) continue;
+      buf += delta;
+      const winsBuilt = Math.min(12, (buf.match(winRe) || []).length);
+      if (winsBuilt > lastWinsBuilt) {
+        lastWinsBuilt = winsBuilt;
+        send("progress", { winsBuilt, totalWins: 12 });
+      }
+    }
+
+    try {
+      const parsed = JSON.parse(buf);
+      if (validatePlan(parsed)) {
+        plan = parsed;
+        aiOk = true;
+      } else {
+        logger.warn({ cacheKey: cacheKey.slice(0, 8) }, "ai-coach (stream) plan validation failed — using fallback");
+      }
+    } catch (parseErr) {
+      logger.warn({ err: parseErr, cacheKey: cacheKey.slice(0, 8) }, "ai-coach (stream) JSON parse failed — using fallback");
+    }
+  } catch (err) {
+    // AbortError is expected when the client disconnected — don't log as error.
+    const isAbort = (err as { name?: string } | null)?.name === "AbortError";
+    if (!isAbort) logger.error({ err }, "ai-coach (stream) OpenAI error");
+  }
+
+  // If the user already disconnected, skip post-work entirely. finish() has
+  // already refunded the quota slot.
+  if (ended) return;
+
+  memCache.set(cacheKey, { plan, ts: Date.now() });
+  if (aiOk) await dbSet(cacheKey, input, plan);
+
+  planDelivered = true;
+  send("done", { plan, sessionId, cached: false, source: "ai", fallback: !aiOk });
+  finish();
+  if (userId) void saveCoachSession(userId, sessionId, goal, plan, input);
 });
 
 // ─── POST /ai-coach/extend ───────────────────────────────────────────────

@@ -224,7 +224,7 @@ export default function AICoachPage() {
   const [, setLocation] = useLocation();
   const authFetch = useAuthFetch();
   const { toast } = useToast();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   // Detect ?resume=<sessionId> from URL (set by ai-coach-progress "Continue plan" button)
   const resumeSessionId = useMemo(() => {
@@ -243,6 +243,7 @@ export default function AICoachPage() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [feedbackByWin, setFeedbackByWin] = useState<Record<number, Feedback>>({});
   const [extending, setExtending] = useState(false);
+  const [progressWinCount, setProgressWinCount] = useState(0);
 
   // Keep last submitted answers/payload around so we can call /extend later
   const lastPayloadRef = useRef<{
@@ -266,6 +267,14 @@ export default function AICoachPage() {
   }, [feedbackByWin, plan]);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
+  // Tracks the in-flight Build Plan request so we can abort it if the user
+  // navigates away or retries — prevents leaks and stale setState calls.
+  const buildAbortRef = useRef<AbortController | null>(null);
+  useEffect(() => {
+    return () => {
+      buildAbortRef.current?.abort();
+    };
+  }, []);
 
   const searchQuery = goalSearch.toLowerCase().trim();
 
@@ -424,9 +433,14 @@ export default function AICoachPage() {
 
   // ─── Submit to API
   const submitPlan = async () => {
+    // Cancel any previous in-flight build (e.g. user retried) before starting.
+    buildAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    buildAbortRef.current = ctrl;
     setPhase("loading");
     setActiveIdx(0);
     setFeedbackByWin({});
+    setProgressWinCount(0);
     const ageMap: Record<string, string> = { "2–4 years": "2-4", "5–7 years": "5-7", "8–10 years": "8-10", "10+ years (tween/teen)": "10+" };
     const sevMap: Record<string, string> = { "Mild – occasional": "mild", "Moderate – frequent": "moderate", "Severe – daily struggle": "severe" };
     const payload = {
@@ -444,12 +458,28 @@ export default function AICoachPage() {
       triggers: payload.triggers,
       routine: payload.routine,
     };
-    try {
-      const { default: i18nInstance } = await import("@/i18n");
+
+    const handleSuccess = (data: { plan: Plan; sessionId: string }) => {
+      if (!data?.plan?.wins?.length) {
+        throw new Error("Empty plan from server");
+      }
+      window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
+      setPlan(data.plan);
+      // Freeze denominator at the original win count so extensions never drop progress %
+      originalWinCountRef.current = data.plan.wins.length;
+      setSessionId(data.sessionId);
+      setPhase("result");
+      // Free allowance is consumed only on a successful topic completion.
+      if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
+    };
+
+    // Non-streaming fallback (existing endpoint).
+    const buildViaJson = async (body: string): Promise<void> => {
       const res = await authFetch("/api/ai-coach", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...payload, language: i18nInstance.language || "en" }),
+        body,
+        signal: ctrl.signal,
       });
       if (res.status === 402) {
         window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
@@ -461,19 +491,89 @@ export default function AICoachPage() {
         try { bodySnippet = (await res.text()).slice(0, 200); } catch { /* noop */ }
         throw new Error(`Server ${res.status}${bodySnippet ? ` — ${bodySnippet}` : ""}`);
       }
-      window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
       const data = (await res.json()) as { plan: Plan; sessionId: string };
-      if (!data?.plan?.wins?.length) {
-        throw new Error("Empty plan from server");
+      handleSuccess(data);
+    };
+
+    try {
+      const { default: i18nInstance } = await import("@/i18n");
+      const body = JSON.stringify({ ...payload, language: i18nInstance.language || "en" });
+
+      // Try the streaming endpoint first so the user sees real progress.
+      const streamRes = await authFetch("/api/ai-coach/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "text/event-stream" },
+        body,
+        signal: ctrl.signal,
+      });
+      if (streamRes.status === 402) {
+        window.dispatchEvent(new CustomEvent("amynest:open-paywall", { detail: { reason: "ai_quota" } }));
+        setPhase("questions");
+        return;
       }
-      setPlan(data.plan);
-      // Freeze denominator at the original win count so extensions never drop progress %
-      originalWinCountRef.current = data.plan.wins.length;
-      setSessionId(data.sessionId);
-      setPhase("result");
-      // Free allowance is consumed only on a successful topic completion.
-      if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
+      const ctype = streamRes.headers.get("content-type") || "";
+      if (!streamRes.ok || !ctype.includes("text/event-stream") || !streamRes.body) {
+        // Stream endpoint unavailable — fall back to plain JSON.
+        await buildViaJson(body);
+        return;
+      }
+
+      // Read SSE stream.
+      const reader = streamRes.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let buffer = "";
+      let done: { plan: Plan; sessionId: string } | null = null;
+      let streamError: string | null = null;
+
+      while (true) {
+        if (ctrl.signal.aborted) {
+          try { await reader.cancel(); } catch { /* noop */ }
+          return;
+        }
+        const { value, done: streamDone } = await reader.read();
+        if (streamDone) break;
+        buffer += decoder.decode(value, { stream: true });
+        // SSE events are delimited by a blank line.
+        let sepIdx: number;
+        while ((sepIdx = buffer.indexOf("\n\n")) !== -1) {
+          const rawEvent = buffer.slice(0, sepIdx);
+          buffer = buffer.slice(sepIdx + 2);
+          const lines = rawEvent.split("\n");
+          let event = "message";
+          let dataStr = "";
+          for (const line of lines) {
+            if (line.startsWith(":")) continue; // comment / heartbeat
+            if (line.startsWith("event:")) event = line.slice(6).trim();
+            else if (line.startsWith("data:")) dataStr += (dataStr ? "\n" : "") + line.slice(5).trim();
+          }
+          if (!dataStr) continue;
+          try {
+            const data = JSON.parse(dataStr);
+            if (event === "progress") {
+              const n = Number(data?.winsBuilt) || 0;
+              setProgressWinCount(Math.max(0, Math.min(12, n)));
+            } else if (event === "done") {
+              done = data as { plan: Plan; sessionId: string };
+            } else if (event === "error") {
+              streamError = String(data?.message || "stream error");
+            }
+          } catch {
+            // ignore malformed event
+          }
+        }
+      }
+
+      if (done) {
+        handleSuccess(done);
+        return;
+      }
+      throw new Error(streamError || "Stream ended without a plan");
     } catch (err) {
+      // Aborts (component unmount, retry, navigate-away) are expected — silent.
+      const isAbort =
+        ctrl.signal.aborted ||
+        (err instanceof Error && (err.name === "AbortError" || err.message.includes("aborted")));
+      if (isAbort) return;
       const msg = err instanceof Error ? err.message : String(err);
       // eslint-disable-next-line no-console
       console.error("[ai-coach] Build Plan failed:", msg, err);
@@ -483,6 +583,8 @@ export default function AICoachPage() {
         variant: "destructive",
       });
       setPhase("questions");
+    } finally {
+      if (buildAbortRef.current === ctrl) buildAbortRef.current = null;
     }
   };
 
@@ -1045,15 +1147,40 @@ export default function AICoachPage() {
   }
 
   if (phase === "loading") {
+    const TOTAL_WINS = 12;
+    const built = Math.max(0, Math.min(TOTAL_WINS, progressWinCount));
+    const pct = Math.round((built / TOTAL_WINS) * 100);
     return (
       <div className="fixed inset-0 z-50 bg-gradient-to-br from-violet-900 via-purple-900 to-pink-900 flex items-center justify-center">
-        <div className="text-center text-white px-8 space-y-6">
+        <div className="text-center text-white px-8 space-y-6 w-full max-w-sm">
           <div className="relative w-20 h-20 mx-auto">
             <Sparkles className="absolute inset-0 w-20 h-20 animate-spin" style={{ animationDuration: "3s" }} />
           </div>
-          <h2 className="font-quicksand text-2xl font-bold">Building your plan…</h2>
+          <h2 className="font-quicksand text-2xl font-bold">
+            {built === 0
+              ? t("coach.building_starting", "Building your plan…")
+              : built >= TOTAL_WINS
+              ? t("coach.building_finalising", "Finalising your plan…")
+              : t("coach.building_progress", "Crafting win {{built}} of {{total}}…", { built, total: TOTAL_WINS })}
+          </h2>
+          {/* Progress bar — 12 segments, lights up as wins arrive */}
+          <div className="flex gap-1 w-full" aria-hidden="true">
+            {Array.from({ length: TOTAL_WINS }).map((_, i) => (
+              <div
+                key={i}
+                className={`flex-1 h-1.5 rounded-full transition-colors duration-300 ${
+                  i < built ? "bg-white" : "bg-white/20"
+                }`}
+              />
+            ))}
+          </div>
           <p className="text-sm text-white/80 max-w-xs mx-auto">
-            Analysing your answers and crafting 12 deep, research-backed wins for {selectedGoal?.title.toLowerCase()}. This takes ~10 seconds.
+            {t(
+              "coach.building_subtitle",
+              "Analysing your answers and crafting 12 deep, research-backed wins for {{goal}}.",
+              { goal: selectedGoal?.title.toLowerCase() ?? "your goal" },
+            )}
+            {built > 0 && built < TOTAL_WINS ? ` (${pct}%)` : ""}
           </p>
         </div>
       </div>
