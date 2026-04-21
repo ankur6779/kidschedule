@@ -5,6 +5,7 @@ import { Link, useLocation } from "wouter";
 import { Calendar, Users, Star, ArrowRight, Activity, TrendingUp, TrendingDown, Minus, Clock, CheckCircle2, Sparkles, Trophy, Bot, Brain, Heart, Target, ChevronRight } from "lucide-react";
 import { getAgeGroup, getAgeGroupInfo, formatAge } from "@/lib/age-groups";
 import { AmyIcon } from "@/components/amy-icon";
+import { SmartMealSuggestions } from "@/components/smart-meal-suggestions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from "@clerk/react";
 import { useEffect, useState } from "react";
@@ -789,6 +790,7 @@ export default function Dashboard() {
               <NowNextTimeline routines={(allRoutines ?? []) as Routine[]} />
             </div>
           </div>
+          <SmartMealSuggestions />
         </div>
 
         {/* RIGHT column: Streak + Stats + Amy + Parent Score */}

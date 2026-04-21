@@ -16,6 +16,7 @@ import onboardingRouter from "./onboarding";
 import futurePredictorRouter from "./future-predictor";
 import referralsRouter from "./referrals";
 import featuresRouter from "./features";
+import mealsRouter from "./meals";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -42,5 +43,6 @@ router.use(appDataRouter);
 router.use(futurePredictorRouter);
 router.use(referralsRouter);
 router.use(featuresRouter);
+router.use(mealsRouter);
 
 export default router;
