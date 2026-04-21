@@ -211,10 +211,10 @@ export default function ProfileScreen() {
     Haptics.selectionAsync();
     const subject = encodeURIComponent("AmyNest Support");
     const body = encodeURIComponent("");
-    const url = `mailto:Support@anynest.in?subject=${subject}&body=${body}`;
+    const url = `mailto:Support@amynest.in?subject=${subject}&body=${body}`;
     const canOpen = await Linking.canOpenURL(url);
     if (!canOpen) {
-      Alert.alert("Email app not available", "Please email Support@anynest.in");
+      Alert.alert("Email app not available", "Please email Support@amynest.in");
       return;
     }
     await Linking.openURL(url);
