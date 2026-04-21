@@ -71,7 +71,7 @@ const NAV_ITEMS = [
   { href: "/games",         labelKey: "nav.games",         icon: Gamepad2 },
   { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
   { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
-  { href: "/referrals",     labelKey: "nav.referals",      icon: Gift },
+  { href: "/referrals",     labelKey: "nav.referrals",     icon: Gift },
 ];
 
 const BOTTOM_NAV_ITEMS = [

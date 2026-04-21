@@ -456,9 +456,16 @@ export default function AICoachPage() {
         setPhase("questions");
         return;
       }
-      if (!res.ok) throw new Error(`Server ${res.status}`);
+      if (!res.ok) {
+        let bodySnippet = "";
+        try { bodySnippet = (await res.text()).slice(0, 200); } catch { /* noop */ }
+        throw new Error(`Server ${res.status}${bodySnippet ? ` — ${bodySnippet}` : ""}`);
+      }
       window.dispatchEvent(new CustomEvent("amynest:refresh-subscription"));
       const data = (await res.json()) as { plan: Plan; sessionId: string };
+      if (!data?.plan?.wins?.length) {
+        throw new Error("Empty plan from server");
+      }
       setPlan(data.plan);
       // Freeze denominator at the original win count so extensions never drop progress %
       originalWinCountRef.current = data.plan.wins.length;
@@ -466,8 +473,15 @@ export default function AICoachPage() {
       setPhase("result");
       // Free allowance is consumed only on a successful topic completion.
       if (!coachUsage.isPremium) coachUsage.markBlockUsed("completed");
-    } catch {
-      toast({ title: "Something went wrong", description: "Please try again in a moment.", variant: "destructive" });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      // eslint-disable-next-line no-console
+      console.error("[ai-coach] Build Plan failed:", msg, err);
+      toast({
+        title: "Something went wrong",
+        description: msg.length > 0 ? `Please try again. (${msg})` : "Please try again in a moment.",
+        variant: "destructive",
+      });
       setPhase("questions");
     }
   };
