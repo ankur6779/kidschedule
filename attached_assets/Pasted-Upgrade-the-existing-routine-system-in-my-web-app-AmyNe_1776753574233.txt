@@ -1,0 +1,154 @@
+Upgrade the existing routine system in my web app "AmyNest" into an Adaptive Routine Engine that dynamically adjusts tasks based on real-time conditions and past behavior.
+
+IMPORTANT:
+- Do NOT rebuild from scratch
+- Extend existing routine logic
+- Keep system lightweight and fast
+- Mobile + web compatible
+
+--------------------------------
+1. Core Concept (Adaptive Engine 🔥)
+--------------------------------
+- Routine should NOT remain static
+- System must adjust tasks dynamically based on:
+
+  - Time delay
+  - Task completion status
+  - Child mood
+  - Sleep quality
+  - Parent availability
+
+--------------------------------
+2. Real-Time Adjustment Logic 🔥🔥
+--------------------------------
+
+(A) Delay Handling:
+- If current time > task time by threshold:
+  → mark task as delayed
+
+(B) Smart Adjustment:
+- If 2+ tasks delayed:
+  → simplify remaining routine
+  → remove non-essential tasks
+
+(C) Essential Priority:
+- Always keep:
+  - Meals
+  - Sleep
+  - Hygiene
+
+--------------------------------
+3. Mood-Based Adaptation 🧠
+--------------------------------
+
+If mood = low / irritated:
+- Reduce cognitive tasks
+- Add calm activities
+
+If mood = active:
+- Add learning + play tasks
+
+--------------------------------
+4. Sleep-Based Adjustment 😴
+--------------------------------
+
+If poor sleep detected:
+- Delay heavy tasks
+- Add rest blocks
+- Keep routine light
+
+--------------------------------
+5. Auto-Rebalancing System ⚖️
+--------------------------------
+
+- Adjust remaining tasks timing
+- Prevent overlapping tasks
+- Maintain flow of day
+
+--------------------------------
+6. Skip Logic (Smart 🔥)
+--------------------------------
+
+- If user skips task:
+  → do NOT break system
+  → shift or remove low priority tasks
+
+--------------------------------
+7. Amy AI Suggestions 🤖
+--------------------------------
+
+Show dynamic messages:
+
+“Amy AI Suggests:
+Let’s simplify today due to low energy”
+
+--------------------------------
+8. Dynamic Routine View 🎯
+--------------------------------
+
+- Show updated routine in real-time
+- Highlight:
+  - Adjusted tasks
+  - Skipped tasks
+  - Priority tasks
+
+--------------------------------
+9. User Control ✏️
+--------------------------------
+
+- Allow parent to:
+  - Edit tasks
+  - Override system
+
+--------------------------------
+10. Daily Summary 📊
+--------------------------------
+
+Show:
+
+- Completed %
+- Adjusted tasks
+- Suggestion for tomorrow
+
+--------------------------------
+11. UI Indicators (Important)
+--------------------------------
+
+Use:
+
+- ⚡ Adjusted
+- ⏭ Skipped
+- ✔️ Completed
+
+--------------------------------
+12. Constraints
+--------------------------------
+
+- Generate only:
+  - Today
+  - Tomorrow
+
+- One routine per day
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- Use rule-based logic
+- No heavy AI required
+
+--------------------------------
+14. Keep it simple
+--------------------------------
+
+- Avoid over-complex decisions
+- Focus on usability
+
+--------------------------------
+Return:
+Upgraded adaptive routine system with:
+- Real-time adjustment
+- Mood & sleep adaptation
+- Smart simplification
+- Amy AI suggestions
+- Clean UI updates

@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import {
+  runAdaptiveEngine,
+  type AdaptiveMood,
+  type AdaptiveSleepQuality,
+} from "@workspace/family-routine";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   ActivityIndicator, Platform, Modal, Pressable, Alert,
@@ -27,6 +33,8 @@ type RoutineItem = {
   time: string; activity: string; duration: number;
   category: string; notes?: string;
   status?: ItemStatus; skipReason?: string;
+  /** Set by Adaptive Engine when it auto-modifies a task. */
+  adjusted?: boolean;
 };
 type Routine = {
   id: number; childId: number; childName: string;
@@ -426,6 +434,75 @@ export default function RoutineDetailScreen() {
 
   // ──────────────────────────────────────────────────────────────────────────
   const stats = useMemo(() => completionStats(items), [items]);
+
+  // ─── Adaptive Engine: today's mood + sleep + live ticking ───────────────
+  const routineDateStr = (routine?.date ?? "").slice(0, 10);
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const dateMode: "past" | "today" | "future" = !routineDateStr
+    ? "today"
+    : routineDateStr < todayStr
+    ? "past"
+    : routineDateStr > todayStr
+    ? "future"
+    : "today";
+
+  const moodKey = `amynest:adaptive:mood:${routine?.childId ?? "x"}:${routineDateStr || todayStr}`;
+  const sleepKey = `amynest:adaptive:sleep:${routine?.childId ?? "x"}:${routineDateStr || todayStr}`;
+  const [todayMood, setTodayMood] = useState<AdaptiveMood>("neutral");
+  const [todaySleep, setTodaySleep] = useState<AdaptiveSleepQuality>("good");
+  useEffect(() => {
+    if (!routine?.childId) return;
+    (async () => {
+      try {
+        const m = (await AsyncStorage.getItem(moodKey)) as AdaptiveMood | null;
+        const s = (await AsyncStorage.getItem(sleepKey)) as AdaptiveSleepQuality | null;
+        if (m === "low" || m === "neutral" || m === "active") setTodayMood(m);
+        if (s === "poor" || s === "ok" || s === "good") setTodaySleep(s);
+      } catch {}
+    })();
+  }, [moodKey, sleepKey, routine?.childId]);
+  const persistMood = (m: AdaptiveMood) => {
+    setTodayMood(m);
+    AsyncStorage.setItem(moodKey, m).catch(() => {});
+  };
+  const persistSleep = (s: AdaptiveSleepQuality) => {
+    setTodaySleep(s);
+    AsyncStorage.setItem(sleepKey, s).catch(() => {});
+  };
+
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    if (dateMode !== "today") return;
+    const t = setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, [dateMode]);
+
+  const adaptive = useMemo(() => {
+    const now = new Date(nowTick);
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    return runAdaptiveEngine(items as any, {
+      nowMins,
+      mood: todayMood,
+      sleepQuality: todaySleep,
+      liveAdjust: dateMode === "today",
+    });
+  }, [items, nowTick, todayMood, todaySleep, dateMode]);
+
+  const lastPersistedRef = useRef<string>("");
+  useEffect(() => {
+    if (dateMode !== "today" || !adaptive.changed || !id) return;
+    const sig = JSON.stringify(
+      adaptive.items.map((i) => [i.time, i.activity, i.status ?? "pending", (i as any).adjusted ? 1 : 0]),
+    );
+    if (sig === lastPersistedRef.current) return;
+    lastPersistedRef.current = sig;
+    setItems(adaptive.items as RoutineItem[]);
+    saveMut.mutate(adaptive.items as RoutineItem[]);
+    if (adaptive.simplified) {
+      showToast(`⚡ Amy AI simplified ${adaptive.summary.adjusted} task${adaptive.summary.adjusted > 1 ? "s" : ""}`, "warn");
+    }
+  }, [adaptive.changed, dateMode, id]);
+
   const topPad = insets.top + (Platform.OS === "web" ? 12 : 0);
   const botPad = insets.bottom + (Platform.OS === "web" ? 24 : 0) + 110;
 
@@ -497,7 +574,66 @@ export default function RoutineDetailScreen() {
                 </BlurView>
               </View>
 
-              <AmyAISuggests stats={stats} title={routine.title} />
+              {/* Mood + Sleep quick selectors (today only) — drive Amy AI adaptation */}
+              {dateMode === "today" && items.length > 0 && (
+                <View style={{ marginBottom: 12, padding: 12, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }}>
+                  <Text style={{ fontSize: 10, fontWeight: "800", color: "rgba(255,255,255,0.55)", letterSpacing: 0.6, marginBottom: 8 }}>
+                    HOW IS {(routine.childName || "YOUR CHILD").toUpperCase()} TODAY?
+                  </Text>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.6)", alignSelf: "center", marginRight: 2 }}>Mood:</Text>
+                    {(["low", "neutral", "active"] as AdaptiveMood[]).map((m) => {
+                      const active = todayMood === m;
+                      return (
+                        <TouchableOpacity
+                          key={m}
+                          onPress={() => persistMood(m)}
+                          activeOpacity={0.75}
+                          style={{
+                            paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+                            backgroundColor: active ? brand.primary : "rgba(255,255,255,0.06)",
+                            borderWidth: 1, borderColor: active ? brand.primary : "rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#FFFFFF" : "rgba(255,255,255,0.85)" }}>
+                            {m === "low" ? "😔 Low" : m === "active" ? "🤸 Active" : "🙂 Neutral"}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                  <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                    <Text style={{ fontSize: 11, fontWeight: "700", color: "rgba(255,255,255,0.6)", alignSelf: "center", marginRight: 2 }}>Sleep:</Text>
+                    {(["poor", "ok", "good"] as AdaptiveSleepQuality[]).map((s) => {
+                      const active = todaySleep === s;
+                      return (
+                        <TouchableOpacity
+                          key={s}
+                          onPress={() => persistSleep(s)}
+                          activeOpacity={0.75}
+                          style={{
+                            paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+                            backgroundColor: active ? brand.primary : "rgba(255,255,255,0.06)",
+                            borderWidth: 1, borderColor: active ? brand.primary : "rgba(255,255,255,0.12)",
+                          }}
+                        >
+                          <Text style={{ fontSize: 11, fontWeight: "800", color: active ? "#FFFFFF" : "rgba(255,255,255,0.85)" }}>
+                            {s === "poor" ? "😴 Poor" : s === "ok" ? "🌙 OK" : "✨ Good"}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              )}
+
+              <AmyAISuggests
+                stats={stats}
+                title={routine.title}
+                tipOverride={adaptive.suggestion}
+                delayedCount={dateMode === "today" ? adaptive.summary.delayed : 0}
+                adjustedCount={dateMode === "today" ? adaptive.summary.adjusted : 0}
+              />
 
               <View style={styles.activitiesHeaderRow}>
                 <Text style={styles.sectionTitle}>ACTIVITIES</Text>
@@ -515,6 +651,43 @@ export default function RoutineDetailScreen() {
             <View style={styles.center}>
               <Text style={styles.emptyText}>No activities in this routine</Text>
             </View>
+          }
+          ListFooterComponent={
+            dateMode !== "future" && items.length > 0 ? (
+              <View style={{ marginTop: 16, padding: 16, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(167,139,250,0.25)" }}>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <Ionicons name="sparkles" size={14} color={brand.violet400} />
+                    <Text style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 14 }}>Daily Summary</Text>
+                  </View>
+                  <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, backgroundColor: "rgba(167,139,250,0.18)" }}>
+                    <Text style={{ color: "#C4B5FD", fontWeight: "800", fontSize: 11 }}>{adaptive.summary.completionPct}% done</Text>
+                  </View>
+                </View>
+                <View style={{ flexDirection: "row", gap: 8, marginBottom: 12 }}>
+                  {[
+                    { num: adaptive.summary.completed, label: "✔️ Done", color: "#10B981" /* audit-ok */ },
+                    { num: adaptive.summary.delayed, label: "⏱ Delayed", color: "#F59E0B" /* audit-ok */ },
+                    { num: adaptive.summary.adjusted, label: "⚡ Adjusted", color: "#A78BFA" /* audit-ok */ },
+                    { num: adaptive.summary.skipped, label: "⏭ Skipped", color: "rgba(255,255,255,0.55)" },
+                  ].map((s, i) => (
+                    <View key={i} style={{ flex: 1, paddingVertical: 8, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.04)", borderWidth: 1, borderColor: "rgba(255,255,255,0.08)", alignItems: "center" }}>
+                      <Text style={{ color: s.color, fontWeight: "900", fontSize: 18 }}>{s.num}</Text>
+                      <Text style={{ color: "rgba(255,255,255,0.65)", fontSize: 9, fontWeight: "800", letterSpacing: 0.4, marginTop: 2 }}>{s.label}</Text>
+                    </View>
+                  ))}
+                </View>
+                <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8, padding: 10, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.04)" }}>
+                  <Text style={{ fontSize: 14 }}>💡</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: "rgba(255,255,255,0.55)", fontSize: 9, fontWeight: "800", letterSpacing: 0.4 }}>FOR TOMORROW</Text>
+                    <Text style={{ color: "#FFFFFF", fontSize: 13, fontWeight: "600", marginTop: 2, lineHeight: 18 }}>
+                      {adaptive.summary.tomorrowTip}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ) : null
           }
           renderItem={({ item, index }) => (
             <Animated.View
@@ -783,15 +956,28 @@ function Stat({ num, label, color }: { num: number; label: string; color: string
 }
 function Divider() { return <View style={styles.statDivider} />; }
 
-function AmyAISuggests({ stats, title }: { stats: { done: number; total: number; remaining: number; skipped: number; pct: number }; title: string }) {
-  const tip = useMemo(() => {
+function AmyAISuggests({
+  stats,
+  title,
+  tipOverride,
+  delayedCount = 0,
+  adjustedCount = 0,
+}: {
+  stats: { done: number; total: number; remaining: number; skipped: number; pct: number };
+  title: string;
+  tipOverride?: string;
+  delayedCount?: number;
+  adjustedCount?: number;
+}) {
+  const fallback = useMemo(() => {
     if (stats.total === 0) return "Add a few activities and I'll help you optimize the day.";
-    if (stats.pct === 100) return `Incredible work — every activity in "${title}" is done. Time to celebrate with your little one!`;
-    if (stats.pct >= 75) return `You're crushing it — ${stats.remaining} more to wrap up the day. Keep the momentum.`;
-    if (stats.skipped >= 3) return `Several activities were skipped. Tap any to reschedule, or I can regenerate the rest of the day.`;
-    if (stats.pct >= 40) return `Nice rhythm so far. Long-press any activity to delay it without breaking the schedule.`;
-    return `Swipe right to mark complete, swipe left to skip. I'll auto-shift later activities for you.`;
+    if (stats.pct === 100) return `Incredible work — every activity in "${title}" is done. Time to celebrate!`;
+    if (stats.pct >= 75) return `You're crushing it — ${stats.remaining} more to wrap up the day.`;
+    if (stats.skipped >= 3) return `Several activities were skipped. Tap any to reschedule.`;
+    if (stats.pct >= 40) return `Nice rhythm so far. Long-press any activity to delay it.`;
+    return `Swipe right to mark complete, swipe left to skip. I'll auto-shift later activities.`;
   }, [stats.pct, stats.remaining, stats.skipped, stats.total, title]);
+  const tip = tipOverride && tipOverride.trim().length > 0 ? tipOverride : fallback;
 
   return (
     <View style={styles.aiCard}>
@@ -801,6 +987,20 @@ function AmyAISuggests({ stats, title }: { stats: { done: number; total: number;
       <View style={{ flex: 1 }}>
         <Text style={styles.aiLabel}>AMY AI SUGGESTS</Text>
         <Text style={styles.aiText}>{tip}</Text>
+        {(delayedCount > 0 || adjustedCount > 0) && (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+            {delayedCount > 0 && (
+              <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: "rgba(245,158,11,0.18)", borderWidth: 1, borderColor: "rgba(245,158,11,0.45)" }}>
+                <Text style={{ color: "#FBBF24", fontSize: 10, fontWeight: "800" }}>⏱ {delayedCount} delayed</Text>
+              </View>
+            )}
+            {adjustedCount > 0 && (
+              <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, backgroundColor: "rgba(167,139,250,0.18)", borderWidth: 1, borderColor: "rgba(167,139,250,0.45)" }}>
+                <Text style={{ color: "#C4B5FD", fontSize: 10, fontWeight: "800" }}>⚡ {adjustedCount} auto-adjusted</Text>
+              </View>
+            )}
+          </View>
+        )}
       </View>
     </View>
   );

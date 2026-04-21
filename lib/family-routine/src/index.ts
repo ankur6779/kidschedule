@@ -417,3 +417,5 @@ export function appendHandlerToPlans(specialPlans: string, handlerKey: HandlerKe
   if (!specialPlans.trim()) return suffix;
   return `${specialPlans.trim()} | ${suffix}`;
 }
+
+export * from "./adaptive";

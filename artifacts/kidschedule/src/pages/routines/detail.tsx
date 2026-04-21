@@ -17,6 +17,11 @@ import { addPoints, checkAndAwardBadges, getTotalPoints } from "@/lib/rewards";
 import { announceCurrentTask, isVoiceEnabled, getVoiceSettings } from "@/lib/voice";
 import { VoiceSettingsPanel } from "@/components/voice-settings";
 import {
+  runAdaptiveEngine,
+  type AdaptiveMood,
+  type AdaptiveSleepQuality,
+} from "@workspace/family-routine";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -46,6 +51,8 @@ type RoutineItem = {
   status?: ItemStatus;
   skipReason?: string;
   imageUrl?: string;
+  /** Set by the Adaptive Engine when it auto-modifies a task. */
+  adjusted?: boolean;
 };
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -844,15 +851,6 @@ export default function RoutineDetail() {
   const totalCount = items.length;
   const progress = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const amyTip = (() => {
-    if (totalCount === 0) return "Tap a task as you complete it — earn points and build streaks!";
-    if (progress === 100) return "Perfect day! Every task complete — celebrate the win with your child.";
-    if (progress >= 70) return "Great pace! Just a few more tasks to a perfect day.";
-    const next = items.find((i) => i.status === "pending");
-    if (next) return `Next up: ${next.activity} at ${next.time}. Stay close — your presence makes the difference.`;
-    return "Keep going — small consistent steps build lifelong habits.";
-  })();
-
   // Date-awareness: compare routine date vs system date
   const routineDateStr = routine?.date?.slice(0, 10) ?? "";
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -863,6 +861,68 @@ export default function RoutineDetail() {
     : routineDateStr > todayStr
     ? "future"
     : "today";
+
+  // ── Adaptive Engine: today's mood + sleep stored locally per child/day ──
+  const moodKey = `amynest:adaptive:mood:${childId}:${routineDateStr || todayStr}`;
+  const sleepKey = `amynest:adaptive:sleep:${childId}:${routineDateStr || todayStr}`;
+  const [todayMood, setTodayMood] = useState<AdaptiveMood>("neutral");
+  const [todaySleep, setTodaySleep] = useState<AdaptiveSleepQuality>("good");
+  useEffect(() => {
+    if (typeof window === "undefined" || !childId) return;
+    const m = window.localStorage.getItem(moodKey) as AdaptiveMood | null;
+    const s = window.localStorage.getItem(sleepKey) as AdaptiveSleepQuality | null;
+    if (m === "low" || m === "neutral" || m === "active") setTodayMood(m);
+    if (s === "poor" || s === "ok" || s === "good") setTodaySleep(s);
+  }, [moodKey, sleepKey, childId]);
+  const persistMood = (m: AdaptiveMood) => {
+    setTodayMood(m);
+    if (typeof window !== "undefined") window.localStorage.setItem(moodKey, m);
+  };
+  const persistSleep = (s: AdaptiveSleepQuality) => {
+    setTodaySleep(s);
+    if (typeof window !== "undefined") window.localStorage.setItem(sleepKey, s);
+  };
+
+  // ── Live tick — re-run engine every 60s on today's routine ──────────
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    if (dateMode !== "today") return;
+    const t = setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => clearInterval(t);
+  }, [dateMode]);
+
+  // ── Run the engine ───────────────────────────────────────────────────
+  const adaptive = (() => {
+    const now = new Date(nowTick);
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    return runAdaptiveEngine(items as any, {
+      nowMins,
+      mood: todayMood,
+      sleepQuality: todaySleep,
+      liveAdjust: dateMode === "today",
+    });
+  })();
+  const amyTip = adaptive.suggestion;
+  const dailySummary = adaptive.summary;
+
+  // ── Persist auto-adjustments back to backend (today only) ───────────
+  const lastPersistedRef = useRef<string>("");
+  useEffect(() => {
+    if (dateMode !== "today" || !adaptive.changed || !routineId) return;
+    const sig = JSON.stringify(
+      adaptive.items.map((i) => [i.time, i.activity, i.status ?? "pending", i.adjusted ? 1 : 0]),
+    );
+    if (sig === lastPersistedRef.current) return;
+    lastPersistedRef.current = sig;
+    setLocalItems(adaptive.items as RoutineItem[]);
+    saveItemsMutation.mutate(adaptive.items as RoutineItem[]);
+    if (adaptive.simplified) {
+      toast({
+        title: "⚡ Amy AI simplified your day",
+        description: `${adaptive.summary.adjusted} low-priority task${adaptive.summary.adjusted > 1 ? "s" : ""} cleared so you can focus on essentials.`,
+      });
+    }
+  }, [adaptive.changed, dateMode, routineId]);
 
   if (isLoading) {
     return (
@@ -1040,14 +1100,75 @@ export default function RoutineDetail() {
           </div>
         )}
 
-        {/* Amy AI suggests banner */}
+        {/* Today's mood + sleep quick selectors — drive Amy AI adaptation */}
+        {dateMode === "today" && totalCount > 0 && (
+          <div className="rounded-2xl border border-border bg-card/60 p-3 space-y-2">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+              How is {routine?.childName ?? "your child"} today?
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-muted-foreground">Mood:</span>
+                {(["low", "neutral", "active"] as AdaptiveMood[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => persistMood(m)}
+                    className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-colors ${
+                      todayMood === m
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted/40 text-foreground border-border hover:bg-muted"
+                    }`}
+                    aria-pressed={todayMood === m}
+                  >
+                    {m === "low" ? "😔 Low" : m === "active" ? "🤸 Active" : "🙂 Neutral"}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-semibold text-muted-foreground">Sleep:</span>
+                {(["poor", "ok", "good"] as AdaptiveSleepQuality[]).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => persistSleep(s)}
+                    className={`text-xs font-bold px-2.5 py-1 rounded-full border transition-colors ${
+                      todaySleep === s
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted/40 text-foreground border-border hover:bg-muted"
+                    }`}
+                    aria-pressed={todaySleep === s}
+                  >
+                    {s === "poor" ? "😴 Poor" : s === "ok" ? "🌙 OK" : "✨ Good"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Amy AI suggests banner — driven by the Adaptive Engine */}
         <div className="rounded-2xl border-2 border-emerald-200 bg-gradient-to-r from-emerald-50 to-teal-50 p-4 flex items-start gap-3">
           <div className="bg-emerald-500 text-white w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm">
             <Sparkles className="h-4 w-4" />
           </div>
-          <div>
+          <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-0.5">Amy AI suggests</p>
             <p className="text-sm text-emerald-900 font-medium leading-snug">{amyTip}</p>
+            {dateMode === "today" && (dailySummary.delayed > 0 || dailySummary.adjusted > 0) && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {dailySummary.delayed > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                    ⏱ {dailySummary.delayed} delayed
+                  </span>
+                )}
+                {dailySummary.adjusted > 0 && (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 border border-violet-200">
+                    ⚡ {dailySummary.adjusted} auto-adjusted
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -1217,6 +1338,11 @@ export default function RoutineDetail() {
                             {status === "skipped" && item.skipReason && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">⏭️ Auto-skipped</Badge>}
                             {status === "skipped" && !item.skipReason && <Badge className="bg-muted text-muted-foreground border-border rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">Skipped</Badge>}
                             {status === "delayed" && <Badge className="bg-amber-100 text-amber-700 border-amber-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5">⏱ Delayed</Badge>}
+                            {item.adjusted && status !== "completed" && (
+                              <Badge className="bg-violet-100 text-violet-700 border-violet-200 rounded-full text-[10px] sm:text-xs font-bold px-2 py-0.5" title="Auto-adjusted by Amy AI">
+                                ⚡ Adjusted
+                              </Badge>
+                            )}
                             <Badge className={`rounded-full text-[10px] sm:text-xs font-bold border px-2 py-0.5 ${catStyle}`}>
                               {item.category}
                             </Badge>
@@ -1336,6 +1462,46 @@ export default function RoutineDetail() {
             UNDO
           </button>
           <button onClick={clearUndo} className="text-gray-400 hover:text-white text-xs ml-1">✕</button>
+        </div>
+      )}
+
+      {/* ── Daily Summary (today + past) ────────────────────────────── */}
+      {dateMode !== "future" && totalCount > 0 && (
+        <div className="mt-4 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-violet-500/5 to-pink-500/5 p-4 sm:p-5 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-bold text-base sm:text-lg text-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Daily Summary
+            </h3>
+            <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              {dailySummary.completionPct}% done
+            </span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="rounded-xl bg-green-50 border border-green-200 px-3 py-2 text-center">
+              <div className="text-lg font-black text-green-700">{dailySummary.completed}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-green-700">✔️ Done</div>
+            </div>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-center">
+              <div className="text-lg font-black text-amber-700">{dailySummary.delayed}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-amber-700">⏱ Delayed</div>
+            </div>
+            <div className="rounded-xl bg-violet-50 border border-violet-200 px-3 py-2 text-center">
+              <div className="text-lg font-black text-violet-700">{dailySummary.adjusted}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-violet-700">⚡ Adjusted</div>
+            </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2 text-center">
+              <div className="text-lg font-black text-slate-700">{dailySummary.skipped}</div>
+              <div className="text-[10px] font-bold uppercase tracking-wide text-slate-700">⏭ Skipped</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-2 rounded-xl bg-card border border-border px-3 py-2">
+            <span className="text-base shrink-0 mt-0.5">💡</span>
+            <div>
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">For tomorrow</p>
+              <p className="text-sm text-foreground font-medium leading-snug">{dailySummary.tomorrowTip}</p>
+            </div>
+          </div>
         </div>
       )}
 
