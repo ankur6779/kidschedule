@@ -200,7 +200,7 @@ export default function CoachScreen() {
     }
     // Block any new pick once a free topic has been completed.
     if (!coachUsage.isPremium && coachUsage.fullyUsed) {
-      router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+      router.push({ pathname: "/paywall", params: { reason: "coach_locked" } });
       return;
     }
     setGoalId(id);

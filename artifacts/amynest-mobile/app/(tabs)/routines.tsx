@@ -136,7 +136,7 @@ export default function RoutinesScreen() {
 
   const goToGenerate = () => {
     if (!isPremium && routines.length >= routinesMax) {
-      router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+      router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -306,7 +306,7 @@ export default function RoutinesScreen() {
                       Haptics.selectionAsync();
                       if (dayRoutines.length === 1) {
                         if (isRoutineLocked(dayRoutines[0].id)) {
-                          router.push({ pathname: "/paywall", params: { reason: "section_locked" } });
+                          router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
                         } else {
                           router.push(`/routines/${dayRoutines[0].id}` as never);
                         }
@@ -348,7 +348,7 @@ export default function RoutinesScreen() {
                     const pct = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
                     const locked = isRoutineLocked(r.id);
                     return (
-                      <LockedBlock key={r.id} locked={locked}>
+                      <LockedBlock key={r.id} locked={locked} reason="routines_limit">
                         <TouchableOpacity
                           onPress={() => {
                             if (!locked) router.push(`/routines/${r.id}` as never);
@@ -408,7 +408,7 @@ export default function RoutinesScreen() {
                 <LockedBlock
                   key={r.id}
                   locked={isLocked}
-                  reason="section_locked"
+                  reason="routines_limit"
                   label="Premium"
                   cta="Unlock All Routines"
                   radius={18}

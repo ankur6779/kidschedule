@@ -301,8 +301,8 @@ export default function HubScreen() {
         </Section>
 
         <LockedBlock
+          reason="hub_locked"
           locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("activities")}
-          reason="section_locked"
           label="Premium feature"
         >
         <Section
@@ -407,8 +407,8 @@ export default function HubScreen() {
 
         {effective && effective.age >= 2 && effective.age <= 15 && (
           <LockedBlock
+            reason="hub_locked"
             locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("life_skills")}
-            reason="section_locked"
             label="Premium feature"
           >
             <Section

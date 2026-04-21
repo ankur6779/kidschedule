@@ -1253,7 +1253,7 @@ export default function HomeScreen() {
 
             <LockedBlock
               locked={!isPremium}
-              reason="section_locked"
+              reason="audio_lessons"
               label="Premium"
               cta="Unlock Audio Lessons"
               style={{ flex: 1, borderRadius: 18 }}

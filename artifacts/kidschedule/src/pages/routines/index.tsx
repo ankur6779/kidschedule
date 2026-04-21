@@ -190,7 +190,7 @@ function WeekCalendar({ routines, isPremium, routinesMax, onGatedNavigate, onLoc
               const pct = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
               const locked = isRoutineLocked(r.id);
               return (
-                <LockedBlock key={r.id} locked={locked} reason="section_locked" label="Premium" cta="Unlock All Routines" rounded="rounded-2xl">
+                <LockedBlock key={r.id} locked={locked} reason="routines_limit" label="Premium" cta="Unlock All Routines" rounded="rounded-2xl">
                   <Link href={locked ? "#" : `/routines/${r.id}`} onClick={locked ? (e) => e.preventDefault() : undefined}>
                     <Card className="rounded-2xl border-border/50 shadow-sm hover:border-primary/30 transition-all cursor-pointer group">
                       <CardContent className="p-3 flex items-center gap-3">
@@ -243,7 +243,7 @@ export default function RoutinesList() {
 
   function handleGenerateClick() {
     if (generateLocked) {
-      openPaywall("section_locked");
+      openPaywall("routines_limit");
     } else {
       setLocation("/routines/generate");
     }
@@ -251,7 +251,7 @@ export default function RoutinesList() {
 
   function handleGatedNavigate(path: string) {
     if (generateLocked) {
-      openPaywall("section_locked");
+      openPaywall("routines_limit");
     } else {
       setLocation(path);
     }
@@ -306,7 +306,7 @@ export default function RoutinesList() {
           {view === "calendar" && (
             <Card className="rounded-3xl border-none shadow-sm bg-card">
               <CardContent className="p-4 sm:p-6">
-                <WeekCalendar routines={allRoutines} isPremium={isPremium} routinesMax={routinesMax} onGatedNavigate={handleGatedNavigate} onLockedRoutineTap={() => openPaywall("section_locked")} />
+                <WeekCalendar routines={allRoutines} isPremium={isPremium} routinesMax={routinesMax} onGatedNavigate={handleGatedNavigate} onLockedRoutineTap={() => openPaywall("routines_limit")} />
               </CardContent>
             </Card>
           )}
@@ -321,7 +321,7 @@ export default function RoutinesList() {
                       <LockedBlock
                         key={routine.id}
                         locked={isLocked}
-                        reason="section_locked"
+                        reason="routines_limit"
                         label="Premium"
                         cta="Unlock All Routines"
                         rounded="rounded-2xl"

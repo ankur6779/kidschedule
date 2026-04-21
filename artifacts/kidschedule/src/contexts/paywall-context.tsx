@@ -6,7 +6,11 @@ export type PaywallReason =
   | "premium_insight"
   | "child_limit"
   | "feature"
-  | "section_locked";
+  | "section_locked"
+  | "audio_lessons"
+  | "routines_limit"
+  | "coach_locked"
+  | "hub_locked";
 
 type PaywallState = {
   open: boolean;

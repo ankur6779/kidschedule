@@ -18,31 +18,62 @@ import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import type { Plan } from "@/services/subscriptionApi";
 import { brand } from "@/constants/colors";
 
-const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
+
+const REASON_COPY: Record<
+  string,
+  { title: string; subtitle: string; icon: IconName }
+> = {
   ai_quota: {
     title: "Unlock unlimited Amy AI",
     subtitle: "You've used today's free queries. Go premium for unlimited support.",
+    icon: "chatbubbles",
   },
   personalized_coaching: {
     title: "Unlock Personalized Coaching",
     subtitle: "Amy adapts to your child and gives you smart, tailored next steps.",
+    icon: "school",
   },
   premium_insight: {
     title: "Unlock Premium Insights",
     subtitle: "Behavior analysis and trend insights — only on premium.",
+    icon: "analytics",
   },
   child_limit: {
     title: "Add unlimited children",
     subtitle: "Free includes 1 child profile. Upgrade for unlimited.",
+    icon: "people",
+  },
+  audio_lessons: {
+    title: "Unlock Audio Lessons",
+    subtitle: "Calming bedtime stories, focus tracks & guided meditations — anytime, ad-free.",
+    icon: "headset",
+  },
+  routines_limit: {
+    title: "Generate unlimited routines",
+    subtitle: "Free plan includes 1 routine. Upgrade to plan every day, every child, your way.",
+    icon: "calendar",
+  },
+  coach_locked: {
+    title: "Unlock Amy Coach",
+    subtitle: "Get personalized 10–12 step plans for tantrums, screen time, focus & more.",
+    icon: "school",
+  },
+  hub_locked: {
+    title: "Unlock the full Parenting Hub",
+    subtitle: "All activities, Olympiad prep & life skills — unlocked on premium.",
+    icon: "grid",
   },
   feature: {
     title: "Unlock Full Parenting Power",
     subtitle: "Get unlimited AI, smart coaching, and premium insights.",
+    icon: "sparkles",
   },
   section_locked: {
     title: "Unlock Full Parenting Power 🚀",
     subtitle:
       "You've explored 1 feature. Unlock unlimited routines, full AI personalization, all activities & smart insights.",
+    icon: "sparkles",
   },
 };
 
@@ -153,7 +184,7 @@ export default function PaywallScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.heroIcon}
             >
-              <Ionicons name="sparkles" size={26} color="#fff" />
+              <Ionicons name={copy.icon} size={26} color="#fff" />
             </LinearGradient>
             <Text style={styles.heroTitle}>{copy.title}</Text>
             <Text style={styles.heroSub}>{copy.subtitle}</Text>

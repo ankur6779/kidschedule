@@ -489,8 +489,8 @@ export default function ParentingHub() {
         {/* 5. Activities & Learning */}
         {effectiveChild && ageGroup && (
           <LockedBlock
+            reason="hub_locked"
             locked={hubUsage.isBlockLocked("activities")}
-            reason="section_locked"
             label="Premium feature"
           >
             <HubSection
@@ -513,8 +513,8 @@ export default function ParentingHub() {
         {/* 6. Smart Olympiad Zone */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 15 && (
           <LockedBlock
+            reason="hub_locked"
             locked={hubUsage.isBlockLocked("olympiad")}
-            reason="section_locked"
             label="Premium feature"
           >
             <HubSection
@@ -533,8 +533,8 @@ export default function ParentingHub() {
         {/* 7. Life Skills Mode */}
         {effectiveChild && effectiveChild.age >= 2 && effectiveChild.age <= 15 && (
           <LockedBlock
+            reason="hub_locked"
             locked={hubUsage.isBlockLocked("life_skills")}
-            reason="section_locked"
             label="Premium feature"
           >
             <HubSection

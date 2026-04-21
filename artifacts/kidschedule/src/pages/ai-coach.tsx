@@ -347,7 +347,7 @@ export default function AICoachPage() {
   // ─── Goals → Questions (or → 12-card Result for the 0–2 yr topic)
   const handlePickGoal = (id: string) => {
     if (!coachUsage.isPremium && coachUsage.fullyUsed) {
-      openPaywall("section_locked");
+      openPaywall("coach_locked");
       return;
     }
     setGoalId(id);

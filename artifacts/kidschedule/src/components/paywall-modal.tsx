@@ -1,5 +1,21 @@
 import { useEffect, useState } from "react";
-import { Sparkles, Check, X, Smartphone, Zap, Gift, ArrowLeft } from "lucide-react";
+import {
+  Sparkles,
+  Check,
+  X,
+  Smartphone,
+  Zap,
+  Gift,
+  ArrowLeft,
+  Headphones,
+  CalendarDays,
+  Brain,
+  Users,
+  MessageCircle,
+  BarChart3,
+  LayoutGrid,
+  type LucideIcon,
+} from "lucide-react";
 import { useUser } from "@clerk/react";
 import { useLocation } from "wouter";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -7,31 +23,60 @@ import { Button } from "@/components/ui/button";
 import { usePaywall } from "@/contexts/paywall-context";
 import { useSubscription, type Plan } from "@/hooks/use-subscription";
 
-const REASON_COPY: Record<string, { title: string; subtitle: string }> = {
+const REASON_COPY: Record<
+  string,
+  { title: string; subtitle: string; icon: LucideIcon }
+> = {
   ai_quota: {
     title: "Unlock unlimited Amy AI",
     subtitle: "You've used today's free queries. Go premium for unlimited support.",
+    icon: MessageCircle,
   },
   personalized_coaching: {
     title: "Unlock Personalized Coaching",
     subtitle: "Amy adapts to your child and gives you smart, tailored next steps.",
+    icon: Brain,
   },
   premium_insight: {
     title: "Unlock Premium Insights",
     subtitle: "Behavior analysis and trend insights — only on premium.",
+    icon: BarChart3,
   },
   child_limit: {
     title: "Add unlimited children",
     subtitle: "Free includes 1 child profile. Upgrade for unlimited.",
+    icon: Users,
+  },
+  audio_lessons: {
+    title: "Unlock Audio Lessons",
+    subtitle: "Calming bedtime stories, focus tracks & guided meditations — anytime, ad-free.",
+    icon: Headphones,
+  },
+  routines_limit: {
+    title: "Generate unlimited routines",
+    subtitle: "Free plan includes 1 routine. Upgrade to plan every day, every child, your way.",
+    icon: CalendarDays,
+  },
+  coach_locked: {
+    title: "Unlock Amy Coach",
+    subtitle: "Get personalized 10–12 step plans for tantrums, screen time, focus & more.",
+    icon: Brain,
+  },
+  hub_locked: {
+    title: "Unlock the full Parenting Hub",
+    subtitle: "All activities, Olympiad prep & life skills — unlocked on premium.",
+    icon: LayoutGrid,
   },
   feature: {
     title: "Unlock Full Parenting Power",
     subtitle: "Get unlimited AI, smart coaching, and premium insights.",
+    icon: Sparkles,
   },
   section_locked: {
     title: "Unlock Full Parenting Power 🚀",
     subtitle:
       "You've explored 1 feature. Unlock unlimited routines, full AI personalization, all activities & smart insights.",
+    icon: Sparkles,
   },
 };
 
@@ -49,6 +94,7 @@ export function PaywallModal() {
   }, [state.open]);
 
   const copy = REASON_COPY[state.reason] ?? REASON_COPY.feature;
+  const HeroIcon = copy.icon;
 
   const onPayWithRazorpay = async () => {
     setSubmitting(true);
@@ -90,7 +136,7 @@ export function PaywallModal() {
           {/* Hero */}
           <div className="text-center mb-6">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 mb-3 shadow-[0_8px_32px_rgba(255,78,205,0.5)]">
-              <Sparkles className="h-7 w-7 text-white" />
+              <HeroIcon className="h-7 w-7 text-white" />
             </div>
             <h2 className="text-2xl font-extrabold mb-2">{copy.title}</h2>
             <p className="text-white/70 text-sm max-w-md mx-auto">{copy.subtitle}</p>

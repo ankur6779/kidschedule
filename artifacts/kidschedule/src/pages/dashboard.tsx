@@ -736,7 +736,7 @@ export default function Dashboard() {
 
   function handleGenerateRoutine() {
     if (generateRoutineLocked) {
-      openPaywall("section_locked");
+      openPaywall("routines_limit");
     } else {
       setLocation("/routines/generate");
     }

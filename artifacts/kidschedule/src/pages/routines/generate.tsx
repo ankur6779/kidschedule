@@ -714,7 +714,7 @@ export default function RoutineGenerate() {
             // Hit the routinesMax cap → surface the universal premium paywall
             // instead of a passive toast.
             window.dispatchEvent(
-              new CustomEvent("amynest:open-paywall", { detail: { reason: "section_locked" } }),
+              new CustomEvent("amynest:open-paywall", { detail: { reason: "routines_limit" } }),
             );
             return;
           }
