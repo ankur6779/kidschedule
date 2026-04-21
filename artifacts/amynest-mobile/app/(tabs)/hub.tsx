@@ -20,6 +20,7 @@ import { ArtCraftReels } from "@/components/ArtCraftReels";
 import { PrintableWorksheets } from "@/components/PrintableWorksheets";
 import { AmazingFacts } from "@/components/AmazingFacts";
 import FuturePredictor from "@/components/FuturePredictor";
+import ParentCommandCenter from "@/components/ParentCommandCenter";
 import { isInfantHubAge } from "@workspace/infant-hub";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { useSectionUsage } from "@/hooks/useSectionUsage";
@@ -168,6 +169,11 @@ export default function HubScreen() {
               );
             })}
           </ScrollView>
+        )}
+
+        {/* 🧠 Parent Command Center — overview · insights · quick actions */}
+        {effective && (
+          <ParentCommandCenter child={{ id: effective.id, name: effective.name }} />
         )}
 
         {/* Infant & Toddler Hub — only when any child is ≤ 24 months */}

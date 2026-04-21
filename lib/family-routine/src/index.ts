@@ -419,3 +419,4 @@ export function appendHandlerToPlans(specialPlans: string, handlerKey: HandlerKe
 }
 
 export * from "./adaptive";
+export * from "./commandCenter";

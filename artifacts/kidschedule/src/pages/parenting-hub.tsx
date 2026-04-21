@@ -29,6 +29,7 @@ import { DailyTips } from "@/components/daily-tips";
 import { ParentingArticles } from "@/components/parenting-articles";
 import { AmyIcon } from "@/components/amy-icon";
 import { FuturePredictor } from "@/components/future-predictor";
+import { ParentCommandCenter } from "@/components/parent-command-center";
 import { LockedBlock } from "@/components/locked-block";
 import { useSectionUsage } from "@/hooks/use-section-usage";
 import type { AgeGroup } from "@/lib/age-groups";
@@ -393,6 +394,11 @@ export default function ParentingHub() {
             );
           })}
         </div>
+      )}
+
+      {/* 🧠 Parent Command Center — overview · insights · quick actions */}
+      {effectiveChild && (
+        <ParentCommandCenter child={{ id: effectiveChild.id, name: effectiveChild.name }} />
       )}
 
       {/* Infant & Toddler Hub — only when any child is ≤ 24 months */}
