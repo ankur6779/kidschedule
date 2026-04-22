@@ -196,6 +196,7 @@ function RootLayoutNav() {
     <ReferralAttributionBridge />
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
       <Stack.Screen name="tutorial" />
+      <Stack.Screen name="insights" />
       <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />

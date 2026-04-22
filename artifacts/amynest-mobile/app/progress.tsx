@@ -95,6 +95,17 @@ export default function ProgressScreen() {
           </View>
         ))}
 
+        <Pressable onPress={() => router.push("/insights" as never)} style={styles.askAmyCta}>
+          <LinearGradient colors={[brand.purple500, "#EC4899"]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.askAmyCtaGrad}>
+            <Ionicons name="analytics" size={20} color="#fff" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>View full insights</Text>
+              <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 11, marginTop: 2 }}>Week-over-week trends, per-child breakdown & more</Text>
+            </View>
+            <Ionicons name="arrow-forward" size={18} color="#fff" />
+          </LinearGradient>
+        </Pressable>
+
         <Pressable onPress={() => router.push("/amy-ai")} style={styles.askAmyCta}>
           <LinearGradient colors={[colors.light.primary, colors.light.accent]} start={{x:0,y:0}} end={{x:1,y:1}} style={styles.askAmyCtaGrad}>
             <MaterialCommunityIcons name="brain" size={20} color="#fff" />
