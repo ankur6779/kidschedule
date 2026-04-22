@@ -21,6 +21,7 @@ type Step =
   | "child-school-start" | "child-school-end" | "child-school-days"
   | "child-wake" | "child-sleep"
   | "child-food" | "add-more" | "parent-name" | "parent-role" | "parent-work"
+  | "parent-region" | "parent-mobile" | "parent-allergies"
   | "saving" | "save-error" | "done";
 
 type ChildData = {
@@ -30,7 +31,7 @@ type ChildData = {
   schoolDays: number[] | null; // ISO weekdays (1=Mon..7=Sun); null when not school-going
   wakeUpTime: string; sleepTime: string; foodType: string;
 };
-type ParentData = { name: string; role: string; workType: string };
+type ParentData = { name: string; role: string; workType: string; region: string; mobileNumber?: string; allergies?: string };
 
 function genId(): string { return Date.now().toString() + Math.random().toString(36).substr(2, 6); }
 
@@ -63,6 +64,17 @@ const WORK_TYPES: { label: string; value: string }[] = [
   { label: "Office Job", value: "office" },
   { label: "Not Working", value: "not_working" },
   { label: "Homemaker", value: "homemaker" },
+];
+
+const REGION_OPTS: { label: string; value: string }[] = [
+  { label: "Pan-Indian (Mixed)", value: "pan_indian" },
+  { label: "North Indian", value: "north_indian" },
+  { label: "South Indian", value: "south_indian" },
+  { label: "Bengali", value: "bengali" },
+  { label: "Gujarati", value: "gujarati" },
+  { label: "Maharashtrian", value: "maharashtrian" },
+  { label: "Punjabi", value: "punjabi" },
+  { label: "Global / Continental", value: "global" },
 ];
 
 const PRIMARY = brand.indigo500;
@@ -151,13 +163,18 @@ export default function OnboardingScreen() {
         if (!res.ok) throw new Error(`Failed to create child: ${res.status}`);
       }
 
+      const parentPayload: Record<string, unknown> = {
+        name: finalParent.name || "",
+        role: (finalParent.role || "mother").toLowerCase(),
+        workType: finalParent.workType || "work_from_home",
+        region: finalParent.region || "pan_indian",
+      };
+      if (finalParent.mobileNumber) parentPayload.mobileNumber = finalParent.mobileNumber;
+      if (finalParent.allergies) parentPayload.allergies = finalParent.allergies;
+
       const profileRes = await authFetch("/api/parent-profile", {
         method: "PUT",
-        body: JSON.stringify({
-          name: finalParent.name || "",
-          role: (finalParent.role || "mother").toLowerCase(),
-          workType: finalParent.workType || "work_from_home",
-        }),
+        body: JSON.stringify(parentPayload),
       });
       if (!profileRes.ok) throw new Error(`Failed to update profile: ${profileRes.status}`);
 
@@ -613,14 +630,114 @@ export default function OnboardingScreen() {
                 style={[styles.chip, { backgroundColor: selected === wt.value ? PRIMARY : colors.card, borderColor: selected === wt.value ? PRIMARY : colors.border }]}
                 onPress={() => {
                   setSelected(wt.value); Haptics.selectionAsync();
-                  const updatedParent: ParentData = { ...parent, workType: wt.value } as ParentData;
-                  setParent(updatedParent);
-                  userReplies(wt.label, "saving");
-                  setTimeout(() => saveEverything(updatedParent, children), 800);
+                  setParent(p => ({ ...p, workType: wt.value }));
+                  userReplies(wt.label, "parent-region", "Which regional cuisine should Amy plan meals from? 🍛");
                 }}>
                 <Text style={[styles.chipText, { color: selected === wt.value ? "#fff" : colors.foreground }]}>{wt.label}</Text>
               </TouchableOpacity>
             ))}
+          </View>
+        );
+
+      case "parent-region":
+        return (
+          <View style={styles.chipGrid}>
+            {REGION_OPTS.map(opt => (
+              <TouchableOpacity key={opt.value}
+                style={[styles.chip, { backgroundColor: selected === opt.value ? PRIMARY : colors.card, borderColor: selected === opt.value ? PRIMARY : colors.border }]}
+                onPress={() => {
+                  setSelected(opt.value); Haptics.selectionAsync();
+                  setParent(p => ({ ...p, region: opt.value }));
+                  userReplies(opt.label, "parent-mobile", "📱 What's your mobile number for reminders? (You can skip this.)");
+                }}>
+                <Text style={[styles.chipText, { color: selected === opt.value ? "#fff" : colors.foreground }]}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+
+      case "parent-mobile":
+        return (
+          <View style={{ gap: 8 }}>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[styles.textInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+                value={textInput}
+                onChangeText={setTextInput}
+                placeholder="+91 98765 43210"
+                placeholderTextColor={colors.mutedForeground}
+                keyboardType="phone-pad"
+                autoFocus
+                returnKeyType="send"
+                onSubmitEditing={() => {
+                  const m = textInput.trim();
+                  if (!m) return;
+                  setParent(p => ({ ...p, mobileNumber: m }));
+                  userReplies(m, "parent-allergies", "🌾 Any food allergies to avoid in meal plans? (Skip if none.)");
+                }}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, { backgroundColor: PRIMARY }]}
+                onPress={() => {
+                  const m = textInput.trim();
+                  if (!m) return;
+                  setParent(p => ({ ...p, mobileNumber: m }));
+                  userReplies(m, "parent-allergies", "🌾 Any food allergies to avoid in meal plans? (Skip if none.)");
+                }}>
+                <Ionicons name="arrow-forward" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              onPress={() => userReplies("Skip — I'll add it later", "parent-allergies", "🌾 Any food allergies to avoid in meal plans? (Skip if none.)")}
+              style={{ alignSelf: "center", paddingVertical: 6, paddingHorizontal: 12 }}>
+              <Text style={{ fontSize: 13, color: colors.mutedForeground }}>Skip — I'll add it later</Text>
+            </TouchableOpacity>
+          </View>
+        );
+
+      case "parent-allergies":
+        return (
+          <View style={{ gap: 8 }}>
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[styles.textInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
+                value={textInput}
+                onChangeText={setTextInput}
+                placeholder="e.g. peanuts, dairy, shellfish..."
+                placeholderTextColor={colors.mutedForeground}
+                autoFocus
+                returnKeyType="send"
+                onSubmitEditing={() => {
+                  const a = textInput.trim();
+                  if (!a) return;
+                  const updatedParent = { ...parent, allergies: a } as ParentData;
+                  setParent(updatedParent);
+                  userReplies(a, "saving");
+                  setTimeout(() => saveEverything(updatedParent, children), 800);
+                }}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, { backgroundColor: PRIMARY }]}
+                onPress={() => {
+                  const a = textInput.trim();
+                  if (!a) return;
+                  const updatedParent = { ...parent, allergies: a } as ParentData;
+                  setParent(updatedParent);
+                  userReplies(a, "saving");
+                  setTimeout(() => saveEverything(updatedParent, children), 800);
+                }}>
+                <Ionicons name="arrow-forward" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              onPress={() => {
+                const updatedParent = { ...parent } as ParentData;
+                userReplies("Skip — no allergies", "saving");
+                setTimeout(() => saveEverything(updatedParent, children), 800);
+              }}
+              style={{ alignSelf: "center", paddingVertical: 6, paddingHorizontal: 12 }}>
+              <Text style={{ fontSize: 13, color: colors.mutedForeground }}>Skip — no allergies</Text>
+            </TouchableOpacity>
           </View>
         );
 
