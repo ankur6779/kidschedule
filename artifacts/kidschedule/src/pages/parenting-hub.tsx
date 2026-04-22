@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import {
   BookOpen, Brain, Sparkles, Heart, Palette,
   ChevronDown, ChevronUp, MessageCircleHeart,
-  Calendar, ArrowRight, Trophy, Compass,
+  Calendar, ArrowRight, Trophy, Compass, GraduationCap,
 } from "lucide-react";
 import { OlympiadZone } from "@/components/olympiad-zone";
+import { SmartStudyZone } from "@/components/smart-study-zone";
 import { LifeSkillsZone } from "@/components/life-skills-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
@@ -514,6 +515,20 @@ export default function ParentingHub() {
               />
             </HubSection>
           </LockedBlock>
+        )}
+
+        {/* Smart Study Zone (Nursery–Class 10) — sits alongside Olympiad */}
+        {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 16 && (
+          <HubSection
+            id="smart-study"
+            icon={<GraduationCap className="h-5 w-5 text-indigo-600" />}
+            title="📚 Smart Study Zone"
+            description="Adaptive learning Nursery → Class 10, with audio + practice"
+            accentClass="bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-purple-100 dark:to-purple-500/20"
+            onOpen={() => hubUsage.markBlockUsed("smart_study")}
+          >
+            <SmartStudyZone />
+          </HubSection>
         )}
 
         {/* 6. Smart Olympiad Zone */}

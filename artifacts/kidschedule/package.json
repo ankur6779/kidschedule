@@ -83,6 +83,7 @@
     "@workspace/behavior-tracker": "workspace:*",
     "@workspace/family-routine": "workspace:*",
     "@workspace/infant-hub": "workspace:*",
+    "@workspace/study-zone": "workspace:*",
     "@workspace/infant-problems": "workspace:*"
   }
 }

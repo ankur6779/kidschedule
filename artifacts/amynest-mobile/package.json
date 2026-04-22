@@ -62,6 +62,7 @@
     "@workspace/behavior-tracker": "workspace:*",
     "@workspace/family-routine": "workspace:*",
     "@workspace/infant-hub": "workspace:*",
+    "@workspace/study-zone": "workspace:*",
     "@workspace/infant-problems": "workspace:*",
     "@workspace/life-skills": "workspace:*",
     "expo-auth-session": "~7.0.10",

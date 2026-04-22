@@ -25,6 +25,7 @@ import BabysittersPage from "@/pages/babysitters/index";
 import AssistantPage from "@/pages/assistant";
 import ProgressPage from "@/pages/progress";
 import ParentingHub from "@/pages/parenting-hub";
+import StudyPage from "@/pages/study";
 import AmyCoachPage from "@/pages/ai-coach";
 import AmyCoachProgressPage from "@/pages/ai-coach-progress";
 import AudioLessonsPage from "@/pages/audio-lessons";
@@ -413,6 +414,9 @@ function ClerkProviderWithRoutes() {
             </Route>
             <Route path="/parenting-hub">
               {() => <ProtectedRoute component={ParentingHub} />}
+            </Route>
+            <Route path="/study">
+              {() => <ProtectedRoute component={StudyPage} />}
             </Route>
             <Route path="/amy-coach">
               {() => <ProtectedRoute component={AmyCoachPage} />}

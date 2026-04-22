@@ -324,6 +324,31 @@ export default function HubScreen() {
         </Section>
         </View>
 
+        {/* Smart Study Zone — adaptive learning Nursery → Class 10 */}
+        <View style={tileW("smart-study")}>
+          <Pressable
+            onPress={() => { hubUsage.markBlockUsed("smart_study"); router.push("/study" as never); }}
+            style={{ borderRadius: 18, overflow: "hidden" }}
+          >
+            <LinearGradient
+              colors={["#6366F1", "#A855F7"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ padding: 16, gap: 8 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="school" size={20} color="#fff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>📚 Smart Study Zone</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.85)", fontSize: 11.5, marginTop: 2 }}>Nursery → Class 10 · audio + practice</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.8)" />
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </View>
+
         <LockedBlock
           reason="hub_locked"
           locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("activities")}
