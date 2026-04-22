@@ -20,6 +20,7 @@ import mealsRouter from "./meals";
 import accountRouter from "./account";
 import pushRouter from "./push";
 import notificationsRouter from "./notifications";
+import authDebugRouter from "./auth-debug";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -32,6 +33,9 @@ router.use(worksheetsRouter);
 // BEFORE the global requireAuth gate. Authenticated subscription
 // endpoints inside the router enforce auth on a per-route basis.
 router.use(subscriptionRouter);
+// Auth diagnostic endpoint must be BEFORE requireAuth so it works even when
+// the JWT is invalid/expired — that's when we need it most.
+router.use(authDebugRouter);
 router.use(requireAuth);
 router.use(onboardingRouter);
 router.use(childrenRouter);
