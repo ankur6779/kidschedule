@@ -1,0 +1,181 @@
+Add a new section “📚 Smart Study Zone” inside Parent Hub in my app "AmyNest" (Web + Mobile).
+
+IMPORTANT:
+- Do NOT upload copyrighted textbook PDFs
+- Use AI-generated notes + practice + safe external links only
+- Keep UI clean, structured, and fast
+- Mobile + web responsive
+
+--------------------------------
+1. Section Purpose (Core 🔥)
+--------------------------------
+Provide class-wise, subject-wise learning support:
+
+- Simple notes
+- Practice questions
+- Worksheets
+- Concept explanations
+
+--------------------------------
+2. Navigation Structure 🧭
+--------------------------------
+
+Level 1:
+- Select Class (1–10)
+
+Level 2:
+- Select Subject:
+  - Math
+  - Science
+  - English
+  - GK
+
+Level 3:
+- Topic List
+
+Example:
+Class 3 → Math → Fractions
+
+--------------------------------
+3. Content Types (Per Topic)
+--------------------------------
+
+Each topic should include:
+
+(A) Quick Notes
+- Simple explanation (3–5 lines)
+
+(B) Amy AI Explanation 🤖
+- Easy language
+- Example-based
+
+(C) Practice Questions
+- 5 MCQ or short questions
+
+(D) Worksheet (Optional)
+- Downloadable (PDF/image generated internally)
+
+--------------------------------
+4. Amy AI Integration 🔥🔥
+--------------------------------
+
+Amy AI should:
+
+- Explain topic simply
+- Give examples
+- Suggest practice
+
+Example:
+
+“Amy AI:
+Fractions mean parts of a whole.
+Example: 1/2 = half of something”
+
+--------------------------------
+5. UI Design (Premium 🔥)
+--------------------------------
+
+- Card-based layout
+- Clean spacing
+- Glass + glow style (same as Parent Hub)
+
+Topic card shows:
+- Title
+- Short description
+- Difficulty tag
+
+--------------------------------
+6. Topic Detail View
+--------------------------------
+
+On click:
+
+Show:
+
+- Notes
+- AI explanation
+- Practice questions
+- “Try Now” button
+
+--------------------------------
+7. External Links (Safe Option)
+--------------------------------
+
+- Add “View Book Reference” (optional)
+- Only use safe/public links
+- Open in browser
+
+--------------------------------
+8. Age/Class Filtering 🧠
+--------------------------------
+
+- Content should match selected class
+- Keep language simple for lower classes
+
+--------------------------------
+9. Progress Tracking 📊
+--------------------------------
+
+Track:
+
+- Topics completed
+- Practice accuracy
+
+Show:
+“Math Progress: 60%”
+
+--------------------------------
+10. Reward Integration 🎮
+--------------------------------
+
+- Completing topic:
+  → +10 points
+- Correct answers:
+  → bonus points
+
+--------------------------------
+11. Language Support 🌐
+--------------------------------
+
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+12. Data System
+--------------------------------
+
+Use local JSON:
+
+{
+  class: "3",
+  subject: "Math",
+  topic: "Fractions",
+  notes: "Simple explanation...",
+  questions: ["Q1", "Q2"],
+  difficulty: "Easy"
+}
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- No heavy API calls
+- Fast loading
+- Lazy content load
+
+--------------------------------
+14. Keep it simple
+--------------------------------
+
+- Avoid long content
+- Focus on clarity
+
+--------------------------------
+Return:
+Fully working Smart Study Zone with:
+- Class-wise navigation
+- AI explanations
+- Practice system
+- Progress tracking
+- Premium UI

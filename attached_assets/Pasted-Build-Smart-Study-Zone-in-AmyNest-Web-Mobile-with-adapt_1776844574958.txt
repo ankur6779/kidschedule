@@ -1,0 +1,184 @@
+Build “📚 Smart Study Zone” in AmyNest (Web + Mobile) with adaptive learning from Nursery to Class 10 using local datasets.
+
+IMPORTANT:
+- No copyrighted PDFs
+- Use provided JSON datasets
+- Age-adaptive UI
+- Fast + lightweight
+
+--------------------------------
+1. SYSTEM MODES
+--------------------------------
+
+IF class <= UKG:
+→ Play Mode
+
+ELSE:
+→ Study Mode
+
+--------------------------------
+2. DATASETS (USE THESE STRUCTURES)
+--------------------------------
+
+(A) NURSERY DATA
+
+{
+  "class": "Nursery",
+  "category": "Alphabets",
+  "items": [
+    {
+      "letter": "A",
+      "word": "Apple",
+      "image": "https://source.unsplash.com/200x200/?apple",
+      "audioText": "A for Apple"
+    },
+    {
+      "letter": "B",
+      "word": "Ball",
+      "image": "https://source.unsplash.com/200x200/?ball",
+      "audioText": "B for Ball"
+    }
+  ]
+}
+
+--------------------------------
+
+(B) CLASS 1–5 DATA
+
+{
+  "class": "3",
+  "subject": "Math",
+  "topics": [
+    {
+      "topic": "Addition",
+      "notes": "Addition means combining numbers",
+      "example": "2 + 3 = 5",
+      "questions": [
+        "2 + 2 = ?",
+        "5 + 3 = ?"
+      ]
+    },
+    {
+      "topic": "Subtraction",
+      "notes": "Subtraction means taking away",
+      "example": "5 - 2 = 3",
+      "questions": [
+        "6 - 2 = ?",
+        "9 - 4 = ?"
+      ]
+    }
+  ]
+}
+
+--------------------------------
+
+(C) CLASS 6–10 DATA
+
+{
+  "class": "8",
+  "subject": "Science",
+  "topics": [
+    {
+      "topic": "Photosynthesis",
+      "notes": "Plants make food using sunlight",
+      "example": "Sunlight + CO2 → Food",
+      "questions": [
+        "What is photosynthesis?",
+        "Why is sunlight needed?"
+      ]
+    }
+  ]
+}
+
+--------------------------------
+3. UI IMPLEMENTATION
+--------------------------------
+
+(A) Nursery Mode:
+- Grid of big cards
+- Image + tap to play audio
+- Minimal text
+
+(B) Study Mode:
+- Class → Subject → Topic
+- Card-based layout
+
+--------------------------------
+4. TOPIC SCREEN
+--------------------------------
+
+Show:
+
+- Notes
+- Example
+- Questions
+- “Try Now” button
+
+--------------------------------
+5. AUDIO SYSTEM 🔊
+--------------------------------
+
+- Nursery:
+  → Auto TTS from audioText
+
+- Others:
+  → Optional “Read Aloud”
+
+--------------------------------
+6. AMY AI INTEGRATION 🤖
+--------------------------------
+
+Generate:
+
+- Simple explanation (based on notes)
+- Encourage user
+
+Example:
+“Amy AI:
+Let’s try this together 😊”
+
+--------------------------------
+7. PROGRESS SYSTEM
+--------------------------------
+
+Track:
+
+- Completed topics
+- Correct answers
+
+Show:
+
+“Progress: 60%”
+
+--------------------------------
+8. REWARD SYSTEM
+--------------------------------
+
+- Topic complete → +10 points
+- Correct answers → +5 bonus
+
+--------------------------------
+9. NAVIGATION
+--------------------------------
+
+Level 1: Class  
+Level 2: Subject / Category  
+Level 3: Topic  
+Level 4: Content  
+
+--------------------------------
+10. PERFORMANCE
+--------------------------------
+
+- Use local JSON only
+- Lazy load images
+- Fast rendering
+
+--------------------------------
+Return:
+Full Smart Study Zone with:
+- Nursery play mode
+- Class 1–10 study mode
+- Dataset integration
+- Audio + AI support
+- Progress + rewards

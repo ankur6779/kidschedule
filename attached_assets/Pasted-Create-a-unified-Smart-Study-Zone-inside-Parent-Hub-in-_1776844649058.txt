@@ -1,0 +1,243 @@
+Create a unified “📚 Smart Study Zone” inside Parent Hub in my app "AmyNest" (Web + Mobile) that supports learning from Nursery to Class 10 with adaptive content based on age.
+
+IMPORTANT:
+- Do NOT use copyrighted textbook PDFs
+- Use structured content + Amy AI explanations
+- Content must adapt based on age group
+- Mobile-first + premium UI
+
+--------------------------------
+1. Core Concept (🔥)
+--------------------------------
+Single system → adaptive learning by age:
+
+- Nursery–UKG → Play & Learn
+- Class 1–5 → Basic Learning
+- Class 6–10 → Study + Practice
+
+--------------------------------
+2. Entry Flow 🧭
+--------------------------------
+
+Step 1:
+Select Child Profile (auto-detect age/class)
+
+Step 2:
+Load appropriate mode:
+
+- Nursery–UKG → Play Mode
+- Class 1+ → Study Mode
+
+--------------------------------
+3. NURSERY–UKG (Play & Learn Mode 👶🔥)
+--------------------------------
+
+Replace subjects with:
+
+- Alphabets
+- Numbers
+- Colors & Shapes
+- Animals
+- Fruits & Food
+- Rhymes
+
+--------------------------------
+Content Structure:
+
+Each item includes:
+
+- Large image
+- Audio playback (“A for Apple”)
+- Tap interaction
+
+--------------------------------
+UI Rules:
+
+- Big buttons
+- Minimal text
+- Bright visuals
+
+--------------------------------
+Amy AI Role:
+
+Simple voice/text:
+“A for Apple 🍎”
+
+--------------------------------
+Progress:
+
+- Show completion:
+  “Alphabets: 10/26”
+
+--------------------------------
+4. CLASS 1–5 (Basic Learning 📘)
+--------------------------------
+
+Subjects:
+
+- Math
+- Science
+- English
+- GK
+
+--------------------------------
+Content per topic:
+
+- Simple notes (3–5 lines)
+- Amy AI explanation (easy language)
+- 5 practice questions
+
+--------------------------------
+Example:
+
+Topic: Addition
+
+Amy AI:
+“Addition means combining numbers”
+
+--------------------------------
+5. CLASS 6–10 (Advanced Study 📊)
+--------------------------------
+
+Subjects:
+
+- Math
+- Science
+- English
+
+--------------------------------
+Content per topic:
+
+- Concept explanation
+- Examples
+- Practice questions
+- Optional worksheet
+
+--------------------------------
+Amy AI Role:
+
+- Explain concepts
+- Give examples
+- Suggest practice
+
+--------------------------------
+6. UI Design (Premium 🔥)
+--------------------------------
+
+- Card-based layout
+- Glassmorphism style
+- Smooth navigation
+
+--------------------------------
+Navigation Levels:
+
+Level 1: Class
+Level 2: Subject / Category
+Level 3: Topic
+Level 4: Content
+
+--------------------------------
+7. Topic Detail Screen
+--------------------------------
+
+Show:
+
+- Notes
+- Amy AI explanation
+- Practice questions
+- “Try Now” button
+
+--------------------------------
+8. Audio Support 🔊
+--------------------------------
+
+- Nursery: mandatory audio
+- Higher classes: optional “Read Aloud”
+
+--------------------------------
+9. Reward Integration 🎮
+--------------------------------
+
+- Complete topic → +10 points
+- Correct answers → bonus
+
+--------------------------------
+10. Progress Tracking 📊
+--------------------------------
+
+Track:
+
+- Topics completed
+- Accuracy
+- Skill level
+
+Show:
+
+“Math Progress: 65%”
+
+--------------------------------
+11. Amy AI Integration 🤖
+--------------------------------
+
+Amy AI should:
+
+- Adjust explanation based on age
+- Suggest next topic
+- Give encouragement
+
+--------------------------------
+12. Data System
+--------------------------------
+
+Use local JSON:
+
+{
+  class: "Nursery",
+  category: "Alphabets",
+  item: "A",
+  image: "url",
+  audio: "url"
+}
+
+{
+  class: "3",
+  subject: "Math",
+  topic: "Fractions",
+  notes: "Simple explanation",
+  questions: ["Q1", "Q2"]
+}
+
+--------------------------------
+13. Performance
+--------------------------------
+
+- No heavy API calls
+- Lazy loading
+- Fast UI
+
+--------------------------------
+14. Language Support 🌐
+--------------------------------
+
+- English
+- Hindi
+- Hinglish
+
+--------------------------------
+15. Keep it simple
+--------------------------------
+
+- Short content
+- Clear UI
+- Avoid overload
+
+--------------------------------
+Return:
+Complete Smart Study Zone with:
+- Nursery play mode
+- Class 1–10 study mode
+- AI explanations
+- Audio support
+- Practice system
+- Progress tracking
+- Premium UI
