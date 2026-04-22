@@ -8,6 +8,7 @@ import {
   type PlanCard,
   type Plan,
 } from "@/services/subscriptionApi";
+import { humanizeError } from "@/utils/humanizeError";
 
 type State = {
   entitlements: Entitlements | null;
@@ -45,7 +46,8 @@ export const useSubscriptionStore = create<State & Actions>((set, get) => ({
       const data = await fetchSubscription();
       set({ entitlements: data.entitlements, plans: data.plans, loading: false });
     } catch (err) {
-      set({ loading: false, error: err instanceof Error ? err.message : "load failed" });
+      console.error("[subscription] load failed", err);
+      set({ loading: false, error: humanizeError(err, "Couldn't load your subscription details.") });
     }
   },
   refresh: async () => {

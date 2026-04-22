@@ -13,6 +13,7 @@ import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTranslation } from "react-i18next";
 import { brand } from "@/constants/colors";
+import { humanizeError } from "@/utils/humanizeError";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -49,8 +50,8 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: { message?: string }[] };
-      Alert.alert("Sign Up Failed", clerkErr.errors?.[0]?.message ?? "Please try again.");
+      console.error("[sign-up] create failed", err);
+      Alert.alert("Sign Up Failed", humanizeError(err, "Please try again."));
     } finally {
       setLoading(false);
     }
@@ -67,8 +68,8 @@ export default function SignUpScreen() {
         router.replace("/onboarding");
       }
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: { message?: string }[] };
-      Alert.alert("Verification Failed", clerkErr.errors?.[0]?.message ?? "Invalid code.");
+      console.error("[sign-up] verify failed", err);
+      Alert.alert("Verification Failed", humanizeError(err, "Invalid code. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -85,9 +86,8 @@ export default function SignUpScreen() {
         router.replace("/onboarding");
       }
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: { message?: string }[] };
-      const msg = clerkErr.errors?.[0]?.message ?? "Google sign-in failed. Please try again.";
-      Alert.alert("Sign Up Failed", msg);
+      console.error("[sign-up] google failed", err);
+      Alert.alert("Sign Up Failed", humanizeError(err, "Google sign-in failed. Please try again."));
     } finally {
       setGoogleLoading(false);
     }

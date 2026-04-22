@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { brand } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 import { useTheme } from "@/contexts/ThemeContext";
+import { humanizeError } from "@/utils/humanizeError";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -53,8 +54,8 @@ export default function SignInScreen() {
         router.replace("/(tabs)");
       }
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: { message?: string }[] };
-      Alert.alert("Sign In Failed", clerkErr.errors?.[0]?.message ?? "Please check your credentials.");
+      console.error("[sign-in] failed", err);
+      Alert.alert("Sign In Failed", humanizeError(err, "Please check your details and try again."));
     } finally {
       setLoading(false);
     }
@@ -71,8 +72,8 @@ export default function SignInScreen() {
         router.replace("/(tabs)");
       }
     } catch (err: unknown) {
-      const clerkErr = err as { errors?: { message?: string }[] };
-      const msg = clerkErr.errors?.[0]?.message ?? "Google sign-in failed. Please try again.";
+      console.error("[sign-in] google failed", err);
+      const msg = humanizeError(err, "Google sign-in failed. Please try again.");
       Alert.alert("Sign In Failed", msg);
     } finally {
       setGoogleLoading(false);

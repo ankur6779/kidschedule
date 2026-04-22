@@ -96,7 +96,7 @@ router.get("/videos", async (req, res) => {
     });
   } catch (err) {
     logger.error({ err }, "Failed to list videos");
-    res.status(500).json({ error: (err as Error).message });
+    res.status(500).json({ error: "Internal error. Please try again." });
   }
 });
 

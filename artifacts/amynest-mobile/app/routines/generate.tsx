@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Animated, Easing } from "react-native";
 import {
   View,
   Text,
@@ -426,6 +427,77 @@ export default function GenerateRoutineScreen() {
           {formatDate(date)}.
         </Text>
       </ScrollView>
+
+      {isGenerating && (
+        <GenerateProgressOverlay childName={selectedChildData?.name ?? "your child"} />
+      )}
+    </View>
+  );
+}
+
+// ─── Generate progress overlay ───────────────────────────────────────────────
+const GENERATE_STEPS = [
+  { icon: "person-outline" as const, label: "Reading {name}'s profile…" },
+  { icon: "color-palette-outline" as const, label: "Picking the right activities…" },
+  { icon: "time-outline" as const, label: "Optimising the schedule…" },
+  { icon: "sparkles-outline" as const, label: "Adding Amy's finishing touches…" },
+];
+
+function GenerateProgressOverlay({ childName }: { childName: string }) {
+  const [stepIndex, setStepIndex] = useState(0);
+  const barAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStepIndex((i) => (i + 1) % GENERATE_STEPS.length);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    barAnim.setValue(0);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(barAnim, {
+          toValue: 1,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(barAnim, {
+          toValue: 0,
+          duration: 1400,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [barAnim]);
+
+  const widthInterp = barAnim.interpolate({ inputRange: [0, 1], outputRange: ["20%", "90%"] });
+  const step = GENERATE_STEPS[stepIndex];
+  const label = step.label.replace("{name}", childName);
+
+  return (
+    <View style={styles.progressOverlay} pointerEvents="auto">
+      <View style={styles.progressCard}>
+        <LinearGradient
+          colors={[brand.purple500, "#EC4899"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.progressIconWrap}
+        >
+          <Ionicons name={step.icon} size={28} color="#fff" />
+        </LinearGradient>
+        <Text style={styles.progressTitle}>Amy is planning</Text>
+        <Text style={styles.progressStep}>{label}</Text>
+        <View style={styles.progressBarTrack}>
+          <Animated.View style={[styles.progressBarFill, { width: widthInterp }]} />
+        </View>
+        <Text style={styles.progressHint}>This usually takes a few seconds.</Text>
+      </View>
     </View>
   );
 }
@@ -562,4 +634,59 @@ const styles = StyleSheet.create({
   emptyWrap: { alignItems: "center" },
   emptyTitle: { fontSize: 18, fontWeight: "800", color: "#FFFFFF", marginBottom: 6 },
   emptySub: { fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: "center" },
+  progressOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(15,15,25,0.78)",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+  },
+  progressCard: {
+    width: "100%",
+    maxWidth: 360,
+    backgroundColor: "#1A1530",
+    borderRadius: 24,
+    padding: 28,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  progressIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  progressTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 6,
+  },
+  progressStep: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.78)",
+    textAlign: "center",
+    marginBottom: 20,
+    minHeight: 36,
+  },
+  progressBarTrack: {
+    width: "100%",
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    overflow: "hidden",
+    marginBottom: 14,
+  },
+  progressBarFill: {
+    height: "100%",
+    borderRadius: 3,
+    backgroundColor: brand.purple500,
+  },
+  progressHint: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.45)",
+  },
 });

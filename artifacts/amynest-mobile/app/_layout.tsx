@@ -1,5 +1,6 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
+import { loadTutorialStatus, subscribeTutorialStatus, getTutorialStatus } from "@/utils/tutorialState";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -22,8 +23,10 @@ import { useSubscriptionBootstrap } from "@/hooks/useSubscription";
 import { usePushRegistration } from "@/hooks/usePushRegistration";
 import "@/i18n";
 import { brand } from "@/constants/colors";
+import { initCrashReporter } from "@/utils/crashReporter";
 
 SplashScreen.preventAutoHideAsync();
+initCrashReporter();
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -44,13 +47,25 @@ const tokenCache = {
 };
 
 type OnboardingStatus = "unknown" | "checking" | "complete" | "incomplete" | "error";
+type TutorialStatus = "checking" | "needed" | "done";
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { isSignedIn, isLoaded, getToken } = useAuth();
   const segments = useSegments();
   const router = useRouter();
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus>("unknown");
+  const [tutorialStatus, setTutorialStatus] = useState<TutorialStatus>(() => getTutorialStatus());
   const checkInFlightRef = useRef(false);
+
+  // First-launch tutorial: subscribe so completion (markTutorialSeen) immediately
+  // updates the gate and AuthGate stops forcing /tutorial.
+  useEffect(() => {
+    const unsub = subscribeTutorialStatus(setTutorialStatus);
+    if (getTutorialStatus() === "checking") {
+      loadTutorialStatus().catch(() => {});
+    }
+    return unsub;
+  }, []);
 
   useEffect(() => {
     if (isSignedIn && getToken) {
@@ -97,6 +112,15 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoaded) return;
+    if (tutorialStatus === "checking") return;
+
+    const inTutorial = (segments[0] as string) === "tutorial";
+
+    // First-launch tutorial takes priority over every other route.
+    if (tutorialStatus === "needed") {
+      if (!inTutorial) router.replace("/tutorial" as never);
+      return;
+    }
 
     const inTabsGroup = segments[0] === "(tabs)";
     const inOnboarding = segments[0] === "onboarding";
@@ -104,7 +128,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     const inWelcome = segments[0] === "welcome" || (segments.length as number) === 0;
 
     if (!isSignedIn) {
-      if (!inAuth && !inWelcome) router.replace("/welcome");
+      if (!inAuth && !inWelcome && !inTutorial) router.replace("/welcome");
       return;
     }
 
@@ -139,7 +163,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
         router.replace("/(tabs)");
       }
     }
-  }, [isLoaded, isSignedIn, segments, onboardingStatus]);
+  }, [isLoaded, isSignedIn, segments, onboardingStatus, tutorialStatus]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -150,7 +174,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   }, [isSignedIn]);
 
   const isCheckingOnboarding = isSignedIn && (onboardingStatus === "unknown" || onboardingStatus === "checking");
-  const isAuthTransition = !isLoaded || isCheckingOnboarding;
+  const isAuthTransition = !isLoaded || isCheckingOnboarding || tutorialStatus === "checking";
 
   const c = useColors();
 
@@ -171,6 +195,7 @@ function RootLayoutNav() {
     <>
     <ReferralAttributionBridge />
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.background } }}>
+      <Stack.Screen name="tutorial" />
       <Stack.Screen name="welcome" />
       <Stack.Screen name="sign-in" />
       <Stack.Screen name="sign-up" />
