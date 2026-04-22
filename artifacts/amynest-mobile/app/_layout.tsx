@@ -209,6 +209,8 @@ function RootLayoutNav() {
           headerStyle: { backgroundColor: c.background },
         }}
       />
+      <Stack.Screen name="privacy" options={{ headerShown: false }} />
+      <Stack.Screen name="coach/progress" options={{ headerShown: false }} />
       {__DEV__ && (
         <Stack.Screen
           name="dev/theme"

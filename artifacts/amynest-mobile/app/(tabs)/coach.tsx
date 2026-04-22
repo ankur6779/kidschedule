@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import {
@@ -13,7 +13,7 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { paletteFor } from "@/lib/theme";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import AiQuotaBanner from "@/components/AiQuotaBanner";
 import { useSubscriptionStore } from "@/store/useSubscriptionStore";
 import { useSectionUsage } from "@/hooks/useSectionUsage";
@@ -36,7 +36,7 @@ interface Win {
   micro_task: string; duration: string; science_reference: string;
 }
 interface Plan { title: string; root_cause: string; summary: string; wins: Win[] }
-type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem";
+type Phase = "goals" | "questions" | "loading" | "result" | "infantProblem" | "resuming";
 type Feedback = "yes" | "somewhat" | "no";
 type Question = {
   id: "ageGroup" | "severity" | "triggers" | "routine" | "goalRefinement";
@@ -145,7 +145,9 @@ export default function CoachScreen() {
   const { profileComplete, isLoading: profileLoading } = useProfileComplete();
   const { width } = useWindowDimensions();
 
-  const [phase, setPhase] = useState<Phase>("goals");
+  const params = useLocalSearchParams<{ resume?: string }>();
+  const resumeSessionId = typeof params.resume === "string" ? params.resume : "";
+  const [phase, setPhase] = useState<Phase>(resumeSessionId ? "resuming" : "goals");
   const [goalSearch, setGoalSearch] = useState("");
   const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -182,6 +184,55 @@ export default function CoachScreen() {
   }, [feedbackByWin, plan]);
 
   const { i18n } = useTranslation();
+
+  // ─── Resume session: detect ?resume=<sessionId>, load plan + feedback ────
+  useEffect(() => {
+    if (!resumeSessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await authFetch(`/api/ai-coach/session/${encodeURIComponent(resumeSessionId)}`);
+        if (cancelled) return;
+        if (!res.ok) throw new Error("session not found");
+        const data = (await res.json()) as {
+          sessionId: string;
+          goalId: string;
+          plan: Plan;
+          inputs: { goal: string; ageGroup: string; severity: string; triggers: string[]; routine: string; language?: string };
+          feedbacks: Record<string, string>;
+        };
+        if (cancelled) return;
+
+        const restoredFeedbacks: Record<number, Feedback> = {};
+        for (const [k, v] of Object.entries(data.feedbacks)) {
+          restoredFeedbacks[Number(k)] = v as Feedback;
+        }
+
+        setPlan(data.plan);
+        setSessionId(data.sessionId);
+        setGoalId(data.goalId);
+        setFeedbackByWin(restoredFeedbacks);
+        originalWinCountRef.current = data.plan.wins.length;
+
+        lastPayloadRef.current = {
+          goal: data.inputs.goal,
+          ageGroup: data.inputs.ageGroup,
+          severity: data.inputs.severity,
+          triggers: data.inputs.triggers ?? [],
+          routine: data.inputs.routine,
+        };
+
+        const firstIncomplete = data.plan.wins.findIndex((w) => !restoredFeedbacks[w.win]);
+        setActiveIdx(firstIncomplete >= 0 ? firstIncomplete : data.plan.wins.length - 1);
+        setPhase("result");
+      } catch {
+        if (cancelled) return;
+        setPhase("goals");
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resumeSessionId]);
 
   // Free-tier gate: parents may COMPLETE exactly ONE coach topic for free.
   // The free allowance is consumed only when a topic plan is successfully
@@ -390,6 +441,16 @@ export default function CoachScreen() {
   // RENDER
   // ═══════════════════════════════════════════════════════════════════════
 
+  // ── PHASE: RESUMING ──────────────────────────────────────────────────
+  if (phase === "resuming") {
+    return (
+      <View style={{ flex: 1, backgroundColor: c.background, justifyContent: "center", alignItems: "center", gap: 12 }}>
+        <ActivityIndicator size="large" color={c.primary} />
+        <Text style={{ color: c.textSubtle, fontSize: 13, fontWeight: "600" }}>Loading your plan…</Text>
+      </View>
+    );
+  }
+
   // ── PHASE: GOALS ──────────────────────────────────────────────────────
   if (phase === "goals") {
     const activeCat = selectedCategoryId
@@ -532,6 +593,20 @@ export default function CoachScreen() {
               <Text style={styles.heroTitle}>Amy Coach</Text>
               <Text style={styles.heroSub}>Pick a category — I'll build a 12-step plan</Text>
             </View>
+            <TouchableOpacity
+              onPress={() => { Haptics.selectionAsync(); router.push("/coach/progress" as never); }}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="View my coaching progress"
+              style={{
+                flexDirection: "row", alignItems: "center", gap: 4,
+                paddingHorizontal: 12, paddingVertical: 8, borderRadius: 999,
+                backgroundColor: brandAlpha.violet500_25,
+              }}
+            >
+              <Ionicons name="bar-chart" size={14} color={brand.violet600} />
+              <Text style={{ color: brand.violet600, fontSize: 12, fontWeight: "800" }}>Progress</Text>
+            </TouchableOpacity>
           </View>
 
           <AiQuotaBanner />

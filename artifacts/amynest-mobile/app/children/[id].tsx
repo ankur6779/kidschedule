@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity,
-  ActivityIndicator, Alert, Platform,
+  ActivityIndicator, Alert, Platform, Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import * as ImagePicker from "expo-image-picker";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
 
 type Colors = ReturnType<typeof useColors>;
 
+type Babysitter = { id: number; name: string };
+
 type Child = {
   id: number; name: string; age: number; ageMonths?: number; dob?: string;
   isSchoolGoing?: boolean; childClass?: string;
   schoolStartTime: string; schoolEndTime: string;
   wakeUpTime: string; sleepTime: string; foodType?: string; goals: string;
-  travelMode?: string;
+  travelMode?: string; photoUrl?: string | null; babysitterId?: number | null;
 };
 
 const FOOD_TYPES: { label: string; value: string }[] = [
@@ -48,11 +51,24 @@ export default function ChildDetailScreen() {
   const [foodType, setFoodType] = useState("veg");
   const [travelMode, setTravelMode] = useState("car");
   const [goals, setGoals] = useState("balanced-routine");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [babysitterId, setBabysitterId] = useState<number | null>(null);
+  const [pickingPhoto, setPickingPhoto] = useState(false);
 
   const { data: child, isLoading } = useQuery<Child>({
     queryKey: ["child", id],
     queryFn: () => authFetch(`/api/children/${id}`).then(r => r.json()) as Promise<Child>,
     enabled: !!id && id !== "new",
+  });
+
+  const { data: babysitters = [] } = useQuery<Babysitter[]>({
+    queryKey: ["babysitters"],
+    queryFn: async () => {
+      const r = await authFetch("/api/babysitters");
+      if (!r.ok) return [];
+      const data = await r.json();
+      return Array.isArray(data) ? data : (data?.babysitters ?? []);
+    },
   });
 
   useEffect(() => {
@@ -68,8 +84,33 @@ export default function ChildDetailScreen() {
       setFoodType(child.foodType ?? "veg");
       setTravelMode(child.travelMode ?? "car");
       setGoals(child.goals ?? "balanced-routine");
+      setPhotoUrl(child.photoUrl ?? null);
+      setBabysitterId(child.babysitterId ?? null);
     }
   }, [child]);
+
+  const handlePickPhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (perm.status !== "granted") {
+        Alert.alert("Permission needed", "Allow photo access to update the picture.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true, aspect: [1, 1], quality: 0.6, base64: true,
+      });
+      if (result.canceled || !result.assets[0]?.base64) return;
+      setPickingPhoto(true);
+      const a = result.assets[0];
+      setPhotoUrl(`data:${a.mimeType ?? "image/jpeg"};base64,${a.base64}`);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    } catch {
+      Alert.alert("Error", "Could not load photo.");
+    } finally {
+      setPickingPhoto(false);
+    }
+  };
 
   const handleSave = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -83,6 +124,7 @@ export default function ChildDetailScreen() {
           schoolStartTime: schoolStart, schoolEndTime: schoolEnd,
           wakeUpTime: wakeUp, sleepTime: sleep,
           foodType, travelMode, goals,
+          photoUrl, babysitterId,
         }),
       });
       qc.invalidateQueries({ queryKey: ["children"] });
@@ -131,8 +173,12 @@ export default function ChildDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.topRow}>
-          <View style={[styles.avatar, { backgroundColor: colors.secondary }]}>
-            <Text style={styles.avatarEmoji}>{(child?.age ?? 0) < 4 ? "🧒" : "🧑"}</Text>
+          <View style={[styles.avatar, { backgroundColor: colors.secondary, overflow: "hidden" }]}>
+            {photoUrl ? (
+              <Image source={{ uri: photoUrl }} style={{ width: "100%", height: "100%" }} />
+            ) : (
+              <Text style={styles.avatarEmoji}>{(child?.age ?? 0) < 4 ? "🧒" : "🧑"}</Text>
+            )}
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.childName, { color: colors.foreground }]}>{child?.name}</Text>
@@ -152,6 +198,37 @@ export default function ChildDetailScreen() {
 
         {editing ? (
           <View style={styles.formSection}>
+            <View style={{ alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <TouchableOpacity
+                onPress={handlePickPhoto}
+                disabled={pickingPhoto}
+                activeOpacity={0.85}
+                style={[styles.photoCircle, { backgroundColor: colors.secondary, borderColor: colors.border }]}
+                accessibilityRole="button"
+                accessibilityLabel="Change child photo"
+                testID="child-photo-picker"
+              >
+                {photoUrl ? (
+                  <Image source={{ uri: photoUrl }} style={{ width: "100%", height: "100%" }} />
+                ) : (
+                  <Ionicons name="camera-outline" size={26} color={colors.mutedForeground} />
+                )}
+                {pickingPhoto && (
+                  <View style={styles.photoOverlay}>
+                    <ActivityIndicator color="#fff" />
+                  </View>
+                )}
+                <View style={[styles.photoEditDot, { backgroundColor: colors.primary }]}>
+                  <Ionicons name={photoUrl ? "pencil" : "add"} size={12} color="#fff" />
+                </View>
+              </TouchableOpacity>
+              {photoUrl && (
+                <TouchableOpacity onPress={() => { Haptics.selectionAsync(); setPhotoUrl(null); }}>
+                  <Text style={[styles.photoHint, { color: "#EF4444" }]}>Remove photo</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
             <Field label="Name" value={name} onChange={setName} colors={colors} />
             <Field label="Date of Birth (YYYY-MM-DD)" value={dob} onChange={setDob} colors={colors} keyboardType="numeric" />
 
@@ -197,6 +274,31 @@ export default function ChildDetailScreen() {
                 </TouchableOpacity>
               ))}
             </View>
+
+            <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6, marginTop: 4 }]}>
+              Assigned Babysitter
+            </Text>
+            <View style={styles.chipRow}>
+              <TouchableOpacity
+                style={[styles.chip, { backgroundColor: babysitterId === null ? colors.primary : colors.card, borderColor: babysitterId === null ? colors.primary : colors.border }]}
+                onPress={() => { setBabysitterId(null); Haptics.selectionAsync(); }}
+              >
+                <Text style={[styles.chipText, { color: babysitterId === null ? "#fff" : colors.foreground }]}>None</Text>
+              </TouchableOpacity>
+              {babysitters.map((b) => (
+                <TouchableOpacity key={b.id}
+                  style={[styles.chip, { backgroundColor: babysitterId === b.id ? colors.primary : colors.card, borderColor: babysitterId === b.id ? colors.primary : colors.border }]}
+                  onPress={() => { setBabysitterId(b.id); Haptics.selectionAsync(); }}
+                >
+                  <Text style={[styles.chipText, { color: babysitterId === b.id ? "#fff" : colors.foreground }]}>{b.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            {babysitters.length === 0 && (
+              <Text style={[styles.helperText, { color: colors.mutedForeground }]}>
+                Add babysitters from the Babysitters tab to assign them here.
+              </Text>
+            )}
           </View>
         ) : (
           <View style={styles.infoSection}>
@@ -309,4 +411,21 @@ const styles = StyleSheet.create({
   infoValue: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
   deleteBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
   deleteBtnText: { color: "#EF4444", fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  photoCircle: {
+    width: 96, height: 96, borderRadius: 48,
+    alignItems: "center", justifyContent: "center", borderWidth: 1.5,
+    overflow: "hidden", position: "relative",
+  },
+  photoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.4)", alignItems: "center", justifyContent: "center",
+  },
+  photoEditDot: {
+    position: "absolute", right: 2, bottom: 2,
+    width: 24, height: 24, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 2, borderColor: "#fff",
+  },
+  photoHint: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  helperText: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 4 },
 });

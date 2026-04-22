@@ -448,6 +448,16 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" }} />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
+          onPress={() => { Haptics.selectionAsync(); router.push("/privacy"); }}
+          testID="privacy-policy-link"
+        >
+          <Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} />
+          <Text style={[styles.logoutText, { color: colors.foreground }]}>Privacy Policy</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.mutedForeground} style={{ marginLeft: "auto" }} />
+        </TouchableOpacity>
+
         {/* Sign out */}
         <TouchableOpacity
           style={[styles.logoutBtn, { backgroundColor: colors.statusErrorBg, borderColor: colors.statusErrorBorder }]}
