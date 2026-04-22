@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FuturePredictor } from "@/components/future-predictor";
 import { LockedBlock } from "@/components/locked-block";
 import { SmartMealSuggestions } from "@/components/smart-meal-suggestions";
+import { SchoolMorningFlowCard } from "@/components/school-morning-flow-card";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaywall } from "@/contexts/paywall-context";
 
@@ -282,6 +283,16 @@ export default function RoutinesList() {
       </header>
 
       <FuturePredictor variant="compact" />
+
+      {/* 🌅 School Morning Flow — moved here from Parent Hub */}
+      <div className="rounded-3xl border border-orange-100 dark:border-orange-400/20 bg-gradient-to-br from-orange-50 dark:from-orange-500/10 to-amber-50 dark:to-amber-500/10 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 pt-4 pb-2">
+          <Sun className="h-5 w-5 text-orange-500" />
+          <p className="font-quicksand font-bold text-sm text-foreground">🌅 School Morning Flow</p>
+          <p className="text-xs text-muted-foreground ml-1">Night prep + morning steps with smart delay detection</p>
+        </div>
+        <SchoolMorningFlowCard />
+      </div>
 
       <SmartMealSuggestions />
 
