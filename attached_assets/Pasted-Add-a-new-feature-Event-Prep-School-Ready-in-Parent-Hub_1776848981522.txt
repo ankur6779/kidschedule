@@ -1,0 +1,176 @@
+Add a new feature “🎉 Event Prep (School Ready)” in Parent Hub of my app "AmyNest" (Web + Mobile).
+
+IMPORTANT:
+- Solve real parent problem: quick fancy dress + speech + DIY help
+- Keep everything simple, low-cost, and fast
+- No external API required
+- Use local dataset + Amy AI logic
+
+--------------------------------
+1. SECTION PURPOSE (🔥)
+--------------------------------
+Help parents quickly prepare for:
+
+- Fancy dress
+- School events
+- Jayanti celebrations
+- Last-minute requirements
+
+--------------------------------
+2. SECTION NAME
+--------------------------------
+“🎉 Event Prep (School Ready)”
+
+--------------------------------
+3. MAIN CATEGORIES
+--------------------------------
+
+- Independence Day
+- Republic Day
+- Gandhi Jayanti
+- Annual Day
+- General Fancy Dress (animals, professions)
+
+--------------------------------
+4. CONTENT STRUCTURE (CORE 🔥)
+--------------------------------
+
+Each item must include:
+
+- Character Name
+- Image (reference)
+- Simple Dress Idea
+- Required Materials
+- Step-by-step instructions
+- Time required (e.g., 15 min / 30 min)
+- Difficulty (Easy / Medium)
+
+--------------------------------
+5. EXAMPLE DATA STRUCTURE
+--------------------------------
+
+{
+  "event": "Gandhi Jayanti",
+  "character": "Mahatma Gandhi",
+  "image": "https://source.unsplash.com/300x200/?gandhi",
+  "materials": ["White cloth", "Round glasses", "Stick"],
+  "steps": [
+    "Wrap white cloth like dhoti",
+    "Add glasses",
+    "Give stick in hand"
+  ],
+  "time": "20 min",
+  "difficulty": "Easy"
+}
+
+--------------------------------
+6. SPEECH GENERATOR (USP 🔥🔥)
+--------------------------------
+
+For each character provide:
+
+- 2–3 line speech
+- Age-based (simple language)
+
+Example:
+“I am Mahatma Gandhi. I love peace and truth.”
+
+--------------------------------
+7. AMY AI GENERATOR 🤖
+--------------------------------
+
+Allow user to input:
+
+- Event type
+- Child age
+
+Amy AI generates:
+
+- Best dress idea
+- Simple speech
+- Quick instructions
+
+--------------------------------
+8. LAST-MINUTE MODE ⚡ (VERY IMPORTANT)
+--------------------------------
+
+Add button:
+
+“⏱ Last Minute (30 min prep)”
+
+Show only:
+
+- Easy ideas
+- Minimal materials
+- Fast setup
+
+--------------------------------
+9. FILTER OPTIONS 🎯
+--------------------------------
+
+- Easy
+- Low cost
+- Quick (under 30 min)
+
+--------------------------------
+10. UI DESIGN (PREMIUM 🔥)
+--------------------------------
+
+- Netflix-style horizontal cards
+- Large images
+- Overlay text
+
+Card shows:
+
+- Character name
+- Time badge
+- Difficulty tag
+
+--------------------------------
+11. DETAIL VIEW
+--------------------------------
+
+On click show:
+
+- Image
+- Materials list
+- Steps
+- Speech
+- Audio (optional read aloud)
+
+--------------------------------
+12. AUDIO FEATURE 🔊
+--------------------------------
+
+- “Play Speech” button
+- Use TTS (no API needed)
+
+--------------------------------
+13. DATA SYSTEM
+--------------------------------
+
+Use local JSON dataset
+
+--------------------------------
+14. PERFORMANCE
+--------------------------------
+
+- No heavy API calls
+- Lazy load images
+- Fast UI
+
+--------------------------------
+15. KEEP IT SIMPLE
+--------------------------------
+
+- Focus on practical ideas
+- Avoid complex costumes
+
+--------------------------------
+Return:
+Complete Event Prep system with:
+- Fancy dress ideas
+- DIY guide
+- Speech generator
+- Last-minute mode
+- Premium UI
