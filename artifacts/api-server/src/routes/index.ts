@@ -17,6 +17,7 @@ import futurePredictorRouter from "./future-predictor";
 import referralsRouter from "./referrals";
 import featuresRouter from "./features";
 import mealsRouter from "./meals";
+import accountRouter from "./account";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -44,5 +45,6 @@ router.use(futurePredictorRouter);
 router.use(referralsRouter);
 router.use(featuresRouter);
 router.use(mealsRouter);
+router.use(accountRouter);
 
 export default router;

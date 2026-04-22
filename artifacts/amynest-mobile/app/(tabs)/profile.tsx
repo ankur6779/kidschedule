@@ -207,6 +207,50 @@ export default function ProfileScreen() {
     ]);
   };
 
+  const [deleting, setDeleting] = useState(false);
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account?",
+      "This permanently deletes your account, children, routines, behaviors and all AmyNest data. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Forever",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "Final confirmation",
+              "Tap 'Yes, delete everything' to permanently erase your AmyNest account.",
+              [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Yes, delete everything",
+                  style: "destructive",
+                  onPress: async () => {
+                    setDeleting(true);
+                    try {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                      const res = await authFetch("/api/account", { method: "DELETE" });
+                      if (!res.ok) throw new Error("delete failed");
+                      qc.clear();
+                      await signOut();
+                    } catch {
+                      setDeleting(false);
+                      Alert.alert(
+                        "Could not delete account",
+                        "Please try again, or email Support@amynest.in for help.",
+                      );
+                    }
+                  },
+                },
+              ],
+            );
+          },
+        },
+      ],
+    );
+  };
+
   const handleContactUs = async () => {
     Haptics.selectionAsync();
     const subject = encodeURIComponent("AmyNest Support");
@@ -465,6 +509,23 @@ export default function ProfileScreen() {
         >
           <Ionicons name="log-out-outline" size={20} color="#EF4444" />
           <Text style={styles.logoutText}>Sign Out</Text>
+        </TouchableOpacity>
+
+        {/* Delete account — destructive, separated by extra spacing */}
+        <TouchableOpacity
+          style={[styles.logoutBtn, { backgroundColor: "transparent", borderColor: "#EF444455", marginTop: 4 }]}
+          onPress={handleDeleteAccount}
+          disabled={deleting}
+          testID="delete-account-button"
+        >
+          {deleting ? (
+            <ActivityIndicator size="small" color="#EF4444" />
+          ) : (
+            <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          )}
+          <Text style={[styles.logoutText, { color: "#EF4444" }]}>
+            {deleting ? "Deleting…" : "Delete Account"}
+          </Text>
         </TouchableOpacity>
 
         {/* Developer Tools — only visible in __DEV__ builds */}

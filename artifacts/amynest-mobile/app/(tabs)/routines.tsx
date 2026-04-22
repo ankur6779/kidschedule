@@ -316,11 +316,28 @@ export default function RoutinesScreen() {
                     key={dateStr}
                     onPress={() => {
                       Haptics.selectionAsync();
-                      if (dayRoutines.length === 1) {
+                      if (dayRoutines.length === 0) {
+                        // Empty day → jump to generator with this date pre-selected
+                        if (!isPremium && routines.length >= routinesMax) {
+                          router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
+                          return;
+                        }
+                        const params: Record<string, string> = { date: dateStr };
+                        if (selectedChild) params.childId = String(selectedChild);
+                        router.push({ pathname: "/routines/generate", params } as never);
+                      } else if (dayRoutines.length === 1) {
                         if (isRoutineLocked(dayRoutines[0].id)) {
                           router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
                         } else {
                           router.push(`/routines/${dayRoutines[0].id}` as never);
+                        }
+                      } else {
+                        // Multi-routine day → open the first unlocked one
+                        const firstOpen = dayRoutines.find((r) => !isRoutineLocked(r.id)) ?? dayRoutines[0];
+                        if (isRoutineLocked(firstOpen.id)) {
+                          router.push({ pathname: "/paywall", params: { reason: "routines_limit" } });
+                        } else {
+                          router.push(`/routines/${firstOpen.id}` as never);
                         }
                       }
                     }}

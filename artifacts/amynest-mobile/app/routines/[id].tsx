@@ -21,6 +21,7 @@ import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useTheme } from "@/contexts/ThemeContext";
 import { paletteFor } from "@/lib/theme";
 import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
 import RoutineItemModal from "@/components/RoutineItemModal";
@@ -507,6 +508,38 @@ export default function RoutineDetailScreen() {
     AsyncStorage.setItem(sleepKey, s).catch(() => {});
   };
 
+  // ─── Read-aloud current activity (TTS) ────────────────────────────
+  const VOICE_KEY = "amynest.voice_settings.v1";
+  const [voiceOn, setVoiceOn] = useState(false);
+  const [voiceLang, setVoiceLang] = useState<"en-IN" | "hi-IN">("en-IN");
+  const announcedRef = useRef<string>("");
+
+  useEffect(() => {
+    AsyncStorage.getItem(VOICE_KEY).then((raw) => {
+      if (!raw) return;
+      try {
+        const v = JSON.parse(raw);
+        if (typeof v.enabled === "boolean") setVoiceOn(v.enabled);
+        if (v.lang === "hi-IN" || v.lang === "en-IN") setVoiceLang(v.lang);
+      } catch {/* ignore */}
+    });
+  }, []);
+
+  const toggleVoice = useCallback(() => {
+    Haptics.selectionAsync();
+    setVoiceOn((prev) => {
+      const next = !prev;
+      AsyncStorage.setItem(VOICE_KEY, JSON.stringify({ enabled: next, lang: voiceLang })).catch(() => {});
+      if (!next) Speech.stop();
+      showToast(next ? "🔊 Read-aloud on" : "🔇 Read-aloud off", "info");
+      return next;
+    });
+  }, [voiceLang]);
+
+  useEffect(() => {
+    return () => { Speech.stop(); };
+  }, []);
+
   const [nowTick, setNowTick] = useState(() => Date.now());
   useEffect(() => {
     if (dateMode !== "today") return;
@@ -524,6 +557,31 @@ export default function RoutineDetailScreen() {
       liveAdjust: dateMode === "today",
     });
   }, [items, nowTick, todayMood, todaySleep, dateMode]);
+
+  // Auto-announce current task when voice is on (today only)
+  useEffect(() => {
+    if (!voiceOn || dateMode !== "today") return;
+    const now = new Date(nowTick);
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    const current = items.find((it) => {
+      if ((it.status ?? "pending") !== "pending") return false;
+      const start = parse12hToMinutes(it.time);
+      if (start < 0) return false;
+      const end = start + (it.duration ?? 30);
+      return start <= nowMins && nowMins < end;
+    });
+    if (!current) return;
+    if (announcedRef.current === current.activity) return;
+    announcedRef.current = current.activity;
+    const childName = routine?.childName ?? "buddy";
+    const msg = voiceLang === "hi-IN"
+      ? `${childName}, अब समय है ${current.activity} का!`
+      : `Hey ${childName}, time for ${current.activity}!`;
+    try {
+      Speech.stop();
+      Speech.speak(msg, { language: voiceLang, pitch: 1.0, rate: 0.9 });
+    } catch {/* ignore */}
+  }, [voiceOn, voiceLang, nowTick, items, dateMode, routine?.childName]);
 
   const lastPersistedRef = useRef<string>("");
   useEffect(() => {
@@ -555,6 +613,13 @@ export default function RoutineDetailScreen() {
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text style={[styles.headerTitle, { color: c.foreground }]} numberOfLines={1}>Routine</Text>
         </View>
+        <TouchableOpacity onPress={toggleVoice} style={styles.headerBtn} activeOpacity={0.7} testID="voice-toggle">
+          <Ionicons
+            name={voiceOn ? "volume-high" : "volume-mute"}
+            size={20}
+            color={voiceOn ? brand.violet400 : c.foreground}
+          />
+        </TouchableOpacity>
         <TouchableOpacity onPress={shareRoutine} style={styles.headerBtn} activeOpacity={0.7}>
           <Ionicons name="share-outline" size={20} color={c.foreground} />
         </TouchableOpacity>
