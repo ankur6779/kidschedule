@@ -3,11 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>AmyNest - Where Smart Parenting Begins</title>
-    <link rel="icon" type="image/png" href="/amynest-logo.png" />
+    <title>AmyNest AI — Where Smart Parenting Begins</title>
+    <meta name="description" content="AI-powered parenting coach. Personalized routines, meal plans, and behavior coaching for your child." />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Theme color (Android Chrome toolbar + PWA title bar) -->
+    <meta name="theme-color" content="#A855F7" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AmyNest AI" />
+    <link rel="apple-touch-icon" href="pwa-icon-512.png" />
+
+    <!-- iOS splash screens (dark purple background matching mobile app) -->
+    <meta name="apple-mobile-web-app-splash-screen" content="#0f0c29" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="amynest-logo.png" />
+    <link rel="shortcut icon" type="image/svg+xml" href="favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="AmyNest AI — Where Smart Parenting Begins" />
+    <meta property="og:description" content="Step-by-step, science-backed parenting plans personalized for your child." />
+    <meta property="og:image" content="opengraph.jpg" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Quicksand:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- PWA splash screen background (shown before app loads on Android) -->
+    <style>
+      html, body {
+        background-color: #0f0c29;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
