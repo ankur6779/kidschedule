@@ -1,4 +1,9 @@
 import type { SubjectPack, BasicSubjectId } from "../types";
+import {
+  IMG_ADDITION, IMG_FRACTIONS, IMG_MULTIPLICATION,
+  IMG_PLANTS, IMG_STATES_OF_MATTER,
+  IMG_NOUNS, IMG_VERBS,
+} from "./images";
 
 export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
   {
@@ -9,6 +14,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "addition",
         title: "Addition",
+        imageExample: IMG_ADDITION,
         notes:
           "Addition means putting numbers together to find a total.\nWhen you add, you combine groups: 2 + 3 means 2 things plus 3 more things.\nThe '+' sign means add. The '=' sign shows the answer.\nExample: 2 + 3 = 5.",
         amyPrompt: "Explain addition simply for a child in class 1-5 with one fun real-life example.",
@@ -23,6 +29,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "fractions",
         title: "Fractions",
+        imageExample: IMG_FRACTIONS,
         notes:
           "A fraction shows part of a whole.\nIf a pizza is cut into 4 equal pieces and you eat 1, you ate 1/4 of the pizza.\nThe top number (numerator) tells how many parts you have.\nThe bottom number (denominator) tells how many equal parts the whole was divided into.",
         amyPrompt: "Explain fractions in a simple way using a pizza or chocolate example for a class 3-5 child.",
@@ -36,6 +43,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "multiplication",
         title: "Multiplication",
+        imageExample: IMG_MULTIPLICATION,
         notes:
           "Multiplication is a quick way to add the same number many times.\n3 × 4 means add 3 four times: 3 + 3 + 3 + 3 = 12.\nThe '×' sign means multiply.\nLearning tables makes multiplication faster.",
         amyPrompt: "Explain multiplication as repeated addition for a class 2-4 child with one example.",
@@ -56,6 +64,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "plants",
         title: "Parts of a Plant",
+        imageExample: IMG_PLANTS,
         notes:
           "Plants have several main parts:\nRoots — hold the plant in soil and drink water.\nStem — carries water from roots to leaves.\nLeaves — make food for the plant using sunlight.\nFlower — makes seeds so new plants can grow.",
         amyPrompt: "List the main parts of a plant and what each one does, in language a class 1-3 child can understand.",
@@ -69,6 +78,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "states-of-matter",
         title: "States of Matter",
+        imageExample: IMG_STATES_OF_MATTER,
         notes:
           "Everything around us is made of matter.\nMatter has three main states: solid, liquid, and gas.\nA solid (like a stone) keeps its shape.\nA liquid (like water) takes the shape of its container.\nA gas (like air) spreads out everywhere.",
         amyPrompt: "Explain solid, liquid and gas with one everyday example each, for a class 3-5 child.",
@@ -89,6 +99,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "nouns",
         title: "Nouns",
+        imageExample: IMG_NOUNS,
         notes:
           "A noun is a naming word.\nIt names a person (Riya), a place (school), an animal (dog) or a thing (book).\nNouns can be common (dog) or proper (Tommy).",
         amyPrompt: "Explain nouns with simple examples for a class 1-3 child.",
@@ -102,6 +113,7 @@ export const BASIC_SUBJECTS: SubjectPack<BasicSubjectId>[] = [
       {
         id: "verbs",
         title: "Verbs",
+        imageExample: IMG_VERBS,
         notes:
           "A verb is an action or doing word.\nWords like run, eat, jump, write and read are verbs.\nVerbs tell us what someone or something is doing.",
         amyPrompt: "Explain verbs with three simple action examples for a class 1-3 child.",

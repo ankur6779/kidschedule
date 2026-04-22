@@ -7,6 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, Stack } from "expo-router";
 import * as Speech from "expo-speech";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SvgXml } from "react-native-svg";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import {
@@ -379,6 +380,12 @@ function TopicDetail({
         <Text style={styles.rowDesc}>{subj.emoji} {subj.title}</Text>
       </View>
 
+      {topic.imageExample && (
+        <View style={styles.imageWrap}>
+          <SvgXml xml={topic.imageExample} width="100%" height={180} />
+        </View>
+      )}
+
       <View style={styles.card}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
           <Text style={styles.cardTitle}>✨ Notes from Amy</Text>
@@ -519,4 +526,6 @@ const styles = StyleSheet.create({
 
   emptyTitle: { fontSize: 16, fontWeight: "800", color: "#0f172a" },
   emptyDesc: { fontSize: 13, color: "#64748b", marginTop: 4 },
+
+  imageWrap: { backgroundColor: "#fff", borderRadius: 16, padding: 8, borderWidth: 1, borderColor: "#e5e7eb", overflow: "hidden" },
 });

@@ -54,6 +54,12 @@ export interface StudyTopic {
   notes: string;
   /** Seed prompt fed to Amy AI when the parent taps "Ask Amy". */
   amyPrompt: string;
+  /**
+   * Optional inline SVG illustration (raw markup, no XML prolog).
+   * Web renders it via a data: URI in an <img>; mobile renders it via
+   * react-native-svg's SvgXml. Keep each one under ~1 KB.
+   */
+  imageExample?: string;
   questions: PracticeQuestion[];
 }
 

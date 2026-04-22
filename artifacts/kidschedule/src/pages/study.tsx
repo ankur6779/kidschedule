@@ -403,6 +403,16 @@ function TopicDetail({
 
       <Card className="rounded-2xl">
         <CardContent className="p-5">
+          {topic.imageExample && (
+            <div className="mb-4 rounded-xl overflow-hidden border border-border/40 bg-white">
+              <img
+                src={`data:image/svg+xml;utf8,${encodeURIComponent(topic.imageExample)}`}
+                alt={`${topic.title} illustration`}
+                className="w-full h-auto block"
+                style={{ maxHeight: 220, objectFit: "contain" }}
+              />
+            </div>
+          )}
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="font-quicksand font-bold text-foreground inline-flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-indigo-600" /> Notes from Amy

@@ -1,4 +1,9 @@
 import type { SubjectPack, AdvancedSubjectId } from "../types";
+import {
+  IMG_ALGEBRA, IMG_TRIANGLES, IMG_TRIGONOMETRY,
+  IMG_FORCE_MOTION, IMG_CELLS, IMG_ACIDS_BASES,
+  IMG_TENSES, IMG_ACTIVE_PASSIVE,
+} from "./images";
 
 export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
   {
@@ -9,6 +14,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "algebra-basics",
         title: "Algebra Basics",
+        imageExample: IMG_ALGEBRA,
         notes:
           "Algebra uses letters (called variables) in place of unknown numbers.\nA variable like x can stand for any number we don't know yet.\nAn equation says that two expressions are equal, e.g. x + 3 = 7.\nTo solve, we do the same operation on both sides until x is alone.\nExample: x + 3 = 7  →  x = 7 − 3  →  x = 4.",
         amyPrompt: "Explain algebra basics — variables and solving simple equations — for a class 6-8 student with one worked example.",
@@ -23,6 +29,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "geometry-triangles",
         title: "Triangles",
+        imageExample: IMG_TRIANGLES,
         notes:
           "A triangle has 3 sides and 3 angles.\nThe sum of all three angles is always 180°.\nTypes by sides: equilateral (all equal), isosceles (two equal), scalene (all different).\nTypes by angles: acute (all <90°), right (one =90°), obtuse (one >90°).",
         amyPrompt: "Summarise the types of triangles and the angle-sum property for a class 6-8 student with a quick example.",
@@ -36,6 +43,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "trigonometry-basics",
         title: "Trigonometry Basics",
+        imageExample: IMG_TRIGONOMETRY,
         notes:
           "Trigonometry studies the relationship between the angles and sides of a right triangle.\nFor a given angle θ in a right triangle:\n  sin θ = opposite / hypotenuse\n  cos θ = adjacent / hypotenuse\n  tan θ = opposite / adjacent\nKey values to remember: sin 30°=1/2, cos 60°=1/2, tan 45°=1.",
         amyPrompt: "Explain sin, cos, tan in a right triangle for a class 9-10 student with one worked example.",
@@ -56,6 +64,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "force-motion",
         title: "Force and Motion",
+        imageExample: IMG_FORCE_MOTION,
         notes:
           "A force is a push or a pull that can change the speed, direction or shape of an object.\nNewton's first law: an object stays at rest or moves at constant speed unless a force acts on it.\nNewton's second law: F = m × a (force = mass × acceleration).\nNewton's third law: every action has an equal and opposite reaction.",
         amyPrompt: "Explain Newton's three laws of motion with one daily-life example each for a class 8-10 student.",
@@ -69,6 +78,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "cells",
         title: "Cells — The Building Blocks",
+        imageExample: IMG_CELLS,
         notes:
           "All living things are made of cells.\nCells were first observed by Robert Hooke in 1665.\nA plant cell has a cell wall, chloroplasts and a large vacuole.\nAn animal cell has no cell wall and usually no chloroplasts.\nThe nucleus controls all activities of the cell.",
         amyPrompt: "Compare plant and animal cells with their main parts for a class 8-9 student.",
@@ -82,6 +92,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "acids-bases",
         title: "Acids, Bases & Salts",
+        imageExample: IMG_ACIDS_BASES,
         notes:
           "Acids taste sour and turn blue litmus red (e.g. lemon, vinegar).\nBases taste bitter and turn red litmus blue (e.g. soap, baking soda).\nThe pH scale runs from 0 to 14: <7 is acidic, 7 is neutral, >7 is basic.\nWhen an acid reacts with a base, they form a salt and water (neutralisation).",
         amyPrompt: "Explain the pH scale and acid-base reactions for a class 7-10 student with everyday examples.",
@@ -102,6 +113,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "tenses",
         title: "Tenses Overview",
+        imageExample: IMG_TENSES,
         notes:
           "Tense shows when something happens.\nPresent: I write a letter. (happening now / regularly)\nPast: I wrote a letter. (already happened)\nFuture: I will write a letter. (will happen later)\nEach tense has simple, continuous, perfect and perfect-continuous forms.",
         amyPrompt: "Explain past, present and future tenses with one example sentence each for a class 6-8 student.",
@@ -115,6 +127,7 @@ export const ADVANCED_SUBJECTS: SubjectPack<AdvancedSubjectId>[] = [
       {
         id: "active-passive",
         title: "Active and Passive Voice",
+        imageExample: IMG_ACTIVE_PASSIVE,
         notes:
           "Active voice: the subject does the action — 'Riya writes a letter.'\nPassive voice: the action is done to the subject — 'A letter is written by Riya.'\nUse passive when the doer is unknown or unimportant.\nFormation: form of 'be' + past participle of verb.",
         amyPrompt: "Explain how to convert active voice to passive voice with two examples for a class 7-9 student.",
