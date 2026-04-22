@@ -85,21 +85,39 @@ export function SmartMealSuggestions() {
   const [childAge, setChildAge] = useState<number | undefined>(undefined);
   const [fridge, setFridge] = useState<string[]>(() => loadFridge());
   const [fridgeInput, setFridgeInput] = useState("");
-  const [data, setData] = useState<SuggestionResult | null>(null);
+  const [allMeals, setAllMeals] = useState<RankedMeal[]>([]);
+  const [amyMessage, setAmyMessage] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
   const [tiffinHistory, setTiffinHistory] = useState<TiffinHistory>(() => loadTiffinHistory());
   const [manualSearch, setManualSearch] = useState(0);
+  // Rotating display offset — each click shows a different window of 5 meals
+  const [displayOffset, setDisplayOffset] = useState(0);
   const [searchFlash, setSearchFlash] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
   const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
 
+  // 5 meals shown at a time, rotating through the full ranked pool
+  const DISPLAY_COUNT = 5;
+  const displayedMeals = useMemo(() => {
+    if (allMeals.length === 0) return [];
+    const doubled = [...allMeals, ...allMeals]; // allow wrap-around
+    return doubled.slice(displayOffset, displayOffset + DISPLAY_COUNT);
+  }, [allMeals, displayOffset]);
+
+  // Derived data object for TiffinFeedbackPanel compat
+  const data = useMemo(
+    () => allMeals.length > 0 ? { meals: allMeals, amyMessage, usedFallback: false } : null,
+    [allMeals, amyMessage],
+  );
+
   const handleFindCook = () => {
-    // Clear previous results immediately so loading skeletons appear —
-    // without this, loading=true but data!=null means old cards stay visible
-    // and the user can't tell a refresh is happening.
-    setData(null);
-    setLoading(true);
+    if (allMeals.length > 0) {
+      // Already have a pool — just rotate the display window immediately
+      setDisplayOffset(prev => (prev + DISPLAY_COUNT) % Math.max(allMeals.length, 1));
+    }
+    // Also re-fetch in the background for fresh results
     setManualSearch(n => n + 1);
     setSearchFlash(true);
     setTimeout(() => setSearchFlash(false), 800);
@@ -121,15 +139,17 @@ export function SmartMealSuggestions() {
       }
     });
     return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist fridge
   useEffect(() => { saveFridge(fridge); }, [fridge]);
 
-  // Fetch suggestions whenever inputs change
+  // Fetch suggestions whenever core inputs change (not manualSearch — rotation is client-side)
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setFetchError(false);
     const params = new URLSearchParams();
     params.set("region", region);
     params.set("audience", audience);
@@ -138,26 +158,28 @@ export function SmartMealSuggestions() {
       params.set("childAge", String(childAge));
     }
     if (isVeg === true) params.set("isVeg", "true");
-    // Feed the learning loop only on the Kids tab — that's the audience
-    // the tiffin-feedback history is collected for.
     if (audience === "kids_tiffin") {
       if (learning.liked.length > 0) params.set("liked", learning.liked.join(","));
       if (learning.disliked.length > 0) params.set("disliked", learning.disliked.join(","));
     }
-
-    // Add timestamp on manual searches so the browser doesn't serve a cached
-    // response — without this, clicking "Find What I Can Cook" within the
-    // 60-second Cache-Control window returns the same stale result.
-    if (manualSearch > 0) params.set("_t", String(Date.now()));
-    authFetch(`/api/meals/suggest?${params.toString()}`)
+    // /api/meals/suggest is now a public endpoint — plain fetch, no auth needed
+    fetch(`/api/meals/suggest?${params.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {
         if (!cancelled) {
-          setData(r);
+          setAllMeals(r?.meals ?? []);
+          setAmyMessage(r?.amyMessage ?? "");
+          setDisplayOffset(0);
           setLoading(false);
+          setFetchError(!r);
         }
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) {
+          setLoading(false);
+          setFetchError(true);
+        }
+      });
     return () => { cancelled = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(","), manualSearch]);
@@ -303,15 +325,20 @@ export function SmartMealSuggestions() {
               <div key={i} className="shrink-0 w-[160px] h-[200px] rounded-2xl bg-muted animate-pulse" />
             ))}
           </div>
-        ) : data && data.meals.length > 0 ? (
+        ) : fetchError ? (
+          <div className="mx-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-400/20 text-center">
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium">Meals load nahi hue. Retry karo.</p>
+            <button onClick={() => setManualSearch(n => n + 1)} className="mt-2 text-xs text-red-600 underline">Retry</button>
+          </div>
+        ) : displayedMeals.length > 0 ? (
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-3 pb-2 scroll-smooth" style={{ scrollbarWidth: "thin" }}>
-            {data.meals.map((m, i) => (
+            {displayedMeals.map((m, i) => (
               <MealCard
-                key={m.id}
+                key={`${m.id}-${displayOffset}-${i}`}
                 meal={m}
                 showCalories={audience === "parent_healthy"}
                 onOpen={() => setOpenMeal(m)}
-                style={{ animationDelay: `${i * 60}ms` }}
+                style={{ animationDelay: `${i * 50}ms` }}
               />
             ))}
           </div>

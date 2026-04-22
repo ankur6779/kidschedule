@@ -36,6 +36,9 @@ router.use(subscriptionRouter);
 // Auth diagnostic endpoint must be BEFORE requireAuth so it works even when
 // the JWT is invalid/expired — that's when we need it most.
 router.use(authDebugRouter);
+// /api/meals/suggest is pure local computation (no user data) — public.
+// /api/meals/generate has its own auth guard inside the handler.
+router.use(mealsRouter);
 router.use(requireAuth);
 router.use(onboardingRouter);
 router.use(childrenRouter);
@@ -50,7 +53,6 @@ router.use(appDataRouter);
 router.use(futurePredictorRouter);
 router.use(referralsRouter);
 router.use(featuresRouter);
-router.use(mealsRouter);
 router.use(accountRouter);
 router.use(pushRouter);
 router.use(notificationsRouter);
