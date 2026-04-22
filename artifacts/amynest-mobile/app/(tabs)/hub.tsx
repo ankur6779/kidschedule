@@ -243,6 +243,11 @@ export default function HubScreen() {
         </View>
 
         <View style={tileW("articles")}>
+        <LockedBlock
+          reason="hub_locked"
+          locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("articles")}
+          label="Premium feature"
+        >
         <Section
           id="articles"
           icon={<Ionicons name="book" size={20} color="#fff" />}
@@ -251,6 +256,7 @@ export default function HubScreen() {
           desc="Research-based, age-matched reading"
           open={openSection === "articles"}
           onToggle={() => setOpenSection(s => s === "articles" ? null : "articles")}
+          onOpen={() => hubUsage.markBlockUsed("articles")}
         >
           <Text style={styles.sectionLead}>
             {effective
@@ -271,9 +277,15 @@ export default function HubScreen() {
             ))}
           </View>
         </Section>
+        </LockedBlock>
         </View>
 
         <View style={tileW("tips")}>
+        <LockedBlock
+          reason="hub_locked"
+          locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("tips")}
+          label="Premium feature"
+        >
         <Section
           id="tips"
           icon={<Ionicons name="sparkles" size={20} color="#fff" />}
@@ -282,6 +294,7 @@ export default function HubScreen() {
           desc="Amy AI picks today's best tips"
           open={openSection === "tips"}
           onToggle={() => setOpenSection(s => s === "tips" ? null : "tips")}
+          onOpen={() => hubUsage.markBlockUsed("tips")}
         >
           {effective ? (
             <View style={styles.tipsList}>
@@ -300,9 +313,15 @@ export default function HubScreen() {
             <Text style={styles.sectionLead}>Add a child to unlock daily tips.</Text>
           )}
         </Section>
+        </LockedBlock>
         </View>
 
         <View style={tileW("emotional")}>
+        <LockedBlock
+          reason="hub_locked"
+          locked={!hubUsage.loaded ? false : hubUsage.isBlockLocked("emotional")}
+          label="Premium feature"
+        >
         <Section
           id="emotional"
           icon={<Ionicons name="heart" size={20} color="#fff" />}
@@ -311,6 +330,7 @@ export default function HubScreen() {
           desc="For the tough parenting days"
           open={openSection === "emotional"}
           onToggle={() => setOpenSection(s => s === "emotional" ? null : "emotional")}
+          onOpen={() => hubUsage.markBlockUsed("emotional")}
         >
           <Text style={styles.sectionLead}>Parenting is hard. Amy will listen — no judgment.</Text>
           <View style={styles.emotionalGrid}>
@@ -322,12 +342,17 @@ export default function HubScreen() {
             ))}
           </View>
         </Section>
+        </LockedBlock>
         </View>
 
         {/* 🧾 PTM Prep Assistant — Prepare → Attend → Act flow */}
         <View style={tileW("ptm-prep")}>
           <Pressable
             onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("ptm_prep")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
               hubUsage.markBlockUsed("ptm_prep");
               router.push({
                 pathname: "/ptm-prep" as never,
@@ -358,7 +383,14 @@ export default function HubScreen() {
         {/* Smart Study Zone — adaptive learning Nursery → Class 10 */}
         <View style={tileW("smart-study")}>
           <Pressable
-            onPress={() => { hubUsage.markBlockUsed("smart_study"); router.push("/study" as never); }}
+            onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("smart_study")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
+              hubUsage.markBlockUsed("smart_study");
+              router.push("/study" as never);
+            }}
             style={{ borderRadius: 18, overflow: "hidden" }}
           >
             <LinearGradient
@@ -383,7 +415,14 @@ export default function HubScreen() {
         {/* 🌅 School Morning Flow — checklist + step flow + smart delay */}
         <View style={tileW("morning-flow")}>
           <Pressable
-            onPress={() => { hubUsage.markBlockUsed("morning_flow"); router.push("/morning-flow" as never); }}
+            onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("morning_flow")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
+              hubUsage.markBlockUsed("morning_flow");
+              router.push("/morning-flow" as never);
+            }}
             style={{ borderRadius: 18, overflow: "hidden" }}
           >
             <LinearGradient
@@ -408,7 +447,14 @@ export default function HubScreen() {
         {/* 🏆 Olympiad Zone — daily quizzes + practice across subjects */}
         <View style={tileW("olympiad")}>
           <Pressable
-            onPress={() => { hubUsage.markBlockUsed("olympiad"); router.push("/olympiad" as never); }}
+            onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("olympiad")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
+              hubUsage.markBlockUsed("olympiad");
+              router.push("/olympiad" as never);
+            }}
             style={{ borderRadius: 18, overflow: "hidden" }}
           >
             <LinearGradient
@@ -433,7 +479,14 @@ export default function HubScreen() {
         {/* 🍱 Tiffin & Meal Suggestions */}
         <View style={tileW("meals")}>
           <Pressable
-            onPress={() => { hubUsage.markBlockUsed("meals"); router.push("/meals" as never); }}
+            onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("meals")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
+              hubUsage.markBlockUsed("meals");
+              router.push("/meals" as never);
+            }}
             style={{ borderRadius: 18, overflow: "hidden" }}
           >
             <LinearGradient
@@ -458,7 +511,14 @@ export default function HubScreen() {
         {/* 🎉 Event Prep — fancy dress + DIY guide + speech generator */}
         <View style={tileW("event-prep")}>
           <Pressable
-            onPress={() => { hubUsage.markBlockUsed("event_prep"); router.push("/event-prep" as never); }}
+            onPress={() => {
+              if (!hubUsage.loaded ? false : hubUsage.isBlockLocked("event_prep")) {
+                router.push({ pathname: "/paywall" as never, params: { reason: "hub_locked" } });
+                return;
+              }
+              hubUsage.markBlockUsed("event_prep");
+              router.push("/event-prep" as never);
+            }}
             style={{ borderRadius: 18, overflow: "hidden" }}
           >
             <LinearGradient

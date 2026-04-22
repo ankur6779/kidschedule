@@ -457,43 +457,64 @@ export default function ParentingHub() {
         </HubSection>
 
         {/* 2. Parenting Articles */}
-        <HubSection
-          id="articles"
-          icon={<BookOpen className="h-5 w-5 text-emerald-600" />}
-          title="Parenting Articles"
-          description="Research-based, age-matched reading"
-          accentClass="bg-emerald-100 dark:bg-emerald-500/20"
+        <LockedBlock
+          reason="hub_locked"
+          locked={hubUsage.isBlockLocked("articles")}
+          label="Premium feature"
         >
-          {effectiveChild ? (
-            <ParentingArticles childAgeMonths={totalAgeMonths} />
-          ) : (
-            <p className="text-sm text-muted-foreground py-4 text-center">Select a child to see matched articles</p>
-          )}
-        </HubSection>
+          <HubSection
+            id="articles"
+            icon={<BookOpen className="h-5 w-5 text-emerald-600" />}
+            title="Parenting Articles"
+            description="Research-based, age-matched reading"
+            accentClass="bg-emerald-100 dark:bg-emerald-500/20"
+            onOpen={() => hubUsage.markBlockUsed("articles")}
+          >
+            {effectiveChild ? (
+              <ParentingArticles childAgeMonths={totalAgeMonths} />
+            ) : (
+              <p className="text-sm text-muted-foreground py-4 text-center">Select a child to see matched articles</p>
+            )}
+          </HubSection>
+        </LockedBlock>
 
         {/* 3. Daily Tips */}
         {effectiveChild && ageGroup && (
-          <HubSection
-            id="daily-tips"
-            icon={<Sparkles className="h-5 w-5 text-violet-600" />}
-            title="Daily Tips"
-            description="Amy AI picks today's best tips for you"
-            accentClass="bg-violet-100 dark:bg-violet-500/20"
+          <LockedBlock
+            reason="hub_locked"
+            locked={hubUsage.isBlockLocked("tips")}
+            label="Premium feature"
           >
-            <DailyTips ageGroup={ageGroup} childName={effectiveChild.name} />
-          </HubSection>
+            <HubSection
+              id="daily-tips"
+              icon={<Sparkles className="h-5 w-5 text-violet-600" />}
+              title="Daily Tips"
+              description="Amy AI picks today's best tips for you"
+              accentClass="bg-violet-100 dark:bg-violet-500/20"
+              onOpen={() => hubUsage.markBlockUsed("tips")}
+            >
+              <DailyTips ageGroup={ageGroup} childName={effectiveChild.name} />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* 4. Emotional Support */}
-        <HubSection
-          id="emotional"
-          icon={<Heart className="h-5 w-5 text-rose-500" />}
-          title="Emotional Support"
-          description="For the tough parenting days"
-          accentClass="bg-rose-100 dark:bg-rose-500/20"
+        <LockedBlock
+          reason="hub_locked"
+          locked={hubUsage.isBlockLocked("emotional")}
+          label="Premium feature"
         >
-          <EmotionalSupportSection />
-        </HubSection>
+          <HubSection
+            id="emotional"
+            icon={<Heart className="h-5 w-5 text-rose-500" />}
+            title="Emotional Support"
+            description="For the tough parenting days"
+            accentClass="bg-rose-100 dark:bg-rose-500/20"
+            onOpen={() => hubUsage.markBlockUsed("emotional")}
+          >
+            <EmotionalSupportSection />
+          </HubSection>
+        </LockedBlock>
 
         {/* 5. Activities & Learning */}
         {effectiveChild && ageGroup && (
@@ -521,44 +542,62 @@ export default function ParentingHub() {
 
         {/* 🧾 PTM Prep Assistant — Prepare → Attend → Act flow */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 17 && (
-          <HubSection
-            id="ptm-prep"
-            icon={<ClipboardList className="h-5 w-5 text-violet-600" />}
-            title="🧾 PTM Prep Assistant"
-            description="Prepare questions, take notes & turn them into action steps"
-            accentClass="bg-gradient-to-br from-violet-100 dark:from-violet-500/20 to-pink-100 dark:to-pink-500/20"
-            onOpen={() => hubUsage.markBlockUsed("ptm_prep")}
+          <LockedBlock
+            reason="hub_locked"
+            locked={hubUsage.isBlockLocked("ptm_prep")}
+            label="Premium feature"
           >
-            <PtmPrepAssistant child={effectiveChild ? { id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age } : null} />
-          </HubSection>
+            <HubSection
+              id="ptm-prep"
+              icon={<ClipboardList className="h-5 w-5 text-violet-600" />}
+              title="🧾 PTM Prep Assistant"
+              description="Prepare questions, take notes & turn them into action steps"
+              accentClass="bg-gradient-to-br from-violet-100 dark:from-violet-500/20 to-pink-100 dark:to-pink-500/20"
+              onOpen={() => hubUsage.markBlockUsed("ptm_prep")}
+            >
+              <PtmPrepAssistant child={effectiveChild ? { id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age } : null} />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* Smart Study Zone (Nursery–Class 10) — sits alongside Olympiad */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 16 && (
-          <HubSection
-            id="smart-study"
-            icon={<GraduationCap className="h-5 w-5 text-indigo-600" />}
-            title="📚 Smart Study Zone"
-            description="Adaptive learning Nursery → Class 10, with audio + practice"
-            accentClass="bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-purple-100 dark:to-purple-500/20"
-            onOpen={() => hubUsage.markBlockUsed("smart_study")}
+          <LockedBlock
+            reason="hub_locked"
+            locked={hubUsage.isBlockLocked("smart_study")}
+            label="Premium feature"
           >
-            <SmartStudyZone />
-          </HubSection>
+            <HubSection
+              id="smart-study"
+              icon={<GraduationCap className="h-5 w-5 text-indigo-600" />}
+              title="📚 Smart Study Zone"
+              description="Adaptive learning Nursery → Class 10, with audio + practice"
+              accentClass="bg-gradient-to-br from-indigo-100 dark:from-indigo-500/20 to-purple-100 dark:to-purple-500/20"
+              onOpen={() => hubUsage.markBlockUsed("smart_study")}
+            >
+              <SmartStudyZone />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* 🎉 Event Prep — fancy dress + speech generator + DIY guide */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 14 && (
-          <HubSection
-            id="event-prep"
-            icon={<Sparkles className="h-5 w-5 text-pink-600" />}
-            title="🎉 Event Prep (School Ready)"
-            description="Fancy dress, DIY guide & speeches for school events"
-            accentClass="bg-gradient-to-br from-pink-100 dark:from-pink-500/20 to-orange-100 dark:to-orange-500/20"
-            onOpen={() => hubUsage.markBlockUsed("event_prep")}
+          <LockedBlock
+            reason="hub_locked"
+            locked={hubUsage.isBlockLocked("event_prep")}
+            label="Premium feature"
           >
-            <EventPrepCard />
-          </HubSection>
+            <HubSection
+              id="event-prep"
+              icon={<Sparkles className="h-5 w-5 text-pink-600" />}
+              title="🎉 Event Prep (School Ready)"
+              description="Fancy dress, DIY guide & speeches for school events"
+              accentClass="bg-gradient-to-br from-pink-100 dark:from-pink-500/20 to-orange-100 dark:to-orange-500/20"
+              onOpen={() => hubUsage.markBlockUsed("event_prep")}
+            >
+              <EventPrepCard />
+            </HubSection>
+          </LockedBlock>
         )}
 
         {/* 6. Smart Olympiad Zone */}
