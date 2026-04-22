@@ -10,6 +10,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { useColors } from "@/hooks/useColors";
 import { brand, brandAlpha } from "@/constants/colors";
+import TiffinFeedbackPanel, { loadHistoryAsync as loadTiffinHistoryAsync } from "@/components/TiffinFeedbackPanel";
+import { getLearningSignals, type TiffinHistory } from "@workspace/tiffin-feedback";
 
 type MealTag = "Healthy" | "Quick" | "Protein" | "Veg" | "Non-Veg" | "Sweet";
 
@@ -64,6 +66,9 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
   const [data, setData] = useState<SuggestionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
+  const [tiffinHistory, setTiffinHistory] = useState<TiffinHistory>([]);
+  useEffect(() => { loadTiffinHistoryAsync().then(setTiffinHistory); }, []);
+  const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
 
   // Sync props
   useEffect(() => { if (regionProp) setRegion(regionProp); }, [regionProp]);
@@ -114,6 +119,10 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
       params.set("childAge", String(childAge));
     }
     if (isVeg === true) params.set("isVeg", "true");
+    if (audience === "kids_tiffin") {
+      if (learning.liked.length > 0) params.set("liked", learning.liked.join(","));
+      if (learning.disliked.length > 0) params.set("disliked", learning.disliked.join(","));
+    }
 
     authFetch(`/api/meals/suggest?${params.toString()}`)
       .then(r => r.ok ? r.json() : null)
@@ -125,7 +134,7 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [region, audience, fridge, childAge, isVeg]);
+  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(",")]);
 
   // Stop speech when modal closes / unmount
   useEffect(() => {
@@ -174,6 +183,16 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* 🍱 Tiffin Feedback — daily rating + Top Liked + Amy hint */}
+      {audience === "kids_tiffin" ? (
+        <TiffinFeedbackPanel
+          pickableMeals={(data?.meals ?? []).map(m => ({
+            id: m.id, title: m.title, emoji: m.emoji, tag: m.tags[0],
+          }))}
+          onChange={setTiffinHistory}
+        />
+      ) : null}
 
       {/* Amy message */}
       {data ? (

@@ -202,6 +202,9 @@ importers:
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
+      '@workspace/tiffin-feedback':
+        specifier: workspace:*
+        version: link:../../lib/tiffin-feedback
       expo-auth-session:
         specifier: ~7.0.10
         version: 7.0.10(expo@54.0.33)(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -483,6 +486,9 @@ importers:
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
+      '@workspace/tiffin-feedback':
+        specifier: workspace:*
+        version: link:../../lib/tiffin-feedback
       i18next:
         specifier: ^26.0.5
         version: 26.0.5(typescript@5.9.3)
@@ -1134,6 +1140,8 @@ importers:
   lib/morning-flow: {}
 
   lib/study-zone: {}
+
+  lib/tiffin-feedback: {}
 
   scripts:
     devDependencies:

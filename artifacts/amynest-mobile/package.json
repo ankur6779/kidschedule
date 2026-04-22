@@ -65,6 +65,7 @@
     "@workspace/event-prep": "workspace:*",
     "@workspace/morning-flow": "workspace:*",
     "@workspace/study-zone": "workspace:*",
+    "@workspace/tiffin-feedback": "workspace:*",
     "@workspace/infant-problems": "workspace:*",
     "@workspace/life-skills": "workspace:*",
     "expo-auth-session": "~7.0.10",

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { AmyIcon } from "@/components/amy-icon";
+import { TiffinFeedbackPanel, loadHistory as loadTiffinHistory } from "@/components/tiffin-feedback-panel";
+import { getLearningSignals, type TiffinHistory } from "@workspace/tiffin-feedback";
 import {
   Utensils,
   X,
@@ -84,6 +86,8 @@ export function SmartMealSuggestions() {
   const [data, setData] = useState<SuggestionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
+  const [tiffinHistory, setTiffinHistory] = useState<TiffinHistory>(() => loadTiffinHistory());
+  const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
 
   // Pull region + diet from parent profile + first child age once
   useEffect(() => {
@@ -117,6 +121,12 @@ export function SmartMealSuggestions() {
       params.set("childAge", String(childAge));
     }
     if (isVeg === true) params.set("isVeg", "true");
+    // Feed the learning loop only on the Kids tab — that's the audience
+    // the tiffin-feedback history is collected for.
+    if (audience === "kids_tiffin") {
+      if (learning.liked.length > 0) params.set("liked", learning.liked.join(","));
+      if (learning.disliked.length > 0) params.set("disliked", learning.disliked.join(","));
+    }
 
     authFetch(`/api/meals/suggest?${params.toString()}`)
       .then(r => r.ok ? r.json() : null)
@@ -128,7 +138,7 @@ export function SmartMealSuggestions() {
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [region, audience, fridge, childAge, isVeg]);
+  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(",")]);
 
   const addFridgeItem = (raw: string) => {
     const v = raw.trim().toLowerCase();
@@ -177,6 +187,16 @@ export function SmartMealSuggestions() {
           </button>
         </div>
       </div>
+
+      {/* 🍱 Tiffin Feedback — daily input + Top Liked + Amy hint */}
+      {audience === "kids_tiffin" && (
+        <TiffinFeedbackPanel
+          pickableMeals={(data?.meals ?? []).map(m => ({
+            id: m.id, title: m.title, emoji: m.emoji, tag: m.tags[0],
+          }))}
+          onChange={setTiffinHistory}
+        />
+      )}
 
       {/* Amy AI message */}
       {data && (

@@ -519,6 +519,11 @@ export interface SuggestionInput {
   childAge?: number;          // years
   isVeg?: boolean;            // true → veg only; false/undefined → both ok
   hour?: number;              // 0–23 — affects amyMessage
+  /** Meal IDs the child has previously eaten — boosted in ranking. */
+  likedMealIds?: string[];
+  /** Meal IDs the child has refused — suppressed (still returned only as a
+   *  fallback when nothing else qualifies). */
+  dislikedMealIds?: string[];
 }
 
 export interface RankedMeal extends MealRecipe {
@@ -537,6 +542,8 @@ export function suggestMeals(input: SuggestionInput): SuggestionResult {
   const region = norm(input.region) as MealRegion;
   const fridge = (input.fridgeItems || []).map(norm).filter(Boolean);
   const age = Number.isFinite(input.childAge) ? Number(input.childAge) : 0;
+  const liked = new Set((input.likedMealIds || []).filter(Boolean));
+  const disliked = new Set((input.dislikedMealIds || []).filter(Boolean));
 
   const pool = MEALS.filter(m => m.category === input.audience);
 
@@ -566,6 +573,11 @@ export function suggestMeals(input: SuggestionInput): SuggestionResult {
     if (m.tags.includes("Healthy")) score += 4;
     // Penalise long prep slightly when no fridge data
     if (fridge.length === 0 && m.prepMinutes > 25) score -= 4;
+    // ── Learning loop from Tiffin Feedback ──
+    // Liked meals get a strong boost; disliked are suppressed but kept eligible
+    // so the list is never empty if every meal happens to be on the disliked list.
+    if (liked.has(m.id)) score += 30;
+    if (disliked.has(m.id)) score -= 80;
 
     return { ...m, matchScore: score, matchedIngredients: matched, missingIngredients: missing };
   });
