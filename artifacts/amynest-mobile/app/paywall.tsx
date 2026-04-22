@@ -95,10 +95,13 @@ export default function PaywallScreen() {
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  // Razorpay is ONLY shown in dev/Expo Go builds.
-  // Play Store policy requires Google Play Billing (RevenueCat) as the
-  // exclusive checkout path in production builds — Razorpay must not appear.
-  const showRazorpay = Platform.OS === "android" && __DEV__;
+  // Google Play User Choice Billing (UCB): on Android we show BOTH
+  // Google Play Billing (primary, via RevenueCat) and Razorpay (alternative).
+  // UCB lets apps in supported markets (incl. India) offer an alternative
+  // billing system alongside Play Billing. Google Play Billing must be the
+  // primary/first option; the alternative is secondary. iOS uses Apple IAP
+  // (RevenueCat) exclusively — Razorpay must not appear there.
+  const showRazorpay = Platform.OS === "android";
 
   const canStartTrial =
     !!ent &&
@@ -306,22 +309,31 @@ export default function PaywallScreen() {
             </LinearGradient>
           </Pressable>
 
-          {/* Secondary CTA — Razorpay (UPI / Card / Netbanking) on Android only */}
+          {/* Alternative billing (UCB) — Razorpay UPI / Card / Netbanking, Android only.
+               Per Google Play UCB policy this must be presented after the primary
+               Google Play option and labelled clearly as an alternative. */}
           {showRazorpay && (
-            <Pressable
-              disabled={submitting || plans.length === 0}
-              onPress={onUpgradeRazorpay}
-              style={({ pressed }) => [
-                styles.secondaryBtn,
-                pressed && { opacity: 0.85 },
-                (submitting || plans.length === 0) && { opacity: 0.6 },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Pay with UPI or Card via Razorpay"
-            >
-              <Ionicons name="flash" size={16} color="#fff" />
-              <Text style={styles.secondaryText}>Pay with UPI / Card</Text>
-            </Pressable>
+            <>
+              <View style={styles.orDivider}>
+                <View style={styles.orLine} />
+                <Text style={styles.orText}>or choose an alternative</Text>
+                <View style={styles.orLine} />
+              </View>
+              <Pressable
+                disabled={submitting || plans.length === 0}
+                onPress={onUpgradeRazorpay}
+                style={({ pressed }) => [
+                  styles.secondaryBtn,
+                  pressed && { opacity: 0.85 },
+                  (submitting || plans.length === 0) && { opacity: 0.6 },
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="Alternative billing: Pay with UPI or Card via Razorpay"
+              >
+                <Ionicons name="flash" size={16} color="#fff" />
+                <Text style={styles.secondaryText}>Pay via UPI / Card (Alternative)</Text>
+              </Pressable>
+            </>
           )}
 
           {canStartTrial && (
@@ -567,6 +579,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 14,
     fontWeight: "800",
+  },
+  orDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 14,
+    marginBottom: 2,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
+  orText: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 0.3,
   },
   trialBtn: {
     alignItems: "center",

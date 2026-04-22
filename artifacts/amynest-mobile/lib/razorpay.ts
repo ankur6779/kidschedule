@@ -1,8 +1,8 @@
-// Razorpay Checkout — DEV / direct-APK sideload builds ONLY.
-// ⚠️  Play Store policy mandates Google Play Billing as the exclusive
-//     payment mechanism for digital subscriptions. Razorpay must NOT be
-//     offered in production Play Store builds. The paywall gates it behind
-//     __DEV__ to ensure it never reaches production.
+// Razorpay Checkout — Android alternative billing under Google Play UCB.
+// Google Play User Choice Billing (UCB) allows apps in supported markets
+// (e.g. India) to offer an alternative billing system ALONGSIDE Google Play
+// Billing. Google Play Billing (RevenueCat) must be the PRIMARY option;
+// Razorpay is the SECONDARY / alternative that the user may choose.
 // iOS does NOT use Razorpay
 // (Apple's IAP policy forbids third-party billing for digital subs).
 // react-native-razorpay is a native module — it only works in dev /

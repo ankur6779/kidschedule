@@ -82,9 +82,10 @@ export async function checkout(
   return { ok: false, reason: result.reason, userCancelled: result.userCancelled };
 }
 
-// ── Razorpay (Android dev / sideload only — NOT Play Store production) ───────
-// Google Play policy requires Google Play Billing for digital goods.
-// This code path is reachable only when __DEV__ === true (see paywall.tsx).
+// ── Razorpay (Android — alternative billing under Google Play UCB) ───────────
+// Google Play User Choice Billing lets supported markets offer an alternative
+// billing system alongside Play Billing. Google Play Billing (RevenueCat) is
+// the primary option; Razorpay is the alternative. iOS never reaches this path.
 
 export async function createRazorpaySubscription(
   plan: Exclude<Plan, "free">,
