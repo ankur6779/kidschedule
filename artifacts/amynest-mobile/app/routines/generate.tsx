@@ -35,6 +35,10 @@ type Child = {
   age: number;
   ageMonths?: number;
   wakeUpTime?: string;
+  isSchoolGoing?: boolean;
+  schoolStartTime?: string;
+  schoolEndTime?: string;
+  schoolDays?: number[] | null;
 };
 
 type Mood = "happy" | "normal" | "lazy" | "angry";
@@ -99,6 +103,25 @@ export default function GenerateRoutineScreen() {
       setSelectedChild(children[0].id);
     }
   }, [children, selectedChild]);
+
+  // Auto-pre-fill hasSchool from the child's schoolDays and the selected date.
+  // Mirrors the web behaviour and the server's isSchoolDay() resolution:
+  // not school-going → false, schoolDays=null (legacy) → Mon-Fri fallback,
+  // otherwise check the ISO weekday membership.
+  useEffect(() => {
+    if (selectedChild == null || children.length === 0) return;
+    const data = children.find((c) => c.id === selectedChild);
+    if (!data) return;
+    if (!data.isSchoolGoing) {
+      setHasSchool(false);
+      return;
+    }
+    const day = new Date(date + "T00:00:00").getDay(); // 0=Sun..6=Sat
+    const isoWeekday = day === 0 ? 7 : day; // ISO 1=Mon..7=Sun
+    const days = data.schoolDays;
+    const effectiveDays = Array.isArray(days) ? days : [1, 2, 3, 4, 5];
+    setHasSchool(effectiveDays.includes(isoWeekday));
+  }, [selectedChild, children, date]);
 
   const selectedChildData = useMemo(
     () => children.find((c) => c.id === selectedChild),

@@ -597,12 +597,25 @@ export default function RoutineGenerate() {
 
   // Auto-detect weekends for single mode
   useEffect(() => {
-    const d = new Date(date + "T00:00:00");
-    const day = d.getDay(); // 0=Sun, 6=Sat
-    if (day === 0 || day === 6) {
+    // Auto-pre-fill hasSchool based on child's schoolDays + selected date weekday.
+    // Replaces the prior weekend-only heuristic so it respects custom school weeks
+    // (e.g. some kids go Sat too, some only Mon/Wed/Fri).
+    if (!selectedChild || !children) return;
+    const data = children.find((c) => c.id === selectedChild);
+    if (!data) return;
+    if (!(data as any).isSchoolGoing) {
       setHasSchool(false);
+      return;
     }
-  }, [date]);
+    const isoWeekday = (() => {
+      // ISO 1=Mon..7=Sun (matches stored schoolDays)
+      const day = new Date(date + "T00:00:00").getDay(); // 0=Sun..6=Sat
+      return day === 0 ? 7 : day;
+    })();
+    const days = (data as any).schoolDays as number[] | null | undefined;
+    const effectiveDays = Array.isArray(days) ? days : [1, 2, 3, 4, 5]; // legacy fallback
+    setHasSchool(effectiveDays.includes(isoWeekday));
+  }, [date, selectedChild, children]);
 
   // Auto-set hasSchool=false for infants, toddlers, and non-school preschoolers
   useEffect(() => {
@@ -637,22 +650,27 @@ export default function RoutineGenerate() {
     return () => { if (checkDebounceRef.current) clearTimeout(checkDebounceRef.current); };
   }, [selectedChild, date]);
 
-  // Auto-detect weekends for family mode and pre-set hasSchool=false
+  // Auto-pre-fill family-mode hasSchool per child based on their schoolDays
+  // and the selected familyDate. Each child can have its own schoolDays array,
+  // so we evaluate per-child instead of a blanket weekend rule.
   useEffect(() => {
-    const d = new Date(familyDate + "T00:00:00");
-    const day = d.getDay();
-    const isWeekend = day === 0 || day === 6;
-    if (isWeekend && children && children.length > 0) {
-      setFamilyChildSettings((prev) => {
-        const next = { ...prev };
-        children.forEach((c) => {
-          if (next[c.id]) {
-            next[c.id] = { ...next[c.id], hasSchool: false };
-          }
-        });
-        return next;
+    if (!children || children.length === 0) return;
+    const day = new Date(familyDate + "T00:00:00").getDay(); // 0=Sun..6=Sat
+    const isoWeekday = day === 0 ? 7 : day; // ISO 1=Mon..7=Sun
+    setFamilyChildSettings((prev) => {
+      const next = { ...prev };
+      children.forEach((c) => {
+        if (!next[c.id]) return;
+        if (!(c as any).isSchoolGoing) {
+          next[c.id] = { ...next[c.id], hasSchool: false };
+          return;
+        }
+        const days = (c as any).schoolDays as number[] | null | undefined;
+        const effectiveDays = Array.isArray(days) ? days : [1, 2, 3, 4, 5];
+        next[c.id] = { ...next[c.id], hasSchool: effectiveDays.includes(isoWeekday) };
       });
-    }
+      return next;
+    });
   }, [familyDate, children]);
 
   // Initialize family child settings when children load

@@ -2,8 +2,20 @@ import { useListChildren, getListChildrenQueryKey } from "@workspace/api-client-
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Plus, ChevronRight, Clock, Target } from "lucide-react";
+import { Users, Plus, ChevronRight, Clock, Target, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const SHORT_DAYS = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function summariseSchoolDays(days: number[] | null | undefined): string | null {
+  if (!Array.isArray(days)) return "Mon-Fri"; // legacy fallback
+  if (days.length === 0) return null;          // explicit no-school: hide chip
+  const sorted = [...days].sort();
+  // Compact common cases
+  if (sorted.join(",") === "1,2,3,4,5") return "Mon-Fri";
+  if (sorted.join(",") === "1,2,3,4,5,6") return "Mon-Sat";
+  if (sorted.join(",") === "6,7") return "Weekends";
+  return sorted.map((d) => SHORT_DAYS[d] ?? "").filter(Boolean).join(", ");
+}
 
 export default function ChildrenList() {
   const { data: children, isLoading } = useListChildren({
@@ -49,10 +61,21 @@ export default function ChildrenList() {
                             {(child as any).childClass}
                           </span>
                         )}
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {child.schoolStartTime} - {child.schoolEndTime}
-                        </span>
+                        {(child as any).isSchoolGoing && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            {child.schoolStartTime} - {child.schoolEndTime}
+                          </span>
+                        )}
+                        {(child as any).isSchoolGoing && (() => {
+                          const summary = summariseSchoolDays((child as any).schoolDays);
+                          return summary ? (
+                            <span className="flex items-center gap-1 bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md text-xs font-medium">
+                              <Calendar className="h-3 w-3" />
+                              {summary}
+                            </span>
+                          ) : null;
+                        })()}
                         <span className="text-xs">
                           {(child as any).foodType === "non_veg" ? "🍗 Non-veg" : "🥦 Veg"}
                         </span>

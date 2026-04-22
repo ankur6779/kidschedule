@@ -361,6 +361,18 @@ export default function ChildDetailScreen() {
                 <>
                   <InfoRow icon="school-outline" label="School Start" value={child.schoolStartTime} colors={colors} />
                   <InfoRow icon="flag-outline" label="School End" value={child.schoolEndTime} colors={colors} />
+                  <InfoRow
+                    icon="calendar-outline"
+                    label="School Days"
+                    value={(() => {
+                      const days = child.schoolDays;
+                      if (!Array.isArray(days)) return "Mon, Tue, Wed, Thu, Fri";
+                      if (days.length === 0) return "None";
+                      const SHORT = ["", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                      return [...days].sort().map((d) => SHORT[d] ?? "").filter(Boolean).join(", ");
+                    })()}
+                    colors={colors}
+                  />
                   {child.childClass && <InfoRow icon="book-outline" label="Class" value={child.childClass} colors={colors} />}
                 </>
               )}

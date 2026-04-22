@@ -21,6 +21,12 @@ const FOOD_TYPES: { label: string; value: string }[] = [
   { label: "Non-Vegetarian", value: "non_veg" },
 ];
 
+const WEEKDAYS: { iso: number; short: string }[] = [
+  { iso: 1, short: "Mon" }, { iso: 2, short: "Tue" }, { iso: 3, short: "Wed" },
+  { iso: 4, short: "Thu" }, { iso: 5, short: "Fri" }, { iso: 6, short: "Sat" },
+  { iso: 7, short: "Sun" },
+];
+
 function dobToAge(dob: string): { years: number; months: number } {
   const born = new Date(dob);
   const now = new Date();
@@ -45,6 +51,7 @@ export default function NewChildScreen() {
   const [childClass, setChildClass] = useState("");
   const [schoolStart, setSchoolStart] = useState("09:00");
   const [schoolEnd, setSchoolEnd] = useState("15:00");
+  const [schoolDays, setSchoolDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [wakeUp, setWakeUp] = useState("07:00");
   const [sleep, setSleep] = useState("21:00");
   const [foodType, setFoodType] = useState("veg");
@@ -102,6 +109,9 @@ export default function NewChildScreen() {
           isSchoolGoing: isSchool,
           childClass: isSchool ? childClass : "",
           schoolStartTime: schoolStart, schoolEndTime: schoolEnd,
+          schoolDays: isSchool
+            ? (schoolDays.length > 0 ? [...schoolDays].sort() : [1, 2, 3, 4, 5])
+            : null,
           wakeUpTime: wakeUp, sleepTime: sleep,
           travelMode: "car", foodType, goals: "balanced-routine",
           photoUrl, babysitterId,
@@ -175,6 +185,27 @@ export default function NewChildScreen() {
               <Field label="Class" value={childClass} onChange={setChildClass} colors={colors} placeholder="e.g. 3rd" />
               <Field label="School Start (HH:MM)" value={schoolStart} onChange={setSchoolStart} colors={colors} placeholder="09:00" />
               <Field label="School End (HH:MM)" value={schoolEnd} onChange={setSchoolEnd} colors={colors} placeholder="15:00" />
+
+              <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6, marginTop: 4 }]}>
+                School Days
+              </Text>
+              <View style={styles.chipRow}>
+                {WEEKDAYS.map((d) => {
+                  const on = schoolDays.includes(d.iso);
+                  return (
+                    <TouchableOpacity
+                      key={d.iso}
+                      style={[styles.chip, { backgroundColor: on ? colors.primary : colors.card, borderColor: on ? colors.primary : colors.border }]}
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setSchoolDays((cur) => cur.includes(d.iso) ? cur.filter((x) => x !== d.iso) : [...cur, d.iso].sort());
+                      }}
+                    >
+                      <Text style={[styles.chipText, { color: on ? "#fff" : colors.foreground }]}>{d.short}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </>
           )}
 
