@@ -14,7 +14,7 @@ import {
   SUBJECT_LABELS, SUBJECT_EMOJI, DIFFICULTY_LABELS,
   ageBandFor, ageBandLabel,
   pickDailyQuestions, pickPracticeQuestions, pickWeeklyQuestions,
-} from "@/lib/olympiad-questions";
+} from "@workspace/olympiad";
 
 // ─── Storage shape ────────────────────────────────────────────────────────────
 interface DailyRun {

@@ -64,6 +64,7 @@
     "@workspace/infant-hub": "workspace:*",
     "@workspace/event-prep": "workspace:*",
     "@workspace/morning-flow": "workspace:*",
+    "@workspace/olympiad": "workspace:*",
     "@workspace/study-zone": "workspace:*",
     "@workspace/tiffin-feedback": "workspace:*",
     "@workspace/ptm-prep": "workspace:*",

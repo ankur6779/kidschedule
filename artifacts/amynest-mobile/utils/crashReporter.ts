@@ -29,10 +29,11 @@ export function captureException(err: unknown, context?: Record<string, unknown>
 }
 
 export function captureMessage(message: string, severity: Severity = "info"): void {
-  console.log(`[crash:${severity}]`, message);
+  if (__DEV__) console.log(`[crash:${severity}]`, message);
 }
 
 export function addBreadcrumb(category: string, message: string, data?: Record<string, unknown>): void {
+  if (!__DEV__) return;
   if (data) console.log(`[breadcrumb:${category}]`, message, data);
   else console.log(`[breadcrumb:${category}]`, message);
 }

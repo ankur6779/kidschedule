@@ -11,7 +11,12 @@
     "splash": {
       "image": "./assets/images/amynest-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#F8F7FF"
+      "backgroundColor": "#F8F7FF",
+      "dark": {
+        "image": "./assets/images/amynest-logo.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#1A1530"
+      }
     },
     "ios": {
       "supportsTablet": false,
@@ -68,6 +73,24 @@
         {
           "icon": "./assets/images/icon.png",
           "color": "#7C3AED"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/amynest-logo.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#F8F7FF",
+          "dark": {
+            "image": "./assets/images/amynest-logo.png",
+            "backgroundColor": "#1A1530"
+          },
+          "android": {
+            "image": "./assets/images/adaptive-icon.png",
+            "imageWidth": 180,
+            "backgroundColor": "#F8F7FF"
+          }
         }
       ]
     ],

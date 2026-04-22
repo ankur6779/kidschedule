@@ -199,6 +199,9 @@ importers:
       '@workspace/morning-flow':
         specifier: workspace:*
         version: link:../../lib/morning-flow
+      '@workspace/olympiad':
+        specifier: workspace:*
+        version: link:../../lib/olympiad
       '@workspace/ptm-prep':
         specifier: workspace:*
         version: link:../../lib/ptm-prep
@@ -486,6 +489,9 @@ importers:
       '@workspace/morning-flow':
         specifier: workspace:*
         version: link:../../lib/morning-flow
+      '@workspace/olympiad':
+        specifier: workspace:*
+        version: link:../../lib/olympiad
       '@workspace/ptm-prep':
         specifier: workspace:*
         version: link:../../lib/ptm-prep
@@ -1144,6 +1150,8 @@ importers:
   lib/life-skills: {}
 
   lib/morning-flow: {}
+
+  lib/olympiad: {}
 
   lib/ptm-prep: {}
 
