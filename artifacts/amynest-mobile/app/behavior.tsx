@@ -477,6 +477,27 @@ export default function BehaviorScreen() {
               <Text style={{ color: c.textMuted, fontSize: 11 }}>{L.challenging}</Text>
             </View>
           </View>
+          <Pressable
+            onPress={() => router.push({
+              pathname: "/behavior-history",
+              params: effectiveChildId ? { childId: String(effectiveChildId) } : {},
+            })}
+            style={({ pressed }) => [
+              {
+                flexDirection: "row", alignItems: "center", justifyContent: "center",
+                gap: 6, marginTop: 14, paddingVertical: 10, borderRadius: 10,
+                backgroundColor: "#0EA5E922", borderWidth: 1, borderColor: "#0EA5E944",
+              },
+              pressed && { opacity: 0.85 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="View full behavior history"
+          >
+            <Ionicons name="time-outline" size={14} color="#0EA5E9" />
+            <Text style={{ color: "#0EA5E9", fontSize: 12.5, fontWeight: "800" }}>
+              View full history (last 90 days)
+            </Text>
+          </Pressable>
         </Block>
 
         {/* BLOCK 5: Solutions */}

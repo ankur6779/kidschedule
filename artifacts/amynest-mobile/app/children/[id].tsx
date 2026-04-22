@@ -21,14 +21,20 @@ type Child = {
   isSchoolGoing?: boolean; childClass?: string;
   schoolStartTime: string; schoolEndTime: string;
   wakeUpTime: string; sleepTime: string; foodType?: string; goals: string;
-  travelMode?: string; photoUrl?: string | null; babysitterId?: number | null;
+  travelMode?: string; travelModeOther?: string | null;
+  photoUrl?: string | null; babysitterId?: number | null;
 };
 
 const FOOD_TYPES: { label: string; value: string }[] = [
   { label: "Vegetarian", value: "veg" },
   { label: "Non-Vegetarian", value: "non_veg" },
 ];
-const TRAVEL_MODES: string[] = ["car", "bus", "walk", "auto"];
+const TRAVEL_MODES: { label: string; value: string }[] = [
+  { label: "Van", value: "van" },
+  { label: "Car", value: "car" },
+  { label: "Walk", value: "walk" },
+  { label: "Other", value: "other" },
+];
 
 export default function ChildDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -50,6 +56,7 @@ export default function ChildDetailScreen() {
   const [sleep, setSleep] = useState("21:00");
   const [foodType, setFoodType] = useState("veg");
   const [travelMode, setTravelMode] = useState("car");
+  const [travelModeOther, setTravelModeOther] = useState("");
   const [goals, setGoals] = useState("balanced-routine");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [babysitterId, setBabysitterId] = useState<number | null>(null);
@@ -83,6 +90,7 @@ export default function ChildDetailScreen() {
       setSleep(child.sleepTime ?? "21:00");
       setFoodType(child.foodType ?? "veg");
       setTravelMode(child.travelMode ?? "car");
+      setTravelModeOther(child.travelModeOther ?? "");
       setGoals(child.goals ?? "balanced-routine");
       setPhotoUrl(child.photoUrl ?? null);
       setBabysitterId(child.babysitterId ?? null);
@@ -123,7 +131,9 @@ export default function ChildDetailScreen() {
           childClass: isSchool ? childClass : "",
           schoolStartTime: schoolStart, schoolEndTime: schoolEnd,
           wakeUpTime: wakeUp, sleepTime: sleep,
-          foodType, travelMode, goals,
+          foodType, travelMode,
+          travelModeOther: travelMode === "other" ? travelModeOther.trim() || null : null,
+          goals,
           photoUrl, babysitterId,
         }),
       });
@@ -267,13 +277,22 @@ export default function ChildDetailScreen() {
             <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6, marginTop: 4 }]}>Travel Mode</Text>
             <View style={styles.chipRow}>
               {TRAVEL_MODES.map(t => (
-                <TouchableOpacity key={t}
-                  style={[styles.chip, { backgroundColor: travelMode === t ? colors.primary : colors.card, borderColor: travelMode === t ? colors.primary : colors.border }]}
-                  onPress={() => { setTravelMode(t); Haptics.selectionAsync(); }}>
-                  <Text style={[styles.chipText, { color: travelMode === t ? "#fff" : colors.foreground }]}>{t}</Text>
+                <TouchableOpacity key={t.value}
+                  style={[styles.chip, { backgroundColor: travelMode === t.value ? colors.primary : colors.card, borderColor: travelMode === t.value ? colors.primary : colors.border }]}
+                  onPress={() => { setTravelMode(t.value); Haptics.selectionAsync(); }}>
+                  <Text style={[styles.chipText, { color: travelMode === t.value ? "#fff" : colors.foreground }]}>{t.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
+            {travelMode === "other" && (
+              <Field
+                label="Specify travel mode"
+                value={travelModeOther}
+                onChange={setTravelModeOther}
+                colors={colors}
+                placeholder="e.g. Bus, Auto, Cycle"
+              />
+            )}
 
             <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6, marginTop: 4 }]}>
               Assigned Babysitter
@@ -315,7 +334,18 @@ export default function ChildDetailScreen() {
             </InfoCard>
             <InfoCard title="Preferences" colors={colors}>
               <InfoRow icon="restaurant-outline" label="Food" value={child?.foodType === "non_veg" ? "Non-Vegetarian" : "Vegetarian"} colors={colors} />
-              <InfoRow icon="car-outline" label="Travel" value={child?.travelMode ?? "Car"} colors={colors} />
+              <InfoRow
+                icon="car-outline"
+                label="Travel"
+                value={
+                  child?.travelMode === "other" && child?.travelModeOther
+                    ? child.travelModeOther
+                    : (child?.travelMode
+                        ? child.travelMode.charAt(0).toUpperCase() + child.travelMode.slice(1)
+                        : "Car")
+                }
+                colors={colors}
+              />
             </InfoCard>
           </View>
         )}

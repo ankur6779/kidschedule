@@ -19,6 +19,7 @@ import { ProgressProvider } from "@/contexts/ProgressContext";
 import { useAppDataBootstrap } from "@/hooks/useAppData";
 import { useOfflineSyncBootstrap } from "@/hooks/useOfflineSync";
 import { useSubscriptionBootstrap } from "@/hooks/useSubscription";
+import { usePushRegistration } from "@/hooks/usePushRegistration";
 import "@/i18n";
 import { brand } from "@/constants/colors";
 
@@ -63,6 +64,8 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   useOfflineSyncBootstrap();
   // Bootstrap freemium subscription + entitlements
   useSubscriptionBootstrap();
+  // Register Expo push token with backend (best-effort, no-ops on web/sim)
+  usePushRegistration();
 
   // Hidden component — captures `?ref=CODE` from deep links and submits to API.
   // Rendering inline keeps it inside the QueryClient + ClerkProvider tree.

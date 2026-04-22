@@ -18,6 +18,7 @@ import referralsRouter from "./referrals";
 import featuresRouter from "./features";
 import mealsRouter from "./meals";
 import accountRouter from "./account";
+import pushRouter from "./push";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -46,5 +47,6 @@ router.use(referralsRouter);
 router.use(featuresRouter);
 router.use(mealsRouter);
 router.use(accountRouter);
+router.use(pushRouter);
 
 export default router;

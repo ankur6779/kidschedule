@@ -97,6 +97,14 @@ export default function PaywallScreen() {
   const [notice, setNotice] = useState<string | null>(null);
   const showRazorpay = Platform.OS === "android";
 
+  const canStartTrial =
+    !!ent &&
+    ent.plan === "free" &&
+    !ent.isTrialing &&
+    !ent.trialEndsAt &&
+    (ent.limits?.trialDays ?? 0) > 0;
+  const trialDays = ent?.limits?.trialDays ?? 7;
+
   useEffect(() => {
     if (plans.length === 0 && !loading) void load();
   }, [plans.length, loading, load]);
@@ -312,6 +320,40 @@ export default function PaywallScreen() {
               <Text style={styles.secondaryText}>Pay with UPI / Card</Text>
             </Pressable>
           )}
+
+          {canStartTrial && (
+            <Pressable
+              onPress={onTrial}
+              disabled={submitting}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.trialBtn,
+                pressed && { opacity: 0.7 },
+                submitting && { opacity: 0.5 },
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={`Start ${trialDays}-day free trial`}
+            >
+              <Text style={styles.trialText}>
+                ✨ Start {trialDays}-day Free Trial
+              </Text>
+            </Pressable>
+          )}
+
+          <View style={styles.trustRow}>
+            <View style={styles.trustItem}>
+              <Ionicons name="people" size={14} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.trustText}>10,000+ parents</Text>
+            </View>
+            <View style={styles.trustItem}>
+              <Ionicons name="lock-closed" size={14} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.trustText}>Cancel anytime</Text>
+            </View>
+            <View style={styles.trustItem}>
+              <Ionicons name="shield-checkmark" size={14} color="rgba(255,255,255,0.7)" />
+              <Text style={styles.trustText}>Secure payment</Text>
+            </View>
+          </View>
 
           <Pressable
             onPress={() => router.back()}
@@ -532,6 +574,24 @@ const styles = StyleSheet.create({
     color: "#FF4ECD",
     fontSize: 13,
     fontWeight: "800",
+  },
+  trustRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 14,
+    marginTop: 14,
+    paddingHorizontal: 8,
+  },
+  trustItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  trustText: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 11.5,
+    fontWeight: "600",
   },
   maybeBtn: {
     alignItems: "center",
