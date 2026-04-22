@@ -1,0 +1,126 @@
+{
+  "nursery": {
+    "alphabets": [
+      {
+        "letter": "A",
+        "word": "Apple",
+        "image": "https://source.unsplash.com/200x200/?apple",
+        "audioText": "A for Apple"
+      },
+      {
+        "letter": "B",
+        "word": "Ball",
+        "image": "https://source.unsplash.com/200x200/?ball",
+        "audioText": "B for Ball"
+      },
+      {
+        "letter": "C",
+        "word": "Cat",
+        "image": "https://source.unsplash.com/200x200/?cat",
+        "audioText": "C for Cat"
+      }
+    ],
+    "numbers": [
+      {
+        "number": "1",
+        "image": "https://source.unsplash.com/200x200/?one",
+        "audioText": "One"
+      },
+      {
+        "number": "2",
+        "image": "https://source.unsplash.com/200x200/?two",
+        "audioText": "Two"
+      }
+    ],
+    "animals": [
+      {
+        "name": "Dog",
+        "image": "https://source.unsplash.com/200x200/?dog",
+        "audioText": "Dog"
+      },
+      {
+        "name": "Elephant",
+        "image": "https://source.unsplash.com/200x200/?elephant",
+        "audioText": "Elephant"
+      }
+    ]
+  },
+
+  "class1to5": [
+    {
+      "class": "2",
+      "subject": "Math",
+      "topic": "Addition",
+      "notes": "Addition means combining numbers.",
+      "example": "2 + 3 = 5",
+      "imageExample": "https://source.unsplash.com/300x200/?apples",
+      "questions": [
+        "2 + 2 = ?",
+        "4 + 1 = ?"
+      ]
+    },
+    {
+      "class": "3",
+      "subject": "Science",
+      "topic": "Plants",
+      "notes": "Plants need sunlight and water to grow.",
+      "example": "Sunlight helps plants make food.",
+      "imageExample": "https://source.unsplash.com/300x200/?plant",
+      "questions": [
+        "What do plants need?",
+        "Why is sunlight important?"
+      ]
+    },
+    {
+      "class": "4",
+      "subject": "English",
+      "topic": "Nouns",
+      "notes": "Nouns are naming words.",
+      "example": "Dog, city, book",
+      "imageExample": "https://source.unsplash.com/300x200/?book",
+      "questions": [
+        "Find noun: cat",
+        "Find noun: run"
+      ]
+    }
+  ],
+
+  "class6to10": [
+    {
+      "class": "7",
+      "subject": "Math",
+      "topic": "Algebra Basics",
+      "notes": "Algebra uses letters and numbers.",
+      "example": "x + 2 = 5",
+      "imageExample": "https://source.unsplash.com/300x200/?math",
+      "questions": [
+        "Solve x + 2 = 5",
+        "What is x?"
+      ]
+    },
+    {
+      "class": "8",
+      "subject": "Science",
+      "topic": "Photosynthesis",
+      "notes": "Plants make food using sunlight.",
+      "example": "Sunlight + CO2 → Food",
+      "imageExample": "https://source.unsplash.com/300x200/?plant",
+      "questions": [
+        "What is photosynthesis?",
+        "Why is sunlight needed?"
+      ]
+    },
+    {
+      "class": "9",
+      "subject": "Physics",
+      "topic": "Force",
+      "notes": "Force is a push or pull.",
+      "example": "Pushing a box",
+      "imageExample": "https://source.unsplash.com/300x200/?force",
+      "questions": [
+        "Define force",
+        "Give an example"
+      ]
+    }
+  ]
+}
