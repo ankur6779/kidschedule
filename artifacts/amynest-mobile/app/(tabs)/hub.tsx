@@ -95,10 +95,10 @@ export default function HubScreen() {
   // siblings use flexBasis 48% + flexGrow 1 so an orphan (last item with no
   // partner, or a tile sharing a row with an opened sibling that wrapped)
   // stretches to fill the remaining space instead of leaving an empty gap.
-  const tileW = (id: string): { width: "100%" } | { flexBasis: "48%"; flexGrow: 1; minWidth: 0 } =>
-    openSection === id
-      ? { width: "100%" }
-      : { flexBasis: "48%", flexGrow: 1, minWidth: 0 };
+  // Single-column layout on mobile — every tile spans the full row for a
+  // cleaner, easier-to-scan parent hub. (`openSection` is still used for
+  // accordion behaviour inside each Section, just not for sizing anymore.)
+  const tileW = (_id: string): { width: "100%" } => ({ width: "100%" });
 
   if (profileLoading) {
     return (
