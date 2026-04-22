@@ -503,16 +503,39 @@ export default function OnboardingScreen() {
                 style={[styles.chip, { backgroundColor: selected === t ? PRIMARY : colors.card, borderColor: selected === t ? PRIMARY : colors.border }]}
                 onPress={() => {
                   setSelected(t); Haptics.selectionAsync();
-                  const finishedChild = { ...curr, sleepTime: to24h(t), foodType: "veg" } as ChildData;
-                  setChildren(cs => [...cs, finishedChild]);
-                  setCurr({});
-                  userReplies(t, "add-more", "Got it! Do you have another child to add?");
+                  setCurr(c => ({ ...c, sleepTime: to24h(t) }));
+                  userReplies(t, "child-food", `What does ${curr.name} eat?`);
                 }}>
                 <Text style={[styles.chipText, { color: selected === t ? "#fff" : colors.foreground }]}>{t}</Text>
               </TouchableOpacity>
             ))}
           </View>
         );
+
+      case "child-food": {
+        const foodOpts: { label: string; value: "veg" | "nonveg" | "egg" }[] = [
+          { label: "Vegetarian", value: "veg" },
+          { label: "Non-Vegetarian", value: "nonveg" },
+          { label: "Eggetarian", value: "egg" },
+        ];
+        return (
+          <View style={styles.chipGrid}>
+            {foodOpts.map(opt => (
+              <TouchableOpacity key={opt.value}
+                style={[styles.chip, { backgroundColor: selected === opt.label ? PRIMARY : colors.card, borderColor: selected === opt.label ? PRIMARY : colors.border }]}
+                onPress={() => {
+                  setSelected(opt.label); Haptics.selectionAsync();
+                  const finishedChild = { ...curr, foodType: opt.value } as ChildData;
+                  setChildren(cs => [...cs, finishedChild]);
+                  setCurr({});
+                  userReplies(opt.label, "add-more", "Got it! Do you have another child to add?");
+                }}>
+                <Text style={[styles.chipText, { color: selected === opt.label ? "#fff" : colors.foreground }]}>{opt.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        );
+      }
 
       case "add-more":
         return (

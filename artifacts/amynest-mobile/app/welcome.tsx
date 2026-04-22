@@ -141,7 +141,9 @@ export default function WelcomeScreen() {
           <View style={styles.nav}>
             <View style={styles.navBrand}>
               <Text style={styles.navBrandText}>
-                AmyNest <Text style={styles.navBrandAi}>AI</Text>
+                <Text style={styles.navBrandAmy}>Amy</Text>
+                <Text style={styles.navBrandNest}>Nest</Text>
+                <Text style={styles.navBrandAi}> AI</Text>
               </Text>
               <Text style={styles.navBrandTag}>Where Smart Parenting Starts</Text>
             </View>
@@ -429,7 +431,9 @@ export default function WelcomeScreen() {
           <View style={styles.footer}>
             <View style={styles.footerBrand}>
               <Text style={styles.footerBrandText}>
-                AmyNest <Text style={styles.navBrandAi}>AI</Text>
+                <Text style={styles.navBrandAmy}>Amy</Text>
+                <Text style={styles.navBrandNest}>Nest</Text>
+                <Text style={styles.navBrandAi}> AI</Text>
               </Text>
             </View>
             <Text style={styles.footerTag}>Where Smart Parenting Starts</Text>
@@ -467,8 +471,16 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     lineHeight: 26,
   },
+  navBrandAmy: {
+    color: "#A855F7",
+    fontFamily: "Inter_700Bold",
+  },
+  navBrandNest: {
+    color: "#EC4899",
+    fontFamily: "Inter_700Bold",
+  },
   navBrandAi: {
-    color: brand.purple500,
+    color: "#06B6D4",
     fontFamily: "Inter_700Bold",
   },
   navBrandTag: {
