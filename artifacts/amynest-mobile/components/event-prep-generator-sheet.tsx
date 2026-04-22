@@ -6,8 +6,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Speech from "expo-speech";
 import {
-  EVENT_CATEGORIES, generateEventIdea,
-  type AgeBand, type CostBudget, type EventCategoryId,
+  EVENT_OCCASIONS, generateEventIdea,
+  type AgeBand, type CostBudget, type EventOccasionId,
   type GeneratorIdea, type GeneratorResult, type TimeBudget,
 } from "@workspace/event-prep";
 
@@ -33,7 +33,7 @@ const BUDGETS: { id: CostBudget; label: string }[] = [
 ];
 
 export function EventPrepGeneratorSheet({ visible, onClose, onOpenCharacter }: Props) {
-  const [event, setEvent] = useState<EventCategoryId | "any">("any");
+  const [event, setEvent] = useState<EventOccasionId | "any">("any");
   const [age, setAge] = useState<AgeBand>("6-10");
   const [time, setTime] = useState<TimeBudget>(30);
   const [budget, setBudget] = useState<CostBudget>("low");
@@ -95,7 +95,7 @@ export function EventPrepGeneratorSheet({ visible, onClose, onOpenCharacter }: P
           <Field label="Event">
             <ChipRow>
               <Chip active={event === "any"} onPress={() => setEvent("any")}>Any / Surprise me</Chip>
-              {EVENT_CATEGORIES.map((c) => (
+              {EVENT_OCCASIONS.map((c) => (
                 <Chip key={c.id} active={event === c.id} onPress={() => setEvent(c.id)}>
                   {c.emoji} {c.title}
                 </Chip>
@@ -128,19 +128,19 @@ export function EventPrepGeneratorSheet({ visible, onClose, onOpenCharacter }: P
             </LinearGradient>
           </Pressable>
 
-          {result && (
+          {result && result.ideas.length > 0 && (
             <View style={{ gap: 10, marginTop: 8 }}>
               <View style={S.introRow}>
                 <Ionicons name="heart" size={14} color="#ec4899" />
                 <Text style={S.introText}>{result.intro}</Text>
               </View>
 
-              <IdeaCard idea={result.best} highlight speakingId={speakingId} onSpeak={handleSpeak} onOpenFull={() => openCharacter(result.best.character.id)} />
+              <IdeaCard idea={result.ideas[0]} highlight speakingId={speakingId} onSpeak={handleSpeak} onOpenFull={() => openCharacter(result.ideas[0].character.id)} />
 
-              {result.alternates.length > 0 && (
+              {result.ideas.length > 1 && (
                 <Text style={S.altHead}>OTHER IDEAS</Text>
               )}
-              {result.alternates.map((alt) => (
+              {result.ideas.slice(1).map((alt) => (
                 <IdeaCard key={alt.character.id} idea={alt} speakingId={speakingId} onSpeak={handleSpeak} onOpenFull={() => openCharacter(alt.character.id)} />
               ))}
             </View>

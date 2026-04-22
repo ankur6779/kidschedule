@@ -41,9 +41,8 @@ export function applyFilters(
 }
 
 /**
- * Amy AI generator — rule-based recommender.
- * Given an event + child age, returns the best-matching character ideas.
- * Younger children get the easiest + shortest options, older get more variety.
+ * Amy AI generator — rule-based recommender (used by the home screen
+ * "Amy AI picks" row).
  */
 export function recommendForChild(
   category: EventCategoryId,
@@ -51,15 +50,11 @@ export function recommendForChild(
 ): EventCharacter[] {
   const all = charactersByCategory(category);
   if (all.length === 0) return [];
-
-  // Younger kids → Easy + ≤25 min only.
   const filtered =
     ageYears <= 5
       ? all.filter((c) => c.difficulty === "Easy" && c.timeMinutes <= 25)
       : all;
-
   const list = filtered.length ? filtered : all;
-  // Sort by quickest first so the recommendation list starts with low-effort wins.
   return [...list].sort((a, b) => a.timeMinutes - b.timeMinutes).slice(0, 3);
 }
 
@@ -75,20 +70,113 @@ export type AgeBand = "2-5" | "6-10" | "10+";
 export type TimeBudget = 15 | 30 | 60;
 export type CostBudget = "low" | "medium";
 
+/** Semantic tags applied to characters for occasion → tag matching. */
+export type CharacterTag =
+  | "freedom" | "profession" | "animal" | "nature"
+  | "mythology" | "community" | "science" | "performance" | "general";
+
+/**
+ * High-level "events" the parent picks from. Distinct from EventCategoryId
+ * (which is the bucket a character belongs to). One event maps to many tags.
+ */
+export type EventOccasionId =
+  | "independence-day"
+  | "republic-day"
+  | "gandhi-jayanti"
+  | "childrens-day"
+  | "fancy-dress"
+  | "annual-day"
+  | "janmashtami"
+  | "shivratri";
+
+export interface EventOccasion {
+  id: EventOccasionId;
+  title: string;
+  emoji: string;
+}
+
+export const EVENT_OCCASIONS: EventOccasion[] = [
+  { id: "independence-day", title: "Independence Day", emoji: "🇮🇳" },
+  { id: "republic-day",     title: "Republic Day",     emoji: "🎖️" },
+  { id: "gandhi-jayanti",   title: "Gandhi Jayanti",   emoji: "🕊️" },
+  { id: "childrens-day",    title: "Children's Day",   emoji: "🎈" },
+  { id: "fancy-dress",      title: "Fancy Dress",      emoji: "🎉" },
+  { id: "annual-day",       title: "Annual Day",       emoji: "🎭" },
+  { id: "janmashtami",      title: "Janmashtami",      emoji: "🪈" },
+  { id: "shivratri",        title: "Shivratri",        emoji: "🔱" },
+];
+
+/** event → semantic tag(s) — exactly as per the product spec. */
+const OCCASION_TAGS: Record<EventOccasionId, CharacterTag[]> = {
+  "independence-day": ["freedom"],
+  "republic-day":     ["freedom"],
+  "gandhi-jayanti":   ["freedom"],
+  "childrens-day":    ["freedom", "community"],
+  "fancy-dress":      ["profession", "animal", "nature", "science"],
+  "annual-day":       ["profession", "science", "community", "performance"],
+  "janmashtami":      ["mythology"],
+  "shivratri":        ["mythology"],
+};
+
+/** Per-character semantic tags (kept here so the dataset file stays simple). */
+const CHARACTER_TAGS: Record<string, CharacterTag[]> = {
+  // Freedom fighters
+  "bhagat-singh":          ["freedom"],
+  "subhash-chandra-bose":  ["freedom"],
+  "rani-lakshmibai":       ["freedom"],
+  "freedom-fighter-girl":  ["freedom"],
+  "dr-apj-abdul-kalam":    ["freedom", "science"],
+  "indian-soldier":        ["freedom", "community", "profession"],
+  "dr-bhimrao-ambedkar":   ["freedom"],
+  "mahatma-gandhi":        ["freedom"],
+  "kasturba-gandhi":       ["freedom"],
+  "jawaharlal-nehru":      ["freedom"],
+  // Mythology
+  "krishna":               ["mythology"],
+  "shiva":                 ["mythology"],
+  // Performance / annual day
+  "fairy":                 ["performance"],
+  "santa":                 ["performance"],
+  // Animals
+  "lion":                  ["animal"],
+  "peacock":               ["animal", "nature"],
+  "rabbit":                ["animal"],
+  // Professions / community
+  "doctor":                ["profession", "community"],
+  "police":                ["profession", "community"],
+  "farmer":                ["profession", "community"],
+  "teacher":               ["profession", "community"],
+  "traffic-police":        ["profession", "community"],
+  // Science
+  "scientist":             ["profession", "science"],
+  "astronaut":             ["profession", "science"],
+  // Nature
+  "tree":                  ["nature"],
+  "sun":                   ["nature"],
+};
+
+/** age band → allowed difficulty levels (per spec). */
+const AGE_DIFFICULTY: Record<AgeBand, Array<"Easy" | "Medium">> = {
+  "2-5":  ["Easy"],
+  "6-10": ["Easy", "Medium"],
+  "10+":  ["Medium", "Easy"], // spec lists ["medium"] but Easy is fine for 10+ too
+};
+
+const AGE_BAND_TO_YEARS: Record<AgeBand, number> = { "2-5": 4, "6-10": 8, "10+": 12 };
+
 export interface GeneratorInput {
-  /** Use undefined to let Amy pick the most relevant event for "today". */
-  event?: EventCategoryId;
+  /** The chosen event. Undefined = let Amy pick the most relevant for "today". */
+  event?: EventOccasionId;
   ageBand: AgeBand;
-  /** Available prep time in minutes. */
   timeMinutes: TimeBudget;
   budget: CostBudget;
 }
 
 export interface GeneratorIdea {
   character: EventCharacter;
-  /** Speech adapted to the chosen age band. */
+  /** Speech adapted to the child's age band. */
   speech: string;
-  /** "Easy clothes + 1 prop" or "Clothes + DIY craft". */
+  /** Friendly template label shown on the result card. */
   template: "Easy: clothes + props" | "Medium: clothes + DIY craft";
   /** Why Amy picked this — friendly, parental tone. */
   reason: string;
@@ -97,19 +185,27 @@ export interface GeneratorIdea {
 export interface GeneratorResult {
   /** Friendly Amy intro line. */
   intro: string;
-  /** Top recommendation. */
-  best: GeneratorIdea;
-  /** 0–2 alternates. */
-  alternates: GeneratorIdea[];
+  /** 1–3 ordered ideas. The first is the highlighted "best" pick. */
+  ideas: GeneratorIdea[];
   /** True when no exact matches existed and we fell back to general easy ideas. */
   fellBack: boolean;
 }
 
-const AGE_BAND_TO_YEARS: Record<AgeBand, number> = { "2-5": 4, "6-10": 8, "10+": 12 };
+function pickTimelyOccasion(): EventOccasionId {
+  const m = new Date().getMonth();
+  if (m === 0) return "republic-day";
+  if (m === 7 || m === 8) return "independence-day";
+  if (m === 9) return "gandhi-jayanti";
+  if (m === 10) return "childrens-day";       // November
+  if (m === 11 || m === 1) return "annual-day"; // December / February
+  return "fancy-dress";
+}
+
+function tagsFor(c: EventCharacter): CharacterTag[] {
+  return CHARACTER_TAGS[c.id] ?? ["general"];
+}
 
 function templateFor(c: EventCharacter): GeneratorIdea["template"] {
-  // Heuristic — characters with very short step lists are "easy + prop",
-  // anything bigger involves a craft step.
   return c.steps.length <= 4 && c.lowCost
     ? "Easy: clothes + props"
     : "Medium: clothes + DIY craft";
@@ -120,88 +216,84 @@ function reasonFor(c: EventCharacter, input: GeneratorInput, fellBack: boolean):
   const bits: string[] = [];
   if (c.timeMinutes <= input.timeMinutes) bits.push(`fits in ${c.timeMinutes} min`);
   if (c.difficulty === "Easy") bits.push("easy to put together");
-  if (c.lowCost && input.budget === "low") bits.push("uses things at home");
+  if (input.budget === "low" && c.materials.length <= 3) bits.push("uses just a few items");
   if (input.ageBand === "2-5" && c.speechShort) bits.push("has a short kid-friendly speech");
-  return bits.length
-    ? `Picked because it ${bits.join(", ")}.`
-    : `Good all-rounder for this event.`;
+  return bits.length ? `Picked because it ${bits.join(", ")}.` : `Good all-rounder for this event.`;
 }
 
-function pickTimelyCategoryByMonth(): EventCategoryId {
-  const m = new Date().getMonth();
-  if (m === 0) return "republic-day";
-  if (m === 7 || m === 8) return "independence-day";
-  if (m === 9) return "gandhi-jayanti";
-  if (m === 11 || m === 1) return "annual-day";
-  return "fancy-dress";
+/** Fisher–Yates shuffle (deterministic-friendly, but uses Math.random). */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
 }
 
 /**
  * Amy AI Event Generator — pure rule-based.
- * Filters the static dataset by event/age/time/budget, ranks by best fit,
- * and returns a friendly result. Always returns at least one idea
- * (falls back to general easy fancy-dress ideas when nothing matches).
+ * Maps event → tags, applies age/time/budget filters, supports last-minute
+ * mode and an "easy" fallback. Always returns 1–3 ideas.
  */
 export function generateEventIdea(input: GeneratorInput): GeneratorResult {
-  const event = input.event ?? pickTimelyCategoryByMonth();
+  const occasion = input.event ?? pickTimelyOccasion();
   const ageYears = AGE_BAND_TO_YEARS[input.ageBand];
   const lastMinute = input.timeMinutes <= 15;
+  const allowedDifficulties = AGE_DIFFICULTY[input.ageBand];
+  const wantedTags = new Set<CharacterTag>(OCCASION_TAGS[occasion]);
 
-  // 1) Try the chosen event first.
-  let pool = charactersByCategory(event).filter((c) => c.timeMinutes <= input.timeMinutes);
-
-  // 2) Apply budget rule.
-  if (input.budget === "low") pool = pool.filter((c) => c.lowCost);
-
-  // 3) Last-minute mode = also force Easy.
-  if (lastMinute) pool = pool.filter((c) => c.difficulty === "Easy");
-
-  // 4) Age rule — younger kids stick to Easy + ≤25 min.
-  if (input.ageBand === "2-5") {
-    pool = pool.filter((c) => c.difficulty === "Easy" && c.timeMinutes <= Math.min(25, input.timeMinutes));
-  }
-
-  let fellBack = false;
-
-  // 5) Fallback — relax filters: any easy + low-cost idea from any category.
-  if (pool.length === 0) {
-    fellBack = true;
-    pool = EVENT_CHARACTERS.filter(
-      (c) =>
-        c.difficulty === "Easy" &&
-        c.lowCost &&
-        c.timeMinutes <= Math.max(input.timeMinutes, 30),
-    ).slice(0, 6);
-  }
-
-  // 6) Rank — quickest first, then easy/low-cost, then fewer materials.
-  const ranked = [...pool].sort((a, b) => {
-    if (a.timeMinutes !== b.timeMinutes) return a.timeMinutes - b.timeMinutes;
-    if ((a.lowCost ? 0 : 1) !== (b.lowCost ? 0 : 1)) return (a.lowCost ? 0 : 1) - (b.lowCost ? 0 : 1);
-    return a.materials.length - b.materials.length;
+  // ── Step 1: tags + difficulty ────────────────────────────────────────────
+  let pool = EVENT_CHARACTERS.filter((c) => {
+    const tags = tagsFor(c);
+    const tagMatch = tags.some((t) => wantedTags.has(t));
+    const diffMatch = allowedDifficulties.includes(c.difficulty);
+    return tagMatch && diffMatch;
   });
 
-  // 7) Final safety net (dataset can't actually be empty, but be defensive).
-  const safe = ranked.length > 0 ? ranked : EVENT_CHARACTERS.slice(0, 3);
+  // ── Step 2: time budget ──────────────────────────────────────────────────
+  pool = pool.filter((c) => c.timeMinutes <= input.timeMinutes);
 
-  const top = safe[0];
+  // ── Step 3: budget rule (low → ≤3 materials, per spec) ──────────────────
+  if (input.budget === "low") {
+    pool = pool.filter((c) => c.materials.length <= 3 || c.lowCost);
+  }
+
+  // ── Step 7: last-minute override (≤15 min → Easy + ≤15 only) ────────────
+  if (lastMinute) {
+    pool = pool.filter((c) => c.difficulty === "Easy" && c.timeMinutes <= 15);
+  }
+
+  // ── Step 5: fallback — anything Easy ─────────────────────────────────────
+  let fellBack = false;
+  if (pool.length === 0) {
+    fellBack = true;
+    pool = EVENT_CHARACTERS.filter((c) => c.difficulty === "Easy");
+    // Honour the time budget on fallback too (otherwise we'd suggest a
+    // 30-min idea when the parent has 15 min).
+    pool = pool.filter((c) => c.timeMinutes <= Math.max(input.timeMinutes, 30));
+  }
+
+  // ── Step 6: shuffle + take top 3 ─────────────────────────────────────────
+  const picked = shuffle(pool).slice(0, 3);
+
+  // Final safety net (dataset can't realistically be empty).
+  const safe = picked.length > 0
+    ? picked
+    : shuffle(EVENT_CHARACTERS.filter((c) => c.difficulty === "Easy")).slice(0, 3);
+
   const intro = lastMinute
-    ? "Don't worry ❤️ Here's a super-quick idea you can put together right now!"
+    ? "Don't worry ❤️ Here are some quick and easy ideas for you!"
     : fellBack
-    ? "Hmm, no perfect match — but here are a few easy ideas that work for any school event ✨"
-    : "Got it! Here's an idea I picked just for you ❤️";
+    ? "Hmm, no perfect match — but here are some easy ideas you can try ✨"
+    : "Got it! Here are some ideas I picked just for you ❤️";
 
-  const toIdea = (c: EventCharacter): GeneratorIdea => ({
+  const ideas: GeneratorIdea[] = safe.map((c) => ({
     character: c,
     speech: speechForAge(c, ageYears),
     template: templateFor(c),
     reason: reasonFor(c, input, fellBack),
-  });
+  }));
 
-  return {
-    intro,
-    best: toIdea(top),
-    alternates: safe.slice(1, 3).map(toIdea),
-    fellBack,
-  };
+  return { intro, ideas, fellBack };
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  EVENT_CATEGORIES, generateEventIdea,
-  type AgeBand, type CostBudget, type EventCategoryId,
+  EVENT_OCCASIONS, generateEventIdea,
+  type AgeBand, type CostBudget, type EventOccasionId,
   type GeneratorInput, type GeneratorIdea, type GeneratorResult, type TimeBudget,
 } from "@workspace/event-prep";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { speak, stopSpeaking, ttsAvailable } from "@/lib/study-tts";
 
 interface Props {
   onOpenCharacter: (characterId: string) => void;
-  defaultEvent?: EventCategoryId;
+  defaultEvent?: EventOccasionId;
 }
 
 const AGE_BANDS: { id: AgeBand; label: string }[] = [
@@ -32,7 +32,7 @@ const BUDGETS: { id: CostBudget; label: string }[] = [
 ];
 
 export function EventPrepGenerator({ onOpenCharacter, defaultEvent }: Props) {
-  const [event, setEvent] = useState<EventCategoryId | "any">(defaultEvent ?? "any");
+  const [event, setEvent] = useState<EventOccasionId | "any">(defaultEvent ?? "any");
   const [age, setAge] = useState<AgeBand>("6-10");
   const [time, setTime] = useState<TimeBudget>(30);
   const [budget, setBudget] = useState<CostBudget>("low");
@@ -81,7 +81,7 @@ export function EventPrepGenerator({ onOpenCharacter, defaultEvent }: Props) {
           <Field label="Event">
             <ChipRow>
               <Chip active={event === "any"} onClick={() => setEvent("any")}>Any / Surprise me</Chip>
-              {EVENT_CATEGORIES.map((c) => (
+              {EVENT_OCCASIONS.map((c) => (
                 <Chip key={c.id} active={event === c.id} onClick={() => setEvent(c.id)}>
                   {c.emoji} {c.title}
                 </Chip>
@@ -123,7 +123,7 @@ export function EventPrepGenerator({ onOpenCharacter, defaultEvent }: Props) {
         </CardContent>
       </Card>
 
-      {result && (
+      {result && result.ideas.length > 0 && (
         <div className="space-y-3">
           {/* Amy intro */}
           <div className="flex items-start gap-2 px-2">
@@ -133,20 +133,20 @@ export function EventPrepGenerator({ onOpenCharacter, defaultEvent }: Props) {
 
           {/* Best idea */}
           <IdeaCard
-            idea={result.best}
+            idea={result.ideas[0]}
             highlight
             speakingId={speakingId}
             onSpeak={handleSpeak}
-            onOpenFull={() => onOpenCharacter(result.best.character.id)}
+            onOpenFull={() => onOpenCharacter(result.ideas[0].character.id)}
           />
 
           {/* Alternates */}
-          {result.alternates.length > 0 && (
+          {result.ideas.length > 1 && (
             <>
               <div className="text-xs uppercase tracking-wide font-bold text-muted-foreground px-1 mt-2 flex items-center gap-1">
                 <RefreshCw className="h-3 w-3" /> Other ideas
               </div>
-              {result.alternates.map((alt) => (
+              {result.ideas.slice(1).map((alt) => (
                 <IdeaCard
                   key={alt.character.id}
                   idea={alt}
