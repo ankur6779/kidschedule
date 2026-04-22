@@ -95,7 +95,10 @@ export default function PaywallScreen() {
   const [selected, setSelected] = useState<Exclude<Plan, "free">>("six_month");
   const [submitting, setSubmitting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
-  const showRazorpay = Platform.OS === "android";
+  // Razorpay is ONLY shown in dev/Expo Go builds.
+  // Play Store policy requires Google Play Billing (RevenueCat) as the
+  // exclusive checkout path in production builds — Razorpay must not appear.
+  const showRazorpay = Platform.OS === "android" && __DEV__;
 
   const canStartTrial =
     !!ent &&

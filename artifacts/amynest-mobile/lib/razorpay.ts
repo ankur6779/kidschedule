@@ -1,4 +1,9 @@
-// Razorpay Checkout for AmyNest Android. iOS does NOT use Razorpay
+// Razorpay Checkout — DEV / direct-APK sideload builds ONLY.
+// ⚠️  Play Store policy mandates Google Play Billing as the exclusive
+//     payment mechanism for digital subscriptions. Razorpay must NOT be
+//     offered in production Play Store builds. The paywall gates it behind
+//     __DEV__ to ensure it never reaches production.
+// iOS does NOT use Razorpay
 // (Apple's IAP policy forbids third-party billing for digital subs).
 // react-native-razorpay is a native module — it only works in dev /
 // production builds, NOT in Expo Go. We require it lazily so the

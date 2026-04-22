@@ -82,7 +82,9 @@ export async function checkout(
   return { ok: false, reason: result.reason, userCancelled: result.userCancelled };
 }
 
-// ── Razorpay (Android only) ──────────────────────────────────────────────────
+// ── Razorpay (Android dev / sideload only — NOT Play Store production) ───────
+// Google Play policy requires Google Play Billing for digital goods.
+// This code path is reachable only when __DEV__ === true (see paywall.tsx).
 
 export async function createRazorpaySubscription(
   plan: Exclude<Plan, "free">,
