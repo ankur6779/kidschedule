@@ -1,0 +1,240 @@
+Build a complete remote parenting system for my app "AmyNest" using two apps:
+
+1) Parent App (AmyNest)
+2) Child App (AmyNest Kids)
+
+Use:
+- React Native (Expo)
+- Firebase (Firestore + Auth + FCM)
+
+IMPORTANT:
+- Real-time sync
+- Play Store safe (no full device lock)
+- Clean, mobile-first UI
+- Fast performance
+
+--------------------------------
+1. FIREBASE STRUCTURE 🔥
+--------------------------------
+
+Collections:
+
+devices:
+{
+  deviceId,
+  familyId,
+  childName,
+  paired: true
+}
+
+commands:
+{
+  deviceId,
+  type: "FOCUS_START" | "FOCUS_STOP" | "SCHEDULE",
+  payload: {
+    taskName,
+    durationMinutes,
+    startAt
+  },
+  status: "pending" | "delivered"
+}
+
+states:
+{
+  deviceId,
+  currentMode: "idle" | "focus",
+  taskName,
+  progress,
+  startedAt,
+  endsAt
+}
+
+--------------------------------
+2. CHILD APP (AMYNEST KIDS) 📲
+--------------------------------
+
+(A) First Launch:
+- Generate deviceId
+- Show 6-digit pairing code
+
+(B) Pairing:
+- Wait for parent to connect
+- Once paired → go to Home
+
+(C) Home Screen:
+- Show:
+  - Current task
+  - Status (Idle / Focus)
+  - “Start” button
+
+--------------------------------
+(D) REAL-TIME LISTENER (CORE 🔥)
+
+- Listen to commands where deviceId matches
+
+If command received:
+
+IF type == "FOCUS_START":
+→ Open Focus Screen
+
+IF type == "FOCUS_STOP":
+→ Exit Focus
+
+--------------------------------
+(E) FOCUS MODE SCREEN 🔒
+
+Full screen UI:
+
+- Task name (Study Time)
+- Timer countdown
+- Message:
+  “Stay focused ❤️”
+
+Buttons:
+- Continue
+- Take Break
+
+--------------------------------
+(F) TIMER LOGIC
+
+- Countdown timer
+- On complete:
+  → Mark task complete
+  → Update Firestore state
+
+--------------------------------
+(G) STATE SYNC
+
+Update:
+
+states/{deviceId}:
+{
+  currentMode,
+  taskName,
+  progress,
+  startedAt,
+  endsAt
+}
+
+--------------------------------
+(H) BACKGROUND HANDLING
+
+- Restore focus if app reopened
+- Save timer locally
+
+--------------------------------
+3. PARENT APP (AMYNEST) 👨‍👩‍👧
+--------------------------------
+
+(A) Dashboard:
+
+- Show list of child devices
+- Card UI
+
+--------------------------------
+(B) CONTROL PANEL
+
+On selecting child:
+
+Show:
+
+- Status (Idle / Focus)
+- Buttons:
+
+1. “Start Study Mode”
+2. “Stop Focus”
+3. “Schedule Task”
+
+--------------------------------
+(C) COMMAND SEND LOGIC 🔥
+
+On button click:
+
+Create new document in commands:
+
+{
+  deviceId,
+  type: "FOCUS_START",
+  payload: {
+    taskName: "Study Time",
+    durationMinutes: 20
+  },
+  status: "pending"
+}
+
+--------------------------------
+(D) REAL-TIME STATUS
+
+- Listen to states/{deviceId}
+- Update UI live
+
+--------------------------------
+(E) ROUTINE INTEGRATION
+
+- When routine task starts:
+  → Automatically send command to child
+
+--------------------------------
+4. PAIRING SYSTEM 🔐
+--------------------------------
+
+Child:
+- Generates code
+
+Parent:
+- Enter code
+
+System:
+- Link deviceId to familyId
+
+--------------------------------
+5. NOTIFICATIONS 🔔
+--------------------------------
+
+Use Firebase Cloud Messaging:
+
+Parent → Child:
+- “Focus starting in 6 minutes”
+
+Child → Parent:
+- “Task completed”
+
+--------------------------------
+6. UI DESIGN 🎨
+--------------------------------
+
+Parent App:
+- Card layout
+- Clean dashboard
+
+Child App:
+- Big buttons
+- Minimal text
+- Friendly UI
+
+--------------------------------
+7. PERFORMANCE ⚡
+--------------------------------
+
+- Use Firestore listeners (no polling)
+- Optimize reads/writes
+- Keep state minimal
+
+--------------------------------
+8. SAFETY ⚠️
+--------------------------------
+
+- No full phone lock
+- Only app-level focus overlay
+- User-friendly controls
+
+--------------------------------
+9. FINAL OUTPUT
+
+Return:
+
+- Parent App screens + logic
+- Child App screens + logic
+- Firebase integration
+- Real-time sync working
+- Focus Mode working remotely

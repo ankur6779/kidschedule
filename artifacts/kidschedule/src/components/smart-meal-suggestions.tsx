@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { AmyIcon } from "@/components/amy-icon";
 import { TiffinFeedbackPanel, loadHistory as loadTiffinHistory } from "@/components/tiffin-feedback-panel";
@@ -314,13 +315,14 @@ export function SmartMealSuggestions() {
         )}
       </div>
 
-      {/* Recipe modal */}
-      {openMeal && (
+      {/* Recipe modal — rendered via portal so it escapes overflow:hidden */}
+      {openMeal && createPortal(
         <RecipeModal
           meal={openMeal}
           showCalories={audience === "parent_healthy"}
           onClose={() => setOpenMeal(null)}
-        />
+        />,
+        document.body,
       )}
     </div>
   );
@@ -375,13 +377,17 @@ function RecipeModal({
   const [voicePref, setVoicePref] = useState<"female" | "male">(() => loadVoicePref());
   const utterRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Stop any ongoing speech when closing or unmounting
+  // Stop speech + handle Escape key when modal unmounts
   useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
     return () => {
+      document.removeEventListener("keydown", handler);
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pickVoice = (pref: "female" | "male"): SpeechSynthesisVoice | undefined => {
