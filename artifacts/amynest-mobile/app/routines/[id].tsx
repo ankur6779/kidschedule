@@ -25,6 +25,7 @@ import * as Speech from "expo-speech";
 import Animated, { FadeIn } from "react-native-reanimated";
 import SwipeableCard from "@/components/SwipeableCard";
 import RoutineItemModal from "@/components/RoutineItemModal";
+import RoutineInlineMeals from "@/components/RoutineInlineMeals";
 import colors, { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
 import VoiceSettingsPanel, {
@@ -202,6 +203,8 @@ export default function RoutineDetailScreen() {
   const theme = paletteFor(mode);
   const qc = useQueryClient();
 
+  const [mealPrefs, setMealPrefs] = useState<{ region: string; isVeg?: boolean; childAge?: number }>({ region: "pan_indian" });
+
   const [actionItem, setActionItem] = useState<number | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ activity: "", time: "", duration: "" });
@@ -242,6 +245,23 @@ export default function RoutineDetailScreen() {
 
   const [items, setItems] = useState<RoutineItem[]>([]);
   React.useEffect(() => { if (routine?.items) setItems(routine.items); }, [routine]);
+
+  // Fetch parent prefs for inline meal suggestions
+  React.useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      authFetch("/api/parent-profile").then(r => r.ok ? r.json() : null).catch(() => null),
+      authFetch("/api/children").then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([profile, children]) => {
+      if (cancelled) return;
+      setMealPrefs({
+        region: profile?.region ?? "pan_indian",
+        isVeg: profile?.foodType === "veg" ? true : undefined,
+        childAge: Array.isArray(children) && children[0]?.age != null ? Number(children[0].age) : undefined,
+      });
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const saveMut = useMutation({
     mutationFn: (next: RoutineItem[]) =>
@@ -855,6 +875,9 @@ export default function RoutineDetailScreen() {
                   >
                     <ItemCard item={item} seed={index + ((routine?.childId ?? 0) * 7)} />
                   </SwipeableCard>
+                )}
+                {(item.category === "meal" || item.category === "tiffin") && (
+                  <RoutineInlineMeals {...mealPrefs} />
                 )}
               </View>
             </Animated.View>

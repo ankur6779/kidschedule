@@ -66,6 +66,14 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
   const [data, setData] = useState<SuggestionResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
+  const [manualSearch, setManualSearch] = useState(0);
+  const [searchFlash, setSearchFlash] = useState(false);
+
+  const handleFindCook = () => {
+    setManualSearch(n => n + 1);
+    setSearchFlash(true);
+    setTimeout(() => setSearchFlash(false), 600);
+  };
   const [tiffinHistory, setTiffinHistory] = useState<TiffinHistory>([]);
   useEffect(() => { loadTiffinHistoryAsync().then(setTiffinHistory); }, []);
   const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
@@ -134,7 +142,8 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(",")]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(","), manualSearch]);
 
   // Stop speech when modal closes / unmount
   useEffect(() => {
@@ -242,6 +251,26 @@ export default function SmartMealSuggestions({ region: regionProp, childAge: age
             ))}
           </View>
         ) : null}
+
+        {/* CTA: Find What I Can Cook */}
+        <TouchableOpacity
+          onPress={handleFindCook}
+          activeOpacity={0.82}
+          style={[
+            searchFlash ? styles.findBtnFlash : styles.findBtn,
+          ]}
+        >
+          <LinearGradient
+            colors={searchFlash ? ["#EA580C", "#DB2777"] : ["#F97316", "#EC4899"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.findBtnGrad}
+          >
+            <Ionicons name="search" size={15} color="#FFFFFF" />
+            <Text style={styles.findBtnText}>🔍 Find What I Can Cook</Text>
+            <Ionicons name="sparkles" size={13} color="rgba(255,255,255,0.8)" />
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
 
       {/* Cards — horizontal scroll */}
@@ -544,6 +573,14 @@ function makeStyles(colors: any) {
       borderWidth: 1, borderColor: brandAlpha.violet600_25,
     },
     chipFilledText: { fontSize: 11, fontWeight: "800", color: brand.violet700 },
+
+    findBtn: { marginTop: 12, borderRadius: 14, overflow: "hidden" },
+    findBtnFlash: { marginTop: 12, borderRadius: 14, overflow: "hidden", opacity: 0.88 },
+    findBtnGrad: {
+      flexDirection: "row", alignItems: "center", justifyContent: "center",
+      gap: 8, paddingVertical: 12, paddingHorizontal: 18,
+    },
+    findBtnText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14, letterSpacing: 0.2 },
 
     emptyText: { textAlign: "center", color: colors.textMuted, paddingVertical: 18, fontSize: 12.5 },
 

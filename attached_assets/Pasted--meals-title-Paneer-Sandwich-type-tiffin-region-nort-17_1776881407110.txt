@@ -1,0 +1,184 @@
+{
+  "meals": [
+    {
+      "title": "Paneer Sandwich",
+      "type": "tiffin",
+      "region": "north",
+      "ingredients": ["paneer", "bread", "butter"],
+      "time": "10 min",
+      "calories": 250,
+      "tags": ["quick", "kids"],
+      "steps": [
+        "Mash paneer with salt",
+        "Spread on bread",
+        "Toast lightly"
+      ],
+      "image": "https://source.unsplash.com/300x200/?sandwich"
+    },
+    {
+      "title": "Vegetable Poha",
+      "type": "breakfast",
+      "region": "west",
+      "ingredients": ["poha", "onion", "peas"],
+      "time": "15 min",
+      "calories": 200,
+      "tags": ["healthy"],
+      "steps": [
+        "Soak poha",
+        "Cook with onion and peas",
+        "Add spices"
+      ],
+      "image": "https://source.unsplash.com/300x200/?poha"
+    },
+    {
+      "title": "Idli with Chutney",
+      "type": "breakfast",
+      "region": "south",
+      "ingredients": ["rice", "urad dal"],
+      "time": "20 min",
+      "calories": 180,
+      "tags": ["light", "healthy"],
+      "steps": [
+        "Prepare batter",
+        "Steam idli",
+        "Serve with chutney"
+      ],
+      "image": "https://source.unsplash.com/300x200/?idli"
+    },
+    {
+      "title": "Aloo Paratha",
+      "type": "lunch",
+      "region": "north",
+      "ingredients": ["potato", "flour"],
+      "time": "25 min",
+      "calories": 300,
+      "tags": ["filling"],
+      "steps": [
+        "Prepare dough",
+        "Stuff potato filling",
+        "Cook on tawa"
+      ],
+      "image": "https://source.unsplash.com/300x200/?paratha"
+    },
+    {
+      "title": "Egg Bhurji",
+      "type": "breakfast",
+      "region": "all",
+      "ingredients": ["egg", "onion", "tomato"],
+      "time": "10 min",
+      "calories": 220,
+      "tags": ["protein"],
+      "steps": [
+        "Heat oil",
+        "Cook onion and tomato",
+        "Add eggs and scramble"
+      ],
+      "image": "https://source.unsplash.com/300x200/?egg"
+    },
+    {
+      "title": "Vegetable Upma",
+      "type": "breakfast",
+      "region": "south",
+      "ingredients": ["rava", "vegetables"],
+      "time": "15 min",
+      "calories": 210,
+      "tags": ["healthy"],
+      "steps": [
+        "Roast rava",
+        "Cook vegetables",
+        "Mix and cook"
+      ],
+      "image": "https://source.unsplash.com/300x200/?upma"
+    },
+    {
+      "title": "Chana Chaat",
+      "type": "snack",
+      "region": "north",
+      "ingredients": ["chana", "onion", "tomato"],
+      "time": "10 min",
+      "calories": 180,
+      "tags": ["healthy"],
+      "steps": [
+        "Boil chana",
+        "Mix with onion and tomato",
+        "Add spices"
+      ],
+      "image": "https://source.unsplash.com/300x200/?chana"
+    },
+    {
+      "title": "Masala Dosa",
+      "type": "breakfast",
+      "region": "south",
+      "ingredients": ["rice", "potato"],
+      "time": "25 min",
+      "calories": 280,
+      "tags": ["classic"],
+      "steps": [
+        "Prepare batter",
+        "Make dosa",
+        "Add potato filling"
+      ],
+      "image": "https://source.unsplash.com/300x200/?dosa"
+    },
+    {
+      "title": "Vegetable Pulao",
+      "type": "lunch",
+      "region": "all",
+      "ingredients": ["rice", "vegetables"],
+      "time": "20 min",
+      "calories": 260,
+      "tags": ["balanced"],
+      "steps": [
+        "Cook rice",
+        "Add vegetables",
+        "Mix spices"
+      ],
+      "image": "https://source.unsplash.com/300x200/?pulao"
+    },
+    {
+      "title": "Banana Pancake",
+      "type": "breakfast",
+      "region": "all",
+      "ingredients": ["banana", "flour", "milk"],
+      "time": "15 min",
+      "calories": 230,
+      "tags": ["kids"],
+      "steps": [
+        "Mash banana",
+        "Mix batter",
+        "Cook on pan"
+      ],
+      "image": "https://source.unsplash.com/300x200/?pancake"
+    },
+    {
+      "title": "Curd Rice",
+      "type": "lunch",
+      "region": "south",
+      "ingredients": ["rice", "curd"],
+      "time": "10 min",
+      "calories": 200,
+      "tags": ["cooling"],
+      "steps": [
+        "Mix rice and curd",
+        "Add salt",
+        "Serve chilled"
+      ],
+      "image": "https://source.unsplash.com/300x200/?curd-rice"
+    },
+    {
+      "title": "Dal Khichdi",
+      "type": "lunch",
+      "region": "all",
+      "ingredients": ["rice", "dal"],
+      "time": "20 min",
+      "calories": 240,
+      "tags": ["light"],
+      "steps": [
+        "Cook rice and dal together",
+        "Add salt and spices",
+        "Serve hot"
+      ],
+      "image": "https://source.unsplash.com/300x200/?khichdi"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getApiUrl } from "@/lib/api";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { addPoints, checkAndAwardBadges, getTotalPoints } from "@/lib/rewards";
+import { RoutineInlineMeals } from "@/components/routine-inline-meals";
 import { announceCurrentTask, isVoiceEnabled, getVoiceSettings } from "@/lib/voice";
 import { VoiceSettingsPanel } from "@/components/voice-settings";
 import {
@@ -458,6 +459,9 @@ export default function RoutineDetail() {
   // Expanded item modal
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
+  // Parent prefs for inline meal suggestions
+  const [mealPrefs, setMealPrefs] = useState<{ region: string; isVeg?: boolean; childAge?: number }>({ region: "pan_indian" });
+
   // Undo state
   const [undoSnapshot, setUndoSnapshot] = useState<RoutineItem[] | null>(null);
   const [undoLabel, setUndoLabel] = useState<string>("");
@@ -490,6 +494,22 @@ export default function RoutineDetail() {
     query: { enabled: !!childId, queryKey: getGetChildQueryKey(childId) }
   });
   const childPhotoUrl: string | null = (childData as any)?.photoUrl ?? null;
+
+  // Fetch parent profile once for meal suggestion prefs
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      authFetch(getApiUrl("/api/parent-profile")).then(r => r.ok ? r.json() : null).catch(() => null),
+      authFetch(getApiUrl("/api/children")).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]).then(([profile, children]) => {
+      if (cancelled) return;
+      const region = profile?.region ?? "pan_indian";
+      const isVeg = profile?.foodType === "veg" ? true : undefined;
+      const childAge = Array.isArray(children) && children[0]?.age != null ? Number(children[0].age) : undefined;
+      setMealPrefs({ region, isVeg, childAge });
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // Auto-complete past items: runs once per routine load.
   // For routines whose date is before today, all pending items are marked completed.
@@ -1441,6 +1461,9 @@ export default function RoutineDetail() {
                           ) : item.notes ? (
                             <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-3 break-words" style={{ overflowWrap: "break-word" }}>{item.notes}</p>
                           ) : null}
+                          {(item.category === "meal" || item.category === "tiffin") && editingIndex !== index && (
+                            <RoutineInlineMeals {...mealPrefs} />
+                          )}
                           </>
                           )}
                         </div>

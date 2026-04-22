@@ -1,0 +1,200 @@
+Upgrade Meal System in "AmyNest" (Web + Mobile) with inline AI suggestions inside routine and smart search-based meal generator.
+
+IMPORTANT:
+- No external paid APIs
+- Use local dataset + Amy AI filtering logic
+- Keep UI clean, fast, and mobile-friendly
+
+--------------------------------
+1. ROUTINE TAB – INLINE MEAL SUGGESTIONS 🔥🔥
+--------------------------------
+
+Inside each meal block (e.g., Breakfast):
+
+REMOVE single static meal
+
+ADD:
+
+“🍱 Amy AI Meal Suggestions”
+
+Show 3–4 suggestions horizontally:
+
+Each card includes:
+- Image
+- Meal name
+- Time (optional)
+
+--------------------------------
+2. CLICK BEHAVIOR (IMPORTANT 🔥)
+--------------------------------
+
+When user clicks meal card:
+
+→ Open Recipe Bottom Sheet / Modal
+
+Show:
+
+- Image
+- Ingredients
+- Steps (short)
+- Calories (optional)
+
+--------------------------------
+3. AI LOGIC (ROUTINE)
+--------------------------------
+
+Generate 3–4 meals based on:
+
+Priority:
+1. Smart Meal module inputs (fridge/search history)
+2. User location (region)
+3. Default dataset
+
+--------------------------------
+4. UI DESIGN (INLINE)
+--------------------------------
+
+- Horizontal scroll (Netflix style)
+- Small compact cards
+- Smooth swipe
+
+--------------------------------
+5. REMOVE OLD INPUT ❌
+--------------------------------
+
+- Remove “What’s in your fridge” from routine tab
+
+--------------------------------
+6. SMART TIFFIN & MEAL SCREEN UPGRADE 🔥🔥
+--------------------------------
+
+(A) KEEP fridge input section
+
+(B) ADD SEARCH BUTTON:
+
+Button:
+“🔍 Find What I Can Cook”
+
+--------------------------------
+7. SEARCH FLOW 🧠
+--------------------------------
+
+User adds items:
+Example:
+- paneer
+- bread
+- egg
+
+Click “Find What I Can Cook”
+
+--------------------------------
+8. AI OUTPUT (SMART SEARCH)
+--------------------------------
+
+Show:
+
+“🍱 Amy AI Suggestions”
+
+Display 3–6 meal cards:
+
+Each card includes:
+- Image
+- Meal name
+- Tag (Quick / Healthy)
+
+--------------------------------
+9. CLICK BEHAVIOR (SEARCH RESULTS)
+--------------------------------
+
+On click:
+
+→ Open recipe view
+
+Show:
+- Ingredients
+- Steps
+- Time
+- Calories
+
+--------------------------------
+10. IMAGE SYSTEM 📸
+--------------------------------
+
+Use dynamic:
+
+https://source.unsplash.com/300x200/?food-name
+
+--------------------------------
+11. AI MATCHING LOGIC 🧠
+--------------------------------
+
+Match meals where:
+
+meal.ingredients ⊆ fridgeItems
+
+--------------------------------
+12. FALLBACK LOGIC
+--------------------------------
+
+If no match:
+
+→ Show region-based meals
+
+--------------------------------
+13. LOCATION-BASED CUISINE 🌍
+--------------------------------
+
+- Detect user location
+- Map region:
+
+const regionMap = {
+  "lucknow": "north",
+  "delhi": "north",
+  "hyderabad": "south",
+  "chennai": "south"
+};
+
+--------------------------------
+14. AMY AI MESSAGE 🤖
+--------------------------------
+
+Show:
+
+“Amy AI:
+Based on your ingredients, here’s what you can cook ❤️”
+
+--------------------------------
+15. DATA STRUCTURE
+--------------------------------
+
+{
+  "title": "Paneer Sandwich",
+  "ingredients": ["paneer", "bread"],
+  "region": "north",
+  "steps": ["Step 1", "Step 2"],
+  "image": "image_url"
+}
+
+--------------------------------
+16. PERFORMANCE ⚡
+--------------------------------
+
+- Local JSON
+- Fast filtering
+- Lazy image load
+
+--------------------------------
+17. MOBILE UX 📱
+--------------------------------
+
+- Swipe cards
+- Bottom sheet recipe view
+- Touch-friendly UI
+
+--------------------------------
+Return:
+- Inline meal suggestions in routine
+- Clickable recipes
+- Smart fridge-based search
+- AI-powered suggestions
+- Premium UI experience

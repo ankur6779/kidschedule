@@ -13,6 +13,7 @@ import {
   Flame,
   Clock,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 type MealTag = "Healthy" | "Quick" | "Protein" | "Veg" | "Non-Veg" | "Sweet";
@@ -87,7 +88,17 @@ export function SmartMealSuggestions() {
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
   const [tiffinHistory, setTiffinHistory] = useState<TiffinHistory>(() => loadTiffinHistory());
+  const [manualSearch, setManualSearch] = useState(0);
+  const [searchFlash, setSearchFlash] = useState(false);
+  const resultsRef = useRef<HTMLDivElement>(null);
   const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
+
+  const handleFindCook = () => {
+    setManualSearch(n => n + 1);
+    setSearchFlash(true);
+    setTimeout(() => setSearchFlash(false), 800);
+    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+  };
 
   // Pull region + diet from parent profile + first child age once
   useEffect(() => {
@@ -138,7 +149,8 @@ export function SmartMealSuggestions() {
       })
       .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(",")]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region, audience, fridge, childAge, isVeg, learning.liked.join(","), learning.disliked.join(","), manualSearch]);
 
   const addFridgeItem = (raw: string) => {
     const v = raw.trim().toLowerCase();
@@ -256,10 +268,25 @@ export function SmartMealSuggestions() {
             ))}
           </div>
         )}
+
+        {/* CTA: Find What I Can Cook */}
+        <button
+          onClick={handleFindCook}
+          className={`mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
+            searchFlash
+              ? "bg-orange-500 text-white scale-[0.97] shadow-lg"
+              : "bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white shadow-md hover:shadow-lg hover:scale-[1.01]"
+          }`}
+          data-testid="meals-find-cook-btn"
+        >
+          <Search className="h-4 w-4" />
+          🔍 Find What I Can Cook
+          <Sparkles className="h-3.5 w-3.5 opacity-80" />
+        </button>
       </div>
 
       {/* Cards — Netflix style horizontal scroll */}
-      <div className="mt-3 px-1 pb-4">
+      <div ref={resultsRef} className="mt-3 px-1 pb-4">
         {loading && !data ? (
           <div className="flex gap-3 px-3 overflow-hidden">
             {[0, 1, 2].map(i => (
