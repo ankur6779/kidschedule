@@ -196,6 +196,9 @@ importers:
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
+      '@workspace/morning-flow':
+        specifier: workspace:*
+        version: link:../../lib/morning-flow
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
@@ -474,6 +477,9 @@ importers:
       '@workspace/life-skills':
         specifier: workspace:*
         version: link:../../lib/life-skills
+      '@workspace/morning-flow':
+        specifier: workspace:*
+        version: link:../../lib/morning-flow
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
@@ -1124,6 +1130,8 @@ importers:
         version: 25.3.5
 
   lib/life-skills: {}
+
+  lib/morning-flow: {}
 
   lib/study-zone: {}
 

@@ -84,6 +84,7 @@
     "@workspace/family-routine": "workspace:*",
     "@workspace/infant-hub": "workspace:*",
     "@workspace/event-prep": "workspace:*",
+    "@workspace/morning-flow": "workspace:*",
     "@workspace/study-zone": "workspace:*",
     "@workspace/infant-problems": "workspace:*"
   }

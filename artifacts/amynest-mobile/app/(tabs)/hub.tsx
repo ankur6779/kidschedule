@@ -349,6 +349,31 @@ export default function HubScreen() {
           </Pressable>
         </View>
 
+        {/* 🌅 School Morning Flow — checklist + step flow + smart delay */}
+        <View style={tileW("morning-flow")}>
+          <Pressable
+            onPress={() => { hubUsage.markBlockUsed("morning_flow"); router.push("/morning-flow" as never); }}
+            style={{ borderRadius: 18, overflow: "hidden" }}
+          >
+            <LinearGradient
+              colors={["#F97316", "#FBBF24"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ padding: 16, gap: 8 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="sunny" size={20} color="#fff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>🌅 School Morning Flow</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.92)", fontSize: 11.5, marginTop: 2 }}>Night prep · steps · smart delay</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.8)" />
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </View>
+
         {/* 🎉 Event Prep — fancy dress + DIY guide + speech generator */}
         <View style={tileW("event-prep")}>
           <Pressable

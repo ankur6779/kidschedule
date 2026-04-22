@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import {
   BookOpen, Brain, Sparkles, Heart, Palette,
   ChevronDown, ChevronUp, MessageCircleHeart,
-  Calendar, ArrowRight, Trophy, Compass, GraduationCap,
+  Calendar, ArrowRight, Trophy, Compass, GraduationCap, Sunrise,
 } from "lucide-react";
 import { OlympiadZone } from "@/components/olympiad-zone";
 import { SmartStudyZone } from "@/components/smart-study-zone";
 import { EventPrepCard } from "@/components/event-prep-card";
+import { SchoolMorningFlowCard } from "@/components/school-morning-flow-card";
 import { LifeSkillsZone } from "@/components/life-skills-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
@@ -529,6 +530,20 @@ export default function ParentingHub() {
             onOpen={() => hubUsage.markBlockUsed("smart_study")}
           >
             <SmartStudyZone />
+          </HubSection>
+        )}
+
+        {/* 🌅 School Morning Flow — checklist + step flow + smart delay */}
+        {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 16 && (
+          <HubSection
+            id="morning-flow"
+            icon={<Sunrise className="h-5 w-5 text-orange-600" />}
+            title="🌅 School Morning Flow"
+            description="Night prep + morning steps with smart delay detection"
+            accentClass="bg-gradient-to-br from-orange-100 dark:from-orange-500/20 to-amber-100 dark:to-amber-500/20"
+            onOpen={() => hubUsage.markBlockUsed("morning_flow")}
+          >
+            <SchoolMorningFlowCard />
           </HubSection>
         )}
 

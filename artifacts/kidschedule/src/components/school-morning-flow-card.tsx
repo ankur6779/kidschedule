@@ -1,0 +1,48 @@
+import { Link } from "wouter";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Sunrise, ArrowRight } from "lucide-react";
+
+/**
+ * Hub card shown inside Parenting Hub. The full experience lives at
+ * /school-morning-flow.
+ */
+export function SchoolMorningFlowCard() {
+  return (
+    <Card className="rounded-2xl overflow-hidden border-orange-200/60 dark:border-orange-400/20 bg-gradient-to-br from-orange-50 via-white to-amber-50 dark:from-orange-950/40 dark:via-zinc-900 dark:to-amber-950/40 shadow-sm">
+      <CardContent className="p-5">
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-orange-500/15 text-orange-600 dark:text-orange-300 flex items-center justify-center shrink-0">
+            <Sunrise className="h-6 w-6" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-quicksand text-lg font-bold text-foreground">🌅 School Morning Flow</h3>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              Wake up → Get ready → Breakfast → Leave. Plus a night-prep checklist
+              for tomorrow. Amy nudges you when running late.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2 text-[11px]">
+              <Badge label="🌙 Night prep" />
+              <Badge label="⚡ Step flow" />
+              <Badge label="🧠 Smart delay" />
+            </div>
+            <Button asChild className="mt-4 rounded-full bg-orange-600 hover:bg-orange-700 text-white">
+              <Link href="/school-morning-flow">
+                Open Morning Flow
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Badge({ label }: { label: string }) {
+  return (
+    <span className="px-2 py-0.5 rounded-full bg-white/70 dark:bg-white/10 border border-orange-200/60 dark:border-orange-400/20 text-foreground/80">
+      {label}
+    </span>
+  );
+}
