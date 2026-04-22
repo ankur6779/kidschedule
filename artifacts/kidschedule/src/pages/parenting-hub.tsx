@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import {
   BookOpen, Brain, Sparkles, Heart, Palette,
   ChevronDown, ChevronUp, MessageCircleHeart,
-  Calendar, ArrowRight, Trophy, Compass, GraduationCap, Sunrise,
+  Calendar, ArrowRight, Trophy, Compass, GraduationCap, Sunrise, ClipboardList,
 } from "lucide-react";
 import { OlympiadZone } from "@/components/olympiad-zone";
 import { SmartStudyZone } from "@/components/smart-study-zone";
+import { PtmPrepAssistant } from "@/components/ptm-prep";
 import { EventPrepCard } from "@/components/event-prep-card";
 import { SchoolMorningFlowCard } from "@/components/school-morning-flow-card";
 import { LifeSkillsZone } from "@/components/life-skills-zone";
@@ -517,6 +518,20 @@ export default function ParentingHub() {
               />
             </HubSection>
           </LockedBlock>
+        )}
+
+        {/* 🧾 PTM Prep Assistant — Prepare → Attend → Act flow */}
+        {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 17 && (
+          <HubSection
+            id="ptm-prep"
+            icon={<ClipboardList className="h-5 w-5 text-violet-600" />}
+            title="🧾 PTM Prep Assistant"
+            description="Prepare questions, take notes & turn them into action steps"
+            accentClass="bg-gradient-to-br from-violet-100 dark:from-violet-500/20 to-pink-100 dark:to-pink-500/20"
+            onOpen={() => hubUsage.markBlockUsed("ptm_prep")}
+          >
+            <PtmPrepAssistant child={effectiveChild ? { id: effectiveChild.id, name: effectiveChild.name, age: effectiveChild.age } : null} />
+          </HubSection>
         )}
 
         {/* Smart Study Zone (Nursery–Class 10) — sits alongside Olympiad */}

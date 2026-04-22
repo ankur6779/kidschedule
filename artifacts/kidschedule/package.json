@@ -87,6 +87,7 @@
     "@workspace/morning-flow": "workspace:*",
     "@workspace/study-zone": "workspace:*",
     "@workspace/tiffin-feedback": "workspace:*",
+    "@workspace/ptm-prep": "workspace:*",
     "@workspace/infant-problems": "workspace:*"
   }
 }

@@ -199,6 +199,9 @@ importers:
       '@workspace/morning-flow':
         specifier: workspace:*
         version: link:../../lib/morning-flow
+      '@workspace/ptm-prep':
+        specifier: workspace:*
+        version: link:../../lib/ptm-prep
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
@@ -483,6 +486,9 @@ importers:
       '@workspace/morning-flow':
         specifier: workspace:*
         version: link:../../lib/morning-flow
+      '@workspace/ptm-prep':
+        specifier: workspace:*
+        version: link:../../lib/ptm-prep
       '@workspace/study-zone':
         specifier: workspace:*
         version: link:../../lib/study-zone
@@ -1138,6 +1144,8 @@ importers:
   lib/life-skills: {}
 
   lib/morning-flow: {}
+
+  lib/ptm-prep: {}
 
   lib/study-zone: {}
 

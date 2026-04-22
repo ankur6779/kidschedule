@@ -324,6 +324,37 @@ export default function HubScreen() {
         </Section>
         </View>
 
+        {/* 🧾 PTM Prep Assistant — Prepare → Attend → Act flow */}
+        <View style={tileW("ptm-prep")}>
+          <Pressable
+            onPress={() => {
+              hubUsage.markBlockUsed("ptm_prep");
+              router.push({
+                pathname: "/ptm-prep" as never,
+                params: effective ? { childId: effective.id, childName: effective.name } as never : undefined,
+              });
+            }}
+            style={{ borderRadius: 18, overflow: "hidden" }}
+          >
+            <LinearGradient
+              colors={["#8B5CF6", "#EC4899"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ padding: 16, gap: 8 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="clipboard" size={20} color="#fff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>🧾 PTM Prep Assistant</Text>
+                  <Text style={{ color: "rgba(255,255,255,0.92)", fontSize: 11.5, marginTop: 2 }}>Prepare · Attend · Act — for parent-teacher meetings</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.8)" />
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </View>
+
         {/* Smart Study Zone — adaptive learning Nursery → Class 10 */}
         <View style={tileW("smart-study")}>
           <Pressable
