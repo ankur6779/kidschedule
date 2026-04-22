@@ -20,10 +20,17 @@ type Child = {
   id: number; name: string; age: number; ageMonths?: number; dob?: string;
   isSchoolGoing?: boolean; childClass?: string;
   schoolStartTime: string; schoolEndTime: string;
+  schoolDays?: number[] | null;
   wakeUpTime: string; sleepTime: string; foodType?: string; goals: string;
   travelMode?: string; travelModeOther?: string | null;
   photoUrl?: string | null; babysitterId?: number | null;
 };
+
+const WEEKDAYS: { iso: number; short: string }[] = [
+  { iso: 1, short: "Mon" }, { iso: 2, short: "Tue" }, { iso: 3, short: "Wed" },
+  { iso: 4, short: "Thu" }, { iso: 5, short: "Fri" }, { iso: 6, short: "Sat" },
+  { iso: 7, short: "Sun" },
+];
 
 const FOOD_TYPES: { label: string; value: string }[] = [
   { label: "Vegetarian", value: "veg" },
@@ -52,6 +59,7 @@ export default function ChildDetailScreen() {
   const [childClass, setChildClass] = useState("");
   const [schoolStart, setSchoolStart] = useState("09:00");
   const [schoolEnd, setSchoolEnd] = useState("15:00");
+  const [schoolDays, setSchoolDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [wakeUp, setWakeUp] = useState("07:00");
   const [sleep, setSleep] = useState("21:00");
   const [foodType, setFoodType] = useState("veg");
@@ -86,6 +94,7 @@ export default function ChildDetailScreen() {
       setChildClass(child.childClass ?? "");
       setSchoolStart(child.schoolStartTime ?? "09:00");
       setSchoolEnd(child.schoolEndTime ?? "15:00");
+      setSchoolDays(Array.isArray(child.schoolDays) ? child.schoolDays : [1, 2, 3, 4, 5]);
       setWakeUp(child.wakeUpTime ?? "07:00");
       setSleep(child.sleepTime ?? "21:00");
       setFoodType(child.foodType ?? "veg");
@@ -130,6 +139,9 @@ export default function ChildDetailScreen() {
           name, dob, isSchoolGoing: isSchool,
           childClass: isSchool ? childClass : "",
           schoolStartTime: schoolStart, schoolEndTime: schoolEnd,
+          schoolDays: isSchool
+            ? (schoolDays.length > 0 ? [...schoolDays].sort() : [1, 2, 3, 4, 5])
+            : null,
           wakeUpTime: wakeUp, sleepTime: sleep,
           foodType, travelMode,
           travelModeOther: travelMode === "other" ? travelModeOther.trim() || null : null,
@@ -257,6 +269,27 @@ export default function ChildDetailScreen() {
                 <Field label="Class" value={childClass} onChange={setChildClass} colors={colors} />
                 <Field label="School Start (HH:MM)" value={schoolStart} onChange={setSchoolStart} colors={colors} placeholder="09:00" />
                 <Field label="School End (HH:MM)" value={schoolEnd} onChange={setSchoolEnd} colors={colors} placeholder="15:00" />
+
+                <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginBottom: 6, marginTop: 4 }]}>
+                  School Days
+                </Text>
+                <View style={styles.chipRow}>
+                  {WEEKDAYS.map((d) => {
+                    const on = schoolDays.includes(d.iso);
+                    return (
+                      <TouchableOpacity
+                        key={d.iso}
+                        style={[styles.chip, { backgroundColor: on ? colors.primary : colors.card, borderColor: on ? colors.primary : colors.border }]}
+                        onPress={() => {
+                          Haptics.selectionAsync();
+                          setSchoolDays((cur) => cur.includes(d.iso) ? cur.filter((x) => x !== d.iso) : [...cur, d.iso].sort());
+                        }}
+                      >
+                        <Text style={[styles.chipText, { color: on ? "#fff" : colors.foreground }]}>{d.short}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </>
             )}
 

@@ -39,6 +39,7 @@ const childSchema = z.object({
   sleepTime: z.string().regex(timeRegex, "Must be in HH:MM format"),
   schoolStartTime: z.string().optional(),
   schoolEndTime: z.string().optional(),
+  schoolDays: z.array(z.number().int().min(1).max(7)).optional(),
   travelMode: z.enum(["van", "car", "walk", "other"]).optional(),
   travelModeOther: z.string().optional(),
   foodType: z.enum(["veg", "non_veg"]),
@@ -111,6 +112,7 @@ export default function ChildForm() {
       sleepTime: "21:00",
       schoolStartTime: "08:00",
       schoolEndTime: "15:00",
+      schoolDays: [1, 2, 3, 4, 5],
       travelMode: "car",
       travelModeOther: "",
       foodType: "veg",
@@ -148,6 +150,7 @@ export default function ChildForm() {
         sleepTime: child.sleepTime ?? "21:00",
         schoolStartTime: child.schoolStartTime ?? "08:00",
         schoolEndTime: child.schoolEndTime ?? "15:00",
+        schoolDays: ((child as any).schoolDays as number[] | null | undefined) ?? [1, 2, 3, 4, 5],
         travelMode: (child.travelMode as "van" | "car" | "walk" | "other") ?? "car",
         travelModeOther: child.travelModeOther ?? "",
         foodType: (child.foodType as "veg" | "non_veg") ?? "veg",
@@ -198,6 +201,10 @@ export default function ChildForm() {
       sleepTime: data.sleepTime,
       schoolStartTime: schoolGoing ? (data.schoolStartTime ?? "08:00") : "08:00",
       schoolEndTime: schoolGoing ? (data.schoolEndTime ?? "15:00") : "15:00",
+      // schoolDays: only meaningful when school-going. null = "not applicable".
+      schoolDays: schoolGoing
+        ? (data.schoolDays && data.schoolDays.length > 0 ? data.schoolDays : [1, 2, 3, 4, 5])
+        : null,
       travelMode: schoolGoing ? (data.travelMode ?? "car") : "car",
       travelModeOther: schoolGoing && data.travelMode === "other" ? data.travelModeOther : undefined,
       foodType: data.foodType,
@@ -456,6 +463,51 @@ export default function ChildForm() {
                         </FormItem>
                       )} />
                     </div>
+                  </div>
+
+                  {/* School Days */}
+                  <div>
+                    <p className="text-sm font-bold text-muted-foreground mb-3 uppercase tracking-wide">School Days</p>
+                    <FormField control={form.control} name="schoolDays" render={({ field }) => {
+                      const selected = (field.value ?? []) as number[];
+                      const days: { iso: number; short: string }[] = [
+                        { iso: 1, short: "Mon" }, { iso: 2, short: "Tue" }, { iso: 3, short: "Wed" },
+                        { iso: 4, short: "Thu" }, { iso: 5, short: "Fri" }, { iso: 6, short: "Sat" },
+                        { iso: 7, short: "Sun" },
+                      ];
+                      const toggle = (iso: number) => {
+                        const next = selected.includes(iso) ? selected.filter((d) => d !== iso) : [...selected, iso].sort();
+                        field.onChange(next);
+                      };
+                      return (
+                        <FormItem>
+                          <FormLabel className="font-bold">📅 Which days does your child go to school?</FormLabel>
+                          <FormDescription>
+                            On non-school days, the AI will plan a relaxed weekend / holiday routine instead.
+                          </FormDescription>
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {days.map((d) => {
+                              const on = selected.includes(d.iso);
+                              return (
+                                <button
+                                  key={d.iso}
+                                  type="button"
+                                  onClick={() => toggle(d.iso)}
+                                  className={`px-4 py-2 rounded-full font-bold text-sm border-2 transition-all ${
+                                    on
+                                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                      : "bg-muted/50 text-muted-foreground border-transparent hover:border-primary/30"
+                                  }`}
+                                >
+                                  {d.short}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }} />
                   </div>
 
                   {/* Travel Mode */}
