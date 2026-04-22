@@ -136,6 +136,29 @@ export function composeWeeklyRecap(
     </table>`
     : "";
 
+  const familyBlock =
+    insights.siblingHighlights && insights.siblingHighlights.length >= 2
+      ? `
+    <h3 style="margin:24px 0 8px;color:#0f172a;font-size:16px;">Family strengths</h3>
+    <p style="margin:0 0 12px;color:#475569;font-size:13px;">Each child shines somewhere different. Here's what stood out.</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      ${insights.siblingHighlights
+        .map(
+          (h) => `
+      <tr>
+        <td style="padding:6px 0;">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-left:4px solid ${h.accent};border-radius:10px;padding:12px 14px;">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;">${escapeHtml(h.childName)}</div>
+            <div style="font-size:15px;color:${h.accent};font-weight:700;margin-top:2px;">${escapeHtml(h.headline)}</div>
+            <div style="font-size:13px;color:#334155;margin-top:4px;line-height:1.4;">${escapeHtml(h.detail)}</div>
+          </div>
+        </td>
+      </tr>`,
+        )
+        .join("")}
+    </table>`
+      : "";
+
   const dayBlock = insights.hasActivity
     ? `
     <h3 style="margin:24px 0 8px;color:#0f172a;font-size:16px;">When the week was busiest</h3>
@@ -184,6 +207,7 @@ export function composeWeeklyRecap(
                 <div style="font-size:15px;color:#0f172a;margin-top:4px;">${escapeHtml(focus)}</div>
               </div>
               ${childrenBlock}
+              ${familyBlock}
               ${dayBlock}
               ${emptyBlock}
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:24px;">
@@ -222,6 +246,15 @@ export function composeWeeklyRecap(
     `This week's win: ${win}`,
     `One thing to try: ${focus}`,
     "",
+    ...(insights.siblingHighlights && insights.siblingHighlights.length >= 2
+      ? [
+          "Family strengths:",
+          ...insights.siblingHighlights.map(
+            (h) => `  - ${h.childName}: ${h.headline} — ${h.detail}`,
+          ),
+          "",
+        ]
+      : []),
     `Open AmyNest: ${APP_URL}`,
     "",
     `Manage email preferences: ${MANAGE_PREFS_URL}`,

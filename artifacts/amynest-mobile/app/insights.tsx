@@ -42,6 +42,30 @@ type InsightsResponse = {
     behaviorsCount: number;
     positiveCount: number;
     positiveRate: number;
+    routineCompletionRate: number;
+    topCategory: string | null;
+    milestoneCount: number;
+    activeDays: number;
+    morningCount: number;
+    eveningCount: number;
+    categoryVariety: number;
+  }>;
+  siblingHighlights: Array<{
+    childId: number;
+    childName: string;
+    headline: string;
+    detail: string;
+    icon:
+      | "calendar"
+      | "happy"
+      | "heart"
+      | "trophy"
+      | "color-palette"
+      | "flame"
+      | "sunny"
+      | "moon"
+      | "sparkles";
+    accent: string;
   }>;
   activityMix: Array<{ category: string; count: number }>;
   dayOfWeek: Array<{ day: string; count: number }>;
@@ -169,23 +193,75 @@ export default function InsightsScreen() {
               changePts={data.summary.positiveRateChangePts}
             />
 
-            {data.perChild.length > 0 && (
-              <Section title="Per child">
-                {data.perChild.map((c) => (
-                  <View key={c.childId} style={styles.childRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.childName}>{c.childName}</Text>
-                      <Text style={styles.childMeta}>
-                        {c.routinesCount} routine{c.routinesCount === 1 ? "" : "s"} ·{" "}
-                        {c.behaviorsCount} moment{c.behaviorsCount === 1 ? "" : "s"}
-                      </Text>
+            {data.siblingHighlights.length >= 2 && (
+              <Section title="Family strengths">
+                <Text style={styles.familyIntro}>
+                  Each child shines somewhere different. Here's what stood out
+                  this period.
+                </Text>
+                {data.siblingHighlights.map((h) => (
+                  <View
+                    key={h.childId}
+                    style={[styles.highlightCard, { borderColor: h.accent + "55" }]}
+                  >
+                    <View
+                      style={[
+                        styles.highlightIcon,
+                        { backgroundColor: h.accent + "22" },
+                      ]}
+                    >
+                      <Ionicons
+                        name={`${h.icon}-outline` as keyof typeof Ionicons.glyphMap}
+                        size={20}
+                        color={h.accent}
+                      />
                     </View>
-                    <View style={styles.childBadge}>
-                      <Text style={styles.childBadgeValue}>{c.positiveRate}%</Text>
-                      <Text style={styles.childBadgeLabel}>positive</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.highlightName}>{h.childName}</Text>
+                      <Text style={[styles.highlightHeadline, { color: h.accent }]}>
+                        {h.headline}
+                      </Text>
+                      <Text style={styles.highlightDetail}>{h.detail}</Text>
                     </View>
                   </View>
                 ))}
+              </Section>
+            )}
+
+            {data.perChild.length > 0 && (
+              <Section title="Per child">
+                {data.perChild.map((c) => {
+                  const subline: string[] = [];
+                  if (c.routineCompletionRate > 0) {
+                    subline.push(`${c.routineCompletionRate}% routine done`);
+                  }
+                  if (c.topCategory) {
+                    subline.push(`Top: ${c.topCategory}`);
+                  }
+                  if (c.milestoneCount > 0) {
+                    subline.push(
+                      `${c.milestoneCount} milestone${c.milestoneCount === 1 ? "" : "s"}`,
+                    );
+                  }
+                  return (
+                    <View key={c.childId} style={styles.childRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.childName}>{c.childName}</Text>
+                        <Text style={styles.childMeta}>
+                          {c.routinesCount} routine{c.routinesCount === 1 ? "" : "s"} ·{" "}
+                          {c.behaviorsCount} moment{c.behaviorsCount === 1 ? "" : "s"}
+                        </Text>
+                        {subline.length > 0 && (
+                          <Text style={styles.childSubline}>{subline.join(" · ")}</Text>
+                        )}
+                      </View>
+                      <View style={styles.childBadge}>
+                        <Text style={styles.childBadgeValue}>{c.positiveRate}%</Text>
+                        <Text style={styles.childBadgeLabel}>positive</Text>
+                      </View>
+                    </View>
+                  );
+                })}
               </Section>
             )}
 
@@ -472,6 +548,34 @@ const styles = StyleSheet.create({
   },
   childBadgeValue: { color: "#34D399", fontSize: 16, fontWeight: "800" },
   childBadgeLabel: { color: "rgba(52, 211, 153, 0.7)", fontSize: 9, fontWeight: "600" },
+  childSubline: { color: "rgba(255,255,255,0.5)", fontSize: 11, marginTop: 3 },
+
+  familyIntro: {
+    color: "rgba(255,255,255,0.65)",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: -4,
+    marginBottom: 2,
+  },
+  highlightCard: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    backgroundColor: "rgba(255,255,255,0.03)",
+  },
+  highlightIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  highlightName: { color: "rgba(255,255,255,0.6)", fontSize: 11, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.4 },
+  highlightHeadline: { fontSize: 15, fontWeight: "800", marginTop: 2 },
+  highlightDetail: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 4, lineHeight: 17 },
 
   barRow: {
     flexDirection: "row",
