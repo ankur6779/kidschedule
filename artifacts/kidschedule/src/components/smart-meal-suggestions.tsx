@@ -95,6 +95,11 @@ export function SmartMealSuggestions() {
   const learning = useMemo(() => getLearningSignals(tiffinHistory), [tiffinHistory]);
 
   const handleFindCook = () => {
+    // Clear previous results immediately so loading skeletons appear —
+    // without this, loading=true but data!=null means old cards stay visible
+    // and the user can't tell a refresh is happening.
+    setData(null);
+    setLoading(true);
     setManualSearch(n => n + 1);
     setSearchFlash(true);
     setTimeout(() => setSearchFlash(false), 800);
@@ -292,10 +297,10 @@ export function SmartMealSuggestions() {
 
       {/* Cards — Netflix style horizontal scroll */}
       <div ref={resultsRef} className="mt-3 px-1 pb-4">
-        {loading && !data ? (
+        {loading ? (
           <div className="flex gap-3 px-3 overflow-hidden">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="shrink-0 w-[230px] h-[230px] rounded-2xl bg-muted animate-pulse" />
+            {[0, 1, 2, 3, 4].map(i => (
+              <div key={i} className="shrink-0 w-[160px] h-[200px] rounded-2xl bg-muted animate-pulse" />
             ))}
           </div>
         ) : data && data.meals.length > 0 ? (
@@ -335,35 +340,36 @@ function MealCard({
   const tag = meal.tags[0] ?? "Healthy";
   return (
     <button
-      onClick={onOpen}
+      onClick={(e) => { e.stopPropagation(); onOpen(); }}
       style={style}
-      className="group shrink-0 snap-start w-[230px] rounded-2xl overflow-hidden border border-border bg-card hover:border-violet-300 dark:hover:border-violet-500/50 hover:shadow-md transition-all text-left animate-in fade-in"
+      className="group shrink-0 snap-start w-[160px] rounded-2xl overflow-hidden border border-border bg-card hover:border-violet-300 dark:hover:border-violet-500/50 hover:shadow-md active:scale-95 transition-all text-left animate-in fade-in"
       data-testid={`meal-card-${meal.id}`}
     >
       <div
-        className="relative h-[120px] flex items-center justify-center text-[64px]"
+        className="relative h-[100px] flex items-center justify-center text-[52px]"
         style={{
           background: `linear-gradient(135deg, ${meal.bgGradient[0]}, ${meal.bgGradient[1]})`,
         }}
       >
         <span className="drop-shadow-sm group-hover:scale-110 transition-transform">{meal.emoji}</span>
-        <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wide bg-white/85 text-foreground px-1.5 py-0.5 rounded-full shadow-sm">
+        <span className="absolute top-1.5 left-1.5 text-[9px] font-bold uppercase tracking-wide bg-white/85 text-foreground px-1.5 py-0.5 rounded-full shadow-sm">
           {tag}
         </span>
         {meal.matchedIngredients.length > 0 && (
-          <span className="absolute top-2 right-2 inline-flex items-center gap-0.5 text-[10px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full shadow-sm">
+          <span className="absolute top-1.5 right-1.5 inline-flex items-center gap-0.5 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full shadow-sm">
             ✓ {meal.matchedIngredients.length}
           </span>
         )}
       </div>
-      <div className="p-3 space-y-1">
-        <p className="font-bold text-sm text-foreground leading-tight line-clamp-1">{meal.title}</p>
-        <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+      <div className="p-2.5 space-y-1">
+        <p className="font-bold text-[12.5px] text-foreground leading-tight line-clamp-2">{meal.title}</p>
+        <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground flex-wrap">
           <span className="inline-flex items-center gap-0.5"><Clock className="h-3 w-3" /> {meal.prepMinutes}m</span>
           {showCalories && (
-            <span className="inline-flex items-center gap-0.5"><Flame className="h-3 w-3 text-orange-500" /> {meal.calories} kcal</span>
+            <span className="inline-flex items-center gap-0.5"><Flame className="h-3 w-3 text-orange-500" /> {meal.calories}</span>
           )}
         </div>
+        <p className="text-[10px] text-violet-600 dark:text-violet-400 font-semibold">Tap for recipe →</p>
       </div>
     </button>
   );
