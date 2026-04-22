@@ -82,14 +82,14 @@ will reject for digital subscriptions.
 ```bash
 # Signed AAB for Play Store upload
 ./gradlew bundleRelease \
-  -PwrapperUrl=https://kidschedule.example.com \
-  -PrevenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
+  -PwrapperUrl=https://amynest.in \
+  -PrevenueCatApiKey=goog_wswrltSsrqhqrsQrVvOPavTIzMA
 # Output: app/build/outputs/bundle/release/app-release.aab
 
 # Optional: signed APK for sideloading / testing
 ./gradlew assembleRelease \
-  -PwrapperUrl=https://kidschedule.example.com \
-  -PrevenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
+  -PwrapperUrl=https://amynest.in \
+  -PrevenueCatApiKey=goog_wswrltSsrqhqrsQrVvOPavTIzMA
 # Output: app/build/outputs/apk/release/app-release.apk
 ```
 
@@ -97,8 +97,8 @@ will reject for digital subscriptions.
 > retype them every build:
 >
 > ```properties
-> wrapperUrl=https://kidschedule.example.com
-> revenueCatApiKey=goog_xxxxxxxxxxxxxxxxxxxxxxxx
+> wrapperUrl=https://amynest.in
+> revenueCatApiKey=goog_wswrltSsrqhqrsQrVvOPavTIzMA
 > ```
 
 ## 8. Upload to Play Console
