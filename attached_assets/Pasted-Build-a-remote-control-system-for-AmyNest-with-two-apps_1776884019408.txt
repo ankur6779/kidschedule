@@ -1,0 +1,221 @@
+Build a remote control system for "AmyNest" with two apps:
+
+1) Parent App (AmyNest)
+2) Child App (AmyNest Kids)
+
+Use Firebase (Auth + Firestore + FCM). System must be Play Store safe (no full device lock).
+
+--------------------------------
+0. PROJECT SETUP
+--------------------------------
+- Create two apps: parent/ and child/
+- Shared Firebase project
+- Enable:
+  - Email/OTP Auth
+  - Firestore
+  - Cloud Messaging (FCM)
+
+Collections:
+- families/{familyId}
+- devices/{deviceId}
+- commands/{commandId}
+- states/{deviceId}
+
+--------------------------------
+1. PAIRING FLOW 🔐
+--------------------------------
+Child App:
+- On first launch → generate deviceId
+- Show 6-digit pairing code
+
+Parent App:
+- “Add Child Device”
+- Enter pairing code
+
+Backend:
+- Create familyId
+- Link parentUserId + deviceId
+
+Firestore example:
+families/{familyId} {
+  parentId,
+  children: [deviceId]
+}
+
+devices/{deviceId} {
+  familyId,
+  childName,
+  lastSeen
+}
+
+--------------------------------
+2. COMMAND MODEL (CORE 🔥)
+--------------------------------
+
+commands/{commandId} {
+  familyId,
+  deviceId,
+  type: "FOCUS_START" | "FOCUS_STOP" | "SCHEDULE",
+  payload: {
+    taskName,
+    durationMinutes,
+    strictness: "soft" | "medium",
+    startAt (timestamp, optional)
+  },
+  status: "pending" | "delivered" | "completed",
+  createdAt
+}
+
+--------------------------------
+3. PARENT APP FEATURES 👨‍👩‍👧
+--------------------------------
+
+(A) Dashboard:
+- List of child devices
+- Status: Online / In Focus / Idle
+
+(B) Actions:
+- Start Focus Mode
+- Stop Focus Mode
+- Schedule Focus (time + duration)
+
+(C) Routine Sync:
+- When routine task starts → auto send FOCUS_START
+
+(D) UI:
+- Card per child
+- Buttons:
+  “Start Study Mode”
+  “End Focus”
+
+(E) Real-time updates:
+- Listen to states/{deviceId}
+
+--------------------------------
+4. CHILD APP LISTENER 📲 (CRITICAL)
+--------------------------------
+
+- On app start + background:
+  subscribe to commands where deviceId == current device
+
+Pseudo:
+
+onSnapshot(commands where deviceId == myDeviceId and status == "pending") {
+  handleCommand(command)
+}
+
+--------------------------------
+5. COMMAND HANDLER 🧠
+--------------------------------
+
+function handleCommand(cmd):
+  if cmd.type == "FOCUS_START":
+    startFocusMode(cmd.payload)
+
+  if cmd.type == "FOCUS_STOP":
+    stopFocusMode()
+
+  update command.status = "delivered"
+
+--------------------------------
+6. FOCUS MODE (CHILD APP) 🔒
+--------------------------------
+
+- Full-screen overlay (inside app)
+- Show:
+  - Task name
+  - Countdown timer
+  - Amy AI message
+
+- Prevent easy exit:
+  On back press → confirm dialog:
+  “Continue focus or take short break?”
+
+- Optional break:
+  5–10 min → auto resume
+
+- On completion:
+  update states/{deviceId} = completed
+
+--------------------------------
+7. STATE SYNC 📊
+--------------------------------
+
+states/{deviceId} {
+  currentMode: "focus" | "idle",
+  taskName,
+  startedAt,
+  endsAt,
+  progress,
+  lastUpdate
+}
+
+Parent listens to this for live UI.
+
+--------------------------------
+8. NOTIFICATIONS 🔔
+--------------------------------
+
+Use FCM:
+
+Parent → Child:
+- “Focus starting in 6 minutes”
+- “Focus started”
+
+Child → Parent:
+- “Focus completed”
+- “Child exited focus early”
+
+--------------------------------
+9. SCHEDULING ⏰
+--------------------------------
+
+Parent can schedule:
+
+payload.startAt
+
+Child:
+- if startAt in future → set local timer
+- trigger focus at time
+
+--------------------------------
+10. FAILSAFE ⚠️
+--------------------------------
+
+- If child app closed:
+  - restore state on reopen
+- Persist focus state locally
+
+--------------------------------
+11. SECURITY 🔐
+--------------------------------
+
+- Only allow commands where familyId matches
+- Validate deviceId ownership
+
+--------------------------------
+12. PLAY STORE SAFETY
+--------------------------------
+
+- No full device lock
+- No blocking system apps
+- Only app-level overlay + guidance
+
+--------------------------------
+13. PERFORMANCE ⚡
+--------------------------------
+
+- Lightweight listeners
+- Debounce updates
+- Minimal writes
+
+--------------------------------
+14. RETURN
+--------------------------------
+
+Working system with:
+- Parent → Child control
+- Real-time sync
+- Focus mode activation
+- Notifications
+- Secure pairing

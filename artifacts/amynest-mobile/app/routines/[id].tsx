@@ -877,7 +877,12 @@ export default function RoutineDetailScreen() {
                   </SwipeableCard>
                 )}
                 {(item.category === "meal" || item.category === "tiffin") && (
-                  <RoutineInlineMeals {...mealPrefs} />
+                  <RoutineInlineMeals
+                    {...mealPrefs}
+                    instanceIndex={items.slice(0, index).filter(
+                      (it: RoutineItem) => it.category === "meal" || it.category === "tiffin"
+                    ).length}
+                  />
                 )}
               </View>
             </Animated.View>

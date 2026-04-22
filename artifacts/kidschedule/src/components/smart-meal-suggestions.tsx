@@ -139,6 +139,10 @@ export function SmartMealSuggestions() {
       if (learning.disliked.length > 0) params.set("disliked", learning.disliked.join(","));
     }
 
+    // Add timestamp on manual searches so the browser doesn't serve a cached
+    // response — without this, clicking "Find What I Can Cook" within the
+    // 60-second Cache-Control window returns the same stale result.
+    if (manualSearch > 0) params.set("_t", String(Date.now()));
     authFetch(`/api/meals/suggest?${params.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {

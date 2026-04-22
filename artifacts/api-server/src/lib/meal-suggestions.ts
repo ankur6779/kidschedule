@@ -719,7 +719,9 @@ export function suggestMeals(input: SuggestionInput): SuggestionResult {
   const anyMatched = fridge.length > 0 && scored.some(m => m.matchedIngredients.length > 0);
   const usedFallback = fridge.length > 0 && !anyMatched;
 
-  const top = scored.slice(0, 4);
+  // Return up to 12 ranked meals so multiple inline blocks on the same
+  // routine day can each show a different non-overlapping set of 4.
+  const top = scored.slice(0, 12);
 
   return {
     meals: top,

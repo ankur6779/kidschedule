@@ -1,11 +1,13 @@
 /**
  * RoutineInlineMeals (React Native)
  *
- * Compact Amy AI meal suggestion strip shown inside meal / tiffin
- * cards on the Routine detail screen. No fridge input — just 3-4
- * personalised cards based on region + audience. Tap to open recipe.
+ * Compact Amy AI meal suggestion strip inside meal / tiffin cards on the
+ * Routine detail screen. Tap a card to open the recipe bottom sheet.
+ *
+ * instanceIndex (0, 1, 2…) picks a non-overlapping 4-meal window from the
+ * API's ranked list so multiple blocks on the same page show different meals.
  */
-import React, { useEffect, useState, useRef } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, Modal, Pressable, FlatList,
@@ -13,7 +15,6 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
-import { useColors } from "@/hooks/useColors";
 import { brand } from "@/constants/colors";
 
 interface RankedMeal {
@@ -43,6 +44,8 @@ interface Props {
   audience?: "kids_tiffin" | "parent_healthy";
   childAge?: number;
   isVeg?: boolean;
+  /** 0-based index — used to show a different 4-meal slice per block */
+  instanceIndex?: number;
 }
 
 export default function RoutineInlineMeals({
@@ -50,12 +53,14 @@ export default function RoutineInlineMeals({
   audience = "kids_tiffin",
   childAge,
   isVeg,
+  instanceIndex = 0,
 }: Props) {
   const authFetch = useAuthFetch();
-  const colors = useColors();
   const [meals, setMeals] = useState<RankedMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
+
+  const handleClose = useCallback(() => setOpenMeal(null), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,16 +68,24 @@ export default function RoutineInlineMeals({
     const p = new URLSearchParams({ region, audience });
     if (childAge != null) p.set("childAge", String(childAge));
     if (isVeg === true) p.set("isVeg", "true");
+
     authFetch(`/api/meals/suggest?${p.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {
-        if (cancelled || !r) return;
-        setMeals(r.meals.slice(0, 4));
-        setLoading(false);
+        if (cancelled) return;
+        if (r && r.meals?.length > 0) {
+          const start = instanceIndex * 4;
+          const end = start + 4;
+          const slice = r.meals.slice(start, end);
+          setMeals(slice.length > 0 ? slice : r.meals.slice(0, 4));
+        }
+        setLoading(false); // always release loading state
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
-  }, [region, audience, childAge, isVeg]);
+  }, [region, audience, childAge, isVeg, instanceIndex]);
 
   return (
     <View style={[styles.wrapper, { borderColor: "rgba(251,146,60,0.3)", backgroundColor: "rgba(251,146,60,0.06)" }]}>
@@ -101,15 +114,25 @@ export default function RoutineInlineMeals({
           snapToAlignment="start"
         >
           {meals.map(m => (
-            <MiniCard key={m.id} meal={m} onPress={() => setOpenMeal(m)} />
+            <MiniCard
+              key={m.id}
+              meal={m}
+              onPress={() => setOpenMeal(m)}
+            />
           ))}
         </ScrollView>
       )}
 
       {/* Recipe Modal */}
-      <Modal visible={!!openMeal} animationType="slide" transparent onRequestClose={() => setOpenMeal(null)}>
+      <Modal
+        visible={!!openMeal}
+        animationType="slide"
+        transparent
+        onRequestClose={handleClose}
+        statusBarTranslucent
+      >
         {openMeal ? (
-          <RecipeSheet meal={openMeal} onClose={() => setOpenMeal(null)} />
+          <RecipeSheet meal={openMeal} onClose={handleClose} />
         ) : null}
       </Modal>
     </View>
@@ -119,7 +142,11 @@ export default function RoutineInlineMeals({
 // ─── Mini Card ───────────────────────────────────────────────────────────────
 function MiniCard({ meal, onPress }: { meal: RankedMeal; onPress: () => void }) {
   return (
-    <TouchableOpacity activeOpacity={0.82} onPress={onPress} style={styles.miniCard}>
+    <TouchableOpacity
+      activeOpacity={0.82}
+      onPress={onPress}
+      style={styles.miniCard}
+    >
       <LinearGradient
         colors={meal.bgGradient}
         start={{ x: 0, y: 0 }}
@@ -147,11 +174,14 @@ function MiniCard({ meal, onPress }: { meal: RankedMeal; onPress: () => void }) 
 // ─── Recipe Sheet ────────────────────────────────────────────────────────────
 function RecipeSheet({ meal, onClose }: { meal: RankedMeal; onClose: () => void }) {
   return (
+    // Outer Pressable = scrim / backdrop
     <Pressable style={styles.recipeScrim} onPress={onClose}>
-      <Pressable style={styles.recipeSheet} onPress={e => e.stopPropagation()}>
-        {/* Handle */}
+      {/* Inner View (not Pressable) stops touch propagation to scrim */}
+      <View style={styles.recipeSheet}>
+        {/* Drag handle */}
         <View style={styles.recipeHandle} />
-        {/* Hero */}
+
+        {/* Hero gradient */}
         <LinearGradient
           colors={meal.bgGradient}
           start={{ x: 0, y: 0 }}
@@ -164,53 +194,56 @@ function RecipeSheet({ meal, onClose }: { meal: RankedMeal; onClose: () => void 
           </TouchableOpacity>
         </LinearGradient>
 
-        <FlatList
-          data={meal.steps}
-          keyExtractor={(_, i) => String(i)}
-          ListHeaderComponent={
-            <View style={styles.recipeBody}>
-              <Text style={styles.recipeTitle}>{meal.title}</Text>
-              {/* Tags */}
-              <View style={styles.recipeTagRow}>
-                {meal.tags.map(t => (
-                  <View key={t} style={styles.recipeTag}>
-                    <Text style={styles.recipeTagText}>{t}</Text>
-                  </View>
-                ))}
-                <View style={styles.recipeTag}>
-                  <Ionicons name="time-outline" size={10} color="#F97316" />
-                  <Text style={styles.recipeTagText}> {meal.prepMinutes}m</Text>
-                </View>
-                {meal.calories > 0 && (
-                  <View style={styles.recipeTag}>
-                    <Text style={styles.recipeTagText}>🔥 {meal.calories} kcal</Text>
-                  </View>
-                )}
-              </View>
-              {/* Ingredients */}
-              <Text style={styles.sectionLabel}>Ingredients</Text>
-              <View style={styles.ingredientsRow}>
-                {meal.ingredients.map(ing => (
-                  <View key={ing} style={styles.ingChip}>
-                    <Text style={styles.ingText}>{ing}</Text>
-                  </View>
-                ))}
-              </View>
-              <Text style={styles.sectionLabel}>Steps</Text>
-            </View>
-          }
-          renderItem={({ item: step, index }) => (
-            <View style={styles.stepRow}>
-              <View style={styles.stepNum}>
-                <Text style={styles.stepNumText}>{index + 1}</Text>
-              </View>
-              <Text style={styles.stepText}>{step}</Text>
-            </View>
-          )}
-          contentContainerStyle={{ paddingBottom: 32 }}
+        {/* Scrollable body — FlatList replaced with ScrollView to avoid
+            nested-VirtualizedList warnings and touch-propagation issues */}
+        <ScrollView
           showsVerticalScrollIndicator={false}
-        />
-      </Pressable>
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          <View style={styles.recipeBody}>
+            <Text style={styles.recipeTitle}>{meal.title}</Text>
+
+            {/* Tags */}
+            <View style={styles.recipeTagRow}>
+              {meal.tags.map(t => (
+                <View key={t} style={styles.recipeTag}>
+                  <Text style={styles.recipeTagText}>{t}</Text>
+                </View>
+              ))}
+              <View style={styles.recipeTag}>
+                <Ionicons name="time-outline" size={10} color="#F97316" />
+                <Text style={styles.recipeTagText}> {meal.prepMinutes}m</Text>
+              </View>
+              {meal.calories > 0 && (
+                <View style={styles.recipeTag}>
+                  <Text style={styles.recipeTagText}>🔥 {meal.calories} kcal</Text>
+                </View>
+              )}
+            </View>
+
+            {/* Ingredients */}
+            <Text style={styles.sectionLabel}>Ingredients</Text>
+            <View style={styles.ingredientsRow}>
+              {meal.ingredients.map(ing => (
+                <View key={ing} style={styles.ingChip}>
+                  <Text style={styles.ingText}>{ing}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Steps */}
+            <Text style={styles.sectionLabel}>Steps</Text>
+            {meal.steps.map((step, index) => (
+              <View key={index} style={styles.stepRow}>
+                <View style={styles.stepNum}>
+                  <Text style={styles.stepNumText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.stepText}>{step}</Text>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
     </Pressable>
   );
 }
@@ -281,7 +314,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     alignSelf: "center",
     marginTop: 8,
-    marginBottom: 0,
   },
   recipeHero: {
     height: 150,
@@ -336,7 +368,6 @@ const styles = StyleSheet.create({
   stepRow: {
     flexDirection: "row",
     gap: 10,
-    paddingHorizontal: 18,
     marginBottom: 12,
     alignItems: "flex-start",
   },

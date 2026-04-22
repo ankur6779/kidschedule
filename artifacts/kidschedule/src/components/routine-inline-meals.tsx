@@ -4,8 +4,12 @@
  * Lightweight Amy AI meal suggestion strip shown inside meal / tiffin
  * blocks on the Routine detail page. No fridge input here — just 3-4
  * personalised cards based on region + meal-type. Click to open recipe.
+ *
+ * instanceIndex (0, 1, 2…) lets multiple blocks on the same page show
+ * different non-overlapping sets of 4 meals from the API's ranked list.
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { AmyIcon } from "@/components/amy-icon";
 import { X, Clock, Flame, Utensils, ChefHat } from "lucide-react";
@@ -35,12 +39,12 @@ interface SuggestionResult {
 }
 
 interface Props {
-  /** Maps to the user's onboarding region */
   region?: string;
-  /** kids_tiffin (default) or parent_healthy */
   audience?: "kids_tiffin" | "parent_healthy";
   childAge?: number;
   isVeg?: boolean;
+  /** 0-based index — used to show a different 4-meal slice per block */
+  instanceIndex?: number;
 }
 
 export function RoutineInlineMeals({
@@ -48,6 +52,7 @@ export function RoutineInlineMeals({
   audience = "kids_tiffin",
   childAge,
   isVeg,
+  instanceIndex = 0,
 }: Props) {
   const authFetch = useAuthFetch();
   const [meals, setMeals] = useState<RankedMeal[]>([]);
@@ -55,23 +60,36 @@ export function RoutineInlineMeals({
   const [amyMsg, setAmyMsg] = useState("");
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
 
+  const handleClose = useCallback(() => setOpenMeal(null), []);
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     const p = new URLSearchParams({ region, audience });
     if (childAge != null) p.set("childAge", String(childAge));
     if (isVeg === true) p.set("isVeg", "true");
+
     authFetch(`/api/meals/suggest?${p.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {
-        if (cancelled || !r) return;
-        setMeals(r.meals.slice(0, 4));
-        setAmyMsg(r.amyMessage);
-        setLoading(false);
+        if (cancelled) return;
+        if (r && r.meals?.length > 0) {
+          // Each instanceIndex picks a non-overlapping 4-meal window
+          const start = instanceIndex * 4;
+          const end = start + 4;
+          const slice = r.meals.slice(start, end);
+          // If not enough meals at this offset, wrap around from the beginning
+          const visible = slice.length > 0 ? slice : r.meals.slice(0, 4);
+          setMeals(visible);
+          setAmyMsg(r.amyMessage);
+        }
+        setLoading(false); // always release loading state
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
-  }, [region, audience, childAge, isVeg]);
+  }, [region, audience, childAge, isVeg, instanceIndex]);
 
   return (
     <div className="mt-2.5 rounded-xl border border-orange-100 dark:border-orange-400/20 bg-orange-50/60 dark:bg-orange-500/5 overflow-hidden">
@@ -103,21 +121,29 @@ export function RoutineInlineMeals({
           style={{ scrollbarWidth: "none" }}
         >
           {meals.map(m => (
-            <MiniMealCard key={m.id} meal={m} onOpen={() => setOpenMeal(m)} />
+            <MiniMealCard
+              key={m.id}
+              meal={m}
+              onOpen={(e) => {
+                e.stopPropagation(); // prevent routine item click handlers from firing
+                setOpenMeal(m);
+              }}
+            />
           ))}
         </div>
       )}
 
-      {/* Recipe sheet */}
-      {openMeal && (
-        <RecipeSheet meal={openMeal} onClose={() => setOpenMeal(null)} />
+      {/* Recipe sheet — portaled to body so it escapes any overflow/transform context */}
+      {openMeal && createPortal(
+        <RecipeSheet meal={openMeal} onClose={handleClose} />,
+        document.body,
       )}
     </div>
   );
 }
 
 // ─── Mini Card ───────────────────────────────────────────────────────────────
-function MiniMealCard({ meal, onOpen }: { meal: RankedMeal; onOpen: () => void }) {
+function MiniMealCard({ meal, onOpen }: { meal: RankedMeal; onOpen: (e: React.MouseEvent) => void }) {
   return (
     <button
       onClick={onOpen}
@@ -150,23 +176,21 @@ function MiniMealCard({ meal, onOpen }: { meal: RankedMeal; onOpen: () => void }
 
 // ─── Recipe Sheet ────────────────────────────────────────────────────────────
 function RecipeSheet({ meal, onClose }: { meal: RankedMeal; onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Close on backdrop click
+  // Close on Escape key
   useEffect(() => {
-    const fn = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
+    const fn = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", fn);
+    return () => document.removeEventListener("keydown", fn);
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4 animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4 animate-in fade-in duration-200"
+      onClick={onClose} // clicking backdrop closes
+    >
       <div
-        ref={ref}
         className="bg-card rounded-t-3xl sm:rounded-3xl w-full sm:max-w-lg max-h-[88vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom duration-300"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // prevent backdrop click
       >
         {/* Hero */}
         <div

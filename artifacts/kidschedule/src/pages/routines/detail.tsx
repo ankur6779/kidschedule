@@ -1462,7 +1462,12 @@ export default function RoutineDetail() {
                             <p className="text-muted-foreground text-xs mt-1 leading-relaxed line-clamp-3 break-words" style={{ overflowWrap: "break-word" }}>{item.notes}</p>
                           ) : null}
                           {(item.category === "meal" || item.category === "tiffin") && editingIndex !== index && (
-                            <RoutineInlineMeals {...mealPrefs} />
+                            <RoutineInlineMeals
+                              {...mealPrefs}
+                              instanceIndex={items.slice(0, index).filter(
+                                it => it.category === "meal" || it.category === "tiffin"
+                              ).length}
+                            />
                           )}
                           </>
                           )}
