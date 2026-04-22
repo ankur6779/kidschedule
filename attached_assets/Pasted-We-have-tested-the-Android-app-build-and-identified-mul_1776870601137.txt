@@ -1,0 +1,43 @@
+We have tested the Android app build and identified multiple inconsistencies compared to the web app. Fix the following issues with production-level implementation:
+
+1. Welcome Screen UI Mismatch
+- The Welcome page in the Android app must EXACTLY match the website UI.
+- Elements to align:
+  • Header (same typography, spacing, colors)
+  • Hero logo (same size, placement, responsiveness)
+  • Amy AI Face illustration (same asset + positioning)
+  • Content text (same wording, font size, alignment)
+- Ensure pixel-perfect consistency with web (use same design tokens / styles if possible).
+
+2. Google Sign-In Flow Issue
+- Currently, "Sign in with Google" opens Chrome browser.
+- This must be fixed:
+  • Use system browser-based authentication (Chrome Custom Tabs or equivalent), NOT external full browser redirect.
+  • Prefer native in-app authentication flow (Google Identity Services / Firebase Auth).
+  • Ensure user returns seamlessly to app after login (deep linking configured properly).
+- Fix redirect URI and intent filters if needed.
+
+3. Onboarding Flow Issues
+- Remove "Skip" option completely (onboarding must be mandatory).
+- Final submit is throwing an error:
+  • Debug API call / validation failure.
+  • Ensure all required fields are properly validated before submission.
+  • Match request payload exactly with web app onboarding API.
+
+4. Date of Birth Input Improvement
+- Replace manual DOB input with a proper Date Picker (calendar UI).
+- Use native Android DatePicker component.
+- Format: DD/MM/YYYY
+- Add validation (age limits if required).
+
+5. Cross-check with Web App
+- Compare onboarding logic, validation rules, and API structure with web app.
+- Ensure full consistency (UI + backend integration).
+
+6. Testing Requirements
+- Test full flow:
+  Welcome → Google Sign-in → Onboarding → Dashboard
+- Ensure no crashes, no console errors, and smooth navigation.
+- Handle edge cases (network failure, incomplete data, retry logic).
+
+Deliver clean, production-ready code with proper error handling and comments where necessary.

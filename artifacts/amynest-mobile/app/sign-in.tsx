@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { useSignIn, useOAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import * as Linking from "expo-linking";
 import { Link, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -65,7 +65,7 @@ export default function SignInScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setGoogleLoading(true);
     try {
-      const redirectUrl = AuthSession.makeRedirectUri({ scheme: "amynest-mobile", path: "oauth-callback" });
+      const redirectUrl = Linking.createURL("oauth-native-callback");
       const { createdSessionId, setActive: oauthSetActive } = await startOAuthFlow({ redirectUrl });
       if (createdSessionId && oauthSetActive) {
         await oauthSetActive({ session: createdSessionId });

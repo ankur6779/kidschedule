@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { useSignUp, useOAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
-import * as AuthSession from "expo-auth-session";
+import * as Linking from "expo-linking";
 import { Link, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -43,10 +43,23 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     if (!isLoaded) return;
+    if (firstName.trim().length < 2) {
+      Alert.alert("Invalid Name", "Please enter your first name (at least 2 characters).");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      Alert.alert("Invalid Email", "Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 8) {
+      Alert.alert("Weak Password", "Password must be at least 8 characters long.");
+      return;
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setLoading(true);
     try {
-      await signUp.create({ firstName, emailAddress: email, password });
+      await signUp.create({ firstName: firstName.trim(), emailAddress: email.trim(), password });
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: unknown) {
@@ -79,7 +92,7 @@ export default function SignUpScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setGoogleLoading(true);
     try {
-      const redirectUrl = AuthSession.makeRedirectUri({ scheme: "amynest-mobile", path: "oauth-callback" });
+      const redirectUrl = Linking.createURL("oauth-native-callback");
       const { createdSessionId, setActive: oauthSetActive } = await startOAuthFlow({ redirectUrl });
       if (createdSessionId && oauthSetActive) {
         await oauthSetActive({ session: createdSessionId });

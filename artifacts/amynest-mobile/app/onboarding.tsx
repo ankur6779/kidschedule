@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
-  Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Image,
+  Platform, ActivityIndicator, KeyboardAvoidingView, Alert, Image, Modal,
 } from "react-native";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,7 +12,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
-import { brand, brandAlpha } from "@/constants/colors";
+import { brand } from "@/constants/colors";
 
 type ChatRole = "amy" | "user";
 type ChatMsg = { id: string; role: ChatRole; text: string };
@@ -79,6 +80,9 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState<Step>("intro");
   const [textInput, setTextInput] = useState("");
   const [dobInput, setDobInput] = useState("");
+  const [dobDate, setDobDate] = useState<Date>(new Date(2019, 0, 1));
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [saveError, setSaveError] = useState<string>("");
   const [selected, setSelected] = useState("");
   const [children, setChildren] = useState<ChildData[]>([]);
   const [curr, setCurr] = useState<Partial<ChildData>>({});
@@ -173,6 +177,7 @@ export default function OnboardingScreen() {
       setStep("done");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
+      setSaveError(message);
       stepRef.current = "save-error";
       setStep("save-error");
       addMsg("amy", "Something went wrong saving your profile. Please try again.");
@@ -223,7 +228,12 @@ export default function OnboardingScreen() {
           <Ionicons name="alert-circle" size={36} color="#fff" />
         </View>
         <Text style={[styles.doneTitle, { color: colors.foreground }]}>Something went wrong</Text>
-        <Text style={[styles.doneSub, { color: colors.mutedForeground }]}>We couldn't save your profile. Check your connection and try again.</Text>
+        <Text style={[styles.doneSub, { color: colors.mutedForeground }]}>
+          We couldn't save your profile. Check your connection and try again.
+        </Text>
+        {saveError ? (
+          <Text style={[styles.doneSub, { color: "#EF4444", fontSize: 12, marginTop: -8 }]}>{saveError}</Text>
+        ) : null}
         <TouchableOpacity
           style={[styles.doneBtn, { backgroundColor: PRIMARY }]}
           onPress={() => {
@@ -276,31 +286,74 @@ export default function OnboardingScreen() {
           </View>
         );
 
-      case "child-dob":
+      case "child-dob": {
+        const maxDate = new Date();
+        const minDate = new Date();
+        minDate.setFullYear(minDate.getFullYear() - 15);
+        const formatDob = (d: Date) =>
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        const onDateChange = (_event: DateTimePickerEvent, date?: Date) => {
+          if (Platform.OS === "android") setShowDatePicker(false);
+          if (date) setDobDate(date);
+        };
         return (
           <View style={styles.dobContainer}>
-            <TextInput
-              style={[styles.textInput, { flex: 1, color: colors.foreground, borderColor: colors.border, backgroundColor: colors.card }]}
-              value={dobInput}
-              onChangeText={setDobInput}
-              placeholder="YYYY-MM-DD (e.g. 2020-05-15)"
-              placeholderTextColor={colors.mutedForeground}
-              keyboardType="numeric"
-            />
             <TouchableOpacity
-              style={[styles.confirmBtn, { backgroundColor: PRIMARY, opacity: dobInput.length >= 8 ? 1 : 0.5 }]}
-              disabled={dobInput.length < 8}
+              style={[styles.textInput, { flex: 1, justifyContent: "center", borderColor: colors.border, backgroundColor: colors.card }]}
+              onPress={() => setShowDatePicker(true)}
+              activeOpacity={0.75}
+            >
+              <Text style={{ color: colors.foreground, fontSize: 15, fontFamily: "Inter_400Regular" }}>
+                {formatDob(dobDate)}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              Platform.OS === "ios" ? (
+                <Modal transparent animationType="slide">
+                  <View style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.4)" }}>
+                    <View style={{ backgroundColor: colors.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16 }}>
+                      <View style={{ flexDirection: "row", justifyContent: "flex-end", marginBottom: 8 }}>
+                        <TouchableOpacity onPress={() => setShowDatePicker(false)}>
+                          <Text style={{ color: PRIMARY, fontSize: 16, fontFamily: "Inter_600SemiBold" }}>Done</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <DateTimePicker
+                        value={dobDate}
+                        mode="date"
+                        display="spinner"
+                        maximumDate={maxDate}
+                        minimumDate={minDate}
+                        onChange={onDateChange}
+                        style={{ height: 200 }}
+                      />
+                    </View>
+                  </View>
+                </Modal>
+              ) : (
+                <DateTimePicker
+                  value={dobDate}
+                  mode="date"
+                  display="default"
+                  maximumDate={maxDate}
+                  minimumDate={minDate}
+                  onChange={onDateChange}
+                />
+              )
+            )}
+            <TouchableOpacity
+              style={[styles.confirmBtn, { backgroundColor: PRIMARY }]}
               onPress={() => {
-                const { years, months } = dobToAge(dobInput);
-                setCurr(c => ({ ...c, dob: dobInput, age: years, ageMonths: months }));
-                userReplies(dobInput, "child-school", `Is ${curr.name} going to school?`);
-                setDobInput("");
+                const dob = formatDob(dobDate);
+                const { years, months } = dobToAge(dob);
+                setCurr(c => ({ ...c, dob, age: years, ageMonths: months }));
+                userReplies(dob, "child-school", `Is ${curr.name} going to school?`);
               }}
             >
               <Text style={styles.confirmBtnText}>Confirm</Text>
             </TouchableOpacity>
           </View>
         );
+      }
 
       case "child-school":
         return (
@@ -562,35 +615,16 @@ export default function OnboardingScreen() {
       keyboardVerticalOffset={0}
     >
       <View style={[styles.topBar, { paddingTop: topPad + 8 }]}>
-        <View style={[styles.amyRow, { justifyContent: "space-between" }]}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Image
-              source={require("../assets/images/amynest-logo.png")}
-              style={styles.amyAvatar}
-              resizeMode="cover"
-            />
-            <View>
-              <Text style={[styles.amyName, { color: colors.foreground }]}>Amy</Text>
-              <Text style={[styles.amyStatus, { color: "#10B981" }]}>Parenting Coach</Text>
-            </View>
+        <View style={styles.amyRow}>
+          <Image
+            source={require("../assets/images/amynest-logo.png")}
+            style={styles.amyAvatar}
+            resizeMode="cover"
+          />
+          <View>
+            <Text style={[styles.amyName, { color: colors.foreground }]}>Amy</Text>
+            <Text style={[styles.amyStatus, { color: "#10B981" }]}>Parenting Coach</Text>
           </View>
-          <TouchableOpacity
-            onPress={async () => {
-              try {
-                await authFetch("/api/onboarding", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ onboardingComplete: true }),
-                });
-              } catch (_) {}
-              router.replace("/(tabs)");
-            }}
-            style={styles.skipBtn}
-            activeOpacity={0.7}
-            testID="skip-onboarding-btn"
-          >
-            <Text style={styles.skipBtnText}>Skip — will do it manually</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -650,19 +684,6 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   topBar: { paddingHorizontal: 16, paddingBottom: 12 },
   amyRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  skipBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
-    backgroundColor: brandAlpha.indigo500_08,
-    borderWidth: 1,
-    borderColor: brandAlpha.indigo500_15,
-  },
-  skipBtnText: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    color: brand.indigo500,
-  },
   amyAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: "center", justifyContent: "center" },
   amyName: { fontSize: 16, fontFamily: "Inter_700Bold" },
   amyStatus: { fontSize: 11, fontFamily: "Inter_500Medium" },

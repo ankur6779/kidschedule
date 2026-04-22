@@ -93,7 +93,8 @@
             "backgroundColor": "#F8F7FF"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
