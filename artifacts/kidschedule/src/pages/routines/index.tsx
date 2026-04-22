@@ -7,6 +7,7 @@ import { Calendar, Plus, ChevronRight, Wand2, Sparkles, List, ChevronLeft, Schoo
 import { Skeleton } from "@/components/ui/skeleton";
 import { FuturePredictor } from "@/components/future-predictor";
 import { LockedBlock } from "@/components/locked-block";
+import { SmartMealSuggestions } from "@/components/smart-meal-suggestions";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaywall } from "@/contexts/paywall-context";
 
@@ -39,7 +40,13 @@ function getMondayOfWeek(date: Date): Date {
 }
 
 function formatDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  // Use LOCAL date components (YYYY-MM-DD) so calendar cells map to the user's
+  // calendar day, not UTC. Using toISOString() shifts dates by ±1 for users
+  // east/west of UTC and was the source of "click date X opens day X-1" bug.
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function addDays(date: Date, n: number): Date {
@@ -275,6 +282,8 @@ export default function RoutinesList() {
       </header>
 
       <FuturePredictor variant="compact" />
+
+      <SmartMealSuggestions />
 
       <div className="flex gap-2 p-1 bg-muted rounded-2xl">
         <button

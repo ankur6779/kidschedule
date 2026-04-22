@@ -23,7 +23,6 @@ import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import { brand, brandAlpha } from "@/constants/colors";
 import { useSubscriptionStore, selectIsPremium } from "@/store/useSubscriptionStore";
 import LockedBlock from "@/components/LockedBlock";
-import SmartMealSuggestions from "@/components/SmartMealSuggestions";
 
 const LOGO_IMG = require("../../assets/images/amynest-logo.png");
 
@@ -1093,9 +1092,6 @@ export default function HomeScreen() {
               <StreakCard streak={streak} onPress={() => router.push("/(tabs)/routines")} />
             </View>
           </View>
-
-          {/* Smart Tiffin & Meal Suggestions */}
-          <SmartMealSuggestions />
 
           {/* Stats Grid */}
           <View style={styles.statsGrid}>

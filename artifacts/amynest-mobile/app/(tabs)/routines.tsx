@@ -16,6 +16,7 @@ import * as Haptics from "expo-haptics";
 import { useProfileComplete } from "@/hooks/useProfileComplete";
 import { ProfileLockScreen } from "@/components/ProfileLockScreen";
 import FuturePredictor from "@/components/FuturePredictor";
+import SmartMealSuggestions from "@/components/SmartMealSuggestions";
 import colors, { brand } from "@/constants/colors";
 
 type RoutineItem = {
@@ -40,7 +41,13 @@ function getMondayOfWeek(date: Date): Date {
   return d;
 }
 function formatYMD(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  // Use LOCAL date components (YYYY-MM-DD) so calendar cells map to the user's
+  // calendar day, not UTC. Using toISOString() shifts dates by ±1 for users
+  // east/west of UTC and was the source of "click date X opens day X-1" bug.
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 function addDays(date: Date, n: number): Date {
   const d = new Date(date);
@@ -241,6 +248,11 @@ export default function RoutinesScreen() {
         {/* 🔮 Future Predictor — before tasks */}
         <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
           <FuturePredictor childId={effectiveChildId} variant="compact" />
+        </View>
+
+        {/* 🍱 Smart Tiffin & Meal Suggestions */}
+        <View style={{ marginBottom: 16 }}>
+          <SmartMealSuggestions />
         </View>
 
         {/* Loading / Error / Empty */}

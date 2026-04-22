@@ -245,6 +245,43 @@ export default function RoutineDetailScreen() {
     },
   });
 
+  // Auto-complete past items: runs once per routine load.
+  // Past-day routines: all pending items marked completed.
+  // Today: items whose end time (start + duration) is already past are marked completed.
+  const autoCompletedRef = useRef<string | null>(null);
+  React.useEffect(() => {
+    if (!routine?.items || !id) return;
+    if (autoCompletedRef.current === id) return;
+    autoCompletedRef.current = id;
+
+    const now = new Date();
+    const y = now.getFullYear();
+    const mo = String(now.getMonth() + 1).padStart(2, "0");
+    const da = String(now.getDate()).padStart(2, "0");
+    const todayKey = `${y}-${mo}-${da}`;
+    const routineDate = (routine.date ?? "").slice(0, 10);
+    const isPast = routineDate && routineDate < todayKey;
+    const isToday = routineDate === todayKey;
+    if (!isPast && !isToday) return;
+
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    let changed = false;
+    const next = (routine.items as RoutineItem[]).map((it) => {
+      const status = (it.status ?? "pending") as ItemStatus;
+      if (status !== "pending") return it;
+      if (isPast) { changed = true; return { ...it, status: "completed" as ItemStatus }; }
+      const start = parse12hToMinutes(it.time);
+      if (start < 0) return it;
+      const end = start + (it.duration ?? 30);
+      if (end <= nowMins) { changed = true; return { ...it, status: "completed" as ItemStatus }; }
+      return it;
+    });
+    if (changed) {
+      setItems(next);
+      saveMut.mutate(next);
+    }
+  }, [routine, id]);
+
   const deleteMut = useMutation({
     mutationFn: () => authFetch(`/api/routines/${id}`, { method: "DELETE" }),
     onSuccess: () => {

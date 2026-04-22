@@ -491,8 +491,62 @@ export default function RoutineDetail() {
   });
   const childPhotoUrl: string | null = (childData as any)?.photoUrl ?? null;
 
+  // Auto-complete past items: runs once per routine load.
+  // For routines whose date is before today, all pending items are marked completed.
+  // For today's routine, items whose end time (start + duration) has already passed
+  // are auto-marked completed. Persists via the same PATCH endpoint as manual ticks.
+  const autoCompletedRef = useRef<number | null>(null);
+  const initializedItemsRef = useRef<boolean>(false);
   useEffect(() => {
-    if (routine?.items && !localItems) {
+    if (!routine?.items || !routineId) return;
+    if (autoCompletedRef.current === routineId) return; // already processed
+    autoCompletedRef.current = routineId;
+
+    const items = routine.items as RoutineItem[];
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    const todayKey = `${y}-${m}-${d}`;
+    const routineDate = (routine.date ?? "").slice(0, 10);
+    const isPast = routineDate && routineDate < todayKey;
+    const isToday = routineDate === todayKey;
+    if (!isPast && !isToday) return;
+
+    const nowMins = now.getHours() * 60 + now.getMinutes();
+    let changed = false;
+    const next = items.map((it) => {
+      const status = it.status ?? "pending";
+      if (status !== "pending") return it;
+      if (isPast) {
+        changed = true;
+        return { ...it, status: "completed" as ItemStatus };
+      }
+      const start = parse12hToMinutes(it.time);
+      if (start < 0) return it;
+      const end = start + (it.duration ?? 30);
+      if (end <= nowMins) {
+        changed = true;
+        return { ...it, status: "completed" as ItemStatus };
+      }
+      return it;
+    });
+
+    if (changed) {
+      setLocalItems(next);
+      saveItemsMutation.mutate(next);
+    } else if (!localItems) {
+      setLocalItems(items);
+    }
+    // Mark localItems as initialized so the babysitter-fetch effect below
+    // does NOT race and overwrite our auto-completed `next` with the original
+    // server items (both effects run in the same commit; React batches
+    // setState, so without this guard the later setLocalItems wins).
+    initializedItemsRef.current = true;
+  }, [routine, routineId]);
+
+  useEffect(() => {
+    if (routine?.items && !localItems && !initializedItemsRef.current) {
       setLocalItems(routine.items as RoutineItem[]);
     }
     // Fetch babysitter assigned to this child
