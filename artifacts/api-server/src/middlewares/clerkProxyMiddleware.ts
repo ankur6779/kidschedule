@@ -21,6 +21,7 @@
 
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { RequestHandler } from "express";
+import { logger } from "../lib/logger";
 
 const CLERK_FAPI = "https://frontend-api.clerk.dev";
 export const CLERK_PROXY_PATH = "/api/__clerk";
@@ -43,7 +44,12 @@ export function clerkProxyMiddleware(): RequestHandler {
       path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ""),
     on: {
       proxyReq: (proxyReq, req) => {
-        const protocol = req.headers["x-forwarded-proto"] || "https";
+        // x-forwarded-proto can be a comma-separated list — take the first value
+        const rawProto = req.headers["x-forwarded-proto"];
+        const protocol =
+          ((Array.isArray(rawProto) ? rawProto[0] : rawProto)
+            ?.split(",")[0]
+            ?.trim()) || "https";
         const host = req.headers.host || "";
         const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
 
@@ -57,6 +63,34 @@ export function clerkProxyMiddleware(): RequestHandler {
           "";
         if (clientIp) {
           proxyReq.setHeader("X-Forwarded-For", clientIp);
+        }
+      },
+      proxyRes: (proxyRes, req) => {
+        // Log 3xx responses from Clerk so we can see the exact redirect target.
+        // This is critical for diagnosing OAuth callback errors.
+        const status = proxyRes.statusCode ?? 0;
+        if (status >= 300 && status < 400) {
+          const raw = proxyRes.headers["location"] || "";
+          // Redact OAuth params before logging
+          const safeLocation = raw.includes("?")
+            ? (() => {
+                const [p, qs] = raw.split("?", 2);
+                const params = new URLSearchParams(qs);
+                for (const k of ["code", "state", "id_token", "access_token"]) {
+                  if (params.has(k)) params.set(k, "[REDACTED]");
+                }
+                return `${p}?${params.toString()}`;
+              })()
+            : raw;
+          logger.info(
+            {
+              kind: "clerk_proxy_response_redirect",
+              status,
+              location: safeLocation,
+              url: req.originalUrl?.split("?")[0],
+            },
+            "Clerk proxy returned redirect",
+          );
         }
       },
     },

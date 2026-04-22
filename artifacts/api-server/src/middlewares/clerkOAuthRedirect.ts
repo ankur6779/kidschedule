@@ -38,8 +38,32 @@ export function clerkOAuthRedirectMiddleware(): RequestHandler {
   return (req, res) => {
     // Path here is everything AFTER the mount point (`/v1`), so a request to
     // `/v1/oauth_callback?code=…` arrives as `req.path === "/oauth_callback"`.
-    const targetPath = `${CLERK_PROXY_PATH}/v1${req.path}`;
     const qs = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+    const params = new URLSearchParams(qs.replace(/^\?/, ""));
+
+    // If Clerk (or Google) is returning an error, do NOT send it back to the
+    // proxy — that just results in a 403 loop. Instead, forward to the sign-in
+    // page with the error params so Clerk's frontend SDK can display the error.
+    const hasError = params.has("err_code") || params.has("error");
+    if (hasError) {
+      const errTarget = `/sign-in${qs}`;
+      logger.warn(
+        {
+          kind: "clerk_oauth_error_redirect",
+          method: req.method,
+          from: req.originalUrl.split("?")[0],
+          errCode: params.get("err_code") || params.get("error"),
+          to: errTarget,
+          userAgent: req.headers["user-agent"],
+          referer: req.headers["referer"],
+          host: req.headers["host"],
+        },
+        "Clerk OAuth returned error — redirecting to sign-in",
+      );
+      return res.redirect(302, errTarget);
+    }
+
+    const targetPath = `${CLERK_PROXY_PATH}/v1${req.path}`;
     const target = `${targetPath}${qs}`;
 
     logger.info(
