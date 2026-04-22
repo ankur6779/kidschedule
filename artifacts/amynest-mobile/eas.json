@@ -1,42 +1,42 @@
 {
   "cli": {
-    "version": ">= 10.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "ios": {
-        "simulator": true
-      },
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "development"
+        "APP_ENV": "development",
+        "EXPO_PUBLIC_DOMAIN": "amynest.in"
       }
     },
     "preview": {
       "distribution": "internal",
-      "ios": {
-        "simulator": false
-      },
       "android": {
         "buildType": "apk"
       },
       "env": {
-        "APP_ENV": "staging"
+        "APP_ENV": "staging",
+        "EXPO_PUBLIC_DOMAIN": "amynest.in",
+        "EXPO_PUBLIC_REPL_ID": "production"
       }
     },
     "production": {
-      "ios": {
-        "simulator": false
-      },
       "android": {
         "buildType": "app-bundle"
       },
+      "ios": {
+        "simulator": false
+      },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "EXPO_PUBLIC_DOMAIN": "amynest.in",
+        "EXPO_PUBLIC_REPL_ID": "production"
       }
     }
   },
