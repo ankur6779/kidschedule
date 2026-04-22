@@ -6,7 +6,8 @@ import {
 import { useUser, useAuth } from "@clerk/clerk-expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { Switch } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { useAuthFetch } from "@/hooks/useAuthFetch";
 import * as Haptics from "expo-haptics";
@@ -102,6 +103,70 @@ export default function ProfileScreen() {
     queryKey: ["children"],
     queryFn: () => authFetch("/api/children").then(r => r.json()) as Promise<Child[]>,
   });
+
+  // ─── Notification preferences ─────────────────────────────────────────
+  type NotifPrefs = { emailNotificationsEnabled: boolean; lastWeeklyRecapSentAt: string | null };
+  const { data: notifPrefs } = useQuery<NotifPrefs>({
+    queryKey: ["notification-preferences"],
+    queryFn: async () => authFetch("/api/notifications/preferences").then(r => r.json()) as Promise<NotifPrefs>,
+  });
+  const togglePrefMut = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      const res = await authFetch("/api/notifications/preferences", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emailNotificationsEnabled: enabled }),
+      });
+      if (!res.ok) throw new Error("Could not update preference");
+      return enabled;
+    },
+    onMutate: async (enabled) => {
+      await qc.cancelQueries({ queryKey: ["notification-preferences"] });
+      const prev = qc.getQueryData<NotifPrefs>(["notification-preferences"]);
+      qc.setQueryData<NotifPrefs>(["notification-preferences"], (old) => ({
+        emailNotificationsEnabled: enabled,
+        lastWeeklyRecapSentAt: old?.lastWeeklyRecapSentAt ?? null,
+      }));
+      return { prev };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(["notification-preferences"], ctx.prev);
+      Alert.alert("Couldn't save", "We couldn't update your email preference. Please try again.");
+    },
+    onSuccess: () => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      qc.invalidateQueries({ queryKey: ["notification-preferences"] });
+    },
+  });
+  const [sendingRecap, setSendingRecap] = useState(false);
+  const handleSendRecapNow = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSendingRecap(true);
+    try {
+      const res = await authFetch("/api/notifications/recap/send-now", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.sent) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert("On its way", "We just sent a fresh recap to your email.");
+        qc.invalidateQueries({ queryKey: ["notification-preferences"] });
+      } else {
+        const reason = data.reason as string | undefined;
+        const msg =
+          reason === "no_provider"
+            ? "Email isn't configured yet. Please try again later."
+            : reason === "no_email"
+              ? "We couldn't find an email address on your account."
+              : reason === "send_failed"
+                ? "The email service had a hiccup. Please try again in a minute."
+                : "Couldn't send right now. Please try again later.";
+        Alert.alert("Recap not sent", msg);
+      }
+    } catch {
+      Alert.alert("Recap not sent", "Couldn't reach the server. Please try again.");
+    } finally {
+      setSendingRecap(false);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -470,6 +535,52 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
 
+        {/* Notifications */}
+        <Section
+          title="Notifications"
+          subtitle="Choose what AmyNest sends you"
+          icon="mail-unread-outline"
+          colors={colors}
+        >
+          <View style={styles.toggleRow}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+              <Text style={[styles.toggleLabel, { color: colors.foreground }]}>Weekly recap email</Text>
+              <Text style={[styles.toggleHint, { color: colors.mutedForeground }]}>
+                Every Sunday morning — a quick summary of routines, moments, and one thing to try next week.
+              </Text>
+            </View>
+            <Switch
+              value={notifPrefs?.emailNotificationsEnabled ?? true}
+              onValueChange={(v) => {
+                Haptics.selectionAsync();
+                togglePrefMut.mutate(v);
+              }}
+              disabled={togglePrefMut.isPending}
+              trackColor={{ false: colors.border, true: colors.primary }}
+              thumbColor="#fff"
+            />
+          </View>
+          <TouchableOpacity
+            onPress={handleSendRecapNow}
+            disabled={sendingRecap}
+            style={[styles.smallActionBtn, { borderColor: colors.border, opacity: sendingRecap ? 0.6 : 1 }]}
+          >
+            {sendingRecap ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Ionicons name="send-outline" size={14} color={colors.primary} />
+            )}
+            <Text style={[styles.smallActionText, { color: colors.primary }]}>
+              {sendingRecap ? "Sending…" : "Send me one now"}
+            </Text>
+          </TouchableOpacity>
+          {notifPrefs?.lastWeeklyRecapSentAt ? (
+            <Text style={[styles.hint, { color: colors.mutedForeground, marginTop: 4 }]}>
+              Last recap sent {new Date(notifPrefs.lastWeeklyRecapSentAt).toLocaleDateString()}.
+            </Text>
+          ) : null}
+        </Section>
+
         {/* Invite & Earn */}
         <TouchableOpacity
           style={[styles.logoutBtn, { backgroundColor: "#A855F715", borderColor: "#A855F755" }]}
@@ -667,6 +778,14 @@ const styles = StyleSheet.create({
 
   label: { fontSize: 12, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.5 },
   hint: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
+  toggleRow: { flexDirection: "row", alignItems: "center", paddingVertical: 4 },
+  toggleLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
+  toggleHint: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 4, lineHeight: 16 },
+  smallActionBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+    paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, marginTop: 4,
+  },
+  smallActionText: { fontSize: 13, fontFamily: "Inter_600SemiBold" },
 
   input: {
     height: 44, borderRadius: 12, borderWidth: 1.5,

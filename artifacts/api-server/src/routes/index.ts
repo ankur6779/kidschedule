@@ -19,6 +19,7 @@ import featuresRouter from "./features";
 import mealsRouter from "./meals";
 import accountRouter from "./account";
 import pushRouter from "./push";
+import notificationsRouter from "./notifications";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -48,5 +49,6 @@ router.use(featuresRouter);
 router.use(mealsRouter);
 router.use(accountRouter);
 router.use(pushRouter);
+router.use(notificationsRouter);
 
 export default router;

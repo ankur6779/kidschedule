@@ -1,4 +1,4 @@
-import { pgTable, text, serial, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, timestamp, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -16,6 +16,8 @@ export const parentProfilesTable = pgTable("parent_profiles", {
   foodType: text("food_type").notNull().default("non_veg"),
   allergies: text("allergies"),
   region: text("region").notNull().default("pan_indian"),
+  emailNotificationsEnabled: boolean("email_notifications_enabled").notNull().default(true),
+  lastWeeklyRecapSentAt: timestamp("last_weekly_recap_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
