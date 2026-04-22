@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
 } from "react-native";
 import { useSignIn, useOAuth } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
+import * as AuthSession from "expo-auth-session";
 import { Link, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,9 +18,16 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 WebBrowser.maybeCompleteAuthSession();
 
-
+function useWarmUpBrowser() {
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+    void WebBrowser.warmUpAsync();
+    return () => { void WebBrowser.coolDownAsync(); };
+  }, []);
+}
 
 export default function SignInScreen() {
+  useWarmUpBrowser();
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
   const router = useRouter();
@@ -56,7 +64,8 @@ export default function SignInScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setGoogleLoading(true);
     try {
-      const { createdSessionId, setActive: oauthSetActive } = await startOAuthFlow();
+      const redirectUrl = AuthSession.makeRedirectUri({ scheme: "amynest-mobile", path: "oauth-callback" });
+      const { createdSessionId, setActive: oauthSetActive } = await startOAuthFlow({ redirectUrl });
       if (createdSessionId && oauthSetActive) {
         await oauthSetActive({ session: createdSessionId });
         router.replace("/(tabs)");
