@@ -363,6 +363,27 @@ export default function HubScreen() {
             </LinearGradient>
           </Pressable>
 
+          {/* Rewards Shop entry */}
+          <Pressable
+            onPress={() => router.push("/rewards" as never)}
+            style={{ borderRadius: 14, overflow: "hidden", marginTop: 8 }}
+          >
+            <LinearGradient
+              colors={["#f59e0b", "#ec4899"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 14 }}
+            >
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+                <Ionicons name="gift" size={20} color="#fff" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ color: "#fff", fontWeight: "800", fontSize: 14 }}>Rewards Shop</Text>
+                <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 11.5, marginTop: 2 }}>Spend points on real-world treats</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+            </LinearGradient>
+          </Pressable>
+
           {/* Audio Lessons entry */}
           <Pressable
             onPress={() => router.push("/audio-lessons" as never)}

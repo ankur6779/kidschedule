@@ -1,6 +1,7 @@
 // Gaming Reward — AsyncStorage port of the web lib/games.ts
 // All functions are async because AsyncStorage is async.
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { mutatePoints, getTotalPoints as getPointsShared, withPointsLock } from "./rewardsStorage";
 
 export type GameCategory =
   | "brain" | "memory" | "math" | "focus" | "creativity" | "behavior" | "action";
@@ -57,12 +58,10 @@ const KEY_SKILLS   = "amynest_skill_progress_v1";
 const DAILY_LIMIT  = 3;
 
 // ── Points ──────────────────────────────────────────────────
+// Reads/writes are serialized by the shared lock in `rewardsStorage` so concurrent
+// game unlocks, plays, and redemptions can't lose updates to the shared balance.
 export async function getTotalPoints(): Promise<number> {
-  const v = await AsyncStorage.getItem(KEY_POINTS);
-  return parseInt(v ?? "0", 10) || 0;
-}
-async function setPoints(n: number) {
-  await AsyncStorage.setItem(KEY_POINTS, String(n));
+  return getPointsShared();
 }
 
 // ── Unlocked games ──────────────────────────────────────────
@@ -75,13 +74,22 @@ export async function isUnlocked(id: string): Promise<boolean> {
 export async function unlockGame(id: string): Promise<{ ok: boolean; reason?: string }> {
   const game = GAMES.find(g => g.id === id);
   if (!game) return { ok: false, reason: "Game not found." };
-  const unlocked = await getUnlocked();
-  if (unlocked.includes(id)) return { ok: true };
-  const pts = await getTotalPoints();
-  if (pts < game.unlockCost) return { ok: false, reason: `You need ${game.unlockCost} pts (have ${pts}).` };
-  await setPoints(pts - game.unlockCost);
-  await AsyncStorage.setItem(KEY_UNLOCKED, JSON.stringify([...unlocked, id]));
-  return { ok: true };
+  // Run the entire check-and-act (read points, read unlocked list, charge,
+  // append unlocked id) inside the shared points lock so concurrent unlock
+  // calls — for the same id or different ids — can never double-charge or
+  // clobber the unlocked list.
+  return withPointsLock(async () => {
+    const unlocked = await getUnlocked();
+    if (unlocked.includes(id)) return { ok: true }; // idempotent: already unlocked, no charge
+    const ptsRaw = await AsyncStorage.getItem(KEY_POINTS);
+    const pts = parseInt(ptsRaw ?? "0", 10) || 0;
+    if (pts < game.unlockCost) {
+      return { ok: false, reason: `You need ${game.unlockCost} pts (have ${pts}).` };
+    }
+    await AsyncStorage.setItem(KEY_POINTS, String(pts - game.unlockCost));
+    await AsyncStorage.setItem(KEY_UNLOCKED, JSON.stringify([...unlocked, id]));
+    return { ok: true };
+  });
 }
 
 // ── Play log / daily limit ───────────────────────────────────
@@ -108,8 +116,7 @@ export async function recordPlay(id: string, score: number, total: number, perfe
   log.unshift({ id, date: new Date().toISOString(), pointsEarned, perfect, score: safeScore, total: safeTotal });
   await AsyncStorage.setItem(KEY_PLAYS, JSON.stringify(log.slice(0, 200)));
 
-  const pts = await getTotalPoints();
-  await setPoints(pts + pointsEarned);
+  await mutatePoints((pts) => pts + pointsEarned);
 
   // Skill tracking
   const game = GAMES.find(g => g.id === id);

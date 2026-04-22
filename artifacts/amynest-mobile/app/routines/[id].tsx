@@ -27,6 +27,12 @@ import SwipeableCard from "@/components/SwipeableCard";
 import RoutineItemModal from "@/components/RoutineItemModal";
 import colors, { brand, brandAlpha } from "@/constants/colors";
 import { useColors } from "@/hooks/useColors";
+import VoiceSettingsPanel, {
+  VOICE_KEY,
+  loadVoiceSettings,
+  saveVoiceSettings,
+  type VoiceSettings,
+} from "@/components/VoiceSettingsPanel";
 
 type ItemStatus = "pending" | "completed" | "skipped" | "delayed";
 
@@ -509,32 +515,40 @@ export default function RoutineDetailScreen() {
   };
 
   // ─── Read-aloud current activity (TTS) ────────────────────────────
-  const VOICE_KEY = "amynest.voice_settings.v1";
-  const [voiceOn, setVoiceOn] = useState(false);
-  const [voiceLang, setVoiceLang] = useState<"en-IN" | "hi-IN">("en-IN");
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
+    enabled: false, lang: "en-IN", gender: "female", voiceName: null,
+  });
+  const [voicePanelOpen, setVoicePanelOpen] = useState(false);
+  const voiceOn = voiceSettings.enabled;
+  const voiceLang = voiceSettings.lang;
   const announcedRef = useRef<string>("");
 
   useEffect(() => {
-    AsyncStorage.getItem(VOICE_KEY).then((raw) => {
-      if (!raw) return;
-      try {
-        const v = JSON.parse(raw);
-        if (typeof v.enabled === "boolean") setVoiceOn(v.enabled);
-        if (v.lang === "hi-IN" || v.lang === "en-IN") setVoiceLang(v.lang);
-      } catch {/* ignore */}
+    loadVoiceSettings().then(setVoiceSettings).catch(() => {});
+  }, []);
+
+  const updateVoiceSettings = useCallback((next: VoiceSettings) => {
+    setVoiceSettings((prev) => {
+      if (prev.enabled && !next.enabled) Speech.stop();
+      return next;
     });
   }, []);
 
   const toggleVoice = useCallback(() => {
-    Haptics.selectionAsync();
-    setVoiceOn((prev) => {
-      const next = !prev;
-      AsyncStorage.setItem(VOICE_KEY, JSON.stringify({ enabled: next, lang: voiceLang })).catch(() => {});
-      if (!next) Speech.stop();
-      showToast(next ? "🔊 Read-aloud on" : "🔇 Read-aloud off", "info");
+    Haptics.selectionAsync().catch(() => {});
+    setVoiceSettings((prev) => {
+      const next = { ...prev, enabled: !prev.enabled };
+      void saveVoiceSettings(next);
+      if (!next.enabled) Speech.stop();
+      showToast(next.enabled ? "🔊 Read-aloud on" : "🔇 Read-aloud off", "info");
       return next;
     });
-  }, [voiceLang]);
+  }, []);
+
+  const openVoicePanel = useCallback(() => {
+    Haptics.selectionAsync().catch(() => {});
+    setVoicePanelOpen(true);
+  }, []);
 
   useEffect(() => {
     return () => { Speech.stop(); };
@@ -579,9 +593,14 @@ export default function RoutineDetailScreen() {
       : `Hey ${childName}, time for ${current.activity}!`;
     try {
       Speech.stop();
-      Speech.speak(msg, { language: voiceLang, pitch: 1.0, rate: 0.9 });
+      Speech.speak(msg, {
+        language: voiceLang,
+        voice: voiceSettings.voiceName ?? undefined,
+        pitch: 1.0,
+        rate: 0.9,
+      });
     } catch {/* ignore */}
-  }, [voiceOn, voiceLang, nowTick, items, dateMode, routine?.childName]);
+  }, [voiceOn, voiceLang, voiceSettings.voiceName, nowTick, items, dateMode, routine?.childName]);
 
   const lastPersistedRef = useRef<string>("");
   useEffect(() => {
@@ -613,12 +632,22 @@ export default function RoutineDetailScreen() {
         <View style={{ flex: 1, alignItems: "center" }}>
           <Text style={[styles.headerTitle, { color: c.foreground }]} numberOfLines={1}>Routine</Text>
         </View>
-        <TouchableOpacity onPress={toggleVoice} style={styles.headerBtn} activeOpacity={0.7} testID="voice-toggle">
+        <TouchableOpacity
+          onPress={toggleVoice}
+          onLongPress={openVoicePanel}
+          delayLongPress={250}
+          style={styles.headerBtn}
+          activeOpacity={0.7}
+          testID="voice-toggle"
+        >
           <Ionicons
             name={voiceOn ? "volume-high" : "volume-mute"}
             size={20}
             color={voiceOn ? brand.violet400 : c.foreground}
           />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={openVoicePanel} style={styles.headerBtn} activeOpacity={0.7} testID="voice-settings">
+          <Ionicons name="settings-outline" size={18} color={voiceOn ? brand.violet400 : c.foreground} />
         </TouchableOpacity>
         <TouchableOpacity onPress={shareRoutine} style={styles.headerBtn} activeOpacity={0.7}>
           <Ionicons name="share-outline" size={20} color={c.foreground} />
@@ -1043,6 +1072,13 @@ export default function RoutineDetailScreen() {
           </BlurView>
         </View>
       )}
+
+      <VoiceSettingsPanel
+        visible={voicePanelOpen}
+        onClose={() => setVoicePanelOpen(false)}
+        settings={voiceSettings}
+        onChange={updateVoiceSettings}
+      />
     </View>
   );
 }
