@@ -1,0 +1,145 @@
+Add an “Amy AI Event Generator” inside the “Event Prep (School Ready)” section in my app "AmyNest" (Web + Mobile).
+
+IMPORTANT:
+- Generate dynamic fancy dress ideas based on user input
+- Use lightweight rule-based + template system (no heavy API required)
+- Keep output simple, practical, and low-cost
+
+--------------------------------
+1. USER INPUT FORM
+--------------------------------
+
+Ask user:
+
+- Event Type:
+  (Independence Day / Fancy Dress / Annual Day / etc.)
+
+- Child Age:
+  (2–5 / 6–10 / 10+)
+
+- Time Available:
+  (15 min / 30 min / 1 hour)
+
+- Budget:
+  (Low / Medium)
+
+--------------------------------
+2. AI GENERATION LOGIC 🧠🔥
+--------------------------------
+
+Based on inputs:
+
+(A) Event Type → choose character category  
+(B) Age → simplify or enhance  
+(C) Time → filter complexity  
+(D) Budget → choose materials  
+
+--------------------------------
+3. OUTPUT STRUCTURE 🎯
+--------------------------------
+
+Return:
+
+- Character Suggestion
+- Dress Idea (simple)
+- Materials List
+- Step-by-step Instructions
+- Time Required
+- Difficulty Level
+- Speech (2–3 lines)
+
+--------------------------------
+4. EXAMPLE OUTPUT
+--------------------------------
+
+Character: Mahatma Gandhi  
+
+Materials:
+- White cloth  
+- Glasses  
+
+Steps:
+- Wrap cloth  
+- Add glasses  
+
+Speech:
+“I am Mahatma Gandhi. I believe in truth.”
+
+--------------------------------
+5. TEMPLATE SYSTEM (IMPORTANT 🔥)
+--------------------------------
+
+Create templates like:
+
+Template 1 (Easy):
+- Clothes + 1–2 props  
+
+Template 2 (Medium):
+- Clothes + DIY craft  
+
+--------------------------------
+6. LAST-MINUTE MODE ⚡
+--------------------------------
+
+If time = 15 min:
+
+→ Only show:
+- Super easy ideas  
+- Minimal materials  
+
+--------------------------------
+7. AMY AI PERSONALITY 🤖
+--------------------------------
+
+Tone:
+
+“Don’t worry ❤️  
+Here’s a simple idea you can make quickly!”
+
+--------------------------------
+8. UI IMPLEMENTATION 🎨
+--------------------------------
+
+- Show result in card format
+- Highlight:
+  - Time
+  - Difficulty
+
+--------------------------------
+9. AUDIO FEATURE 🔊
+--------------------------------
+
+- Add “Play Speech” button
+- Use TTS for speech
+
+--------------------------------
+10. FALLBACK SYSTEM
+--------------------------------
+
+If no match:
+
+→ Show:
+- 3 general easy ideas  
+
+--------------------------------
+11. PERFORMANCE
+--------------------------------
+
+- No API calls
+- Use predefined templates
+- Fast response
+
+--------------------------------
+12. KEEP IT SIMPLE
+--------------------------------
+
+- Avoid complex costumes
+- Focus on practicality
+
+--------------------------------
+Return:
+Working Amy AI Event Generator with:
+- Input-based customization
+- Dynamic output
+- Speech + steps
+- Premium UI

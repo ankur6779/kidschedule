@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { OlympiadZone } from "@/components/olympiad-zone";
 import { SmartStudyZone } from "@/components/smart-study-zone";
+import { EventPrepCard } from "@/components/event-prep-card";
 import { LifeSkillsZone } from "@/components/life-skills-zone";
 import { getAgeGroup, getAgeGroupInfo } from "@/lib/age-groups";
 import { InfantMode, type InfantShowOnly } from "@/components/infant-mode";
@@ -528,6 +529,20 @@ export default function ParentingHub() {
             onOpen={() => hubUsage.markBlockUsed("smart_study")}
           >
             <SmartStudyZone />
+          </HubSection>
+        )}
+
+        {/* 🎉 Event Prep — fancy dress + speech generator + DIY guide */}
+        {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 14 && (
+          <HubSection
+            id="event-prep"
+            icon={<Sparkles className="h-5 w-5 text-pink-600" />}
+            title="🎉 Event Prep (School Ready)"
+            description="Fancy dress, DIY guide & speeches for school events"
+            accentClass="bg-gradient-to-br from-pink-100 dark:from-pink-500/20 to-orange-100 dark:to-orange-500/20"
+            onOpen={() => hubUsage.markBlockUsed("event_prep")}
+          >
+            <EventPrepCard />
           </HubSection>
         )}
 
