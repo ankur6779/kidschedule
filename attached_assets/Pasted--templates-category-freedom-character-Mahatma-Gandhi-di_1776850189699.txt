@@ -1,0 +1,180 @@
+{
+  "templates": [
+    {
+      "category": "freedom",
+      "character": "Mahatma Gandhi",
+      "difficulty": "easy",
+      "time": "15-20",
+      "materials": ["White cloth", "Round glasses", "Stick"],
+      "steps": [
+        "Wrap white cloth like dhoti",
+        "Add glasses",
+        "Hold stick"
+      ],
+      "speech": "I am Mahatma Gandhi. I believe in truth and non-violence."
+    },
+    {
+      "category": "freedom",
+      "character": "Jawaharlal Nehru",
+      "difficulty": "easy",
+      "time": "10-15",
+      "materials": ["Nehru jacket", "Red rose"],
+      "steps": [
+        "Wear Nehru jacket",
+        "Add red rose",
+        "Style hair"
+      ],
+      "speech": "I am Jawaharlal Nehru. Children are the future of India."
+    },
+    {
+      "category": "profession",
+      "character": "Doctor",
+      "difficulty": "easy",
+      "time": "10-15",
+      "materials": ["White coat", "Toy stethoscope"],
+      "steps": [
+        "Wear white coat",
+        "Add stethoscope"
+      ],
+      "speech": "I am a doctor. I help people stay healthy."
+    },
+    {
+      "category": "profession",
+      "character": "Teacher",
+      "difficulty": "easy",
+      "time": "10-15",
+      "materials": ["Formal clothes", "Book"],
+      "steps": [
+        "Wear formal clothes",
+        "Hold a book"
+      ],
+      "speech": "I am a teacher. I help students learn."
+    },
+    {
+      "category": "animal",
+      "character": "Lion",
+      "difficulty": "medium",
+      "time": "25-30",
+      "materials": ["Brown clothes", "Paper mane"],
+      "steps": [
+        "Wear brown clothes",
+        "Attach paper mane"
+      ],
+      "speech": "I am a lion. I am the king of the jungle."
+    },
+    {
+      "category": "animal",
+      "character": "Peacock",
+      "difficulty": "medium",
+      "time": "30",
+      "materials": ["Blue dress", "Paper feathers"],
+      "steps": [
+        "Wear blue dress",
+        "Attach feathers"
+      ],
+      "speech": "I am a peacock. I am the national bird of India."
+    },
+    {
+      "category": "nature",
+      "character": "Tree",
+      "difficulty": "medium",
+      "time": "30",
+      "materials": ["Green paper", "Brown clothes"],
+      "steps": [
+        "Wear brown clothes",
+        "Attach green leaves"
+      ],
+      "speech": "I am a tree. I give oxygen and protect nature."
+    },
+    {
+      "category": "nature",
+      "character": "Sun",
+      "difficulty": "easy",
+      "time": "15-20",
+      "materials": ["Yellow clothes", "Paper rays"],
+      "steps": [
+        "Wear yellow clothes",
+        "Attach rays"
+      ],
+      "speech": "I am the sun. I give light and energy."
+    },
+    {
+      "category": "community",
+      "character": "Traffic Police",
+      "difficulty": "easy",
+      "time": "15",
+      "materials": ["White shirt", "Cap", "Whistle"],
+      "steps": [
+        "Wear white shirt",
+        "Add cap",
+        "Use whistle"
+      ],
+      "speech": "I am a traffic police officer. I help manage traffic."
+    },
+    {
+      "category": "community",
+      "character": "Farmer",
+      "difficulty": "easy",
+      "time": "15",
+      "materials": ["Kurta", "Scarf", "Basket"],
+      "steps": [
+        "Wear kurta",
+        "Add scarf",
+        "Carry basket"
+      ],
+      "speech": "I am a farmer. I grow food for everyone."
+    },
+
+    {
+      "category": "mythology",
+      "character": "Krishna",
+      "difficulty": "medium",
+      "time": "30",
+      "materials": ["Yellow dhoti", "Flute", "Peacock feather"],
+      "steps": [
+        "Wear dhoti",
+        "Add feather",
+        "Hold flute"
+      ],
+      "speech": "I am Lord Krishna. I spread love and joy."
+    },
+    {
+      "category": "mythology",
+      "character": "Shiva",
+      "difficulty": "medium",
+      "time": "30",
+      "materials": ["Tiger print cloth", "Trishul", "Ash makeup"],
+      "steps": [
+        "Wear cloth",
+        "Apply ash makeup",
+        "Hold trishul"
+      ],
+      "speech": "I am Lord Shiva. I destroy evil."
+    },
+
+    {
+      "category": "science",
+      "character": "Scientist",
+      "difficulty": "easy",
+      "time": "15",
+      "materials": ["Lab coat", "Glasses"],
+      "steps": [
+        "Wear lab coat",
+        "Add glasses"
+      ],
+      "speech": "I am a scientist. I discover new things."
+    },
+    {
+      "category": "science",
+      "character": "Astronaut",
+      "difficulty": "medium",
+      "time": "30",
+      "materials": ["White suit", "Helmet (DIY)"],
+      "steps": [
+        "Wear white clothes",
+        "Make helmet using plastic"
+      ],
+      "speech": "I am an astronaut. I travel to space."
+    }
+  ]
+}

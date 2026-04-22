@@ -9,9 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ArrowLeft, Volume2, VolumeX, Clock, Sparkles, Zap, Filter, ChevronRight,
+  ArrowLeft, Volume2, VolumeX, Clock, Sparkles, Zap, Filter, ChevronRight, Wand2,
 } from "lucide-react";
 import { speak, stopSpeaking, ttsAvailable } from "@/lib/study-tts";
+import { EventPrepGenerator } from "@/components/event-prep-generator";
 
 type Child = { id: number; name: string; age: number; ageMonths?: number };
 
@@ -19,6 +20,7 @@ type View =
   | { kind: "child-pick" }
   | { kind: "home"; childId: number }
   | { kind: "category"; childId: number; categoryId: EventCategoryId }
+  | { kind: "generator"; childId: number }
   | { kind: "detail"; childId: number; characterId: string };
 
 export default function EventPrepPage() {
@@ -117,6 +119,25 @@ export default function EventPrepPage() {
           />
         </BackBar>
 
+        {/* ✨ Amy AI Generator entry */}
+        <Card
+          onClick={() => setView({ kind: "generator", childId: child.id })}
+          className="cursor-pointer mt-4 border-purple-300 bg-gradient-to-br from-purple-100 via-pink-100 to-fuchsia-100 dark:from-purple-950/40 dark:via-pink-950/40 dark:to-fuchsia-950/40 hover:border-purple-500 transition"
+        >
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center">
+              <Wand2 className="h-7 w-7" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-lg">✨ Amy AI Event Generator</h3>
+              <p className="text-sm text-muted-foreground">
+                Tell Amy your event, time & budget — get a perfect idea in seconds
+              </p>
+            </div>
+            <ChevronRight className="h-6 w-6 text-purple-700" />
+          </CardContent>
+        </Card>
+
         {/* Last-minute hero */}
         <Card
           onClick={() => {
@@ -156,6 +177,25 @@ export default function EventPrepPage() {
               onOpen={() => { setFilter({}); setView({ kind: "category", childId: child.id, categoryId: cat.id }); }}
             />
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── generator ─────────────────────────────────────────────────────────────
+  if (view.kind === "generator" && child) {
+    return (
+      <div className="container mx-auto p-6 max-w-2xl">
+        <BackBar onBack={() => setView({ kind: "home", childId: child.id })} canBack>
+          <Header
+            title="✨ Amy AI Event Generator"
+            subtitle={`Personalised ideas for ${child.name}`}
+          />
+        </BackBar>
+        <div className="mt-4">
+          <EventPrepGenerator
+            onOpenCharacter={(id) => setView({ kind: "detail", childId: child.id, characterId: id })}
+          />
         </div>
       </div>
     );

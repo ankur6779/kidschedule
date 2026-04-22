@@ -13,6 +13,7 @@ import {
   charactersByCategory, applyFilters, recommendForChild, speechForAge,
   type EventCategory, type EventCharacter, type EventCategoryId, type EventFilter,
 } from "@workspace/event-prep";
+import { EventPrepGeneratorSheet } from "@/components/event-prep-generator-sheet";
 
 type Child = { id: number; name: string; age: number; ageMonths?: number };
 
@@ -36,6 +37,7 @@ export default function EventPrepScreen() {
   const [view, setView] = useState<View0>({ kind: "child-pick" });
   const [filter, setFilter] = useState<EventFilter>({});
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [genOpen, setGenOpen] = useState(false);
 
   React.useEffect(() => {
     if (view.kind === "child-pick" && children.length === 1) {
@@ -126,6 +128,22 @@ export default function EventPrepScreen() {
           <Text style={S.h1}>🎉 Event Prep</Text>
           <Text style={S.sub}>Quick fancy dress, DIY guide & speeches for {child.name}</Text>
 
+          {/* Amy AI Generator entry */}
+          <Pressable onPress={() => setGenOpen(true)} style={S.lastMinHero}>
+            <LinearGradient
+              colors={["#9333ea", "#db2777", "#f97316"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={S.heroGrad}
+            >
+              <View style={S.heroIcon}><Ionicons name="sparkles" size={26} color="#fff" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={S.heroTitle}>✨ Amy AI Generator</Text>
+                <Text style={S.heroSub}>Tell Amy your event, time & budget</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="#fff" />
+            </LinearGradient>
+          </Pressable>
+
           {/* Last-Minute hero */}
           <Pressable
             onPress={() => {
@@ -175,6 +193,12 @@ export default function EventPrepScreen() {
             </Pressable>
           ))}
         </ScrollView>
+
+        <EventPrepGeneratorSheet
+          visible={genOpen}
+          onClose={() => setGenOpen(false)}
+          onOpenCharacter={(id) => setView({ kind: "detail", childId: child.id, characterId: id })}
+        />
       </LinearGradient>
     );
   }
