@@ -25,6 +25,33 @@ import {
 } from "@workspace/api-zod";
 import { generateRuleBasedRoutine, generateRuleBasedInsights, generatePartialRoutine, timeToMins, minsToTime, type AgeGroup } from "../lib/routine-templates.js";
 
+// ─── School-day detection helper ───────────────────────────────────────────
+// Resolves whether the child has school on the given date based on their
+// `schoolDays` config plus an optional explicit override from the request
+// (e.g. parent flagging today as a holiday).
+//
+// Precedence:
+//   1. requestedHasSchool === false  → false (explicit "no school today")
+//   2. child not school-going        → false
+//   3. child has schoolDays config   → check date's ISO weekday is in it
+//   4. legacy / unknown              → assume Mon-Fri (1–5)
+function isSchoolDay(
+  date: string,
+  isSchoolGoing: boolean | null | undefined,
+  schoolDays: number[] | null | undefined,
+  requestedHasSchool: boolean | undefined,
+): boolean {
+  if (requestedHasSchool === false) return false;
+  if (!isSchoolGoing) return false;
+  // ISO weekday: 1 = Mon, 7 = Sun
+  const jsDay = new Date(date + "T00:00:00").getDay(); // 0=Sun..6=Sat
+  const isoWeekday = jsDay === 0 ? 7 : jsDay;
+  const days = Array.isArray(schoolDays) && schoolDays.length > 0
+    ? schoolDays
+    : (schoolDays === null || schoolDays === undefined ? [1, 2, 3, 4, 5] : []);
+  return days.includes(isoWeekday);
+}
+
 // ─── AI Routine Generation helper ──────────────────────────────────────────
 async function generateAiRoutine(params: {
   childName: string;
@@ -66,7 +93,7 @@ Return ONLY valid JSON, no markdown, no explanation.`;
 - Age group: ${ageGroupLabel} (${params.age} years)
 - Date: ${params.date} (${dayOfWeek})
 - School today: ${params.hasSchool ? "Yes" : "No"}
-${params.hasSchool ? `- School: ${params.schoolStartTime} to ${params.schoolEndTime}` : ""}
+${params.hasSchool ? `- School hours: ${params.schoolStartTime} to ${params.schoolEndTime} — HARD CONSTRAINT, see school rules below` : ""}
 - Wake up: ${params.wakeUpTime}
 - Bedtime: ${params.sleepTime}
 - Diet: ${params.foodType === "non_veg" ? "Non-Vegetarian" : "Vegetarian"}
@@ -110,7 +137,18 @@ CRITICAL RULES — follow ALL exactly:
 - The final "Sleep" activity must be placed at ${params.sleepTime}.
 - 12–16 activities covering wake-up to sleep. Include breakfast, lunch, dinner, and at least one snack.
 - Include at least 2 outdoor/play activities and 1–2 family bonding activities.
-- Activities must match the child's age group and mood.`;
+- Activities must match the child's age group and mood.
+${params.hasSchool ? `
+SCHOOL RULES — non-negotiable when "School today: Yes":
+- Insert exactly ONE activity with category "school" that starts at ${params.schoolStartTime} and ends at ${params.schoolEndTime}. Set its duration to the full minutes between those two times.
+- Do NOT schedule ANY other activity (play, study, meal, creative, outdoor, family, rest) overlapping with ${params.schoolStartTime}–${params.schoolEndTime}. The child is at school; they are unavailable.
+- Plan around school: morning prep + breakfast BEFORE ${params.schoolStartTime}; lunch is at school (skip a lunch activity at home, or label it "School lunch / tiffin"); after-school routine begins AFTER ${params.schoolEndTime}.
+- The "school" activity name should be specific (e.g. "School day", "At school", "${params.childClass ? params.childClass + " classes" : "School"}").
+` : `
+NO-SCHOOL RULES — today is a school-free day:
+- Do NOT include any "school" category activity.
+- Use the freed time for play, learning at home, family bonding, outdoor activities, or rest as appropriate to mood and age.
+`}`;
 
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -148,10 +186,77 @@ CRITICAL RULES — follow ALL exactly:
     ? rawItems  // infants use flexible blocks, skip cascade
     : reAnchorToWakeTime(rawItems, params.wakeUpTime, params.sleepTime, params.ageGroup);
 
+  // Deterministic school-block enforcement — guarantees the school constraint
+  // even when the AI ignored / partially ignored the prompt's SCHOOL RULES block.
+  const finalItems = enforceSchoolBlock(
+    anchoredItems,
+    params.hasSchool,
+    params.schoolStartTime,
+    params.schoolEndTime,
+    params.childClass,
+  );
+
   return {
     title: parsed.title,
-    items: anchoredItems,
+    items: finalItems,
   };
+}
+
+// ─── School-block enforcer ─────────────────────────────────────────────────
+// Deterministically guarantees the school-mode contract on the final item list:
+//
+// When hasSchool=true:
+//   - Removes every existing item that overlaps the school window.
+//   - Inserts exactly ONE category="school" item spanning schoolStart→schoolEnd.
+//   - Items strictly before/after the window are preserved (their times are
+//     trusted from the upstream re-anchor pass).
+//
+// When hasSchool=false:
+//   - Strips any category="school" items the AI may have produced.
+//
+// Items remain time-sorted on output. Idempotent.
+function enforceSchoolBlock(
+  items: RoutineItem[],
+  hasSchool: boolean,
+  schoolStartTime: string,
+  schoolEndTime: string,
+  childClass: string | undefined,
+): RoutineItem[] {
+  if (!items.length) return items;
+
+  if (!hasSchool) {
+    // No-school day: strip any "school" category items the AI sneaked in.
+    return items.filter((it) => (it.category ?? "").toLowerCase() !== "school");
+  }
+
+  const schoolStart = timeToMins(schoolStartTime);
+  const schoolEnd = timeToMins(schoolEndTime);
+  // Treat malformed config (end <= start) as a no-op so we never delete the entire day.
+  if (schoolEnd <= schoolStart) return items;
+  const schoolDur = schoolEnd - schoolStart;
+
+  // Drop any item that overlaps [schoolStart, schoolEnd) AND every "school"
+  // item (even outside the window — we'll re-insert a single canonical one).
+  const kept = items.filter((it) => {
+    const t = timeToMins(it.time);
+    const end = t + Math.max(1, it.duration ?? 30);
+    const overlaps = t < schoolEnd && end > schoolStart;
+    const isSchool = (it.category ?? "").toLowerCase() === "school";
+    return !overlaps && !isSchool;
+  });
+
+  const schoolItem: RoutineItem = {
+    time: minsToTime(schoolStart),
+    activity: childClass ? `${childClass} — at school` : "At school",
+    duration: schoolDur,
+    category: "school",
+    notes: "Protected school time — child is unavailable.",
+    status: "pending",
+  };
+
+  // Insert and time-sort. Cross-midnight wrap is not relevant here because
+  // school times are mid-day; standard ascending sort is correct.
+  return [...kept, schoolItem].sort((a, b) => timeToMins(a.time) - timeToMins(b.time));
 }
 
 type RoutineItem = {
@@ -318,7 +423,7 @@ router.post("/routines/generate", featureGate("routine_generate"), async (req, r
     travelMode: child.travelMode === "other" && (child as any).travelModeOther
       ? (child as any).travelModeOther
       : child.travelMode,
-    hasSchool: hasSchool !== false,
+    hasSchool: isSchoolDay(parsed.data.date, child.isSchoolGoing, (child as any).schoolDays, hasSchool),
     mood: mood ?? "normal",
     foodType,
     goals: child.goals,
@@ -417,7 +522,7 @@ router.post("/routines/generate-ai", featureGate("routine_generate"), async (req
       sleepTime: child.sleepTime,
       schoolStartTime: child.schoolStartTime,
       schoolEndTime: child.schoolEndTime,
-      hasSchool: hasSchool !== false,
+      hasSchool: isSchoolDay(parsed.data.date, child.isSchoolGoing, (child as any).schoolDays, hasSchool),
       foodType,
       region,
       mood: mood ?? "normal",
@@ -444,7 +549,7 @@ router.post("/routines/generate-ai", featureGate("routine_generate"), async (req
       schoolStartTime: child.schoolStartTime,
       schoolEndTime: child.schoolEndTime,
       travelMode: child.travelMode,
-      hasSchool: hasSchool !== false,
+      hasSchool: isSchoolDay(parsed.data.date, child.isSchoolGoing, (child as any).schoolDays, hasSchool),
       mood: mood ?? "normal",
       foodType,
       region: region as any,

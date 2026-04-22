@@ -14,6 +14,7 @@ interface ChildData {
   childClass: string;
   schoolStartTime: string;
   schoolEndTime: string;
+  schoolDays: number[] | null; // ISO weekdays (1=Mon..7=Sun); null when not school-going
   wakeUpTime: string;
   sleepTime: string;
   foodType: string;
@@ -37,7 +38,7 @@ interface ChatMessage {
 type Step =
   | "intro"
   | "child-name" | "child-dob" | "child-school" | "child-class"
-  | "child-school-start" | "child-school-end"
+  | "child-school-start" | "child-school-end" | "child-school-days"
   | "child-wake" | "child-sleep"
   | "add-more"
   | "parent-name" | "parent-role" | "parent-work"
@@ -197,7 +198,7 @@ function GridChips({ options, selected, onSelect }: { options: string[]; selecte
 function ProgressBar({ step }: { step: Step }) {
   const order: Step[] = [
     "child-name", "child-dob", "child-school", "child-class",
-    "child-school-start", "child-school-end",
+    "child-school-start", "child-school-end", "child-school-days",
     "child-wake", "child-sleep",
     "add-more", "parent-name", "parent-role", "parent-work",
     "parent-region", "parent-mobile", "parent-allergies",
@@ -299,6 +300,7 @@ export default function OnboardingPage() {
             childClass: child.childClass || "",
             schoolStartTime: child.schoolStartTime || "09:00",
             schoolEndTime: child.schoolEndTime || "15:00",
+            schoolDays: child.isSchoolGoing ? (child.schoolDays ?? [1, 2, 3, 4, 5]) : null,
             wakeUpTime: child.wakeUpTime || "07:00",
             sleepTime: child.sleepTime || "21:00",
             foodType: child.foodType || "veg",
@@ -481,7 +483,7 @@ export default function OnboardingPage() {
                   if (isSchool) {
                     userReplies(opt, "child-class", `Which class is ${curr.name || "your child"} in?`);
                   } else {
-                    setCurr((c) => ({ ...c, childClass: "", schoolStartTime: "09:00", schoolEndTime: "15:00" }));
+                    setCurr((c) => ({ ...c, childClass: "", schoolStartTime: "09:00", schoolEndTime: "15:00", schoolDays: null }));
                     userReplies(opt, "child-wake", `What time does ${curr.name || "your child"} usually wake up? ☀️`);
                   }
                 }}
@@ -527,11 +529,61 @@ export default function OnboardingPage() {
             selected={selected}
             onSelect={(v) => {
               setSelected(v);
-              setCurr((c) => ({ ...c, schoolEndTime: to24h(v) }));
-              userReplies(v, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
+              setCurr((c) => ({ ...c, schoolEndTime: to24h(v), schoolDays: c.schoolDays ?? [1, 2, 3, 4, 5] }));
+              userReplies(v, "child-school-days", `Which days does ${curr.name || "your child"} have school?`);
             }}
           />
         );
+
+      case "child-school-days": {
+        const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const current = curr.schoolDays ?? [1, 2, 3, 4, 5];
+        const toggle = (d: number) => {
+          setCurr((c) => {
+            const cur = c.schoolDays ?? [1, 2, 3, 4, 5];
+            const next = cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d].sort((a, b) => a - b);
+            return { ...c, schoolDays: next };
+          });
+        };
+        return (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {labels.map((label, i) => {
+                const day = i + 1;
+                const on = current.includes(day);
+                return (
+                  <button
+                    key={day}
+                    onClick={() => toggle(day)}
+                    className="px-4 py-2.5 rounded-2xl text-sm font-semibold border active:scale-95 transition-all"
+                    style={{
+                      background: on ? GRAD : "rgba(255,255,255,0.9)",
+                      color: on ? "#fff" : "#1e1b4b",
+                      border: on ? "1px solid transparent" : "1px solid #c7d2fe",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => {
+                const days = curr.schoolDays ?? [1, 2, 3, 4, 5];
+                const summary = days.length === 5 && days.every((d) => d <= 5) ? "Mon–Fri"
+                  : days.length === 0 ? "No school days"
+                  : days.map((d) => labels[d - 1]).join(", ");
+                userReplies(summary, "child-wake", `What time does ${curr.name || "your child"} wake up in the morning? ☀️`);
+              }}
+              className="w-full py-3 rounded-2xl text-white font-semibold active:scale-95 transition-all"
+              style={{ background: GRAD }}
+            >
+              Continue
+            </button>
+          </div>
+        );
+      }
+
 
       case "child-wake":
         return (

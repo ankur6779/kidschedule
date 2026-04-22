@@ -17,7 +17,8 @@ type ChatRole = "amy" | "user";
 type ChatMsg = { id: string; role: ChatRole; text: string };
 type Step =
   | "intro" | "child-name" | "child-dob" | "child-school" | "child-class"
-  | "child-school-start" | "child-school-end" | "child-wake" | "child-sleep"
+  | "child-school-start" | "child-school-end" | "child-school-days"
+  | "child-wake" | "child-sleep"
   | "child-food" | "add-more" | "parent-name" | "parent-role" | "parent-work"
   | "saving" | "save-error" | "done";
 
@@ -25,6 +26,7 @@ type ChildData = {
   name: string; dob: string; age: number; ageMonths: number;
   isSchoolGoing: boolean; childClass: string;
   schoolStartTime: string; schoolEndTime: string;
+  schoolDays: number[] | null; // ISO weekdays (1=Mon..7=Sun); null when not school-going
   wakeUpTime: string; sleepTime: string; foodType: string;
 };
 type ParentData = { name: string; role: string; workType: string };
@@ -134,6 +136,7 @@ export default function OnboardingScreen() {
             childClass: child.childClass || "",
             schoolStartTime: child.schoolStartTime || "09:00",
             schoolEndTime: child.schoolEndTime || "15:00",
+            schoolDays: child.isSchoolGoing ? (child.schoolDays ?? [1, 2, 3, 4, 5]) : null,
             wakeUpTime: child.wakeUpTime || "07:00",
             sleepTime: child.sleepTime || "21:00",
             travelMode: "car",
@@ -368,14 +371,59 @@ export default function OnboardingScreen() {
                 style={[styles.chip, { backgroundColor: selected === t ? PRIMARY : colors.card, borderColor: selected === t ? PRIMARY : colors.border }]}
                 onPress={() => {
                   setSelected(t); Haptics.selectionAsync();
-                  setCurr(c => ({ ...c, schoolEndTime: to24h(t) }));
-                  userReplies(t, "child-wake", `What time does ${curr.name} wake up?`);
+                  setCurr(c => ({ ...c, schoolEndTime: to24h(t), schoolDays: c.schoolDays ?? [1, 2, 3, 4, 5] }));
+                  userReplies(t, "child-school-days", `Which days does ${curr.name} have school?`);
                 }}>
                 <Text style={[styles.chipText, { color: selected === t ? "#fff" : colors.foreground }]}>{t}</Text>
               </TouchableOpacity>
             ))}
           </View>
         );
+
+      case "child-school-days": {
+        const labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const current = curr.schoolDays ?? [1, 2, 3, 4, 5];
+        const toggle = (d: number) => {
+          Haptics.selectionAsync();
+          setCurr(c => {
+            const cur = c.schoolDays ?? [1, 2, 3, 4, 5];
+            const next = cur.includes(d) ? cur.filter(x => x !== d) : [...cur, d].sort((a, b) => a - b);
+            return { ...c, schoolDays: next };
+          });
+        };
+        const summarize = (days: number[]): string => {
+          if (days.length === 5 && days.every(d => d <= 5)) return "Mon–Fri";
+          if (days.length === 0) return "No school days";
+          return days.map(d => labels[d - 1]).join(", ");
+        };
+        return (
+          <View>
+            <View style={styles.chipGrid}>
+              {labels.map((label, i) => {
+                const day = i + 1;
+                const on = current.includes(day);
+                return (
+                  <TouchableOpacity
+                    key={day}
+                    style={[styles.chip, { backgroundColor: on ? PRIMARY : colors.card, borderColor: on ? PRIMARY : colors.border }]}
+                    onPress={() => toggle(day)}>
+                    <Text style={[styles.chipText, { color: on ? "#fff" : colors.foreground }]}>{label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            <TouchableOpacity
+              style={[styles.chip, { backgroundColor: PRIMARY, borderColor: PRIMARY, marginTop: 12, alignSelf: "stretch", alignItems: "center" }]}
+              onPress={() => {
+                const days = curr.schoolDays ?? [1, 2, 3, 4, 5];
+                userReplies(summarize(days), "child-wake", `What time does ${curr.name} wake up?`);
+              }}>
+              <Text style={[styles.chipText, { color: "#fff", fontWeight: "600" }]}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      }
+
 
       case "child-wake":
         return (

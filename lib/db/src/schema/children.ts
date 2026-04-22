@@ -1,4 +1,4 @@
-import { pgTable, text, integer, serial, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, serial, timestamp, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -13,6 +13,10 @@ export const childrenTable = pgTable("children", {
   childClass: text("child_class"),
   schoolStartTime: text("school_start_time").notNull(),
   schoolEndTime: text("school_end_time").notNull(),
+  // Weekday numbers when this child has school. ISO format: 1=Mon … 7=Sun.
+  // null = unknown (legacy rows) — treat as Mon-Fri at the application layer.
+  // Empty array = explicitly no school days (e.g. extended break).
+  schoolDays: jsonb("school_days").$type<number[]>(),
   wakeUpTime: text("wake_up_time").notNull().default("07:00"),
   sleepTime: text("sleep_time").notNull().default("21:00"),
   travelMode: text("travel_mode").notNull().default("car"),

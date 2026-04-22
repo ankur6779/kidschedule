@@ -1277,9 +1277,15 @@ export default function RoutineDetail() {
 
                 {/* Activity Card — click to expand */}
                 <Card
-                  className={`flex-1 min-w-0 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer ${isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}
+                  className={`flex-1 min-w-0 rounded-2xl shadow-sm border-2 overflow-hidden transition-all duration-200 hover:shadow-md cursor-pointer ${item.category === "school" ? "border-indigo-200 bg-indigo-50/40" : isCurrentTask ? "border-primary ring-2 ring-primary/20 shadow-md" : item.category === "bonding" && !statusStyle ? "border-rose-200" : statusStyle || "border-border"}`}
                   onClick={() => editingIndex === null && setExpandedIndex(index)}
                 >
+                  {item.category === "school" && (
+                    <div className="bg-indigo-100/70 border-b border-indigo-200 px-4 py-1.5 flex items-center gap-1.5">
+                      <span className="text-indigo-500 text-xs">🏫</span>
+                      <span className="text-indigo-700 text-xs font-bold">In school — protected time</span>
+                    </div>
+                  )}
                   {item.category === "bonding" && (
                     <div className="bg-rose-50 border-b border-rose-100 px-4 py-1.5 flex items-center gap-1.5">
                       <span className="text-rose-500 text-xs">❤️</span>

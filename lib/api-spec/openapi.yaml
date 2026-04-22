@@ -530,6 +530,13 @@ components:
           type: string
         schoolEndTime:
           type: string
+        schoolDays:
+          type: array
+          nullable: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
         wakeUpTime:
           type: string
         sleepTime:
@@ -587,6 +594,13 @@ components:
           type: string
         schoolEndTime:
           type: string
+        schoolDays:
+          type: array
+          nullable: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
         wakeUpTime:
           type: string
         sleepTime:
@@ -635,6 +649,13 @@ components:
           type: string
         schoolEndTime:
           type: string
+        schoolDays:
+          type: array
+          nullable: true
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
         wakeUpTime:
           type: string
         sleepTime:

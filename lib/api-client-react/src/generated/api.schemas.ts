@@ -19,6 +19,7 @@ export interface Child {
   childClass?: string | null;
   schoolStartTime: string;
   schoolEndTime: string;
+  schoolDays?: number[] | null;
   wakeUpTime: string;
   sleepTime: string;
   travelMode: string;
@@ -39,6 +40,7 @@ export interface CreateChildBody {
   childClass?: string | null;
   schoolStartTime: string;
   schoolEndTime: string;
+  schoolDays?: number[] | null;
   wakeUpTime?: string;
   sleepTime?: string;
   travelMode?: string;
@@ -58,6 +60,7 @@ export interface UpdateChildBody {
   childClass?: string | null;
   schoolStartTime?: string;
   schoolEndTime?: string;
+  schoolDays?: number[] | null;
   wakeUpTime?: string;
   sleepTime?: string;
   travelMode?: string;

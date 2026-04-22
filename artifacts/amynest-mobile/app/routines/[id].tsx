@@ -836,17 +836,26 @@ export default function RoutineDetailScreen() {
                 ]} />
               </View>
               <View style={styles.timelineCard}>
-                <SwipeableCard
-                  onTap={() => handleTap(index)}
-                  onLongPress={() => setActionItem(index)}
-                  onSwipeRight={() => setItemStatus(index, item.status === "completed" ? "pending" : "completed")}
-                  onSwipeLeft={() => setItemStatus(index, item.status === "skipped" ? "pending" : "skipped")}
-                  leftActionMode="skip"
-                  borderRadius={18}
-                  glowColor={item.status === "completed" ? "#22C55E" /* audit-ok: status-complete green glow */ : brand.violet500}
-                >
-                  <ItemCard item={item} seed={index + ((routine?.childId ?? 0) * 7)} />
-                </SwipeableCard>
+                {item.category === "school" ? (
+                  // School blocks are protected time — child is unavailable.
+                  // Tap still opens the detail modal so parents can see notes,
+                  // but no swipe-to-complete / swipe-to-skip handlers are wired.
+                  <TouchableOpacity activeOpacity={0.85} onPress={() => handleTap(index)}>
+                    <ItemCard item={item} seed={index + ((routine?.childId ?? 0) * 7)} />
+                  </TouchableOpacity>
+                ) : (
+                  <SwipeableCard
+                    onTap={() => handleTap(index)}
+                    onLongPress={() => setActionItem(index)}
+                    onSwipeRight={() => setItemStatus(index, item.status === "completed" ? "pending" : "completed")}
+                    onSwipeLeft={() => setItemStatus(index, item.status === "skipped" ? "pending" : "skipped")}
+                    leftActionMode="skip"
+                    borderRadius={18}
+                    glowColor={item.status === "completed" ? "#22C55E" /* audit-ok: status-complete green glow */ : brand.violet500}
+                  >
+                    <ItemCard item={item} seed={index + ((routine?.childId ?? 0) * 7)} />
+                  </SwipeableCard>
+                )}
               </View>
             </Animated.View>
           )}
@@ -1157,8 +1166,10 @@ function ItemCard({ item, seed = 0 }: { item: RoutineItem; seed?: number }) {
   const isDone = status === "completed";
   const isSkipped = status === "skipped";
   const isDelayed = status === "delayed";
+  const isSchool = catKey === "school";
 
-  const borderColor = isDone ? "rgba(16,185,129,0.55)"
+  const borderColor = isSchool ? "rgba(129,140,248,0.45)" /* audit-ok: school protected-time indigo */
+    : isDone ? "rgba(16,185,129,0.55)"
     : isDelayed ? "rgba(245,158,11,0.55)"
     : "rgba(255,255,255,0.10)";
 
@@ -1168,7 +1179,8 @@ function ItemCard({ item, seed = 0 }: { item: RoutineItem; seed?: number }) {
         styles.itemCard,
         {
           borderColor,
-          backgroundColor: isDone ? "rgba(16,185,129,0.12)"
+          backgroundColor: isSchool ? "rgba(99,102,241,0.10)" /* audit-ok: school protected-time tint */
+            : isDone ? "rgba(16,185,129,0.12)"
             : isDelayed ? "rgba(245,158,11,0.12)"
             : c.surfaceCardDark,
           opacity: isSkipped ? 0.5 : 1,
@@ -1196,17 +1208,24 @@ function ItemCard({ item, seed = 0 }: { item: RoutineItem; seed?: number }) {
         {isSkipped && item.skipReason && <Text style={[styles.skipReason, { color: c.textDim }]} numberOfLines={1}>⏭ {item.skipReason}</Text>}
         {isDelayed && <Text style={styles.delayedTag}>⏱ Delayed</Text>}
       </View>
-      <View style={[
-        styles.checkBox,
-        isDone && { backgroundColor: "#10B981" /* audit-ok: status-complete green */, borderColor: "#10B981" /* audit-ok */ },
-        isSkipped && { borderColor: "rgba(255,255,255,0.25)", borderStyle: "dashed" },
-        isDelayed && { borderColor: "#F59E0B" /* audit-ok: status-delayed amber */ },
-      ]}>
-        {isDone && <Ionicons name="checkmark" size={14} color="#fff" />}
-        {isSkipped && <Ionicons name="play-skip-forward" size={11} color="rgba(255,255,255,0.5)" />}
-        {/* audit-ok: semantic delay-amber time icon in checkBox */}
-        {isDelayed && <Ionicons name="time" size={12} color="#F59E0B" />}
-      </View>
+      {isSchool ? (
+        // School time is protected — no checkbox, just a labelled icon
+        <View style={[styles.checkBox, { borderColor: "rgba(129,140,248,0.55)" /* audit-ok: school indigo */, backgroundColor: "rgba(99,102,241,0.18)" /* audit-ok */ }]}>
+          <Ionicons name="school-outline" size={14} color="#A5B4FC" /* audit-ok: school indigo-300 */ />
+        </View>
+      ) : (
+        <View style={[
+          styles.checkBox,
+          isDone && { backgroundColor: "#10B981" /* audit-ok: status-complete green */, borderColor: "#10B981" /* audit-ok */ },
+          isSkipped && { borderColor: "rgba(255,255,255,0.25)", borderStyle: "dashed" },
+          isDelayed && { borderColor: "#F59E0B" /* audit-ok: status-delayed amber */ },
+        ]}>
+          {isDone && <Ionicons name="checkmark" size={14} color="#fff" />}
+          {isSkipped && <Ionicons name="play-skip-forward" size={11} color="rgba(255,255,255,0.5)" />}
+          {/* audit-ok: semantic delay-amber time icon in checkBox */}
+          {isDelayed && <Ionicons name="time" size={12} color="#F59E0B" />}
+        </View>
+      )}
     </View>
   );
 }

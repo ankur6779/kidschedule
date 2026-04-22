@@ -17,6 +17,8 @@ export const HealthCheckResponse = zod.object({
 /**
  * @summary List all children profiles
  */
+export const listChildrenResponseSchoolDaysItemMax = 7;
+
 export const ListChildrenResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
@@ -27,6 +29,9 @@ export const ListChildrenResponseItem = zod.object({
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  schoolDays: zod
+    .array(zod.number().min(1).max(listChildrenResponseSchoolDaysItemMax))
+    .nullish(),
   wakeUpTime: zod.string(),
   sleepTime: zod.string(),
   travelMode: zod.string(),
@@ -42,6 +47,8 @@ export const ListChildrenResponse = zod.array(ListChildrenResponseItem);
 /**
  * @summary Create a child profile
  */
+export const createChildBodySchoolDaysItemMax = 7;
+
 export const CreateChildBody = zod.object({
   name: zod.string(),
   dob: zod.string().nullish(),
@@ -51,6 +58,9 @@ export const CreateChildBody = zod.object({
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  schoolDays: zod
+    .array(zod.number().min(1).max(createChildBodySchoolDaysItemMax))
+    .nullish(),
   wakeUpTime: zod.string().optional(),
   sleepTime: zod.string().optional(),
   travelMode: zod.string().optional(),
@@ -68,6 +78,8 @@ export const GetChildParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const getChildResponseSchoolDaysItemMax = 7;
+
 export const GetChildResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
@@ -78,6 +90,9 @@ export const GetChildResponse = zod.object({
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  schoolDays: zod
+    .array(zod.number().min(1).max(getChildResponseSchoolDaysItemMax))
+    .nullish(),
   wakeUpTime: zod.string(),
   sleepTime: zod.string(),
   travelMode: zod.string(),
@@ -96,6 +111,8 @@ export const UpdateChildParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const updateChildBodySchoolDaysItemMax = 7;
+
 export const UpdateChildBody = zod.object({
   name: zod.string().optional(),
   dob: zod.string().nullish(),
@@ -105,6 +122,9 @@ export const UpdateChildBody = zod.object({
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string().optional(),
   schoolEndTime: zod.string().optional(),
+  schoolDays: zod
+    .array(zod.number().min(1).max(updateChildBodySchoolDaysItemMax))
+    .nullish(),
   wakeUpTime: zod.string().optional(),
   sleepTime: zod.string().optional(),
   travelMode: zod.string().optional(),
@@ -114,6 +134,8 @@ export const UpdateChildBody = zod.object({
   babysitterId: zod.number().nullish(),
   photoUrl: zod.string().nullish(),
 });
+
+export const updateChildResponseSchoolDaysItemMax = 7;
 
 export const UpdateChildResponse = zod.object({
   id: zod.number(),
@@ -125,6 +147,9 @@ export const UpdateChildResponse = zod.object({
   childClass: zod.string().nullish(),
   schoolStartTime: zod.string(),
   schoolEndTime: zod.string(),
+  schoolDays: zod
+    .array(zod.number().min(1).max(updateChildResponseSchoolDaysItemMax))
+    .nullish(),
   wakeUpTime: zod.string(),
   sleepTime: zod.string(),
   travelMode: zod.string(),
