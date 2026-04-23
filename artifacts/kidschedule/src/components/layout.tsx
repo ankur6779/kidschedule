@@ -110,8 +110,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
-      {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b bg-background px-4 md:hidden shadow-sm">
+      {/* Mobile Header — fixed so it never duplicates on Android Chrome */}
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-20 w-full items-center justify-between border-b bg-background px-4 md:hidden shadow-sm">
         <div className="flex items-center gap-2">
           <BrandLogo size="sm" showTagline={true} />
           <AmyIcon size={34} bounce ring />
@@ -189,6 +189,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Sheet>
         </div>
       </header>
+
+      {/* Spacer pushes content below the fixed mobile header */}
+      <div className="h-20 md:hidden" aria-hidden="true" />
 
       <div className="flex flex-1">
         {/* Desktop Sidebar */}
