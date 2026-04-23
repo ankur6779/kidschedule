@@ -59,20 +59,27 @@ function ThemeToggleRow({ onToggle }: { onToggle?: () => void }) {
   );
 }
 
-const NAV_ITEMS = [
-  { href: "/dashboard",     labelKey: "nav.dashboard",     icon: Home },
-  { href: "/parenting-hub", labelKey: "nav.parenting_hub", icon: BookOpen },
-  { href: "/amy-coach",     labelKey: "nav.amy_coach",     icon: Brain },
-  { href: "/children",      labelKey: "nav.children",      icon: Users },
-  { href: "/routines",      labelKey: "nav.routines",      icon: Calendar },
-  { href: "/progress",      labelKey: "nav.progress",      icon: TrendingUp },
-  { href: "/behavior",      labelKey: "nav.behavior",      icon: Star },
-  { href: "/assistant",     labelKey: "nav.amy_ai",        icon: Bot },
-  { href: "/games",         labelKey: "nav.games",         icon: Gamepad2 },
-  { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
-  { href: "/kids-control-center", labelKey: "nav.kids_control_center", icon: Baby },
-  { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
-  { href: "/referrals",     labelKey: "nav.referrals",     icon: Gift },
+type NavItem = {
+  href: string;
+  labelKey: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/dashboard",           labelKey: "nav.dashboard",           icon: Home },
+  { href: "/parenting-hub",       labelKey: "nav.parenting_hub",       icon: BookOpen },
+  { href: "/amy-coach",           labelKey: "nav.amy_coach",           icon: Brain },
+  { href: "/kids-control-center", labelKey: "nav.kids_control_center", icon: Baby, badge: "Soon 🚀" },
+  { href: "/children",            labelKey: "nav.children",            icon: Users },
+  { href: "/routines",            labelKey: "nav.routines",            icon: Calendar },
+  { href: "/progress",            labelKey: "nav.progress",            icon: TrendingUp },
+  { href: "/behavior",            labelKey: "nav.behavior",            icon: Star },
+  { href: "/assistant",           labelKey: "nav.amy_ai",              icon: Bot },
+  { href: "/games",               labelKey: "nav.games",               icon: Gamepad2 },
+  { href: "/parent-profile",      labelKey: "nav.profile",             icon: UserCircle },
+  { href: "/pricing",             labelKey: "nav.pricing",             icon: Sparkles },
+  { href: "/referrals",           labelKey: "nav.referrals",           icon: Gift },
 ];
 
 const BOTTOM_NAV_ITEMS = [
@@ -104,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-background">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md md:hidden shadow-sm">
+      <header className="sticky top-0 z-40 flex h-20 w-full items-center justify-between border-b bg-background px-4 md:hidden shadow-sm">
         <div className="flex items-center gap-2">
           <BrandLogo size="sm" showTagline={true} />
           <AmyIcon size={34} bounce ring />
@@ -140,21 +147,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
             {/* Nav items — scrollable */}
             <nav className="flex-1 overflow-y-auto px-4 py-2 flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={closeSidebar}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
-                    location === item.href || location.startsWith(item.href)
-                      ? "bg-primary text-primary-foreground font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <item.icon className="h-5 w-5" />
-                  {t(item.labelKey)}
-                </Link>
-              ))}
+              {NAV_ITEMS.map((item) => {
+                const isActive = location === item.href || location.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeSidebar}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground font-medium"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    <span className="flex-1 truncate">{t(item.labelKey)}</span>
+                    {item.badge && (
+                      <span className="shrink-0 inline-flex items-center rounded-full bg-gradient-to-r from-violet-500 to-pink-500 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
               <div className="mt-2 pt-2 border-t">
                 <ThemeToggleRow onToggle={closeSidebar} />
               </div>
@@ -186,20 +201,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <LanguageSwitcher />
           </div>
           <nav className="flex flex-1 flex-col gap-1 p-4">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-                  location === item.href || location.startsWith(item.href)
-                    ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                <item.icon className="h-5 w-5" />
-                {t(item.labelKey)}
-              </Link>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isActive = location === item.href || location.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+                    isActive
+                      ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <item.icon className="h-5 w-5 shrink-0" />
+                  <span className="flex-1 truncate">{t(item.labelKey)}</span>
+                  {item.badge && (
+                    <span className="shrink-0 inline-flex items-center rounded-full bg-gradient-to-r from-violet-500 to-pink-500 px-1.5 py-0.5 text-[9px] font-bold text-white leading-none">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
             <div className="mt-2 pt-2 border-t">
               <ThemeToggleRow />
             </div>
