@@ -1,5 +1,6 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
+import * as WebBrowser from "expo-web-browser";
 import { loadTutorialStatus, subscribeTutorialStatus, getTutorialStatus } from "@/utils/tutorialState";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter, useSegments } from "expo-router";
@@ -26,6 +27,7 @@ import { brand } from "@/constants/colors";
 import { initCrashReporter } from "@/utils/crashReporter";
 
 SplashScreen.preventAutoHideAsync();
+WebBrowser.maybeCompleteAuthSession();
 initCrashReporter();
 
 const queryClient = new QueryClient({
