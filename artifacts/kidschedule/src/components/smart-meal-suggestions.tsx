@@ -113,13 +113,17 @@ export function SmartMealSuggestions() {
   );
 
   const handleFindCook = () => {
-    if (allMeals.length > 0) {
-      // Meals already loaded — just rotate the display window instantly.
-      // Do NOT call setManualSearch here: that triggers a re-fetch which sets
-      // loading=true (looks like a page refresh) and resets displayOffset to 0.
+    if (fridge.length > 0) {
+      // Fridge items exist → always re-fetch so results are freshly ranked
+      // by what's in the fridge. Rotation makes no sense here because the
+      // user wants "what CAN I make right now" — the top results are the answer.
+      setManualSearch(n => n + 1);
+      setDisplayOffset(0);
+    } else if (allMeals.length > 0) {
+      // No fridge — browse mode: just rotate the display window
       setDisplayOffset(prev => (prev + DISPLAY_COUNT) % Math.max(allMeals.length, 1));
     } else {
-      // No meals yet — trigger a fresh fetch
+      // No meals yet at all — trigger a fresh fetch
       setManualSearch(n => n + 1);
     }
     setSearchFlash(true);
@@ -321,8 +325,20 @@ export function SmartMealSuggestions() {
         </button>
       </div>
 
-      {/* Cards — Netflix style horizontal scroll */}
+      {/* Cards — with fridge-mode header */}
       <div ref={resultsRef} className="mt-3 px-1 pb-4">
+        {/* Fridge mode header */}
+        {!loading && !fetchError && fridge.length > 0 && displayedMeals.length > 0 && (
+          <div className="mx-3 mb-2 flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+              🧊 Aapke fridge se bana sakte ho
+            </span>
+            <span className="text-[10px] text-muted-foreground">
+              — {fridge.join(", ")} se
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex gap-3 px-3 overflow-hidden">
             {[0, 1, 2, 3, 4].map(i => (
@@ -332,7 +348,7 @@ export function SmartMealSuggestions() {
         ) : fetchError ? (
           <div className="mx-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-400/20 text-center">
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">Meals load nahi hue. Retry karo.</p>
-            <button onClick={() => setManualSearch(n => n + 1)} className="mt-2 text-xs text-red-600 underline">Retry</button>
+            <button type="button" onClick={() => setManualSearch(n => n + 1)} className="mt-2 text-xs text-red-600 underline">Retry</button>
           </div>
         ) : displayedMeals.length > 0 ? (
           <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-3 pb-2 scroll-smooth" style={{ scrollbarWidth: "thin" }}>
@@ -341,13 +357,18 @@ export function SmartMealSuggestions() {
                 key={`${m.id}-${displayOffset}-${i}`}
                 meal={m}
                 showCalories={audience === "parent_healthy"}
+                fridgeMode={fridge.length > 0}
                 onOpen={() => setOpenMeal(m)}
                 style={{ animationDelay: `${i * 50}ms` }}
               />
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 text-sm text-muted-foreground">No meals found. Try removing a fridge item.</div>
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            {fridge.length > 0
+              ? "Koi meal nahi mila in ingredients se. Kuch aur add karo fridge mein."
+              : "No meals found."}
+          </div>
         )}
       </div>
 
@@ -366,41 +387,75 @@ export function SmartMealSuggestions() {
 
 // ─── Card ────────────────────────────────────────────────────────────────
 function MealCard({
-  meal, showCalories, onOpen, style,
-}: { meal: RankedMeal; showCalories: boolean; onOpen: () => void; style?: React.CSSProperties }) {
+  meal, showCalories, fridgeMode, onOpen, style,
+}: {
+  meal: RankedMeal;
+  showCalories: boolean;
+  fridgeMode: boolean;
+  onOpen: () => void;
+  style?: React.CSSProperties;
+}) {
   const tag = meal.tags[0] ?? "Healthy";
+  const totalIng = meal.ingredients.length;
+  const matchCount = meal.matchedIngredients.length;
+  const canMakeFully = fridgeMode && matchCount > 0 && matchCount >= totalIng;
+  const canMakePartially = fridgeMode && matchCount > 0 && matchCount < totalIng;
+
   return (
     <button
+      type="button"
       onClick={(e) => { e.stopPropagation(); onOpen(); }}
       style={style}
-      className="group shrink-0 snap-start w-[160px] rounded-2xl overflow-hidden border border-border bg-card hover:border-violet-300 dark:hover:border-violet-500/50 hover:shadow-md active:scale-95 transition-all text-left animate-in fade-in"
+      className="group shrink-0 snap-start w-[165px] rounded-2xl overflow-hidden border border-border bg-card hover:border-violet-300 dark:hover:border-violet-500/50 hover:shadow-md active:scale-95 transition-all text-left animate-in fade-in"
       data-testid={`meal-card-${meal.id}`}
     >
       <div
         className="relative h-[100px] flex items-center justify-center text-[52px]"
-        style={{
-          background: `linear-gradient(135deg, ${meal.bgGradient[0]}, ${meal.bgGradient[1]})`,
-        }}
+        style={{ background: `linear-gradient(135deg, ${meal.bgGradient[0]}, ${meal.bgGradient[1]})` }}
       >
         <span className="drop-shadow-sm group-hover:scale-110 transition-transform">{meal.emoji}</span>
+        {/* Tag badge */}
         <span className="absolute top-1.5 left-1.5 text-[9px] font-bold uppercase tracking-wide bg-white/85 text-foreground px-1.5 py-0.5 rounded-full shadow-sm">
           {tag}
         </span>
-        {meal.matchedIngredients.length > 0 && (
+        {/* Fridge match badge */}
+        {canMakeFully && (
           <span className="absolute top-1.5 right-1.5 inline-flex items-center gap-0.5 text-[9px] font-bold bg-emerald-500 text-white px-1.5 py-0.5 rounded-full shadow-sm">
-            ✓ {meal.matchedIngredients.length}
+            ✓ Ready!
+          </span>
+        )}
+        {canMakePartially && (
+          <span className="absolute top-1.5 right-1.5 inline-flex items-center gap-0.5 text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded-full shadow-sm">
+            {matchCount}/{totalIng}
           </span>
         )}
       </div>
-      <div className="p-2.5 space-y-1">
+      <div className="p-2.5 space-y-1.5">
         <p className="font-bold text-[12.5px] text-foreground leading-tight line-clamp-2">{meal.title}</p>
-        <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground flex-wrap">
+        <div className="flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
           <span className="inline-flex items-center gap-0.5"><Clock className="h-3 w-3" /> {meal.prepMinutes}m</span>
           {showCalories && (
             <span className="inline-flex items-center gap-0.5"><Flame className="h-3 w-3 text-orange-500" /> {meal.calories}</span>
           )}
         </div>
-        <p className="text-[10px] text-violet-600 dark:text-violet-400 font-semibold">Tap for recipe →</p>
+        {/* Fridge ingredients info */}
+        {fridgeMode && matchCount > 0 && (
+          <div className="space-y-0.5">
+            <p className="text-[9.5px] text-emerald-600 dark:text-emerald-400 font-semibold leading-tight">
+              ✓ {meal.matchedIngredients.slice(0, 3).join(", ")}
+              {meal.matchedIngredients.length > 3 ? ` +${meal.matchedIngredients.length - 3}` : ""}
+            </p>
+            {meal.missingIngredients.length > 0 && (
+              <p className="text-[9px] text-amber-600 dark:text-amber-400 leading-tight">
+                Need: {meal.missingIngredients.slice(0, 2).join(", ")}
+                {meal.missingIngredients.length > 2 ? `…` : ""}
+              </p>
+            )}
+          </div>
+        )}
+        {!fridgeMode && (
+          <p className="text-[10px] text-violet-600 dark:text-violet-400 font-semibold">Tap for recipe →</p>
+        )}
       </div>
     </button>
   );

@@ -691,22 +691,36 @@ export function suggestMeals(input: SuggestionInput): SuggestionResult {
     const ing = m.ingredients.map(norm);
     const matched = fridge.filter(f => ing.some(i => i.includes(f) || f.includes(i)));
     const missing = ing.filter(i => !fridge.some(f => i.includes(f) || f.includes(i)));
+    const matchRatio = ing.length > 0 ? matched.length / ing.length : 0;
 
     let score = 0;
-    // Region match — strong signal
-    if (m.region === region) score += 40;
-    else if (region === "pan_indian" || m.region === "pan_indian") score += 12;
-    // Fridge match — proportional
-    const matchRatio = ing.length > 0 ? matched.length / ing.length : 0;
-    score += Math.round(matchRatio * 50);
-    // Quick/easy bonus
+
+    if (fridge.length > 0) {
+      // ── Fridge mode: what can I MAKE right now? ──
+      // Fridge match is the PRIMARY signal. Meals with zero matches are
+      // pushed to the very bottom so users only see cookable options first.
+      if (matched.length === 0) {
+        score -= 200; // Can't make → bottom of list
+      } else {
+        score += Math.round(matchRatio * 120);       // up to 120 pts for full match
+        if (matched.length >= ing.length) score += 50; // perfect "can make now" bonus
+        // Region is secondary when fridge provided
+        if (m.region === region) score += 15;
+        else if (region === "pan_indian" || m.region === "pan_indian") score += 5;
+      }
+    } else {
+      // ── Browse mode: no fridge items — show popular regional meals ──
+      if (m.region === region) score += 40;
+      else if (region === "pan_indian" || m.region === "pan_indian") score += 12;
+      score += Math.round(matchRatio * 50);
+      if (m.prepMinutes > 25) score -= 4; // slightly prefer quick meals
+    }
+
+    // Quick/easy bonus (always)
     if (m.tags.includes("Quick")) score += 6;
     if (m.tags.includes("Healthy")) score += 4;
-    // Penalise long prep slightly when no fridge data
-    if (fridge.length === 0 && m.prepMinutes > 25) score -= 4;
+
     // ── Learning loop from Tiffin Feedback ──
-    // Liked meals get a strong boost; disliked are suppressed but kept eligible
-    // so the list is never empty if every meal happens to be on the disliked list.
     if (liked.has(m.id)) score += 30;
     if (disliked.has(m.id)) score -= 80;
 
@@ -719,9 +733,15 @@ export function suggestMeals(input: SuggestionInput): SuggestionResult {
   const anyMatched = fridge.length > 0 && scored.some(m => m.matchedIngredients.length > 0);
   const usedFallback = fridge.length > 0 && !anyMatched;
 
-  // Return up to 12 ranked meals so multiple inline blocks on the same
-  // routine day can each show a different non-overlapping set of 4.
-  const top = scored.slice(0, 12);
+  // When fridge is provided, only return meals that CAN be made (matched > 0).
+  // If nothing matched at all (fallback), return top regional meals instead.
+  let top: RankedMeal[];
+  if (fridge.length > 0 && !usedFallback) {
+    const cookable = scored.filter(m => m.matchedIngredients.length > 0);
+    top = cookable.slice(0, 12);
+  } else {
+    top = scored.slice(0, 12);
+  }
 
   return {
     meals: top,
