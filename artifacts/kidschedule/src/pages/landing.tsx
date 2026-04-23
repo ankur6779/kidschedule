@@ -484,11 +484,6 @@ export default function LandingPage() {
 
       {/* HERO */}
       <section className="relative z-10 flex flex-col items-center text-center px-5 pt-12 pb-16">
-        <div className="amy-fade-up amy-glass mb-8 inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full text-white/80">
-          <Sparkles className="h-3.5 w-3.5 text-purple-300" />
-          {t("landing.badge")}
-        </div>
-
         <div className="amy-fade-up-1 relative -mb-6 flex items-center justify-center">
           <div className="amy-float">
             <img
@@ -529,24 +524,6 @@ export default function LandingPage() {
           </Link>
         </div>
 
-        {/* Science-backed stats row */}
-        <div className="amy-fade-up-4 mt-12 flex flex-wrap items-center justify-center gap-6 md:gap-10">
-          {SCIENCE_STATS.map(({ value, label }) => (
-            <div key={value} className="flex flex-col items-center gap-0.5">
-              <span
-                className="font-quicksand font-black text-2xl md:text-3xl"
-                style={{
-                  background: "linear-gradient(90deg,#A855F7,#EC4899)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {value}
-              </span>
-              <span className="text-white/50 text-[11px] text-center max-w-[88px] leading-tight">{label}</span>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* SCIENCE CITATIONS SCROLLING MARQUEE */}
