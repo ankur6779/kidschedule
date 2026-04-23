@@ -1020,53 +1020,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="relative z-10 px-5 pb-24">
-        <div className="max-w-2xl mx-auto text-center">
-          <div
-            className="amy-glass rounded-3xl p-10 md:p-14 relative overflow-hidden"
-            style={{ borderColor: "rgba(168,85,247,0.3)" }}
-          >
-            <div
-              aria-hidden
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background: "radial-gradient(ellipse at center,rgba(168,85,247,0.12) 0%,transparent 70%)",
-              }}
-            />
-            <div className="relative">
-              <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl mb-6"
-                style={{
-                  background: "linear-gradient(135deg,#A855F7,#EC4899)",
-                  boxShadow: "0 12px 40px rgba(236,72,153,0.4)",
-                }}
-              >
-                <MessageCircle className="h-8 w-8 text-white" />
-              </div>
-              <h2 className="font-quicksand font-bold text-3xl md:text-4xl text-white leading-tight mb-4">
-                {t("landing.final_cta_heading")}
-              </h2>
-              <p className="text-white/70 text-base md:text-lg mb-3 leading-relaxed">
-                {t("landing.final_cta_sub")}
-              </p>
-              <p className="text-white/50 text-sm mb-8">
-                Join <span className="text-purple-300 font-semibold">50,000+ parents</span> already parenting smarter with AmyNest AI.
-              </p>
-              <Link href="/sign-up">
-                <button
-                  className="amy-cta inline-flex items-center gap-2 text-base md:text-lg font-bold px-10 md:px-12 py-4 md:py-5 rounded-2xl text-white"
-                  data-testid="button-final-cta"
-                >
-                  {t("landing.final_cta_btn")}
-                  <ArrowRight className="h-5 w-5" />
-                </button>
-              </Link>
-              <p className="mt-4 text-xs text-white/40">✨ Free to start — Join the smart parenting revolution.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FOOTER */}
       <footer className="relative z-10 px-5 py-8 border-t border-white/10">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
