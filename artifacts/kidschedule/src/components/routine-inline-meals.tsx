@@ -8,9 +8,8 @@
  * instanceIndex (0, 1, 2…) lets multiple blocks on the same page show
  * different non-overlapping sets of 4 meals from the API's ranked list.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useAuthFetch } from "@/hooks/use-auth-fetch";
 import { AmyIcon } from "@/components/amy-icon";
 import { X, Clock, Flame, Utensils, ChefHat } from "lucide-react";
 
@@ -54,7 +53,6 @@ export function RoutineInlineMeals({
   isVeg,
   instanceIndex = 0,
 }: Props) {
-  const authFetch = useAuthFetch();
   const [meals, setMeals] = useState<RankedMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [amyMsg, setAmyMsg] = useState("");
@@ -69,7 +67,8 @@ export function RoutineInlineMeals({
     if (childAge != null) p.set("childAge", String(childAge));
     if (isVeg === true) p.set("isVeg", "true");
 
-    authFetch(`/api/meals/suggest?${p.toString()}`)
+    // /api/meals/suggest is a public endpoint — no auth header needed
+    fetch(`/api/meals/suggest?${p.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {
         if (cancelled) return;

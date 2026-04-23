@@ -114,11 +114,14 @@ export function SmartMealSuggestions() {
 
   const handleFindCook = () => {
     if (allMeals.length > 0) {
-      // Already have a pool — just rotate the display window immediately
+      // Meals already loaded — just rotate the display window instantly.
+      // Do NOT call setManualSearch here: that triggers a re-fetch which sets
+      // loading=true (looks like a page refresh) and resets displayOffset to 0.
       setDisplayOffset(prev => (prev + DISPLAY_COUNT) % Math.max(allMeals.length, 1));
+    } else {
+      // No meals yet — trigger a fresh fetch
+      setManualSearch(n => n + 1);
     }
-    // Also re-fetch in the background for fresh results
-    setManualSearch(n => n + 1);
     setSearchFlash(true);
     setTimeout(() => setSearchFlash(false), 800);
     setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
@@ -303,6 +306,7 @@ export function SmartMealSuggestions() {
 
         {/* CTA: Find What I Can Cook */}
         <button
+          type="button"
           onClick={handleFindCook}
           className={`mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-sm transition-all duration-200 ${
             searchFlash

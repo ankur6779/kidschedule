@@ -14,8 +14,8 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useAuthFetch } from "@/hooks/useAuthFetch";
 import { brand } from "@/constants/colors";
+import { API_BASE_URL } from "@/constants/api";
 
 interface RankedMeal {
   id: string;
@@ -55,7 +55,6 @@ export default function RoutineInlineMeals({
   isVeg,
   instanceIndex = 0,
 }: Props) {
-  const authFetch = useAuthFetch();
   const [meals, setMeals] = useState<RankedMeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [openMeal, setOpenMeal] = useState<RankedMeal | null>(null);
@@ -69,7 +68,8 @@ export default function RoutineInlineMeals({
     if (childAge != null) p.set("childAge", String(childAge));
     if (isVeg === true) p.set("isVeg", "true");
 
-    authFetch(`/api/meals/suggest?${p.toString()}`)
+    // /api/meals/suggest is a public endpoint — plain fetch, no auth needed
+    fetch(`${API_BASE_URL}/api/meals/suggest?${p.toString()}`)
       .then(r => r.ok ? r.json() : null)
       .then((r: SuggestionResult | null) => {
         if (cancelled) return;
