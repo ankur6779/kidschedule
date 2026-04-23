@@ -1,0 +1,130 @@
+Update the “👶 Kids Control Center” page in my app "AmyNest" (Web + Mobile) by adding AmyNest Kids integration and improved description.
+
+IMPORTANT:
+- Keep this as “Coming Soon + Feedback” page
+- Show clear connection between Parent and Child experience
+- Premium UI (glass + glow)
+- Mobile + web responsive
+
+--------------------------------
+1. PAGE HEADER
+--------------------------------
+
+Title:
+“👶 Kids Control Center”
+
+Badge:
+“Coming Soon 🚀”
+
+--------------------------------
+2. HERO SECTION
+--------------------------------
+
+Headline:
+“Smart Control for Parents, Safe Experience for Kids”
+
+Subtext:
+“Guide your child’s routine, learning, and screen time with ease.”
+
+--------------------------------
+3. AMYNEST KIDS SECTION (NEW 🔥)
+--------------------------------
+
+Title:
+“👶 AmyNest Kids (Child Experience)”
+
+Description:
+“AmyNest Kids is a safe and guided environment for children that syncs with the parent app. Kids see only their routines, activities, and rewards, while parents manage everything in the background.”
+
+Add small highlight points:
+
+- Safe child-friendly UI  
+- Sync with parent routines  
+- Reward-based engagement  
+- No distractions  
+
+--------------------------------
+4. FEATURE PREVIEW (2-COLUMN GRID)
+--------------------------------
+
+- ⏱ Screen Time Guidance  
+- 📋 Routine Control  
+- 🎯 Focus Mode  
+- 📊 Activity Tracking  
+- 🔒 Parent Lock  
+
+--------------------------------
+5. DESCRIPTION SECTION
+--------------------------------
+
+“Kids Control Center helps parents guide children in a balanced way by focusing on habits, routines, and learning instead of strict restrictions.”
+
+--------------------------------
+6. VISUAL UI
+--------------------------------
+
+- Use icons
+- Soft colors
+- Glass cards
+
+--------------------------------
+7. FEEDBACK SECTION 🔥
+--------------------------------
+
+Title:
+“Would you like this feature?”
+
+Buttons:
+
+(A) 👍 Interested  
+(B) 👎 Not Interested  
+
+--------------------------------
+8. FEEDBACK LOGIC
+--------------------------------
+
+Save:
+
+{
+  userId,
+  feature: "kids_control_center",
+  feedback: "interested" / "not_interested"
+}
+
+--------------------------------
+9. OPTIONAL INPUT
+--------------------------------
+
+Add:
+
+“Tell us what you want in this feature”
+
+--------------------------------
+10. NAVIGATION
+--------------------------------
+
+- Add in Parent Hub
+- Card-based entry
+
+--------------------------------
+11. UI RULES
+--------------------------------
+
+- Clean layout
+- Smooth animations
+- Premium feel
+
+--------------------------------
+12. PERFORMANCE
+--------------------------------
+
+- Lightweight
+- Fast loading
+
+--------------------------------
+Return:
+Updated Kids Control Center page with:
+- AmyNest Kids description
+- Feature preview
+- Feedback system
+- Premium UI
