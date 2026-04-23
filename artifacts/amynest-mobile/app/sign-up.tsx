@@ -92,7 +92,7 @@ export default function SignUpScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setGoogleLoading(true);
     try {
-      const redirectUrl = Linking.createURL("oauth-native-callback");
+      const redirectUrl = "amynest://login";
       const { createdSessionId, setActive: oauthSetActive } = await startOAuthFlow({ redirectUrl });
       if (createdSessionId && oauthSetActive) {
         await oauthSetActive({ session: createdSessionId });
