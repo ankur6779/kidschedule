@@ -70,6 +70,7 @@ const NAV_ITEMS = [
   { href: "/assistant",     labelKey: "nav.amy_ai",        icon: Bot },
   { href: "/games",         labelKey: "nav.games",         icon: Gamepad2 },
   { href: "/parent-profile",labelKey: "nav.profile",       icon: UserCircle },
+  { href: "/kids-control-center", labelKey: "nav.kids_control_center", icon: Baby },
   { href: "/pricing",       labelKey: "nav.pricing",       icon: Sparkles },
   { href: "/referrals",     labelKey: "nav.referrals",     icon: Gift },
 ];
