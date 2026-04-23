@@ -540,6 +540,27 @@ export default function ParentingHub() {
           </LockedBlock>
         )}
 
+        {/* 👶 Kids Control Center — Coming Soon + feedback */}
+        <Link href="/kids-control-center">
+          <button
+            type="button"
+            className="w-full text-left rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-violet-100 dark:from-violet-500/20 via-pink-100 dark:via-pink-500/15 to-amber-100 dark:to-amber-500/15 border border-violet-200/60 dark:border-violet-500/30 hover:border-violet-400 dark:hover:border-violet-400/60 hover:shadow-[0_8px_30px_-10px_rgba(124,58,237,0.5)] transition-all"
+            data-testid="card-kids-control-center"
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-3xl shrink-0">👶</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-extrabold text-foreground text-base sm:text-lg">Kids Control Center</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 text-white">Coming Soon 🚀</span>
+                </div>
+                <div className="text-xs sm:text-sm text-muted-foreground mt-1">Smart control for parents · Safe experience for kids</div>
+              </div>
+              <span className="text-violet-600 dark:text-violet-300 font-bold text-lg shrink-0">→</span>
+            </div>
+          </button>
+        </Link>
+
         {/* 🧾 PTM Prep Assistant — Prepare → Attend → Act flow */}
         {effectiveChild && effectiveChild.age >= 3 && effectiveChild.age <= 17 && (
           <LockedBlock

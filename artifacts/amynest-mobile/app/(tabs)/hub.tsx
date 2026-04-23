@@ -476,6 +476,37 @@ export default function HubScreen() {
           </Pressable>
         </View>
 
+        {/* 👶 Kids Control Center — Coming Soon + feedback */}
+        <View style={tileW("kids-control-center")}>
+          <Pressable
+            onPress={() => router.push("/kids-control-center" as never)}
+            style={{ borderRadius: 18, overflow: "hidden" }}
+            testID="card-kids-control-center"
+          >
+            <LinearGradient
+              colors={["#7C3AED", "#EC4899", "#F59E0B"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+              style={{ padding: 16, gap: 8 }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.22)", alignItems: "center", justifyContent: "center" }}>
+                  <Text style={{ fontSize: 22 }}>👶</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                    <Text style={{ color: "#fff", fontWeight: "800", fontSize: 15 }}>Kids Control Center</Text>
+                    <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.25)" }}>
+                      <Text style={{ color: "#fff", fontSize: 9.5, fontWeight: "800" }}>SOON 🚀</Text>
+                    </View>
+                  </View>
+                  <Text style={{ color: "rgba(255,255,255,0.92)", fontSize: 11.5, marginTop: 2 }}>Smart control · Safe child experience</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.85)" />
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </View>
+
         {/* 🍱 Tiffin & Meal Suggestions */}
         <View style={tileW("meals")}>
           <Pressable

@@ -21,6 +21,7 @@ import accountRouter from "./account";
 import pushRouter from "./push";
 import notificationsRouter from "./notifications";
 import authDebugRouter from "./auth-debug";
+import featureFeedbackRouter from "./feature-feedback";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -53,6 +54,7 @@ router.use(appDataRouter);
 router.use(futurePredictorRouter);
 router.use(referralsRouter);
 router.use(featuresRouter);
+router.use(featureFeedbackRouter);
 router.use(accountRouter);
 router.use(pushRouter);
 router.use(notificationsRouter);
